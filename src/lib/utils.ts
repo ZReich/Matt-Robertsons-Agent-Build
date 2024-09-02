@@ -1,0 +1,39 @@
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function ensurePrefix(str: string, prefix: string) {
+  return str.startsWith(prefix) ? str : `${prefix}${str}`;
+}
+
+export function withoutSuffix(str: string, suffix: string) {
+  return str.endsWith(suffix) ? str.slice(0, -suffix.length) : str;
+}
+
+export function withoutPrefix(str: string, prefix: string) {
+  return str.startsWith(prefix) ? str.slice(prefix.length) : str;
+}
+
+export function shuffleArray(array: any[]) {
+  let currentIndex = array.length;
+  let randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex !== 0) {
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
+}
+
+export const isEven = (num: number) => num % 2 === 0;

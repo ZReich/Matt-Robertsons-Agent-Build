@@ -1,0 +1,20 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about-us": "About Us",
+    "contact": "Contact",
+    "language": {
+      "language": "Language",
+      "select-language": "Select Language",
+      "english": "English",
+      "arabic": "Arabic"
+    },
+    "theme": {
+      "theme": "Theme",
+      "select-theme": "Select Theme",
+      "dark": "Dark",
+      "light": "Light",
+      "system": "System"
+    }
+  }
+}

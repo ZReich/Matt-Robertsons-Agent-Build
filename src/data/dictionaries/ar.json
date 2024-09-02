@@ -1,0 +1,20 @@
+{
+  "navigation": {
+    "home": "الصفحة الرئيسية",
+    "about-us": "من نحن",
+    "contact": "تواصل معنا",
+    "language": {
+      "language": "اللغة",
+      "select-language": "اختر اللغة",
+      "english": "الأنجليزية",
+      "arabic": "العربية"
+    },
+    "theme": {
+      "theme": "السمة",
+      "select-theme": "اختر السمة",
+      "dark": "غامق",
+      "light": "فاتح",
+      "system": "النظام"
+    }
+  }
+}
