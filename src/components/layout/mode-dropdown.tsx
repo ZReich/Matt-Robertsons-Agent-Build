@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ThemeDropdown({ dictionary }: { dictionary: Dictionary }) {
+export function ModeDropdown({ dictionary }: { dictionary: Dictionary }) {
   const { setTheme, theme } = useTheme();
   const params = useParams();
 
@@ -40,12 +40,14 @@ export function ThemeDropdown({ dictionary }: { dictionary: Dictionary }) {
             className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
             aria-hidden
           />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">
+            {dictionary.navigation.mode["select-mode"]}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>
-          {dictionary.navigation.theme["theme"]}
+          {dictionary.navigation.mode["mode"]}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={theme}>
@@ -53,16 +55,16 @@ export function ThemeDropdown({ dictionary }: { dictionary: Dictionary }) {
             value="light"
             onClick={() => setTheme("light")}
           >
-            {dictionary.navigation.theme.light}
+            {dictionary.navigation.mode.light}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark" onClick={() => setTheme("dark")}>
-            {dictionary.navigation.theme.dark}
+            {dictionary.navigation.mode.dark}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem
             value="system"
             onClick={() => setTheme("system")}
           >
-            {dictionary.navigation.theme.system}
+            {dictionary.navigation.mode.system}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

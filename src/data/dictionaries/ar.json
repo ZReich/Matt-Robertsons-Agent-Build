@@ -9,9 +9,9 @@
       "english": "الأنجليزية",
       "arabic": "العربية"
     },
-    "theme": {
-      "theme": "السمة",
-      "select-theme": "اختر السمة",
+    "mode": {
+      "mode": "النمط",
+      "select-mode": "اختر النمط",
       "dark": "غامق",
       "light": "فاتح",
       "system": "النظام"

@@ -61,9 +61,7 @@ export function Customizer() {
                 variant="ghost"
                 size="icon"
                 className="ml-auto rounded-[0.5rem]"
-                onClick={() => {
-                  resetSettings();
-                }}
+                onClick={() => resetSettings()}
               >
                 <ResetIcon />
                 <span className="sr-only">Reset</span>

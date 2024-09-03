@@ -2,7 +2,7 @@ import { Dictionary } from "@/lib/getDictionary";
 
 import { CommandMenu } from "@/components/command-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { ThemeDropdown } from "@/components/layout/theme-dropdown";
+import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
 
@@ -13,7 +13,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
         <MobileNav />
         <CommandMenu />
         <div className="flex gap-2">
-          <ThemeDropdown dictionary={dictionary} />
+          <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
           <UserNav />
         </div>

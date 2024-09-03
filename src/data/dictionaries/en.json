@@ -9,9 +9,9 @@
       "english": "English",
       "arabic": "Arabic"
     },
-    "theme": {
-      "theme": "Theme",
-      "select-theme": "Select Theme",
+    "mode": {
+      "mode": "Mode",
+      "select-mode": "Select Mode",
       "dark": "Dark",
       "light": "Light",
       "system": "System"
