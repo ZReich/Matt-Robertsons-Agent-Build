@@ -31,7 +31,7 @@ import { CustomThemeProvider } from "@/providers/custom-theme-provider";
 
 export function Customizer() {
   const { resolvedTheme, setTheme } = useTheme();
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings, resetSettings } = useSettings();
 
   return (
     <Sheet>
@@ -62,11 +62,7 @@ export function Customizer() {
                 size="icon"
                 className="ml-auto rounded-[0.5rem]"
                 onClick={() => {
-                  updateSettings({
-                    ...settings,
-                    theme: "zinc",
-                    radius: 0.5,
-                  });
+                  resetSettings();
                 }}
               >
                 <ResetIcon />
