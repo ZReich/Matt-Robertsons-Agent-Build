@@ -71,17 +71,17 @@ export function LanguageDropdown({ dictionary }: { dictionary: Dictionary }) {
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={locale}>
           {languageData.map((locale) => (
-            <DropdownMenuRadioItem
+            <Link
               key={locale.langCode}
-              value={locale.langCode}
+              href={getLocalePath(pathName, locale.langCode)}
             >
-              <Link
-                href={getLocalePath(pathName, locale.langCode)}
-                className="w-full"
+              <DropdownMenuRadioItem
+                value={locale.langCode}
+                className="hover:cursor-pointer"
               >
                 {dictionary.navigation.language[locale.langName]}
-              </Link>
-            </DropdownMenuRadioItem>
+              </DropdownMenuRadioItem>
+            </Link>
           ))}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

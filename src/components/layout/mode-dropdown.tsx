@@ -53,15 +53,21 @@ export function ModeDropdown({ dictionary }: { dictionary: Dictionary }) {
         <DropdownMenuRadioGroup value={theme}>
           <DropdownMenuRadioItem
             value="light"
+            className="hover:cursor-pointer"
             onClick={() => setTheme("light")}
           >
             {dictionary.navigation.mode.light}
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark" onClick={() => setTheme("dark")}>
+          <DropdownMenuRadioItem
+            value="dark"
+            className="hover:cursor-pointer"
+            onClick={() => setTheme("dark")}
+          >
             {dictionary.navigation.mode.dark}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem
             value="system"
+            className="hover:cursor-pointer"
             onClick={() => setTheme("system")}
           >
             {dictionary.navigation.mode.system}
