@@ -1,14 +1,13 @@
 import { Lato, Cairo } from "next/font/google";
 
-import "../globals.css";
-
-import type { Metadata } from "next";
-
 import { i18n } from "@/configs/i18n";
 
 import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/getDictionary";
 
+import "../globals.css";
+
+import type { Metadata } from "next";
 import type { Locale } from "@/configs/i18n";
 
 import Providers from "@/providers";

@@ -1,4 +1,6 @@
-import ThemeProvider from "./theme-provider";
+import { SettingsProvider } from "./settings-provider";
+import { CustomThemeProvider } from "./custom-theme-provider";
+import { ThemeProvider } from "./theme-provider";
 
 export default function Providers({
   children,
@@ -6,8 +8,10 @@ export default function Providers({
   children: React.ReactNode;
 }>) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      {children}
-    </ThemeProvider>
+    <SettingsProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <CustomThemeProvider>{children}</CustomThemeProvider>
+      </ThemeProvider>
+    </SettingsProvider>
   );
 }
