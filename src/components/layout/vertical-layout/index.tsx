@@ -3,7 +3,7 @@ import { Dictionary } from "@/lib/getDictionary";
 import { Sidebar } from "./sidebar";
 import { Footer } from "./footer";
 import { Header } from "./header";
-import { Customizer } from "@/components/customizer";
+import { Customizer } from "@/components/layout/customizer";
 
 export default function VerticalLayout({
   children,

@@ -10,12 +10,15 @@ import { useCookie } from "react-use";
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
     useCookie("settings");
+  const [settings, setSettings] = React.useState<Settings | null>(null);
 
-  const initialSettings: Settings = storedSettings
-    ? JSON.parse(storedSettings)
-    : defaultSettings;
-
-  const [settings, setSettings] = React.useState<Settings>(initialSettings);
+  React.useEffect(() => {
+    if (storedSettings) {
+      setSettings(JSON.parse(storedSettings));
+    } else {
+      setSettings(defaultSettings);
+    }
+  }, [storedSettings]);
 
   const updateSettings = React.useCallback(
     (newSettings: Settings) => {
@@ -29,6 +32,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     deleteStoredSettings();
     setSettings(defaultSettings);
   }, [deleteStoredSettings]);
+
+  // Render children only when settings are ready
+  if (!settings) {
+    return null;
+  }
 
   return (
     <SettingsContext.Provider

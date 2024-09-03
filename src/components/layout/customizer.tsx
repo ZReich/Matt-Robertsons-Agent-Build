@@ -2,8 +2,15 @@
 
 import React from "react";
 import { useTheme } from "next-themes";
-import { CheckIcon, MoonIcon, Settings } from "lucide-react";
-import { Cross2Icon, ResetIcon, SunIcon } from "@radix-ui/react-icons";
+import { Settings } from "lucide-react";
+import {
+  CheckIcon,
+  MoonIcon,
+  Cross2Icon,
+  ResetIcon,
+  SunIcon,
+  GearIcon,
+} from "@radix-ui/react-icons";
 
 import { baseColors } from "@/configs/base-colors";
 
@@ -30,7 +37,7 @@ export function Customizer() {
     <Sheet>
       <SheetTrigger className="fixed bottom-10 end-0" asChild>
         <Button size="icon" className="rounded-e-none">
-          <Settings className="size-4 animate-spin" />
+          <GearIcon className="size-4 animate-spin" />
           <span className="sr-only">Config settings</span>
         </Button>
       </SheetTrigger>
