@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useMedia } from "react-use";
 
 import { groupNavs } from "@/data/navigation";
 
@@ -27,6 +28,7 @@ import { Nav } from "./nav";
 import ShadboardIcon from "/public/images/logos/shadboard.svg";
 
 export function Header({ dictionary }: { dictionary: Dictionary }) {
+  const isMobile = useMedia("(max-width: 768px)");
   const params = useParams();
   const locale = params.lang as Locale;
 
@@ -35,7 +37,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
   return (
     <header className="sticky top-0 z-50 w-full bg-background">
       <Menubar
-        className="h-fit shadow-none border-0 border-b"
+        className="hidden h-fit shadow-none border-0 border-b md:flex"
         dir={dir}
         asChild
       >
@@ -53,16 +55,20 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
         </div>
       </Menubar>
       <div className="container flex h-14 justify-between items-center gap-4">
-        <Link
-          href={getLocalizedPathname("/", locale)}
-          className="flex text-foreground font-black hover:text-primary/90"
-        >
-          <ShadboardIcon className="size-6" aira-hidden="true" />
-          Shadboard
-        </Link>
         <MobileSidebarNav />
-        <div className="flex gap-2">
+        {isMobile ? (
           <CommandMenu />
+        ) : (
+          <Link
+            href={getLocalizedPathname("/", locale)}
+            className="flex text-foreground font-black hover:text-primary/90"
+          >
+            <ShadboardIcon className="size-6" aira-hidden="true" />
+            Shadboard
+          </Link>
+        )}
+        <div className="flex gap-2">
+          {!isMobile && <CommandMenu />}
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
           <UserNav />
