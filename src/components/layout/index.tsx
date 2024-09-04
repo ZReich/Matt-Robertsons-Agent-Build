@@ -1,10 +1,13 @@
 "use client";
 
 import React from "react";
+
+import { useSettings } from "@/hooks/use-settings";
+
+import type { Dictionary } from "@/lib/getDictionary";
+
 import VerticalLayout from "./vertical-layout";
 import HorizontalLayout from "./horizontal-layout";
-import { Dictionary } from "@/lib/getDictionary";
-import { useSettings } from "@/hooks/use-settings";
 import { Customizer } from "./customizer";
 
 function Layout({
