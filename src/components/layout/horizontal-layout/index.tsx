@@ -1,10 +1,9 @@
 import { Dictionary } from "@/lib/getDictionary";
 
-import { Sidebar } from "./sidebar";
-import { Footer } from "../footer";
 import { Header } from "./header";
+import { Footer } from "../footer";
 
-export default function VerticalLayout({
+export default function HorizontalLayout({
   children,
   dictionary,
 }: {
@@ -13,7 +12,6 @@ export default function VerticalLayout({
 }) {
   return (
     <div className="min-h-screen w-full flex bg-background">
-      <Sidebar />
       <div className="flex-1">
         <Header dictionary={dictionary} />
         <main>{children}</main>

@@ -20,7 +20,7 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full">
-          <Avatar className="size-8">
+          <Avatar className="size-9">
             <AvatarImage src="/images/avatars/04.png" alt="Avatar" />
             <AvatarFallback className="bg-transparent">JD</AvatarFallback>
           </Avatar>
@@ -34,7 +34,7 @@ export function UserNav() {
             className="rounded-full"
             asChild
           >
-            <Avatar className="size-8">
+            <Avatar className="size-9">
               <AvatarImage src="/images/avatars/04.png" alt="Avatar" />
               <AvatarFallback className="bg-transparent">JD</AvatarFallback>
             </Avatar>

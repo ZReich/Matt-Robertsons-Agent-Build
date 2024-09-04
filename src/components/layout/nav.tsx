@@ -34,19 +34,14 @@ export function Nav({ navs, dir, isRoot = true }: NavProps) {
           nav.href,
           pathname.slice(0, 3) // Language code.
         );
-        // Exact match for home page to avoid false positives; for other nav items, check if href is in pathname.
-        const isActive =
-          localizedHref.length === 3
-            ? localizedHref === pathname
-            : pathname.includes(nav.href);
-        const navVariant = isActive ? "default" : "ghost";
+        const isActive = localizedHref === pathname;
 
         if (nav.children) {
           return (
             <Collapsible key={nav.href}>
               <CollapsibleTrigger
                 className={cn(
-                  buttonVariants({ variant: navVariant }),
+                  buttonVariants({ variant: isActive ? "default" : "ghost" }),
                   "w-full items-center justify-between gap-2 transition-all [&[data-state=open]>svg:last-child]:rotate-180"
                 )}
               >
@@ -83,7 +78,7 @@ export function Nav({ navs, dir, isRoot = true }: NavProps) {
             key={nav.href}
             href={localizedHref}
             className={cn(
-              buttonVariants({ variant: navVariant }),
+              buttonVariants({ variant: isActive ? "default" : "ghost" }),
               "w-full justify-start gap-2"
             )}
           >

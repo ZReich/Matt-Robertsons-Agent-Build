@@ -13,6 +13,7 @@ import type { Locale } from "@/configs/i18n";
 import Providers from "@/providers";
 import { Toaster } from "@/components/ui/toaster";
 import VerticalLayout from "@/components/layout/vertical-layout";
+import Layout from "@/components/layout";
 
 export const metadata: Metadata = {
   title: {
@@ -57,7 +58,7 @@ export default async function RootLayout({
         )}
       >
         <Providers>
-          <VerticalLayout dictionary={dictionary}>{children}</VerticalLayout>
+          <Layout dictionary={dictionary}>{children}</Layout>
           <Toaster />
         </Providers>
       </body>

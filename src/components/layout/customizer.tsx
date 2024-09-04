@@ -10,6 +10,8 @@ import {
   ResetIcon,
   SunIcon,
   GearIcon,
+  BorderLeftIcon,
+  BorderTopIcon,
 } from "@radix-ui/react-icons";
 
 import { baseColors } from "@/configs/base-colors";
@@ -164,6 +166,44 @@ export function Customizer() {
                   >
                     <MoonIcon className="mr-1 -translate-x-1" />
                     Dark
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <span className="text-xs">Layout</span>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    variant={"outline"}
+                    size="sm"
+                    onClick={() => {
+                      updateSettings({
+                        ...settings,
+                        layout: "horizontal",
+                      });
+                    }}
+                    className={cn(
+                      settings.layout === "horizontal" &&
+                        "border-2 border-raduis"
+                    )}
+                  >
+                    <BorderTopIcon className="mr-1 -translate-x-1" />
+                    Horizontal
+                  </Button>
+                  <Button
+                    variant={"outline"}
+                    size="sm"
+                    onClick={() => {
+                      updateSettings({
+                        ...settings,
+                        layout: "vertical",
+                      });
+                    }}
+                    className={cn(
+                      settings.layout === "vertical" && "border-2 border-raduis"
+                    )}
+                  >
+                    <BorderLeftIcon className="mr-1 -translate-x-1" />
+                    Vertical
                   </Button>
                 </div>
               </div>

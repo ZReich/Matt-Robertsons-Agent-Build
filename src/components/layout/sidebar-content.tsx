@@ -10,7 +10,7 @@ import { i18n, Locale } from "@/configs/i18n";
 import { groupNavs } from "@/data/navigation";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Nav } from "@/components/layout/vertical-layout/nav";
+import { Nav } from "@/components/layout/nav";
 
 import ShadboardIcon from "/public/images/logos/shadboard.svg";
 

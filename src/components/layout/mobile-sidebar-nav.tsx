@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "./sidebar-content";
 
-export function MobileNav() {
+export function MobileSidebarNav() {
   return (
     <Sheet>
       <SheetTrigger asChild>
