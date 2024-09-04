@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useTheme } from "next-themes";
-import { Settings } from "lucide-react";
 import {
   CheckIcon,
   MoonIcon,
@@ -29,7 +28,7 @@ import {
   sheetVariants,
 } from "@/components/ui/sheet";
 import { Content as SheetContent } from "@radix-ui/react-dialog";
-import { CustomThemeProvider } from "@/providers/custom-theme-provider";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function Customizer() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -44,32 +43,23 @@ export function Customizer() {
         </Button>
       </SheetTrigger>
       <SheetPortal>
-        <SheetContent className={cn(sheetVariants({ side: "oppositeDir" }))}>
-          <SheetClose className="absolute end-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-            <Cross2Icon className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </SheetClose>
-          <CustomThemeProvider>
-            <div className="flex items-start pt-4 md:pt-0">
-              <div className="space-y-1 pr-2">
+        <SheetContent
+          className={cn(sheetVariants({ side: "oppositeDir" }), "px-0")}
+        >
+          <ScrollArea className="h-full px-6">
+            <SheetClose className="absolute end-4 top-4 me-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+              <Cross2Icon className="size-4" />
+              <span className="sr-only">Close</span>
+            </SheetClose>
+            <div className="flex flex-1 flex-col space-y-4">
+              <div className="space-y-1">
                 <div className="font-semibold leading-none tracking-tight">
                   Customize
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Pick a style and color for your components.
+                  Pick a style and color for the dashboard.
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="ml-auto rounded-[0.5rem]"
-                onClick={() => resetSettings()}
-              >
-                <ResetIcon />
-                <span className="sr-only">Reset</span>
-              </Button>
-            </div>
-            <div className="flex flex-1 flex-col space-y-4 md:space-y-6">
               <div className="space-y-1.5">
                 <span className="text-xs">Color</span>
                 <div className="grid grid-cols-3 gap-2">
@@ -103,7 +93,7 @@ export function Customizer() {
                       >
                         <span
                           className={cn(
-                            "mr-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]"
+                            "me-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]"
                           )}
                         >
                           {isActive && (
@@ -150,10 +140,10 @@ export function Customizer() {
                     size="sm"
                     onClick={() => setTheme("light")}
                     className={cn(
-                      resolvedTheme === "light" && "border-2 border-raduis"
+                      resolvedTheme === "light" && "border-2 border-primary"
                     )}
                   >
-                    <SunIcon className="mr-1 -translate-x-1" />
+                    <SunIcon className="me-1 -translate-x-1" />
                     Light
                   </Button>
                   <Button
@@ -161,10 +151,10 @@ export function Customizer() {
                     size="sm"
                     onClick={() => setTheme("dark")}
                     className={cn(
-                      resolvedTheme === "dark" && "border-2 border-raduis"
+                      resolvedTheme === "dark" && "border-2 border-primary"
                     )}
                   >
-                    <MoonIcon className="mr-1 -translate-x-1" />
+                    <MoonIcon className="me-1 -translate-x-1" />
                     Dark
                   </Button>
                 </div>
@@ -183,10 +173,10 @@ export function Customizer() {
                     }}
                     className={cn(
                       settings.layout === "horizontal" &&
-                        "border-2 border-raduis"
+                        "border-2 border-primary"
                     )}
                   >
-                    <BorderTopIcon className="mr-1 -translate-x-1" />
+                    <BorderTopIcon className="me-1 -translate-x-1" />
                     Horizontal
                   </Button>
                   <Button
@@ -199,16 +189,25 @@ export function Customizer() {
                       });
                     }}
                     className={cn(
-                      settings.layout === "vertical" && "border-2 border-raduis"
+                      settings.layout === "vertical" &&
+                        "border-2 border-primary"
                     )}
                   >
-                    <BorderLeftIcon className="mr-1 -translate-x-1" />
+                    <BorderLeftIcon className="me-1 -translate-x-1" />
                     Vertical
                   </Button>
                 </div>
               </div>
+              <Button
+                variant={"destructive"}
+                size="sm"
+                onClick={() => resetSettings()}
+              >
+                <ResetIcon className="me-1 -translate-x-1" />
+                Reset
+              </Button>
             </div>
-          </CustomThemeProvider>
+          </ScrollArea>
         </SheetContent>
       </SheetPortal>
     </Sheet>
