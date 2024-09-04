@@ -35,7 +35,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
   const dir = i18n.langDirection[locale];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background">
+    <header className="sticky top-0 z-50 w-full bg-background border-b-[1px] border-accent">
       <Menubar
         className="hidden h-fit shadow-none border-0 border-b md:flex"
         dir={dir}

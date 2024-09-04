@@ -8,7 +8,7 @@ import { LanguageDropdown } from "@/components/layout/language-dropdown";
 
 export function Header({ dictionary }: { dictionary: Dictionary }) {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background">
+    <header className="sticky top-0 z-50 w-full bg-background border-b-[1px] border-accent">
       <div className="container flex h-14 justify-between items-center gap-4">
         <MobileSidebarNav />
         <CommandMenu />
