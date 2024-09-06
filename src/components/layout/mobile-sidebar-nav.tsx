@@ -16,7 +16,7 @@ export function MobileSidebarNav() {
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent side="dir">
         <SidebarContent />
       </SheetContent>
     </Sheet>

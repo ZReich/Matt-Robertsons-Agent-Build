@@ -71,7 +71,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
           {!isMobile && <CommandMenu />}
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
-          <UserNav />
+          <UserNav dir={dir} />
         </div>
       </div>
     </header>

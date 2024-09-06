@@ -3,6 +3,8 @@ import { LayoutGrid, LogOut, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+import { Direction } from "@/types";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,9 +17,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav() {
+export function UserNav({ dir }: { dir: Direction }) {
   return (
-    <DropdownMenu>
+    <DropdownMenu dir={dir}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full">
           <Avatar className="size-9">
