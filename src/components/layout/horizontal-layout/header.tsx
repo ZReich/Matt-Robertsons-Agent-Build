@@ -25,7 +25,7 @@ import { LanguageDropdown } from "@/components/layout/language-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
 import { Nav } from "./nav";
 
-import ShadboardIcon from "/public/images/logos/shadboard.svg";
+import ShadboardLogo from "/public/images/logos/shadboard.svg";
 
 export function Header({ dictionary }: { dictionary: Dictionary }) {
   const isMobile = useMedia("(max-width: 768px)");
@@ -63,7 +63,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
             href={getLocalizedPathname("/", locale)}
             className="flex text-foreground font-black hover:text-primary/90"
           >
-            <ShadboardIcon className="size-6" aira-hidden="true" />
+            <ShadboardLogo className="size-6" aira-hidden="true" />
             Shadboard
           </Link>
         )}

@@ -3,7 +3,6 @@ import { Lato, Cairo } from "next/font/google";
 import { i18n } from "@/configs/i18n";
 
 import { cn } from "@/lib/utils";
-import { getDictionary } from "@/lib/getDictionary";
 
 import "../globals.css";
 
@@ -12,8 +11,6 @@ import type { Locale } from "@/configs/i18n";
 
 import Providers from "@/providers";
 import { Toaster } from "@/components/ui/toaster";
-import VerticalLayout from "@/components/layout/vertical-layout";
-import Layout from "@/components/layout";
 
 export const metadata: Metadata = {
   title: {
@@ -45,7 +42,6 @@ export default async function RootLayout({
   params: { lang: Locale };
 }>) {
   const direction = i18n.langDirection[params.lang];
-  const dictionary = await getDictionary(params.lang);
 
   return (
     <html lang={params.lang} dir={direction} suppressHydrationWarning>
@@ -58,7 +54,7 @@ export default async function RootLayout({
         )}
       >
         <Providers>
-          <Layout dictionary={dictionary}>{children}</Layout>
+          {children}
           <Toaster />
         </Providers>
       </body>

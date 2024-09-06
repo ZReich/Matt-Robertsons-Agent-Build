@@ -12,7 +12,7 @@ import { groupNavs } from "@/data/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Nav } from "@/components/layout/nav";
 
-import ShadboardIcon from "/public/images/logos/shadboard.svg";
+import ShadboardLogo from "/public/images/logos/shadboard.svg";
 
 export function SidebarContent() {
   const params = useParams();
@@ -26,7 +26,7 @@ export function SidebarContent() {
         href={getLocalizedPathname("/", locale)}
         className="flex text-foreground font-black hover:text-primary/90"
       >
-        <ShadboardIcon className="size-6" aira-hidden="true" />
+        <ShadboardLogo className="size-6" aira-hidden="true" />
         Shadboard
       </Link>
       <ScrollArea className="h-full -mx-5 px-2.5" dir={dir}>
