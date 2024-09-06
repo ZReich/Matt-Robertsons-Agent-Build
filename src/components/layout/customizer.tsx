@@ -38,7 +38,7 @@ export function Customizer() {
     <Sheet>
       <SheetTrigger className="fixed bottom-10 end-0" asChild>
         <Button size="icon" className="rounded-e-none">
-          <Settings className="size-4 animate-spin" />
+          <Settings className="size-4" />
           <span className="sr-only">Config settings</span>
         </Button>
       </SheetTrigger>
@@ -143,7 +143,7 @@ export function Customizer() {
                       resolvedTheme === "light" && "border-2 border-primary"
                     )}
                   >
-                    <Sun className="me-1 -translate-x-1" />
+                    <Sun className="size-4 me-1 -translate-x-1" />
                     Light
                   </Button>
                   <Button
@@ -154,7 +154,7 @@ export function Customizer() {
                       resolvedTheme === "dark" && "border-2 border-primary"
                     )}
                   >
-                    <MoonStar className="me-1 -translate-x-1" />
+                    <MoonStar className="size-4 me-1 -translate-x-1" />
                     Dark
                   </Button>
                 </div>
@@ -176,7 +176,7 @@ export function Customizer() {
                         "border-2 border-primary"
                     )}
                   >
-                    <AlignStartHorizontal className="me-1 -translate-x-1" />
+                    <AlignStartHorizontal className="size-4 me-1 -translate-x-1" />
                     Horizontal
                   </Button>
                   <Button
@@ -193,7 +193,7 @@ export function Customizer() {
                         "border-2 border-primary"
                     )}
                   >
-                    <AlignStartVertical className="me-1 -translate-x-1" />
+                    <AlignStartVertical className="size-4 me-1 -translate-x-1" />
                     Vertical
                   </Button>
                 </div>
@@ -203,7 +203,7 @@ export function Customizer() {
                 size="sm"
                 onClick={() => resetSettings()}
               >
-                <RotateCcw className="me-1 -translate-x-1" />
+                <RotateCcw className="size-4 me-1 -translate-x-1" />
                 Reset
               </Button>
             </div>
