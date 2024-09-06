@@ -201,7 +201,10 @@ export function Customizer() {
               <Button
                 variant={"destructive"}
                 size="sm"
-                onClick={() => resetSettings()}
+                onClick={() => {
+                  setTheme("system");
+                  resetSettings();
+                }}
               >
                 <RotateCcw className="size-4 me-1 -translate-x-1" />
                 Reset
