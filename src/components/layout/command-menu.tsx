@@ -16,9 +16,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command";
 import { Keyboard } from "@/components/ui/keyboard";
+import { groupNavs } from "@/data/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CommandMenu({ ...props }: DialogProps) {
   const router = useRouter();
@@ -68,58 +69,48 @@ export function CommandMenu({ ...props }: DialogProps) {
         </Keyboard>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Links">
-            {docsConfig.mainNav
-              .filter((navitem) => !navitem.external)
-              .map((navItem) => (
-                <CommandItem
-                  key={navItem.href}
-                  value={navItem.title}
-                  onSelect={() => {
-                    runCommand(() => router.push(navItem.href as string));
-                  }}
-                >
-                  <File className="me-2 size-4" />
-                  {navItem.title}
-                </CommandItem>
-              ))}
-          </CommandGroup>
-          {docsConfig.sidebarNav.map((group) => (
-            <CommandGroup key={group.title} heading={group.title}>
-              {group.items.map((navItem) => (
-                <CommandItem
-                  key={navItem.href}
-                  value={navItem.title}
-                  onSelect={() => {
-                    runCommand(() => router.push(navItem.href as string));
-                  }}
-                >
-                  <div className="mr-2 flex h-4 w-4 items-center justify-center">
-                    <Circle className="size-3" />
-                  </div>
-                  {navItem.title}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ))}
-          <CommandSeparator />
-          <CommandGroup heading="Theme">
-            <CommandItem onSelect={() => runCommand(() => setTheme("light"))}>
-              <Sun className="me-2 size-4" />
-              Light
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme("dark"))}>
-              <MoonStar className="me-2 size-4" />
-              Dark
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => setTheme("system"))}>
-              <Laptop className="me-2 size-4" />
-              System
-            </CommandItem>
-          </CommandGroup>
+        <CommandInput placeholder="Search..." />
+        <CommandList className="overflow-hidden">
+          <ScrollArea className="h-[300px] max-h-[300px] px-1">
+            <CommandEmpty>No results found.</CommandEmpty>
+            {groupNavs.map((groupNav) => (
+              <CommandGroup key={groupNav.title} heading={groupNav.title}>
+                {groupNav.navs.map((navItem) => {
+                  if (navItem.children) {
+                    return navItem.children.map((nestedNavItem) => (
+                      <CommandItem
+                        key={nestedNavItem.href}
+                        value={nestedNavItem.title}
+                        onSelect={() => {
+                          runCommand(() =>
+                            router.push(nestedNavItem.href as string)
+                          );
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <navItem.icon className="me-2 size-4" />
+                        {navItem.title + " - " + nestedNavItem.title}
+                      </CommandItem>
+                    ));
+                  } else {
+                    return (
+                      <CommandItem
+                        key={navItem.href}
+                        value={navItem.title}
+                        onSelect={() => {
+                          runCommand(() => router.push(navItem.href as string));
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <navItem.icon className="me-2 size-4" />
+                        {navItem.title}
+                      </CommandItem>
+                    );
+                  }
+                })}
+              </CommandGroup>
+            ))}
+          </ScrollArea>
         </CommandList>
       </CommandDialog>
     </>

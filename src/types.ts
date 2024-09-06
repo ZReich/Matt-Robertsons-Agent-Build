@@ -12,4 +12,4 @@ interface IconProps extends React.SVGAttributes<SVGElement> {
   children?: never;
   color?: string;
 }
-export type Icon = IconProps | LucideIcon;
+export type Icon = React.ComponentType<IconProps> | LucideIcon;
