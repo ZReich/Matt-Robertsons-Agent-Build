@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import ShadboardLogo from "/public/images/logos/shadboard.svg";
 
 interface AuthProps extends React.HTMLAttributes<HTMLDivElement> {
-  imgSrc: string;
+  imgSrc?: string;
 }
 
 const Auth = React.forwardRef<HTMLDivElement, AuthProps>(

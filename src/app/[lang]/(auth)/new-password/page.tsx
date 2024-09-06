@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { Locale } from "@/configs/i18n";
+
 import { NewPasswordForm } from "./_components/new-password-form";
 import {
   Auth,
@@ -14,7 +16,11 @@ export const metadata: Metadata = {
   description: "Set new password",
 };
 
-export default function NewPasswordPage() {
+export default function NewPasswordPage({
+  params,
+}: {
+  params: { lang: Locale };
+}) {
   return (
     <Auth>
       <AuthHeader>
@@ -22,7 +28,7 @@ export default function NewPasswordPage() {
         <AuthDescription>Enter your new password</AuthDescription>
       </AuthHeader>
       <AuthForm>
-        <NewPasswordForm />
+        <NewPasswordForm locale={params.lang} />
       </AuthForm>
     </Auth>
   );

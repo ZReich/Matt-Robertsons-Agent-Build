@@ -9,7 +9,10 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
+import { getLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+
+import type { Locale } from "@/configs/i18n";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,10 +31,13 @@ const FormSchema = z.object({
 });
 
 interface ForgotPasswordFormProps
-  extends React.HTMLAttributes<HTMLFormElement> {}
+  extends React.HTMLAttributes<HTMLFormElement> {
+  locale: Locale;
+}
 
 export function ForgotPasswordForm({
   className,
+  locale,
   ...props
 }: ForgotPasswordFormProps) {
   const router = useRouter();
@@ -91,7 +97,10 @@ export function ForgotPasswordForm({
             Send instructions
           </Button>
         </div>
-        <Link href="/sign-in" className="-mt-4 text-center text-sm underline">
+        <Link
+          href={getLocalizedPathname("/sign-in", locale)}
+          className="-mt-4 text-center text-sm underline"
+        >
           Back to Sign in
         </Link>
       </form>

@@ -9,7 +9,10 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
+import { getLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+
+import { Locale } from "@/configs/i18n";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,9 +40,15 @@ const FormSchema = z
     path: ["confirmPassword"],
   });
 
-interface NewPasswordFormProps extends React.HTMLAttributes<HTMLFormElement> {}
+interface NewPasswordFormProps extends React.HTMLAttributes<HTMLFormElement> {
+  locale: Locale;
+}
 
-export function NewPasswordForm({ className, ...props }: NewPasswordFormProps) {
+export function NewPasswordForm({
+  className,
+  locale,
+  ...props
+}: NewPasswordFormProps) {
   const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -107,7 +116,10 @@ export function NewPasswordForm({ className, ...props }: NewPasswordFormProps) {
             Set new password
           </Button>
         </div>
-        <Link href="/sign-in" className="-mt-4 text-center text-sm underline">
+        <Link
+          href={getLocalizedPathname("/sign-in", locale)}
+          className="-mt-4 text-center text-sm underline"
+        >
           Back to Sign in
         </Link>
       </form>

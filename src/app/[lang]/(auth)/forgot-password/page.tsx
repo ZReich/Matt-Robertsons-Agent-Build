@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import type { Locale } from "@/configs/i18n";
+
 import { ForgotPasswordForm } from "./_components/forgot-password-form";
 import {
   Auth,
@@ -14,7 +16,11 @@ export const metadata: Metadata = {
   description: "Register instructions to reset your password",
 };
 
-export default function ForgotPasswordPage() {
+export default function ForgotPasswordPage({
+  params,
+}: {
+  params: { lang: Locale };
+}) {
   return (
     <Auth>
       <AuthHeader>
@@ -24,7 +30,7 @@ export default function ForgotPasswordPage() {
         </AuthDescription>
       </AuthHeader>
       <AuthForm>
-        <ForgotPasswordForm />
+        <ForgotPasswordForm locale={params.lang} />
       </AuthForm>
     </Auth>
   );

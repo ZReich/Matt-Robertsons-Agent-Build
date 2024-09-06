@@ -4,6 +4,9 @@ import { LayoutGrid, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { Direction } from "@/types";
+import { Locale } from "@/configs/i18n";
+
+import { getLocalizedPathname } from "@/lib/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav({ dir }: { dir: Direction }) {
+export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
   return (
     <DropdownMenu dir={dir}>
       <DropdownMenuTrigger asChild>
@@ -52,7 +55,7 @@ export function UserNav({ dir }: { dir: Direction }) {
         <DropdownMenuGroup>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href="/dashboard"
+              href={getLocalizedPathname("/dashboard", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2"
@@ -64,7 +67,7 @@ export function UserNav({ dir }: { dir: Direction }) {
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href="/account"
+              href={getLocalizedPathname("/account", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2"

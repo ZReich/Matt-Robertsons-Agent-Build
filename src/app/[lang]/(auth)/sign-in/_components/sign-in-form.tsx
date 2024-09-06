@@ -10,7 +10,10 @@ import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
+import { getLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+
+import { Locale } from "@/configs/i18n";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,9 +35,11 @@ const FormSchema = z.object({
   }),
 });
 
-interface SignInFormProps extends React.HTMLAttributes<HTMLFormElement> {}
+interface SignInFormProps extends React.HTMLAttributes<HTMLFormElement> {
+  locale: Locale;
+}
 
-export function SignInForm({ className, ...props }: SignInFormProps) {
+export function SignInForm({ className, locale, ...props }: SignInFormProps) {
   const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -107,7 +112,7 @@ export function SignInForm({ className, ...props }: SignInFormProps) {
                 <div className="flex items-center">
                   <FormLabel>Password</FormLabel>
                   <Link
-                    href="/forgot-password"
+                    href={getLocalizedPathname("/forgot-password", locale)}
                     className="ms-auto inline-block text-sm underline"
                   >
                     Forgot your password?
@@ -126,8 +131,11 @@ export function SignInForm({ className, ...props }: SignInFormProps) {
           </Button>
         </div>
         <div className="-mt-4 text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="underline">
+          Don&apos;t have an account?
+          <Link
+            href={getLocalizedPathname("/register", locale)}
+            className="underline"
+          >
             Sign up
           </Link>
         </div>
