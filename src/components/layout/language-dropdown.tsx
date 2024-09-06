@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
-import { GlobeIcon } from "@radix-ui/react-icons";
+import { Earth } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
@@ -58,7 +58,7 @@ export function LanguageDropdown({ dictionary }: { dictionary: Dictionary }) {
     <DropdownMenu dir={direction}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
-          <GlobeIcon aria-hidden />
+          <Earth className="size-4" aria-hidden />
           <span className="sr-only">
             {dictionary.navigation.language["select-language"]}
           </span>

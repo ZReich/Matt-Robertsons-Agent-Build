@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useTheme } from "next-themes";
-import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
+import { MoonStar, Sun } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
@@ -32,12 +32,12 @@ export function ModeDropdown({ dictionary }: { dictionary: Dictionary }) {
     <DropdownMenu dir={direction}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
-          <SunIcon
+          <Sun
             className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
             aria-hidden
           />
-          <MoonIcon
-            className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+          <MoonStar
+            className="absolute size-4 stroke-[1.5] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
             aria-hidden
           />
           <span className="sr-only">

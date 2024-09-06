@@ -1,4 +1,3 @@
-import { IconProps } from "@radix-ui/react-icons/dist/types";
 import { LucideIcon } from "lucide-react";
 
 export type Layout = "vertical" | "horizontal";
@@ -9,4 +8,8 @@ export type Orientation = "vertical" | "horizontal";
 
 export type Direction = "ltr" | "rtl";
 
-export type Icon = React.ComponentType<IconProps> | LucideIcon;
+interface IconProps extends React.SVGAttributes<SVGElement> {
+  children?: never;
+  color?: string;
+}
+export type Icon = IconProps | LucideIcon;

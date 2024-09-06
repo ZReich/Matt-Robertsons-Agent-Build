@@ -3,15 +3,15 @@
 import React from "react";
 import { useTheme } from "next-themes";
 import {
-  CheckIcon,
-  MoonIcon,
-  Cross2Icon,
-  ResetIcon,
-  SunIcon,
-  GearIcon,
-  BorderLeftIcon,
-  BorderTopIcon,
-} from "@radix-ui/react-icons";
+  Sun,
+  MoonStar,
+  Check,
+  X,
+  RotateCcw,
+  Settings,
+  AlignStartHorizontal,
+  AlignStartVertical,
+} from "lucide-react";
 
 import { baseColors } from "@/configs/base-colors";
 
@@ -38,7 +38,7 @@ export function Customizer() {
     <Sheet>
       <SheetTrigger className="fixed bottom-10 end-0" asChild>
         <Button size="icon" className="rounded-e-none">
-          <GearIcon className="size-4 animate-spin" />
+          <Settings className="size-4 animate-spin" />
           <span className="sr-only">Config settings</span>
         </Button>
       </SheetTrigger>
@@ -48,7 +48,7 @@ export function Customizer() {
         >
           <ScrollArea className="h-full px-6">
             <SheetClose className="absolute end-4 top-4 me-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-              <Cross2Icon className="size-4" />
+              <X className="size-4" />
               <span className="sr-only">Close</span>
             </SheetClose>
             <div className="flex flex-1 flex-col space-y-4">
@@ -97,7 +97,7 @@ export function Customizer() {
                           )}
                         >
                           {isActive && (
-                            <CheckIcon className="h-4 w-4 text-white" />
+                            <Check className="h-4 w-4 text-primary-foreground" />
                           )}
                         </span>
                         {theme.label}
@@ -143,7 +143,7 @@ export function Customizer() {
                       resolvedTheme === "light" && "border-2 border-primary"
                     )}
                   >
-                    <SunIcon className="me-1 -translate-x-1" />
+                    <Sun className="me-1 -translate-x-1" />
                     Light
                   </Button>
                   <Button
@@ -154,7 +154,7 @@ export function Customizer() {
                       resolvedTheme === "dark" && "border-2 border-primary"
                     )}
                   >
-                    <MoonIcon className="me-1 -translate-x-1" />
+                    <MoonStar className="me-1 -translate-x-1" />
                     Dark
                   </Button>
                 </div>
@@ -176,7 +176,7 @@ export function Customizer() {
                         "border-2 border-primary"
                     )}
                   >
-                    <BorderTopIcon className="me-1 -translate-x-1" />
+                    <AlignStartHorizontal className="me-1 -translate-x-1" />
                     Horizontal
                   </Button>
                   <Button
@@ -193,7 +193,7 @@ export function Customizer() {
                         "border-2 border-primary"
                     )}
                   >
-                    <BorderLeftIcon className="me-1 -translate-x-1" />
+                    <AlignStartVertical className="me-1 -translate-x-1" />
                     Vertical
                   </Button>
                 </div>
@@ -203,7 +203,7 @@ export function Customizer() {
                 size="sm"
                 onClick={() => resetSettings()}
               >
-                <ResetIcon className="me-1 -translate-x-1" />
+                <RotateCcw className="me-1 -translate-x-1" />
                 Reset
               </Button>
             </div>

@@ -8,7 +8,6 @@ import { z } from "zod";
 // import { signIn, type SignInResponse } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
 

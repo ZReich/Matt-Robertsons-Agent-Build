@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDownIcon, DotIcon } from "@radix-ui/react-icons";
+import { ChevronDown, Circle } from "lucide-react";
 
 import type { Nav as NavType } from "@/data/navigation";
 import { Direction } from "@/types";
@@ -49,7 +49,7 @@ export function Nav({ navs, dir, isRoot = true }: NavProps) {
                   {isRoot ? (
                     <nav.icon className="size-4" />
                   ) : (
-                    <DotIcon className="size-4" />
+                    <Circle className="size-2" />
                   )}
                   {nav.title}
                 </div>
@@ -59,7 +59,7 @@ export function Nav({ navs, dir, isRoot = true }: NavProps) {
                       {nav.label}
                     </Badge>
                   )}
-                  <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                  <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform duration-200" />
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-1 ms-2 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
@@ -85,7 +85,7 @@ export function Nav({ navs, dir, isRoot = true }: NavProps) {
             {isRoot ? (
               <nav.icon className="size-4" />
             ) : (
-              <DotIcon className="size-4" />
+              <Circle className="size-2" />
             )}
             {nav.title}
             {nav.label && (
