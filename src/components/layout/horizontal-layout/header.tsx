@@ -25,6 +25,7 @@ import { UserNav } from "@/components/layout/user-nav";
 import { Nav } from "./nav";
 
 import ShadboardLogo from "/public/images/logos/shadboard.svg";
+import { Separator } from "@/components/ui/separator";
 
 export function Header({ dictionary }: { dictionary: Dictionary }) {
   const params = useParams();
@@ -34,7 +35,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background border-b-[1px] border-accent">
-      <div className="container hidden justify-between items-center px-6 py-1 border-0 border-b md:flex">
+      <div className="container hidden justify-between items-center px-6 py-1 md:flex">
         <Menubar className="shadow-none border-0" dir={dir}>
           {groupNavs.map((group, index) => (
             <MenubarMenu key={index}>
@@ -49,6 +50,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
         </Menubar>
         <CommandMenu />
       </div>
+      <Separator className="bg-accent h-[0.5px]" />
       <div className="container flex h-14 justify-between items-center gap-4">
         <MobileSidebarNav />
         <Link
