@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutGrid, LogOut, User } from "lucide-react";
+import { LayoutGrid, LogOut, User, UserCog } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -52,7 +52,7 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
           </dl>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
+        <DropdownMenuGroup className="max-w-48">
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
               href={getLocalizedPathname("/dashboard", locale)}
@@ -75,6 +75,18 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
             >
               <User className="size-4 text-muted-foreground" />
               Account
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="hover:cursor-pointer" asChild>
+            <Link
+              href={getLocalizedPathname("/account/settings", locale)}
+              className={cn(
+                buttonVariants({ variant: "ghost" }),
+                "w-full justify-start gap-2"
+              )}
+            >
+              <UserCog className="size-4 text-muted-foreground" />
+              Settings
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
