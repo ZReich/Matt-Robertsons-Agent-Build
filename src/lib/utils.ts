@@ -37,3 +37,17 @@ export function shuffleArray(array: any[]) {
 }
 
 export const isEven = (num: number) => num % 2 === 0;
+
+export const getCreditCardBrandName = (number: string) => {
+  const re = {
+    visa: /^4/,
+    mastercard: /^5[1-5]/,
+    amex: /^3[47]/,
+    discover: /^6(?:011|5)/,
+  };
+
+  for (const [type, regex] of Object.entries(re)) {
+    if (regex.test(number)) return type;
+  }
+  return "unknown";
+};

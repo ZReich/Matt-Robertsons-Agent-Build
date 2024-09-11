@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="w-full flex items-center bg-background p-4">
+    <footer className="container flex items-center bg-background py-4">
       <p className="text-xs md:text-sm leading-loose text-muted-foreground text-left">
         Built on top of{" "}
         <Link

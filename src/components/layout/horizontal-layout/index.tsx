@@ -14,7 +14,7 @@ export default function HorizontalLayout({
     <div className="min-h-screen w-full flex bg-background">
       <div className="flex-1">
         <Header dictionary={dictionary} />
-        <main>{children}</main>
+        <main className="bg-muted/40">{children}</main>
         <Footer />
       </div>
     </div>
