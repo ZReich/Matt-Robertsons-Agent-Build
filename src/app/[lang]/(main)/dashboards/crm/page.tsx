@@ -9,7 +9,7 @@ import { TopSalesRepresentatives } from "./_components/top-sales-representatives
 
 export default function CRMPage() {
   return (
-    <div className="grid gap-4 p-4 md:grid-cols-2">
+    <div className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
       <SalesPipeline />
       <TopSalesRepresentatives />
