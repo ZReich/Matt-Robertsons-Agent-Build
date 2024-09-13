@@ -36,7 +36,7 @@ export function Customizer() {
 
   return (
     <Sheet>
-      <SheetTrigger className="fixed bottom-10 end-0" asChild>
+      <SheetTrigger className="fixed bottom-10 end-0 z-50" asChild>
         <Button size="icon" className="rounded-e-none">
           <Settings className="size-4" />
           <span className="sr-only">Config settings</span>

@@ -51,3 +51,11 @@ export const getCreditCardBrandName = (number: string) => {
   }
   return "unknown";
 };
+
+export function remToPx(rem: number) {
+  // Get the root font size (default is 16px if not set otherwise)
+  const rootFontSize = parseFloat(
+    getComputedStyle(document.documentElement).fontSize
+  );
+  return rem * rootFontSize;
+}
