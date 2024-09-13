@@ -54,7 +54,7 @@ export function CustomerSatisfaction() {
       <CardContent>
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-[200px] -mt-1"
+          className="mx-auto aspect-square h-[200px]"
         >
           <RadialBarChart
             accessibilityLayer

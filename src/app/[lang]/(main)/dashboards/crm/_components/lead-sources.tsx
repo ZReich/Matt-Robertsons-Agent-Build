@@ -34,7 +34,7 @@ export function LeadSources() {
         <CardTitle>Lead Sources</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+        <ChartContainer config={chartConfig} className="h-[250px] w-full">
           <PieChart accessibilityLayer>
             <Pie
               data={leadSourcesData}
