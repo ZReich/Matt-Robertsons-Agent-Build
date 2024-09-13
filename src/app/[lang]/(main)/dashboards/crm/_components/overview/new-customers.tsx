@@ -18,7 +18,7 @@ export function NewCustomers({ overviewData }: { overviewData: OverviewType }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="w-max">Revenue Growth</CardTitle>
+        <CardTitle className="w-max">New Customers</CardTitle>
         <CardDescription>Current Period</CardDescription>
       </CardHeader>
       <CardContent className="space-y-1">
