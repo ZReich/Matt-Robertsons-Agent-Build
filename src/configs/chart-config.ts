@@ -5,5 +5,4 @@ export const chartConfig = {
     label: "Value",
     color: "hsl(var(--chart-1))",
   },
-  
 } satisfies ChartConfig;

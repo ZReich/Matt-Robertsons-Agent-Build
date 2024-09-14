@@ -17,7 +17,7 @@ export function RevenueGrowth({
 }: {
   overviewData: OverviewType;
 }) {
-  const isPositiveGrowing = overviewData.revenue_growth.current_period > 0;
+  const isPositiveGrowing = overviewData.revenue_growth.current_period >= 0;
 
   return (
     <Card>

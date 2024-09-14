@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 
 export function NewCustomers({ overviewData }: { overviewData: OverviewType }) {
-  const isPositiveGrowing = overviewData.new_customers.current_period > 0;
+  const isPositiveGrowing = overviewData.new_customers.current_period >= 0;
 
   return (
     <Card>

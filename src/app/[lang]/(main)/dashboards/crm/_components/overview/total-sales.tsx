@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export function TotalSales({ overviewData }: { overviewData: OverviewType }) {
-  const isPositiveGrowing = overviewData.total_sales.growth_percentage > 0;
+  const isPositiveGrowing = overviewData.total_sales.growth_percentage >= 0;
 
   return (
     <Card>
