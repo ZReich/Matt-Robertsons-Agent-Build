@@ -1,10 +1,10 @@
 import { z } from "zod";
 import {
-  ArrowUpFromDot,
   FileText,
   HandCoins,
   Hourglass,
   Lightbulb,
+  MousePointerIcon,
   Target,
   User,
   Users,
@@ -66,7 +66,7 @@ export async function Overview() {
         data={overviewData.bounce_rate}
         title="Bounce Rate"
         description="Last month"
-        icon={ArrowUpFromDot}
+        icon={MousePointerIcon}
         formatStyle="percent"
       />
       <OverviewCard

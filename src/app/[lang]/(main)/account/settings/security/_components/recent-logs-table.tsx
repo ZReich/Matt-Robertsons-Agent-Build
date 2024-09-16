@@ -72,7 +72,7 @@ export function RecentLogsTable() {
             <TableCell>{log.device}</TableCell>
             <TableCell>{log.location}</TableCell>
             <TableCell>
-              {format(new Date(log.created_at), "dd/mm/yyyy hh:mm a")}
+              {format(new Date(log.created_at), "dd/MM/yyyy hh:mm a")}
             </TableCell>
           </TableRow>
         ))}

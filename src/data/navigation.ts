@@ -47,16 +47,6 @@ export const groupNavs: GroupNav[] = [
         label: "2 New",
         icon: ShoppingCart,
         href: "/dashboards/ecommerce",
-        children: [
-          {
-            title: "Products",
-            href: "/dashboards/ecommerce/products",
-          },
-          {
-            title: "Orders",
-            href: "/dashboards/ecommerce/orders",
-          },
-        ],
       },
     ],
   },
