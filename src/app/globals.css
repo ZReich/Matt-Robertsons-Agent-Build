@@ -20,6 +20,8 @@
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 10% 3.9%;
@@ -29,6 +31,35 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    /* Calendar vars */
+    --fc-small-font-size: 0.85em;
+    --fc-page-bg-color: hsl(var(--border));
+    --fc-neutral-bg-color: hsl(var(--border));
+    --fc-neutral-text-color: hsl(var(--accent-foreground));
+    --fc-border-color: hsl(var(--border));
+    --fc-button-text-color: hsl(var(--background));
+    --fc-button-bg-color: hsl(var(--primary));
+    --fc-button-border-color: hsl(var(--primary));
+    --fc-button-hover-bg-color: hsl(var(--primary) / 0.8);
+    --fc-button-hover-border-color: hsl(var(--primary));
+    --fc-button-active-bg-color: hsl(var(--primary) / 0.8);
+    --fc-button-active-border-color: hsl(var(--primary) / 0);
+    --fc-event-bg-color: hsl(var(--primary));
+    --fc-event-border-color: hsl(var(--primary));
+    --fc-event-text-color: hsl(var(--background));
+    --fc-event-selected-overlay-color: hsl(var(--muted));
+    --fc-more-link-bg-color: hsl(var(--muted));
+    --fc-more-link-text-color: inherit;
+    --fc-event-resizer-thickness: 8px;
+    --fc-event-resizer-dot-total-width: 8px;
+    --fc-event-resizer-dot-border-width: var(--radius);
+    --fc-non-business-color: rgba(215, 215, 215, 0.3);
+    --fc-bg-event-color: hsl(var(--success));
+    --fc-bg-event-opacity: 0.3;
+    --fc-highlight-color: rgba(188, 232, 241, 0.3);
+    --fc-today-bg-color: hsl(var(--primary) / 0.15);
+    --fc-now-indicator-color: hsl(var(--destructive));
   }
 
   .dark {
@@ -48,6 +79,8 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
+    --success: 142.4 71.8% 29.2%;
+    --success-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
