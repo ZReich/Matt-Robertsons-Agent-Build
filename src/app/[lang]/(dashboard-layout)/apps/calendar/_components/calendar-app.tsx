@@ -57,7 +57,7 @@ export function CalendarApp({ events }: { events: Event[] }) {
   };
 
   return (
-    <>
+    <div className="p-4">
       <Calendar
         ref={calendarRef}
         calendarState={calendarState}
@@ -79,6 +79,6 @@ export function CalendarApp({ events }: { events: Event[] }) {
         eventSidebarIsOpen={eventSidebarIsOpen}
         setEventSidebarIsOpen={setEventSidebarIsOpen}
       />
-    </>
+    </div>
   );
 }

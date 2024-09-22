@@ -86,7 +86,7 @@ export const Calendar = forwardRef<FullCalendar, CalendarProps>(
     };
 
     return (
-      <Card className="p-4 m-4">
+      <Card className="p-4">
         <CalendarHeader
           calendarApi={calendarApi}
           setEventSidebarIsOpen={setEventSidebarIsOpen}
