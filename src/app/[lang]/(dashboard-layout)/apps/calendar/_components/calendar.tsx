@@ -114,7 +114,7 @@ export const Calendar = forwardRef<FullCalendar, CalendarProps>(
               })
             )}
             eventClassNames={() => [
-              "h-[1.62rem] pt-px rounded-md",
+              "h-[1.62rem] pt-px px-1 rounded-md",
               "[&_td]:hover:!bg-accent/60",
             ]}
             headerToolbar={false}

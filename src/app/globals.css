@@ -33,7 +33,7 @@
     --chart-5: 27 87% 67%;
 
     /* Calendar vars */
-    --fc-small-font-size: 0.85em;
+    --fc-small-font-size: 0.875em;
     --fc-page-bg-color: hsl(var(--border));
     --fc-neutral-bg-color: hsl(var(--border));
     --fc-neutral-text-color: hsl(var(--accent-foreground));
