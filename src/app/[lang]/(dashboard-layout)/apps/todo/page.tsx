@@ -4,7 +4,7 @@ import { columns } from "./_components/columns";
 import { DataTable, type ToDoType } from "./_components/data-table";
 
 export default async function ToDoPage() {
-  const data: ToDoType[] = await getTodosdata();
+  const toDos: ToDoType[] = await getTodosdata();
 
-  return <DataTable columns={columns} data={data} />;
+  return <DataTable columns={columns} toDos={toDos} />;
 }

@@ -33,9 +33,9 @@ export const columns: ColumnDef<ToDoType>[] = [
   },
   {
     accessorKey: "title",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Title" />;
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
     cell: ({ row }) => {
       const label = labels.find((label) => label.value === row.original.label);
 
@@ -51,9 +51,9 @@ export const columns: ColumnDef<ToDoType>[] = [
   },
   {
     accessorKey: "status",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Status" />;
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => {
       const status = statuses.find(
         (status) => status.value === row.getValue("status")
@@ -66,7 +66,7 @@ export const columns: ColumnDef<ToDoType>[] = [
       return (
         <div className="flex w-[100px] items-center">
           {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+            <status.icon className="me-2 h-4 w-4 text-muted-foreground" />
           )}
           <span>{status.label}</span>
         </div>
@@ -78,9 +78,9 @@ export const columns: ColumnDef<ToDoType>[] = [
   },
   {
     accessorKey: "priority",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Priority" />;
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Priority" />
+    ),
     cell: ({ row }) => {
       const priority = priorities.find(
         (priority) => priority.value === row.getValue("priority")
@@ -105,9 +105,9 @@ export const columns: ColumnDef<ToDoType>[] = [
   },
   {
     accessorKey: "due_date",
-    header: ({ column }) => {
-      return <DataTableColumnHeader column={column} title="Due Date" />;
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Due Date" />
+    ),
     cell: ({ row }) => {
       const dueDate = row.getValue("due_date");
       if (dueDate instanceof Date) {
@@ -117,6 +117,7 @@ export const columns: ColumnDef<ToDoType>[] = [
   },
   {
     id: "actions",
+    header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];

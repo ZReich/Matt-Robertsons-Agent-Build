@@ -1,17 +1,22 @@
 "use client";
 
-import { X } from "lucide-react";
+import { CirclePlus, X } from "lucide-react";
 import { Table } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableViewOptions } from "./data-table-view-options";
 
+import type { ToDoType } from "./data-table";
+
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { Icon } from "@/types";
+import { DataTableAddSidebar } from "./data-table-add-sidebar";
 
-interface DataTableToolbarProps<TData> {
-  table: Table<TData>;
+interface DataTableToolbarProps<TTable> {
+  table: Table<TTable>;
+  toDos: ToDoType[];
+  setToDos: (value: ToDoType[]) => void;
   priorities: {
     value: string;
     label: string;
@@ -24,11 +29,13 @@ interface DataTableToolbarProps<TData> {
   }[];
 }
 
-export function DataTableToolbar<TData>({
+export function DataTableToolbar<TTable>({
   table,
+  toDos,
+  setToDos,
   priorities,
   statuses,
-}: DataTableToolbarProps<TData>) {
+}: DataTableToolbarProps<TTable>) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
@@ -42,6 +49,7 @@ export function DataTableToolbar<TData>({
         className="h-8 max-w-xs"
       />
       <div className="flex items-center gap-2">
+        <DataTableAddSidebar toDos={toDos} setToDos={setToDos} />
         <DataTableViewOptions table={table} />
         {table.getColumn("status") && (
           <DataTableFacetedFilter

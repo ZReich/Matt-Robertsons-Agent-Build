@@ -34,7 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination";
-import { DataTableToolbar } from "@/components/ui/data-table/data-table-toolbar";
+import { DataTableToolbar } from "@/app/[lang]/(dashboard-layout)/apps/todo/_components/data-table-toolbar";
 
 export const labels = [
   {
@@ -99,9 +99,17 @@ export const priorities = [
 
 export const ToDoSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  label: z.string(),
+  title: z
+    .string()
+    .min(2, { message: "Title must contain at least 2 characters" }),
+  description: z
+    .string()
+    .min(2, { message: "Description must contain at least 2 characters" })
+    .optional(),
+  label: z
+    .string()
+    .min(2, { message: "Label must contain at least 2 characters" })
+    .optional(),
   status: z.enum(["backlog", "todo", "in progress", "done", "canceled"]),
   priority: z.enum(["low", "medium", "high"]),
   due_date: z.date().optional(),
@@ -111,15 +119,13 @@ export const ToDoSchema = z.object({
 
 export type ToDoType = z.infer<typeof ToDoSchema>;
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface DataTableProps {
+  columns: ColumnDef<ToDoType, unknown>[];
+  toDos: ToDoType[];
 }
 
-export function DataTable<TData extends ToDoType, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export function DataTable({ columns, toDos: initialData }: DataTableProps) {
+  const [toDos, setToDos] = React.useState<ToDoType[]>(initialData);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -129,7 +135,7 @@ export function DataTable<TData extends ToDoType, TValue>({
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
-    data,
+    data: toDos,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -151,6 +157,8 @@ export function DataTable<TData extends ToDoType, TValue>({
     <div className="container">
       <DataTableToolbar
         table={table}
+        toDos={toDos}
+        setToDos={setToDos}
         statuses={statuses}
         priorities={priorities}
       />
