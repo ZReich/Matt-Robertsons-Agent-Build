@@ -1,4 +1,4 @@
-import { Category } from "./app/[lang]/(dashboard-layout)/apps/calendar/types";
+import { Category } from "./types";
 
 export const categories: Category[] = [
   "Business",

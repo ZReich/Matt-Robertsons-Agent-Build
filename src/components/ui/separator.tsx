@@ -29,29 +29,22 @@ const Separator = React.forwardRef<
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 const SeparatorWithText = React.forwardRef<
-  React.ElementRef<typeof Separator>,
-  SeparatorWithTextProps
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
 >(
   (
-    {
-      className,
-      orientation = "horizontal",
-      decorative = true,
-      children,
-      ...props
-    },
+    { className, orientation = "horizontal", decorative = true, children },
     ref
   ) => (
     <div
+      ref={ref}
       className={cn(
         "flex justify-between items-center",
         orientation === "horizontal" ? "h-full" : "flex-col h-full",
         className
       )}
-      {...props}
     >
       <Separator
-        ref={ref}
         decorative={decorative}
         orientation={orientation}
         className="shrink"

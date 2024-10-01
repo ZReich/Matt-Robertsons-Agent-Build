@@ -4,7 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { cn } from "@/lib/utils";
+
 import { toast } from "@/hooks/use-toast";
+
+import type {
+  Plan,
+  Subscription,
+} from "../actions/get-plans-and-subscriptions-data";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -12,38 +20,31 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
   FormDescription,
 } from "@/components/ui/form";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Briefcase,
-  Users,
-  FileText,
-  BarChart2,
-  Check,
-  ChevronRight,
-} from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 
 const FormSchema = z.object({
-  plan: z.enum(["Starter", "Business", "Enterprise"], {
-    required_error: "You need to select a plan option.",
-  }),
+  plan: z.string(),
   interval: z.boolean().default(false).optional(),
 });
 
-export function ChangePlanForm({ plans, subscriptions }) {
+export function ChangePlanForm({
+  plans,
+  subscriptions,
+}: {
+  plans: Plan[];
+  subscriptions: Subscription[];
+}) {
   const lastSubscribedPlan = plans.find(
     (p) => p.id === subscriptions[0].plan_id
   );
@@ -51,7 +52,7 @@ export function ChangePlanForm({ plans, subscriptions }) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      plan: lastSubscribedPlan.name,
+      plan: lastSubscribedPlan?.name,
       interval: subscriptions[0].interval === "yearly",
     },
   });

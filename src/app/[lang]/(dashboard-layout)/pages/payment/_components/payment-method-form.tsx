@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,13 +8,7 @@ import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
 
 import { getCreditCardBrandName } from "@/lib/utils";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -27,11 +20,10 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { SeparatorWithText } from "@/components/ui/separator";
-import { type CardType } from "./payment";
+import { type CardType } from "../actions/getSavedCards";
 
 const FormSchema = z.object({
   payment_option: z.enum(["card", "bank"]).optional(),

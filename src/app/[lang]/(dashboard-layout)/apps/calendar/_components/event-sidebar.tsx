@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import { CalendarApi } from "@fullcalendar/core/index.js";
 
+import { categories } from "../constants";
+
 import { cn } from "@/lib/utils";
 
-import { CalendarState, Event } from "@/types";
+import type { CalendarState, Category, Event } from "../types";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -57,14 +59,10 @@ const FormSchema = z.object({
   description: z.string().optional(),
   start: z.date().nullable(),
   end: z.date().nullable(),
-  category: z.enum([
-    "Business",
-    "Personal",
-    "Family",
-    "Holiday",
-    "Health",
-    "Miscellaneous",
-  ]),
+  category: z.custom<Category>(
+    (value) => categories.some((category) => category === value),
+    { message: "Invalid label" }
+  ),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -165,13 +163,7 @@ export function EventSidebar({
   }
 
   return (
-    <Sheet
-      open={eventSidebarIsOpen}
-      onOpenChange={() => {
-        handleSelectEvent(undefined);
-        handleSidebarClose();
-      }}
-    >
+    <Sheet open={eventSidebarIsOpen} onOpenChange={() => handleSidebarClose()}>
       <SheetContent className="p-0">
         <ScrollArea className="h-full p-4">
           <SheetHeader>

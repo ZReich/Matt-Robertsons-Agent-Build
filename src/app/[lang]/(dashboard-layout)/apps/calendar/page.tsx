@@ -1,7 +1,9 @@
-import { events } from "@/data/calendar-events";
+import { getEventsData } from "./actions/get-calendar-events-data";
 
 import { CalendarApp } from "./_components/calendar-app";
 
-export default function CalendarPage() {
-  return <CalendarApp events={events} />;
+export default async function CalendarPage() {
+  const eventsData = await getEventsData();
+
+  return <CalendarApp events={eventsData} />;
 }

@@ -1,8 +1,8 @@
 import { Filter } from "lucide-react";
 
-import { categories } from "@/constants";
+import { categories } from "@/app/[lang]/(dashboard-layout)/apps/calendar/constants";
 
-import { CalendarState, Category } from "@/types";
+import { CalendarState, Category } from "../types";
 
 import {
   DropdownMenu,

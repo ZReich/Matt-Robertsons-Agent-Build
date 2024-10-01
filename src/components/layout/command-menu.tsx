@@ -3,10 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { type DialogProps } from "@radix-ui/react-dialog";
-import { Sun, MoonStar, Laptop, File, Circle } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { docsConfig } from "@/configs/docs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +22,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export function CommandMenu({ ...props }: DialogProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
-  const { setTheme } = useTheme();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {

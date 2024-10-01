@@ -1,5 +1,3 @@
-import { events } from "@/data/calendar-events";
-
 import type { CalendarAction, CalendarState, Category, Event } from "../types";
 
 export function calendarReducer(
@@ -55,7 +53,7 @@ export function calendarReducer(
         tempSelectedCategories.push(action.category as Category);
       }
 
-      const tempSelectedEvents = events.filter((event) =>
+      const tempSelectedEvents = calendarState.events.filter((event) =>
         tempSelectedCategories.includes(
           event.extendedProps.category as Category
         )
@@ -77,7 +75,7 @@ export function calendarReducer(
         "Health",
         "Miscellaneous",
       ];
-      let tempEvents = events;
+      let tempEvents = calendarState.events;
 
       if (!action.isSelectAllCategories) {
         tempSelectedCategories = [];

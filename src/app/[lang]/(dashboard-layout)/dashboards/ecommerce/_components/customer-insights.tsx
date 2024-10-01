@@ -2,24 +2,8 @@ import { z } from "zod";
 
 import { getCustomerInsightsData } from "../_actions/get-customer-insights-data";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { CustomerInsightsChart } from "./charts/customer-insights-chart";
-import {
-  Users,
-  UserPlus,
-  Repeat,
-  Crown,
-  ShoppingBag,
-  UserCheck,
-  HandCoins,
-} from "lucide-react";
-import type { Icon } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, UserPlus, Crown, UserCheck } from "lucide-react";
 
 export const CustomerInsightsSchema = z.object({
   total_customers: z.number().nonnegative(),
@@ -65,7 +49,17 @@ export async function CustomerInsights() {
   );
 }
 
-function CustomerInsightsCard({ label, value, icon: Icon }) {
+interface CustomerInsightsCardProps {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+}
+
+function CustomerInsightsCard({
+  label,
+  value,
+  icon: Icon,
+}: CustomerInsightsCardProps) {
   return (
     <div className="relative rounded-lg border bg-card text-card-foreground p-6">
       <h4>{label}</h4>

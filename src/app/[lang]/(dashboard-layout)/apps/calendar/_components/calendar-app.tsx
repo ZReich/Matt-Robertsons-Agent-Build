@@ -4,11 +4,11 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { CalendarApi } from "@fullcalendar/core/index.js";
 import FullCalendar from "@fullcalendar/react";
 
-import { categories } from "@/constants";
+import { categories } from "../constants";
 
-import { calendarReducer } from "@/reducers/calendar-reducer";
+import { calendarReducer } from "../reducers/calendar-reducer";
 
-import type { Category, Event } from "@/types";
+import type { Category, Event } from "../types";
 
 import { Calendar } from "./calendar";
 import { EventSidebar } from "./event-sidebar";

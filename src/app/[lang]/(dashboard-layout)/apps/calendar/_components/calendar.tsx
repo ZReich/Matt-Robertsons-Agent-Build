@@ -13,9 +13,9 @@ import {
 } from "@fullcalendar/core/index.js";
 import { EventImpl } from "@fullcalendar/core/internal";
 
-import { initialView } from "@/constants";
+import { initialView } from "@/app/[lang]/(dashboard-layout)/apps/calendar/constants";
 
-import { Category, CalendarState, Event } from "@/types";
+import { Category, CalendarState, Event } from "../types";
 
 import { Card } from "@/components/ui/card";
 import { CalendarHeader } from "./calendar-header";

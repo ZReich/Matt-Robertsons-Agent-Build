@@ -2,9 +2,9 @@ import { useState } from "react";
 import { CalendarApi } from "@fullcalendar/core/index.js";
 import { CalendarPlus, ChevronLeft, ChevronRight } from "lucide-react";
 
-import { initialView } from "@/constants";
+import { initialView } from "@/app/[lang]/(dashboard-layout)/apps/calendar/constants";
 
-import { CalendarState, Category } from "@/types";
+import { CalendarState, Category } from "../types";
 
 import { Button } from "@/components/ui/button";
 import { EventFilters } from "./event-filters";
