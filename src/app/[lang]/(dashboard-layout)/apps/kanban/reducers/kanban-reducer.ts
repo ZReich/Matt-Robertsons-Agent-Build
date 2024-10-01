@@ -8,7 +8,7 @@ export const KanbanReducer = (
     case "addColumn": {
       const newColumn: ColumnType = {
         ...action.column,
-        id: `column-${state.columns.length}`,
+        id: crypto.randomUUID(),
         order: state.columns.length,
         tasks: [],
       };
@@ -34,18 +34,13 @@ export const KanbanReducer = (
     }
 
     case "addTask": {
-      const totalTasksCount = state.columns.reduce(
-        (count, column) => count + column.tasks.length,
-        0
-      );
-
       return {
         ...state,
         columns: state.columns.map((column) => {
           if (column.id === action.columnId) {
             const newTask = {
               ...action.task,
-              id: `task-${totalTasksCount}`,
+              id: crypto.randomUUID(),
               column_id: action.columnId,
               order: column.tasks.length,
             };
