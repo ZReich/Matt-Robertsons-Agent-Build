@@ -428,7 +428,7 @@ export function KanbanUpdateTaskSidebar() {
                             <img
                               src={attachment.url}
                               alt={attachment.name}
-                              className="size-20 mt-2 rounded-md"
+                              className="size-20 mt-2 object-cover rounded-md"
                             />
                           ) : (
                             <div className="size-20 flex flex-col justify-center items-center p-2">
