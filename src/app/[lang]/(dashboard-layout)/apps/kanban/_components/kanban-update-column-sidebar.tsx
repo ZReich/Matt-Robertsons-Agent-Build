@@ -96,7 +96,7 @@ export function KanbanUpdateColumnSidebar() {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Event title" {...field} />
+                      <Input placeholder="Column title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

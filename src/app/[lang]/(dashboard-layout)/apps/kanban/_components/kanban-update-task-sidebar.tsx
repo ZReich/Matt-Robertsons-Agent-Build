@@ -230,7 +230,7 @@ export function KanbanUpdateTaskSidebar() {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Event title" {...field} />
+                      <Input placeholder="Task title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
