@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Calendar,
   ListTodo,
+  Grid2x2,
 } from "lucide-react";
 
 import { Icon } from "@/types";
@@ -97,6 +98,11 @@ export const groupNavs: GroupNav[] = [
         title: "Calendar",
         icon: Calendar,
         href: "/apps/calendar",
+      },
+      {
+        title: "Kanban",
+        icon: Grid2x2,
+        href: "/apps/kanban",
       },
       {
         title: "Todo",

@@ -29,7 +29,7 @@ export function SidebarContent() {
         <ShadboardLogo className="size-6" aira-hidden="true" />
         Shadboard
       </Link>
-      <ScrollArea className="h-full -mx-5 px-2.5" dir={dir}>
+      <ScrollArea className="h-full -mx-5 p-2.5" dir={dir}>
         {groupNavs.map((group, index) => (
           <div className="py-2" key={index}>
             {group.title && (
