@@ -6,8 +6,6 @@ import { GripVertical, MessageCircleMore, Paperclip } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { useKanbanContext } from "../hooks/use-kanban-context";
-
 import type { TaskType } from "../types";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -29,21 +27,13 @@ interface KanbanTaskCardProps {
 }
 
 export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
-  const { teamMembersData } = useKanbanContext();
-
-  const populatedAssigned = React.useMemo(() => {
-    return teamMembersData.filter((member) =>
-      task.assigned.includes(member.id)
-    );
-  }, [teamMembersData, task.assigned]);
-
   const avatars = React.useMemo(() => {
-    return populatedAssigned.map((member) => ({
+    return task.assigned.map((member) => ({
       src: member.avatar,
       alt: member.full_name,
       href: `/profile/${member.username}`,
     }));
-  }, [populatedAssigned]);
+  }, [task.assigned]);
 
   const imageAttachment = task.attachments.find((attachment) =>
     attachment.type.includes("image")

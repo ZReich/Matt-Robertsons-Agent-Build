@@ -4,12 +4,7 @@ import * as React from "react";
 
 import { KanbanReducer } from "../reducers/kanban-reducer";
 
-import type {
-  ColumnType,
-  KanbanContextType,
-  MemberType,
-  TaskType,
-} from "../types";
+import type { ColumnType, KanbanContextType, TaskType } from "../types";
 
 export const KanbanContext = React.createContext<KanbanContextType | undefined>(
   undefined
@@ -17,15 +12,10 @@ export const KanbanContext = React.createContext<KanbanContextType | undefined>(
 
 interface KanbanProviderProps {
   kanbanData: ColumnType[];
-  teamMembersData: MemberType[];
   children: React.ReactNode;
 }
 
-export function KanbanProvider({
-  kanbanData,
-  teamMembersData,
-  children,
-}: KanbanProviderProps) {
+export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   const [kanbanState, dispatch] = React.useReducer(KanbanReducer, {
     columns: kanbanData,
     selectedColumn: undefined,
@@ -113,7 +103,6 @@ export function KanbanProvider({
     <KanbanContext.Provider
       value={{
         kanbanState,
-        teamMembersData,
         kanbanAddTaskSidebarIsOpen,
         setKanbanAddTaskSidebarIsOpen,
         kanbanUpdateTaskSidebarIsOpen,

@@ -13,7 +13,38 @@ const kanbanData: ColumnType[] = [
         title: "Research Project",
         description: "Conduct initial research on market trends.",
         label: "Research",
-        assigned: ["member-0", "member-1", "member-2", "member-3", "member-4"],
+        assigned: [
+          {
+            id: "member-0",
+            username: "john.doe",
+            full_name: "John Doe",
+            avatar: "/images/avatars/01.png",
+          },
+          {
+            id: "member-1",
+            username: "jane.smith",
+            full_name: "Jane Smith",
+            avatar: "/images/avatars/02.png",
+          },
+          {
+            id: "member-2",
+            username: "paul.johnson",
+            full_name: "Paul Johnson",
+            avatar: "/images/avatars/03.png",
+          },
+          {
+            id: "member-3",
+            username: "emily.davis",
+            full_name: "Emily Davis",
+            avatar: "/images/avatars/04.png",
+          },
+          {
+            id: "member-4",
+            username: "tom.clark",
+            full_name: "Tom Clark",
+            avatar: "/images/avatars/05.png",
+          },
+        ],
         due_date: new Date(),
         attachments: [
           {
@@ -31,7 +62,8 @@ const kanbanData: ColumnType[] = [
         ],
         comments: [
           {
-            member_id: "member-0",
+            id: "comment-0",
+            user_id: "member-0",
             text: "Let's start gathering data.",
             created_at: new Date(),
           },
@@ -44,7 +76,32 @@ const kanbanData: ColumnType[] = [
         title: "Design Wireframe",
         description: "Create a wireframe for the new feature.",
         label: "Design",
-        assigned: ["member-0", "member-1", "member-2", "member-4"],
+        assigned: [
+          {
+            id: "member-0",
+            username: "john.doe",
+            full_name: "John Doe",
+            avatar: "/images/avatars/01.png",
+          },
+          {
+            id: "member-1",
+            username: "jane.smith",
+            full_name: "Jane Smith",
+            avatar: "/images/avatars/02.png",
+          },
+          {
+            id: "member-2",
+            username: "paul.johnson",
+            full_name: "Paul Johnson",
+            avatar: "/images/avatars/03.png",
+          },
+          {
+            id: "member-4",
+            username: "tom.clark",
+            full_name: "Tom Clark",
+            avatar: "/images/avatars/05.png",
+          },
+        ],
         due_date: new Date(),
         attachments: [
           {
@@ -62,12 +119,14 @@ const kanbanData: ColumnType[] = [
         ],
         comments: [
           {
-            member_id: "member-0",
+            id: "comment-1",
+            user_id: "member-0",
             text: "We need to focus on user experience.",
             created_at: new Date(),
           },
           {
-            member_id: "member-2",
+            id: "comment-2",
+            user_id: "member-2",
             text: "Can we add more options for users?",
             created_at: new Date(),
           },
@@ -87,7 +146,20 @@ const kanbanData: ColumnType[] = [
         title: "Develop API",
         description: "Build the API for user authentication.",
         label: "Development",
-        assigned: ["member-2", "member-3"],
+        assigned: [
+          {
+            id: "member-2",
+            username: "paul.johnson",
+            full_name: "Paul Johnson",
+            avatar: "/images/avatars/03.png",
+          },
+          {
+            id: "member-3",
+            username: "emily.davis",
+            full_name: "Emily Davis",
+            avatar: "/images/avatars/04.png",
+          },
+        ],
         due_date: new Date(),
         attachments: [
           {
@@ -99,12 +171,14 @@ const kanbanData: ColumnType[] = [
         ],
         comments: [
           {
-            member_id: "member-2",
+            id: "comment-3",
+            user_id: "member-2",
             text: "I started on the endpoints.",
             created_at: new Date(),
           },
           {
-            member_id: "member-3",
+            id: "comment-4",
+            user_id: "member-3",
             text: "Let me know if you need help!",
             created_at: new Date(),
           },
@@ -117,7 +191,14 @@ const kanbanData: ColumnType[] = [
         title: "Update UI",
         description: "Revise the user interface for better UX.",
         label: "Design",
-        assigned: ["member-0"],
+        assigned: [
+          {
+            id: "member-0",
+            username: "john.doe",
+            full_name: "John Doe",
+            avatar: "/images/avatars/01.png",
+          },
+        ],
         due_date: new Date(),
         attachments: [
           {
@@ -129,7 +210,8 @@ const kanbanData: ColumnType[] = [
         ],
         comments: [
           {
-            member_id: "member-0",
+            id: "comment-5",
+            user_id: "member-0",
             text: "What do you think about the new color scheme?",
             created_at: new Date(),
           },
@@ -149,7 +231,26 @@ const kanbanData: ColumnType[] = [
         title: "Write Documentation",
         description: "Prepare the project documentation for release.",
         label: "Documentation",
-        assigned: ["member-2", "member-3", "member-4"],
+        assigned: [
+          {
+            id: "member-2",
+            username: "paul.johnson",
+            full_name: "Paul Johnson",
+            avatar: "/images/avatars/03.png",
+          },
+          {
+            id: "member-3",
+            username: "emily.davis",
+            full_name: "Emily Davis",
+            avatar: "/images/avatars/04.png",
+          },
+          {
+            id: "member-4",
+            username: "tom.clark",
+            full_name: "Tom Clark",
+            avatar: "/images/avatars/05.png",
+          },
+        ],
         due_date: new Date(),
         attachments: [
           {
@@ -161,12 +262,14 @@ const kanbanData: ColumnType[] = [
         ],
         comments: [
           {
-            member_id: "member-2",
+            id: "comment-6",
+            user_id: "member-2",
             text: "Documentation is complete!",
             created_at: new Date(),
           },
           {
-            member_id: "member-3",
+            id: "comment-7",
+            user_id: "member-3",
             text: "Looks good, ready for review.",
             created_at: new Date(),
           },
@@ -179,7 +282,32 @@ const kanbanData: ColumnType[] = [
         title: "Fix Bugs",
         description: "Resolve all known bugs from the previous release.",
         label: "QA",
-        assigned: ["member-0", "member-1", "member-2", "member-3"],
+        assigned: [
+          {
+            id: "member-0",
+            username: "john.doe",
+            full_name: "John Doe",
+            avatar: "/images/avatars/01.png",
+          },
+          {
+            id: "member-1",
+            username: "jane.smith",
+            full_name: "Jane Smith",
+            avatar: "/images/avatars/02.png",
+          },
+          {
+            id: "member-2",
+            username: "paul.johnson",
+            full_name: "Paul Johnson",
+            avatar: "/images/avatars/03.png",
+          },
+          {
+            id: "member-3",
+            username: "emily.davis",
+            full_name: "Emily Davis",
+            avatar: "/images/avatars/04.png",
+          },
+        ],
         due_date: new Date(),
         attachments: [
           {
@@ -191,12 +319,14 @@ const kanbanData: ColumnType[] = [
         ],
         comments: [
           {
-            member_id: "member-1",
+            id: "comment-8",
+            user_id: "member-1",
             text: "All bugs have been fixed.",
             created_at: new Date(),
           },
           {
-            member_id: "member-0",
+            id: "comment-9",
+            user_id: "member-0",
             text: "Great teamwork!",
             created_at: new Date(),
           },
@@ -206,10 +336,29 @@ const kanbanData: ColumnType[] = [
         id: "task-7",
         column_id: "done",
         order: 2,
-        title: "Launch Marketing Campaign",
-        description: "Launch the marketing campaign for the new product.",
+        title: "Launch Campaign",
+        description: "Officially launch the marketing campaign.",
         label: "Marketing",
-        assigned: ["member-1", "member-2", "member-0"],
+        assigned: [
+          {
+            id: "member-1",
+            username: "jane.smith",
+            full_name: "Jane Smith",
+            avatar: "/images/avatars/02.png",
+          },
+          {
+            id: "member-2",
+            username: "paul.johnson",
+            full_name: "Paul Johnson",
+            avatar: "/images/avatars/03.png",
+          },
+          {
+            id: "member-0",
+            username: "john.doe",
+            full_name: "John Doe",
+            avatar: "/images/avatars/01.png",
+          },
+        ],
         due_date: new Date(),
         attachments: [
           {
@@ -227,12 +376,14 @@ const kanbanData: ColumnType[] = [
         ],
         comments: [
           {
-            member_id: "member-1",
+            id: "comment-10",
+            user_id: "member-1",
             text: "The campaign is live!",
             created_at: new Date(),
           },
           {
-            member_id: "member-2",
+            id: "comment-11",
+            user_id: "member-2",
             text: "Let’s monitor the response closely.",
             created_at: new Date(),
           },

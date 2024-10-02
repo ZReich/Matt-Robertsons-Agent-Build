@@ -10,13 +10,16 @@ import {
   Calendar as CalendarIcon,
   X,
   Paperclip,
+  Loader2,
 } from "lucide-react";
 
 import { labels } from "../page";
+import { getTeamMembersSearchData } from "../_actions/get-team-members-search-data";
 
 import { cn } from "@/lib/utils";
 
 import { useKanbanContext } from "../hooks/use-kanban-context";
+import { useActionState } from "@/hooks/use-action-state";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -61,7 +64,8 @@ import {
 } from "@/components/ui/command";
 
 const CommentSchema = z.object({
-  member_id: z.string(),
+  id: z.string(),
+  user_id: z.string(),
   text: z
     .string()
     .min(2, { message: "Comment must be at least 2 characters." }),
@@ -77,6 +81,13 @@ const FileSchema = z.object({
   type: z.string(),
 });
 
+const UserSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  full_name: z.string(),
+  avatar: z.string(),
+});
+
 const FormSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
   description: z.string().optional(),
@@ -85,7 +96,7 @@ const FormSchema = z.object({
     { message: "Invalid label. Please select a valid label." }
   ),
   assigned: z
-    .array(z.string().min(1, { message: "Assigned user cannot be empty." }))
+    .array(UserSchema)
     .min(1, { message: "At least one user must be assigned." }),
   comments: z.array(CommentSchema),
   due_date: z.date({
@@ -98,32 +109,32 @@ const FormSchema = z.object({
 });
 
 type FormValues = z.infer<typeof FormSchema>;
-
-export interface TeamMember {
-  id: string;
-  username: string;
-  full_name: string;
-  avatar: string;
-}
+type TeamMemberType = z.infer<typeof UserSchema>;
 
 export function KanbanUpdateTaskSidebar() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [searchTeamMembers, setSearchTeamMembers] = useState("");
+  const [
+    searchTeamMembersResults,
+    searchTeamMembersAction,
+    searchTeamMembersIsPending,
+  ] = useActionState<string, TeamMemberType[]>(getTeamMembersSearchData, []);
   const {
     kanbanState,
-    teamMembersData,
     kanbanUpdateTaskSidebarIsOpen,
     setKanbanUpdateTaskSidebarIsOpen,
     handleUpdateTask,
     handleSelectTask,
   } = useKanbanContext();
-  const [searchTeamMembers, setSearchTeamMembers] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
   });
 
   const attachments = form.watch("attachments");
+  const assigned = form.watch("assigned");
   const selectedTask = kanbanState.selectedTask;
+  const assignedIds = new Set(assigned?.map((m) => m.id));
 
   useEffect(() => {
     if (selectedTask) {
@@ -146,6 +157,7 @@ export function KanbanUpdateTaskSidebar() {
         id: selectedTask.id,
         column_id: selectedTask.column_id,
         order: selectedTask.order,
+        comments: selectedTask.comments,
       });
     }
 
@@ -264,7 +276,10 @@ export function KanbanUpdateTaskSidebar() {
                             className="h-9"
                             placeholder="Search team members..."
                             value={searchTeamMembers}
-                            onValueChange={setSearchTeamMembers}
+                            onValueChange={(value) => {
+                              setSearchTeamMembers(value);
+                              searchTeamMembersAction(value);
+                            }}
                           />
                           <CommandList
                             aria-hidden={!!searchTeamMembers}
@@ -272,42 +287,45 @@ export function KanbanUpdateTaskSidebar() {
                               !!searchTeamMembers ? "block" : "hidden"
                             )}
                           >
-                            <CommandEmpty>No team members found.</CommandEmpty>
+                            {searchTeamMembersIsPending ? (
+                              <div className="flex justify-center items-center py-6">
+                                <Loader2 className="size-4  text-muted-foreground animate-spin" />
+                              </div>
+                            ) : (
+                              <CommandEmpty>
+                                No team members found.
+                              </CommandEmpty>
+                            )}
                             <CommandGroup>
-                              {teamMembersData
-                                .filter(
-                                  (member) => !field.value.includes(member.id)
-                                )
-                                .map((member) => (
-                                  <CommandItem
-                                    key={member.id}
-                                    onSelect={() => {
-                                      field.onChange([
-                                        ...field.value,
-                                        member.id,
-                                      ]);
-                                      setSearchTeamMembers("");
-                                    }}
-                                  >
-                                    {member.full_name}
-                                  </CommandItem>
-                                ))}
+                              {!searchTeamMembersIsPending &&
+                                searchTeamMembersResults
+                                  .filter(
+                                    (member) => !assignedIds.has(member.id)
+                                  )
+                                  .map((user) => (
+                                    <CommandItem
+                                      key={user.id}
+                                      onSelect={() => {
+                                        field.onChange([...field.value, user]);
+                                        setSearchTeamMembers("");
+                                      }}
+                                    >
+                                      {user.full_name}
+                                    </CommandItem>
+                                  ))}
                             </CommandGroup>
                           </CommandList>
                         </Command>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {field.value.map((userId) => {
-                            const member = teamMembersData.find(
-                              (m) => m.id === userId
-                            );
+                          {field.value.map((user) => {
                             return (
-                              member && (
+                              user && (
                                 <Badge
-                                  key={userId}
+                                  key={user.id}
                                   variant="secondary"
                                   className="flex items-center gap-1"
                                 >
-                                  {member.full_name}
+                                  {user.full_name}
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -315,7 +333,7 @@ export function KanbanUpdateTaskSidebar() {
                                     onClick={() =>
                                       field.onChange(
                                         field.value.filter(
-                                          (id) => id !== userId
+                                          (m) => m.id !== user.id
                                         )
                                       )
                                     }

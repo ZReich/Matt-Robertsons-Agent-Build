@@ -1,12 +1,20 @@
+export interface UserType {
+  id: string;
+  username: string;
+  full_name: string;
+  avatar: string;
+}
+
 export interface FileType {
   url: string;
   name: string;
-  size: number; // Maximum size: 50 MB
-  type: string; // Allow all types
+  size: number;
+  type: string;
 }
 
 export interface CommentType {
-  member_id: string;
+  id: string;
+  user_id: string;
   text: string;
   created_at: Date;
 }
@@ -19,7 +27,7 @@ export interface TaskType {
   description?: string;
   label: string;
   comments: CommentType[];
-  assigned: string[];
+  assigned: UserType[];
   due_date: Date;
   attachments: FileType[];
 }
@@ -57,16 +65,8 @@ export type KanbanAction =
   | { type: "selectColumn"; column?: ColumnType }
   | { type: "selectTask"; task?: TaskType };
 
-export interface MemberType {
-  id: string;
-  username: string;
-  full_name: string;
-  avatar: string;
-}
-
 export interface KanbanContextType {
   kanbanState: KanbanState;
-  teamMembersData: MemberType[];
   kanbanAddTaskSidebarIsOpen: boolean;
   setKanbanAddTaskSidebarIsOpen: (value: boolean) => void;
   kanbanUpdateTaskSidebarIsOpen: boolean;

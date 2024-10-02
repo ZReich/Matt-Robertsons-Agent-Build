@@ -1,9 +1,8 @@
 import { getKanbanData } from "./_actions/get-kanban-data";
-import { getTeamMembersData } from "./_actions/get-team-members-data ";
 
 import { KanbanProvider } from "./contexts/kanban-context";
 
-import type { ColumnType, MemberType } from "./types";
+import type { ColumnType } from "./types";
 
 import { Kanban } from "./_components/kanban";
 import { KanbanAddTaskSidebar } from "./_components/kanban-add-task-sidebar";
@@ -23,10 +22,9 @@ export const labels = [
 
 export default async function KanbanPage() {
   const kanbanData: ColumnType[] = await getKanbanData();
-  const teamMembersData: MemberType[] = await getTeamMembersData();
 
   return (
-    <KanbanProvider kanbanData={kanbanData} teamMembersData={teamMembersData}>
+    <KanbanProvider kanbanData={kanbanData}>
       <Kanban />
       <KanbanAddTaskSidebar />
       <KanbanUpdateTaskSidebar />

@@ -1,6 +1,8 @@
-import type { MemberType } from "../types";
+"use server";
 
-const teamMembers: MemberType[] = [
+import { UserType } from "../types";
+
+const teamMembers: UserType[] = [
   {
     id: "member-0",
     username: "john.doe",
@@ -33,10 +35,22 @@ const teamMembers: MemberType[] = [
   },
 ];
 
-export const getTeamMembersData = async (): Promise<typeof teamMembers> => {
+export async function getTeamMembersSearchData(
+  query: string
+): Promise<UserType[]> {
+  if (query === "") {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([]);
+      }, 300);
+    });
+  }
+
+  const regex = new RegExp(query, "i");
+
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(teamMembers);
-    }, 1000);
+      resolve(teamMembers.filter((member) => regex.test(member.full_name)));
+    }, 300);
   });
-};
+}
