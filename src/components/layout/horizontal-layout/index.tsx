@@ -11,12 +11,10 @@ export default function HorizontalLayout({
   dictionary: Dictionary;
 }) {
   return (
-    <div className="min-h-screen w-full flex bg-background">
-      <div className="flex-1 w-full overflow-y-hidden">
-        <Header dictionary={dictionary} />
-        <main className="bg-muted/40">{children}</main>
-        <Footer />
-      </div>
+    <div className="min-h-screen w-full grid grid-rows-[auto,_1fr,_auto] bg-background">
+      <Header dictionary={dictionary} />
+      <main className="bg-muted/40  overflow-x-hidden">{children}</main>
+      <Footer />
     </div>
   );
 }
