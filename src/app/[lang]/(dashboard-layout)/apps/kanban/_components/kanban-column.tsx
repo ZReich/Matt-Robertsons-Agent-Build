@@ -26,7 +26,7 @@ export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
       {(provided: DraggableProvided) => (
         <div
           ref={provided.innerRef}
-          className="w-64 h-fit mx-3 md:w-72"
+          className="w-64 h-fit mx-2 md:w-72"
           {...provided.draggableProps}
         >
           <CardHeader className="flex-row items-center space-y-0 gap-x-1.5 p-0">
