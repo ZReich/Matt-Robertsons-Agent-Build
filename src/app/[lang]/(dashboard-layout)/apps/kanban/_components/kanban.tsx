@@ -51,13 +51,7 @@ export function Kanban() {
         direction="horizontal"
       >
         {(provided: DroppableProvided) => (
-          <ScrollArea
-            orientation="horizontal"
-            className={cn(
-              "w-screen",
-              settings.layout === "vertical" && "md:w-[calc(100vw_-_270px)]"
-            )}
-          >
+          <ScrollArea orientation="horizontal" className="w-full">
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
