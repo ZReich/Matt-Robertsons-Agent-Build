@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { ChevronDown, Circle } from "lucide-react";
 
 import type { Nav as NavType } from "@/data/navigation";
-import { Direction } from "@/types";
+import type { Direction } from "@/types";
+import type { Locale } from "@/configs/i18n";
 
 import { cn } from "@/lib/utils";
 import { getLocalizedPathname } from "@/lib/i18n";
@@ -26,14 +27,14 @@ interface NavProps {
 
 export function Nav({ navs, dir, isRoot = true }: NavProps) {
   const pathname = usePathname();
+  const params = useParams();
+
+  const locale = params.lang as Locale;
 
   return (
     <nav className="grid gap-1" dir={dir}>
       {navs.map((nav) => {
-        const localizedHref = getLocalizedPathname(
-          nav.href,
-          pathname.slice(0, 3) // Language code.
-        );
+        const localizedHref = getLocalizedPathname(nav.href, locale);
         const isActive = localizedHref === pathname;
 
         if (nav.children) {

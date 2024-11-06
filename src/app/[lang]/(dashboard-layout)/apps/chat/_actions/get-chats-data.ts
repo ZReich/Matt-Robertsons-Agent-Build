@@ -32,7 +32,7 @@ const chatsData = [
       {
         id: "msg_2",
         senderId: "1",
-        text: "Hey John!",
+        text: "Hey Jane!",
         createdAt: new Date("2024-10-31T10:01:00Z"),
         status: "READ",
         type: "TEXT",

@@ -19,6 +19,10 @@ export function ensurePrefix(str: string, prefix: string) {
   return str.startsWith(prefix) ? str : `${prefix}${str}`;
 }
 
+export function ensureSuffix(str: string, suffix: string) {
+  return str.endsWith(suffix) ? str : `${str}${suffix}`;
+}
+
 export function withoutSuffix(str: string, suffix: string) {
   return str.endsWith(suffix) ? str.slice(0, -suffix.length) : str;
 }

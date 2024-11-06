@@ -26,7 +26,7 @@ const chatData = [
       {
         id: "msg_2",
         senderId: "2",
-        text: "Hey John!",
+        text: "Hey Jane!",
         createdAt: new Date("2024-10-31T10:01:00Z"),
         attachments: [],
         voiceMessage: null,
