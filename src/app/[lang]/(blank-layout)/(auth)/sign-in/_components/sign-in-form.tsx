@@ -5,8 +5,8 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-// import { signIn, type SignInResponse } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
@@ -29,19 +29,36 @@ import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
 
 const FormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6, {
-    message: "Password must contain at least 6 character(s)",
-  }),
+  email: z
+    .string()
+    .email()
+    .transform((val) => val.toLowerCase()),
+  password: z
+    .string()
+    .min(8, {
+      message: "Password must contain at least 8 character(s)",
+    })
+    .regex(/(?=.*[a-zA-Z])/, {
+      message: "Password must contain at least one letter.",
+    })
+    .regex(/(?=.*[0-9])/, {
+      message: "Password must contain at least one number.",
+    }),
 });
+
+type FormType = z.infer<typeof FormSchema>;
 
 interface SignInFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: Locale;
 }
 
 export function SignInForm({ className, locale, ...props }: SignInFormProps) {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const form = useForm<z.infer<typeof FormSchema>>({
+
+  const redirectPathname = searchParams.get("redirectTo") ?? "/";
+
+  const form = useForm<FormType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email: "",
@@ -50,32 +67,28 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
   });
   const isLoading = form.formState.isLoading;
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: FormType) {
     const { email, password } = data;
 
     try {
-      // const res: SignInResponse | undefined = await signIn("credentials", {
-      //   email,
-      //   password,
-      //   redirect: false,
-      // });
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-      // if (res && res.status >= 400) {
-      //   throw new Error("Something went wrong!");
-      // }
+      if (result && result.error) {
+        throw new Error(result.error);
+      }
 
-      setTimeout(() => {
-        toast({ title: "Login Successful" });
-      }, 3000);
-    } catch (error: any) {
+      router.push(redirectPathname);
+    } catch (e: unknown) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: error.message,
+        title: "Sign In Failed",
+        description:
+          e instanceof Error ? e.message : "An unknown error occurred.",
       });
-    } finally {
-      router.push("/");
-      router.refresh();
     }
   }
 

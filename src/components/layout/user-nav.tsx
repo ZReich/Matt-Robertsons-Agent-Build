@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { LayoutGrid, LogOut, User, UserCog } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 import { Direction } from "@/types";
 import { Locale } from "@/configs/i18n";
@@ -21,13 +22,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
+  const { data } = useSession();
+  const user = data?.user;
+
   return (
     <DropdownMenu dir={dir}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full">
           <Avatar className="size-9">
-            <AvatarImage src="/images/avatars/04.png" alt="Avatar" />
-            <AvatarFallback className="bg-transparent">JD</AvatarFallback>
+            <AvatarImage
+              src={user?.avatar as string | undefined}
+              alt="Avatar"
+            />
+            <AvatarFallback className="bg-transparent">
+              {user?.name && getInitials(user.name)}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -40,14 +49,19 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
             asChild
           >
             <Avatar className="size-9">
-              <AvatarImage src="/images/avatars/04.png" alt="Avatar" />
-              <AvatarFallback className="bg-transparent">JD</AvatarFallback>
+              <AvatarImage
+                src={user?.avatar as string | undefined}
+                alt="Avatar"
+              />
+              <AvatarFallback className="bg-transparent">
+                {user?.name && getInitials(user.name)}
+              </AvatarFallback>
             </Avatar>
           </Button>
           <dl className="flex flex-col overflow-hidden">
             <dt className="text-sm font-medium truncate">John Doe</dt>
             <dd className="text-xs text-muted-foreground truncate">
-              johndoe@example.com
+              {user?.email}
             </dd>
           </dl>
         </DropdownMenuLabel>
@@ -92,7 +106,11 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="p-0">
-          <Button variant="ghost" className="w-full justify-start gap-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2"
+            onClick={() => signOut()}
+          >
             <LogOut className="size-4 text-muted-foreground" />
             Sign out
           </Button>

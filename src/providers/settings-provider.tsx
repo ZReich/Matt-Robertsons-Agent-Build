@@ -1,13 +1,20 @@
 "use client";
 
 import * as React from "react";
+import { useCookie } from "react-use";
 
 import { defaultSettings, SettingsContext } from "@/contexts/settings-context";
 
+import type { Direction } from "@/types";
 import type { Settings } from "@/contexts/settings-context";
-import { useCookie } from "react-use";
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+export function SettingsProvider({
+  direction,
+  children,
+}: {
+  direction: Direction;
+  children: React.ReactNode;
+}) {
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
     useCookie("settings");
   const [settings, setSettings] = React.useState<Settings | null>(null);
@@ -16,9 +23,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     if (storedSettings) {
       setSettings(JSON.parse(storedSettings));
     } else {
-      setSettings(defaultSettings);
+      setSettings({ ...defaultSettings, direction });
     }
-  }, [storedSettings]);
+  }, [storedSettings, direction]);
 
   const updateSettings = React.useCallback(
     (newSettings: Settings) => {

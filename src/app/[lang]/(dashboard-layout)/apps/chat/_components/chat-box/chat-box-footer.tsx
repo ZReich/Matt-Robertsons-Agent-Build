@@ -1,0 +1,78 @@
+"use client";
+
+import { useMedia } from "react-use";
+import { ChevronRight, CirclePlus, Mic } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CardFooter } from "@/components/ui/card";
+import { TextMessageForm } from "./text-message-form";
+import { ImagesDialog } from "./images-dialog";
+import { FilesDialog } from "./files-dialog";
+
+export function ChatBoxFooter() {
+  const isMobile = useMedia("(max-width: 480px)");
+
+  return (
+    <CardFooter className="py-3 border-t border-border">
+      {isMobile ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button type="button" variant="ghost" size="icon">
+              <CirclePlus className="size-4" />
+              <span className="sr-only">Menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            side="top"
+            className="flex justify-between gap-1.5 min-w-fit"
+          >
+            <DropdownMenuItem asChild>
+              <ImagesDialog />
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <FilesDialog />
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Button type="button" variant="ghost" size="icon">
+                <Mic className="size-4" />
+                <span className="sr-only">Send a voice message</span>
+              </Button>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <Collapsible className="flex whitespace-nowrap overflow-x-clip">
+          <CollapsibleTrigger
+            className="[&[data-state=open]>svg]:rotate-180"
+            asChild
+          >
+            <Button variant="ghost" size="icon">
+              <ChevronRight className="size-4 transition-transform duration-200" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="data-[state=closed]:animate-collapsible-left data-[state=open]:animate-collapsible-right duration-1000">
+            <ImagesDialog />
+            <FilesDialog />
+            <Button type="button" variant="ghost" size="icon">
+              <Mic className="size-4" />
+              <span className="sr-only">Send a voice message</span>
+            </Button>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      <TextMessageForm />
+    </CardFooter>
+  );
+}

@@ -13,7 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { labels } from "../page";
+import { labels } from "./kanban";
 import { getTeamMembersSearchData } from "../_actions/get-team-members-search-data";
 
 import { cn } from "@/lib/utils";

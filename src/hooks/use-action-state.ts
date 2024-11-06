@@ -5,22 +5,26 @@
 
 import * as React from "react";
 
-type Action<FormData, State> = (formData: FormData) => Promise<State>;
+type Action<FormData, State> = FormData extends undefined
+  ? () => Promise<State> // If FormData is undefined, no arguments are passed
+  : (formData: FormData) => Promise<State>; // If FormData is defined, it is required
 
 interface FormState<State> {
   data: State;
   isPending: boolean;
-  isError: boolean;
 }
 
 export function useActionState<FormData, State>(
   action: Action<FormData, State>,
   initialState: State
-): [State, (formData: FormData) => Promise<void>, boolean, boolean] {
+): [
+  State,
+  (formData: FormData) => Promise<void>,
+  boolean // Pending state
+] {
   const [formState, setFormState] = React.useState<FormState<State>>({
     data: initialState,
     isPending: false,
-    isError: false,
   });
 
   const dispatch = React.useCallback(
@@ -28,23 +32,20 @@ export function useActionState<FormData, State>(
       setFormState((prevState) => ({
         ...prevState,
         isPending: true,
-        isError: false,
       }));
 
       try {
         const newState = await action(formData);
-        setFormState({ data: newState, isPending: false, isError: false });
+        setFormState({ data: newState, isPending: false });
       } catch (error) {
-        console.error(error);
         setFormState((prevState) => ({
           ...prevState,
           isPending: false,
-          isError: true,
         }));
       }
     },
     [action]
   );
 
-  return [formState.data, dispatch, formState.isPending, formState.isError];
+  return [formState.data, dispatch, formState.isPending];
 }

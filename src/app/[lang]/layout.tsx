@@ -1,6 +1,8 @@
 import { Lato, Cairo } from "next/font/google";
+import { getServerSession } from "next-auth";
 
 import { i18n } from "@/configs/i18n";
+import { nextAuthOptions } from "@/configs/next-auth";
 
 import { cn } from "@/lib/utils";
 
@@ -41,6 +43,7 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: { lang: Locale };
 }>) {
+  const session = await getServerSession(nextAuthOptions);
   const direction = i18n.langDirection[params.lang];
 
   return (
@@ -53,7 +56,7 @@ export default async function RootLayout({
           cairoFont.variable
         )}
       >
-        <Providers>
+        <Providers direction={direction} session={session}>
           {children}
           <Toaster />
         </Providers>

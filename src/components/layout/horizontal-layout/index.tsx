@@ -11,9 +11,9 @@ export default function HorizontalLayout({
   dictionary: Dictionary;
 }) {
   return (
-    <div className="min-h-screen w-full grid grid-rows-[auto,_1fr,_auto] bg-background">
+    <div className="min-h-screen w-full grid bg-background md:grid-rows-[auto,_1fr,_auto]">
       <Header dictionary={dictionary} />
-      <main className="bg-muted/40  overflow-x-hidden">{children}</main>
+      <main className="bg-muted/40 overflow-x-hidden">{children}</main>
       <Footer />
     </div>
   );

@@ -4,13 +4,14 @@ import * as React from "react";
 
 import { BaseColor } from "@/configs/base-colors";
 
-import { Layout, Mode } from "@/types";
+import type { Direction, Layout, Mode } from "@/types";
 
 export type Settings = {
   theme: BaseColor["name"];
   mode: Mode;
   radius: number;
   layout: Layout;
+  direction: Direction;
 };
 
 export const defaultSettings: Settings = {
@@ -18,6 +19,7 @@ export const defaultSettings: Settings = {
   mode: "system",
   radius: 0.5,
   layout: "vertical",
+  direction: "ltr",
 };
 
 export const SettingsContext = React.createContext<

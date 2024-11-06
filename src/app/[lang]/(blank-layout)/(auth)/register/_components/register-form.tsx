@@ -5,7 +5,6 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-// import { signIn, type SignInResponse } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
@@ -29,14 +28,33 @@ import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
 
 const FormSchema = z.object({
+  firstName: z.string().min(2, {
+    message: "Fisrt name must contain at least 2 character(s)",
+  }),
+  lastName: z.string().min(2, {
+    message: "Last name must contain at least 2 character(s)",
+  }),
   username: z.string().min(3, {
     message: "Usernmae must contain at least 3 character(s)",
   }),
-  email: z.string().email(),
-  password: z.string().min(8, {
-    message: "Password must contain at least 8 character(s)",
-  }),
+  email: z
+    .string()
+    .email()
+    .transform((val) => val.toLowerCase()),
+  password: z
+    .string()
+    .min(8, {
+      message: "Password must contain at least 8 character(s)",
+    })
+    .regex(/(?=.*[a-zA-Z])/, {
+      message: "Password must contain at least one letter.",
+    })
+    .regex(/(?=.*[0-9])/, {
+      message: "Password must contain at least one number.",
+    }),
 });
+
+type FormType = z.infer<typeof FormSchema>;
 
 interface RegisterFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: Locale;
@@ -48,42 +66,56 @@ export function RegisterForm({
   ...props
 }: RegisterFormProps) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      password: "",
-    },
   });
   const isLoading = form.formState.isLoading;
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
-    const { username, email, password } = data;
+  async function onSubmit(data: FormType) {
+    const { firstName, lastName, username, email, password } = data;
 
     try {
-      // const res: SignInResponse | undefined = await signIn("credentials", {
-      //   email,
-      //   password,
-      //   redirect: false,
-      // });
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          username,
+          email,
+          password,
+        }),
+      });
 
-      // if (res && res.status >= 400) {
-      //   throw new Error("Something went wrong!");
-      // }
+      if (res && res.status >= 400) {
+        const {
+          issues,
+          message,
+        }: {
+          issues?: { path: (keyof FormType)[]; message: string }[];
+          message?: string;
+        } = await res.json();
 
-      setTimeout(() => {
-        toast({ title: "Login Successful" });
-      }, 3000);
-    } catch (error: any) {
+        if (!issues) throw new Error(message ?? "An unknown error occurred.");
+
+        // Set errors in React Hook Form based on server response
+        issues.forEach((issue) => {
+          const field = issue.path[0];
+          form.setError(field, { type: "manual", message: issue.message });
+        });
+      } else {
+        toast({ title: "Register Successful" });
+        router.push(getLocalizedPathname("/sign-in", locale));
+      }
+    } catch (e: unknown) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: error.message,
+        title: "Register Failed",
+        description:
+          e instanceof Error ? e.message : "An unknown error occurred.",
       });
-    } finally {
-      router.push("/");
-      router.refresh();
     }
   }
 
@@ -95,6 +127,34 @@ export function RegisterForm({
         {...props}
       >
         <div className="grid gap-2">
+          <div className="flex justify-between gap-2">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="John" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
             name="username"
@@ -102,12 +162,7 @@ export function RegisterForm({
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input
-                    type="text"
-                    placeholder="john_doe"
-                    className="lowercase"
-                    {...field}
-                  />
+                  <Input type="text" placeholder="john_doe" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

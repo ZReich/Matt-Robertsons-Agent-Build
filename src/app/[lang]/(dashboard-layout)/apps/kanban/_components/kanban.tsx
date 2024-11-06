@@ -8,14 +8,22 @@ import {
 } from "react-beautiful-dnd";
 import { Plus } from "lucide-react";
 
-import { useSettings } from "@/hooks/use-settings";
-import { cn } from "@/lib/utils";
 import { StrictModeDroppable } from "@/lib/strict-mode-droppable";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "./kanban-column";
 import { useKanbanContext } from "../hooks/use-kanban-context";
+
+export const labels: { id: string; name: string }[] = [
+  { id: "research", name: "Research" },
+  { id: "design", name: "Design" },
+  { id: "development", name: "Development" },
+  { id: "meeting", name: "Meeting" },
+  { id: "documentation", name: "Documentation" },
+  { id: "qa", name: "QA" },
+  { id: "marketing", name: "Marketing" },
+];
 
 export function Kanban() {
   const {
@@ -24,7 +32,6 @@ export function Kanban() {
     handleReorderTasks,
     setKanbanAddColumnSidebarIsOpen,
   } = useKanbanContext();
-  const { settings } = useSettings();
 
   const handleDragDrop = (result: DropResult) => {
     const { source, destination, type } = result;

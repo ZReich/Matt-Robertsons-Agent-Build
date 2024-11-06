@@ -10,16 +10,6 @@ import { KanbanUpdateTaskSidebar } from "./_components/kanban-update-task-sideba
 import { KanbanAddColumnSidebar } from "./_components/kanban-add-column-sidebar";
 import { KanbanUpdateColumnSidebar } from "./_components/kanban-update-column-sidebar";
 
-export const labels = [
-  { id: "research", name: "Research" },
-  { id: "design", name: "Design" },
-  { id: "development", name: "Development" },
-  { id: "meeting", name: "Meeting" },
-  { id: "documentation", name: "Documentation" },
-  { id: "qa", name: "QA" },
-  { id: "marketing", name: "Marketing" },
-] as const;
-
 export default async function KanbanPage() {
   const kanbanData: ColumnType[] = await getKanbanData();
 
