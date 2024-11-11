@@ -6,9 +6,9 @@ export default function EmailLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-full bg-background">
+    <div className="container h-full w-full flex gap-4 p-4">
       <Sidebar />
-      <div className="flex-1 flex">{children}</div>
+      {children}
     </div>
   );
 }

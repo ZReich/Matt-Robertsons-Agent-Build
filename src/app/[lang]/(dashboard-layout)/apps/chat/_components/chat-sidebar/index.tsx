@@ -11,7 +11,7 @@ import { ChatList } from "./chat-list";
 
 export function ChatSidebar() {
   const { isChatSidebarOpen, setIsChatSidebarOpen } = useChatContext();
-  const isMobile = useMedia("(max-width: 767px)");
+  const isTablet = useMedia("(max-width: 767px)");
 
   const content = (
     <div className="md:w-72">
@@ -20,7 +20,7 @@ export function ChatSidebar() {
     </div>
   );
 
-  if (!isMobile) {
+  if (!isTablet) {
     setIsChatSidebarOpen(false);
 
     return (

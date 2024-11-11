@@ -1,9 +1,28 @@
-export interface Email {
+export interface UserType {
   id: string;
   name: string;
+  avatar: string;
+  email: string;
+  status: string;
+}
+
+export interface EmailType {
+  id: string;
+  sender: UserType;
   subject: string;
-  timestamp: string;
+  content: string;
   read: boolean;
   starred: boolean;
-  avatar: string;
+  createdAt: Date;
+  folder: "Inbox" | "Sent" | "Draft";
+  isStarred: boolean;
+  isSpam: boolean;
+  isDeleted: boolean;
 }
+
+export interface EmailState {
+  emails: EmailType[];
+  totalPages: number;
+  currentPage: number;
+  totalEmails: number;
+};

@@ -1,19 +1,29 @@
 "use client";
 
-import { Avatar } from "@/components/ui/avatar";
+import * as React from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { format } from "date-fns";
+
+import type { EmailType } from "../types";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import {
   Archive,
-  ArrowLeft,
-  ArrowRight,
   ChevronLeft,
   Clock,
   Forward,
@@ -23,132 +33,95 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface EmailViewProps {
-  emailId: string;
-}
-
-export function EmailView({ emailId }: EmailViewProps) {
+export function EmailView({ email }: { email: EmailType }) {
   const router = useRouter();
-  // In a real app, you'd fetch the email data based on the emailId
-  const emailData = {
-    subject: "Refer friends. Get rewards.",
-    sender: "Waldemar Mannering",
-    senderEmail: "wmannering@mozilla.org",
-    date: "Dec 15, 2018, 02:02 PM",
-    content: `Hi John,
-
-At Auto Sales, we understand that our customers are our greatest resource, and the only real way that an automotive dealership can grow is through word of mouth.
-
-If you had a wonderful experience with us, the greatest thanks you can give is to pass along your praise and positive experience with Auto Sales to your family, friends, and colleagues.
-
-As a reward for promoting us, we will pay you $200 for every referral you send our way who purchases a pre-owned vehicle of under $15,000. For every purchase over $15,000, we will pay you a referral of $300.
-
-Regards
-
-Waldemar Mannering`,
-  };
+  const pathname = usePathname();
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      <header className="border-b px-4 py-3">
+    <Card className="flex-1 w-full md:w-auto">
+      <CardHeader className="border-b py-3">
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push(pathname.replace(email.id, ""))}
+            aria-label="Go back to email list"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <CardTitle className="line-clamp-2 break-all">
+            {email.subject}
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="p-3 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-              <ChevronLeft className="h-4 w-4" />
+          <div className="flex gap-2">
+            <Button variant="ghost" size="icon" aria-label="Delete email">
+              <Trash2 className="h-4 w-4" />
             </Button>
-            <span>{emailData.subject}</span>
-            <Badge
-              variant="secondary"
-              className="bg-red-100 text-red-800 hover:bg-red-100"
-            >
-              Private
-            </Badge>
+            <Button variant="ghost" size="icon" aria-label="Archive email">
+              <Archive className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Snooze email">
+              <Clock className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Label email">
+              <Tag className="h-4 w-4" />
+            </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
+            <Button variant="ghost" size="icon" aria-label="Star email">
+              <Star className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="More actions">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Mark as unread</DropdownMenuItem>
+                <DropdownMenuItem>Star thread</DropdownMenuItem>
+                <DropdownMenuItem>Add label</DropdownMenuItem>
+                <DropdownMenuItem>Mute thread</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      </header>
-      <div className="flex-1 overflow-auto p-4">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex gap-2">
-              <Button variant="ghost" size="icon">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Archive className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Clock className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Tag className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Star className="h-4 w-4" />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Mark as unread</DropdownMenuItem>
-                  <DropdownMenuItem>Star thread</DropdownMenuItem>
-                  <DropdownMenuItem>Add label</DropdownMenuItem>
-                  <DropdownMenuItem>Mute thread</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-          <Card className="p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex items-start gap-3">
-                <Avatar className="h-10 w-10">
-                  <img
-                    alt="Sender avatar"
-                    src="/placeholder.svg?height=40&width=40"
-                    className="rounded-full"
-                  />
-                </Avatar>
-                <div>
-                  <div className="font-semibold">{emailData.sender}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {emailData.senderEmail}
-                  </div>
-                </div>
+        <Card className="py-1">
+          <ScrollArea className="h-[calc(100vh-24.3rem)]">
+            <CardHeader className="flex-row items-center gap-2 py-3">
+              <Avatar>
+                <AvatarImage src="" alt="Avatar" />
+                <AvatarFallback>SA</AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle>{email.sender.name}</CardTitle>
+                <CardDescription>{email.sender.email}</CardDescription>
               </div>
-              <div className="text-sm text-muted-foreground">
-                {emailData.date}
-              </div>
-            </div>
-            <div className="space-y-4 text-sm whitespace-pre-wrap">
-              {emailData.content}
-            </div>
-          </Card>
-          <div className="mt-4 flex gap-2">
-            <Button variant="outline" className="gap-2">
-              <Reply className="h-4 w-4" />
-              Reply
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Forward className="h-4 w-4" />
-              Forward
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+              <CardDescription className="ms-auto">
+                {format(email.createdAt, "MMM dd, yyyy")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="whitespace-pre-wrap">
+              {email.content}
+            </CardContent>
+          </ScrollArea>
+        </Card>
+        <CardFooter className="p-3 pt-0 gap-1.5">
+          <Button variant="outline">
+            <Reply className="me-2 h-4 w-4" />
+            <span>Reply</span>
+          </Button>
+          <Button variant="outline">
+            <Forward className="me-2 h-4 w-4" />
+            <span>Forward</span>
+          </Button>
+        </CardFooter>
+      </CardContent>
+    </Card>
   );
 }
