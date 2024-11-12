@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn, FieldPath } from "react-hook-form";
 import { z } from "zod";
@@ -40,8 +39,6 @@ const formSchema = z.object({
   }),
 });
 
-type Checked = DropdownMenuCheckboxItemProps["checked"];
-
 export function NotificationPreferencesForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,9 +61,7 @@ export function NotificationPreferencesForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  function onSubmit(data: z.infer<typeof formSchema>) {}
 
   return (
     <Form {...form}>

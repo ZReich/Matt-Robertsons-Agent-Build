@@ -53,13 +53,9 @@ export function SavedCardsList() {
 }
 
 function MenuButton({ card }: { card: Card }) {
-  function handleSetDefault(id: number) {
-    console.log(id);
-  }
+  function handleSetDefault(id: number) {}
 
-  function handleDelete(id: number) {
-    console.log(id);
-  }
+  function handleDelete(id: number) {}
 
   return (
     <DropdownMenu>

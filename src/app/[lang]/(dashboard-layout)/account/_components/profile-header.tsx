@@ -1,22 +1,25 @@
+import Image from "next/image";
+import Link from "next/link";
+import { UserPen } from "lucide-react";
+
+import type { Locale } from "@/configs/i18n";
+import type { UserType } from "../types";
+
+import { cn } from "@/lib/utils";
+import { getLocalizedPathname } from "@/lib/i18n";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
-import { UserPen } from "lucide-react";
-import { getLocalizedPathname } from "@/lib/i18n";
-import { Locale } from "@/configs/i18n";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 
-const profile = {
-  full_name: "John Doe",
-  role: "Next.js Developer",
-  avatar: "/images/avatars/04.png",
-  background: "/images/background.jpg",
-};
-
-export function ProfileHeader({ locale }: { locale: Locale }) {
-  const { full_name, role, avatar, background } = profile;
+export function ProfileHeader({
+  locale,
+  user,
+}: {
+  locale: Locale;
+  user: UserType;
+}) {
+  const { full_name, role, avatar, background } = user;
 
   return (
     <section className="container px-0">

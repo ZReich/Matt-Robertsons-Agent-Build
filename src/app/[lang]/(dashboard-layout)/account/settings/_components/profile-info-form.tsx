@@ -4,7 +4,6 @@ import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserType } from "../../types";
 
 const FormSchema = z.object({
   first_name: z
@@ -73,33 +73,33 @@ const FormSchema = z.object({
 
 interface ProfileInfoFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: Locale;
-  profile: any;
+  user: UserType;
 }
 
 export function ProfileInfoForm({
   className,
   locale,
-  profile,
+  user,
   ...props
 }: ProfileInfoFormProps) {
-  const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      ...profile,
+      ...user,
     },
   });
   const [photoPreview, setPhotoPreview] = React.useState<string | null>(
-    profile?.avatar
+    user?.avatar
   );
 
-  const isLoading = form.formState.isSubmitting;
+  const { isSubmitting, isValid } = form.formState;
+  const isDisabled = isSubmitting || !isValid;
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {}
 
   function handleResetForm() {
-    form.reset(profile);
-    setPhotoPreview(profile?.avatar || null);
+    form.reset(user);
+    setPhotoPreview(user?.avatar || null);
   }
 
   return (
@@ -113,7 +113,7 @@ export function ProfileInfoForm({
           <div className="col-span-2 flex items-center gap-4 mb-4">
             <Avatar className="size-24">
               <AvatarImage src={photoPreview || ""} alt="Profile Avatar" />
-              <AvatarFallback>{profile.first_name.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{user.first_name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-2 md:flex-row">
               <FormField
@@ -340,15 +340,25 @@ export function ProfileInfoForm({
           />
         </div>
         <div className="flex gap-x-2">
-          <Button type="submit" className="w-fit" disabled={isLoading}>
-            {isLoading && <LoaderCircle className="me-2 size-4 animate-spin" />}
+          <Button
+            type="submit"
+            className="w-fit"
+            disabled={isDisabled}
+            aria-live="assertive"
+          >
+            {isSubmitting && (
+              <LoaderCircle
+                className="me-2 size-4 animate-spin"
+                aria-label="Loading"
+              />
+            )}
             Save
           </Button>
           <Button
             type="reset"
             variant="secondary"
             className="w-fit"
-            disabled={isLoading}
+            disabled={isDisabled}
             onClick={handleResetForm}
           >
             Reset

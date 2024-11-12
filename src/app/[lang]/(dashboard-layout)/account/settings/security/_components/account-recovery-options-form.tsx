@@ -3,8 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { LoaderCircle } from "lucide-react";
 
-import { toast } from "@/hooks/use-toast";
+import type { UserType } from "../../../types";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -24,29 +26,23 @@ const FormSchema = z.object({
 
 interface AccountRecoveryOptionsFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  profile: any;
+  user: UserType;
 }
 
 export function AccountRecoveryOptionsForm({
-  profile,
+  user,
 }: AccountRecoveryOptionsFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      option: profile.account_reovery_option,
+      option: user.account_reovery_option,
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
+  const { isSubmitting, isValid } = form.formState;
+  const isDisabled = isSubmitting || !isValid;
+
+  function onSubmit(data: z.infer<typeof FormSchema>) {}
 
   return (
     <Form {...form}>
@@ -108,7 +104,20 @@ export function AccountRecoveryOptionsForm({
             </FormItem>
           )}
         />
-        <Button type="submit">Save</Button>
+        <Button
+          type="submit"
+          className="w-fit"
+          disabled={isDisabled}
+          aria-live="assertive"
+        >
+          {isDisabled && (
+            <LoaderCircle
+              className="me-2 size-4 animate-spin"
+              aria-label="Loading"
+            />
+          )}
+          Save
+        </Button>
       </form>
     </Form>
   );

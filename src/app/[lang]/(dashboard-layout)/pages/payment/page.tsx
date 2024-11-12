@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { getSavedCards } from "./actions/getSavedCards";
+
 import type { CardType } from "./actions/getSavedCards";
 
 import {
@@ -11,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { PaymentMethodForm } from "./_components/payment-method-form";
 import { PaymentSummary } from "./_components/payment-summary";
-import { getSavedCards } from "./actions/getSavedCards";
 
 export default async function PaymentPage() {
   const savedCards: CardType[] = await getSavedCards();

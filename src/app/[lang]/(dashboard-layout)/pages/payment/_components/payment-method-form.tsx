@@ -4,9 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CreditCard, Landmark } from "lucide-react";
-import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
 
 import { getCreditCardBrandName } from "@/lib/utils";
+
+import type { CardType } from "../actions/getSavedCards";
 
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -23,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { SeparatorWithText } from "@/components/ui/separator";
-import { type CardType } from "../actions/getSavedCards";
+import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
 
 const FormSchema = z.object({
   payment_option: z.enum(["card", "bank"]).optional(),

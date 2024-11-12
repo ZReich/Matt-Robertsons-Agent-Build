@@ -1,5 +1,7 @@
 import { Check } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 interface PricingCardProps {
@@ -33,8 +34,12 @@ export function PricingCard({
   isPopular = false,
 }: PricingCardProps) {
   return (
-    <Card className={cn("relative flex flex-col", isPopular && "border-primary")}>
-      {isPopular && <Badge className="absolute -top-2.5 start-3 w-fit">Most popular</Badge>}
+    <Card
+      className={cn("relative flex flex-col", isPopular && "border-primary")}
+    >
+      {isPopular && (
+        <Badge className="absolute -top-2.5 start-3 w-fit">Most popular</Badge>
+      )}
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>

@@ -3,15 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { toast } from "@/hooks/use-toast";
-
-import type {
-  Plan,
-  Subscription,
-} from "../actions/get-plans-and-subscriptions-data";
+import type { Plan, Subscription } from "../../../types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -58,17 +54,10 @@ export function ChangePlanForm({
   });
 
   const isAnnual = form.watch("interval");
+  const { isSubmitting, isValid } = form.formState;
+  const isDisabled = isSubmitting || !isValid;
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
+  function onSubmit(data: z.infer<typeof FormSchema>) {}
 
   return (
     <Form {...form}>
@@ -157,7 +146,15 @@ export function ChangePlanForm({
             </FormItem>
           )}
         />
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isDisabled} aria-live="assertive">
+          {isDisabled && (
+            <LoaderCircle
+              className="me-2 size-4 animate-spin"
+              aria-label="Loading"
+            />
+          )}
+          Save
+        </Button>
       </form>
     </Form>
   );

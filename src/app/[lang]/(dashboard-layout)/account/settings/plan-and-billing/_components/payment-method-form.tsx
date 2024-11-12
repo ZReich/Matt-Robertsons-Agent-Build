@@ -4,9 +4,11 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CreditCard, Landmark } from "lucide-react";
-import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
+import { CreditCard, Landmark, LoaderCircle } from "lucide-react";
 
+import { getCreditCardBrandName } from "@/lib/utils";
+
+import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
 import {
   Card,
   CardHeader,
@@ -28,7 +30,6 @@ import {
   FormDescription,
   FormMessage,
 } from "@/components/ui/form";
-import { getCreditCardBrandName } from "@/lib/utils";
 
 const FormSchema = z.object({
   payment_type: z.enum(["visa", "mastercard", "amex", "discover"], {
@@ -55,11 +56,11 @@ export function PaymentMethodForm() {
   });
 
   const cardNumber = form.watch("card_number");
+  const { isSubmitting, isValid } = form.formState;
+  const isDisabled = isSubmitting || !isValid;
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log("Submitted data:", data);
-  }
+  function onSubmit(data: z.infer<typeof FormSchema>) {}
 
   return (
     <Card>
@@ -257,7 +258,18 @@ export function PaymentMethodForm() {
               </>
             )}
 
-            <Button className="mt-6" type="submit">
+            <Button
+              type="submit"
+              className="mt-6"
+              disabled={isDisabled}
+              aria-live="assertive"
+            >
+              {isDisabled && (
+                <LoaderCircle
+                  className="me-2 size-4 animate-spin"
+                  aria-label="Loading"
+                />
+              )}
               Save
             </Button>
           </form>
