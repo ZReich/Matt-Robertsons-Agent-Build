@@ -31,17 +31,17 @@ export function CalendarApp({ events }: { events: Event[] }) {
 
   const handleAddEvent = async (event: Omit<Event, "id">) => {
     dispatch({
-      type: "add",
+      type: "addEvent",
       event: { ...event, id: calendarState.events.length.toString() },
     });
   };
 
   const handleUpdateEvent = async (event: Event) => {
-    dispatch({ type: "update", event });
+    dispatch({ type: "updateEvent", event });
   };
 
   const handleDeleteEvent = async (eventId: Event["id"]) => {
-    dispatch({ type: "delete", eventId });
+    dispatch({ type: "deleteEvent", eventId });
   };
 
   const handleSelectEvent = (event: Event | undefined) => {

@@ -1,31 +1,20 @@
-import { useState } from "react";
-import { CalendarApi } from "@fullcalendar/core/index.js";
+import * as React from "react";
 import { CalendarPlus, ChevronLeft, ChevronRight } from "lucide-react";
 
-import { initialView } from "@/app/[lang]/(dashboard-layout)/apps/calendar/constants";
+import { INITIAL_VIEW } from "../constants";
 
-import { CalendarState, Category } from "../types";
+import { useCalendarContext } from "../hooks/calendar-context";
 
 import { Button } from "@/components/ui/button";
 import { EventFilters } from "./event-filters";
 
-interface CalendarHeaderProps {
-  calendarState: CalendarState;
-  calendarApi: CalendarApi | null;
-  setEventSidebarIsOpen: (value: boolean) => void;
-  handleSelectCategory: (category: Category) => void;
-  handleSelectAllCategories: (isSelectAll: boolean) => void;
-}
-
-export function CalendarHeader({
-  calendarState,
-  calendarApi,
-  setEventSidebarIsOpen,
-  handleSelectCategory,
-  handleSelectAllCategories,
-}: CalendarHeaderProps) {
-  const [currentView, setCurrentView] = useState(initialView);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+export function CalendarHeader() {
+  const {
+    calendarApi,
+    setEventSidebarIsOpen,
+  } = useCalendarContext();
+  const [currentView, setCurrentView] = React.useState(INITIAL_VIEW);
+  const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
 
   const handleDateChange = (newDate: Date) => {
     if (calendarApi) {
@@ -95,11 +84,7 @@ export function CalendarHeader({
             <CalendarPlus className="h-4 w-4" />
             <span className="sr-only">Add New Event</span>
           </Button>
-          <EventFilters
-            handleSelectCategory={handleSelectCategory}
-            handleSelectAllCategories={handleSelectAllCategories}
-            calendarState={calendarState}
-          />
+          <EventFilters />
           <Button variant="outline" size="sm" onClick={handlePrev}>
             <ChevronLeft className="h-4 w-4" />
             <span className="sr-only">Previous Month</span>

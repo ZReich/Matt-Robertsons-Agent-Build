@@ -1,8 +1,8 @@
 import { Filter } from "lucide-react";
 
-import { categories } from "@/app/[lang]/(dashboard-layout)/apps/calendar/constants";
+import { categoriesData } from "../_data/categories";
 
-import { CalendarState, Category } from "../types";
+import { useCalendarContext } from "../hooks/calendar-context";
 
 import {
   DropdownMenu,
@@ -14,17 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-interface EventFiltersProps {
-  calendarState: CalendarState;
-  handleSelectCategory: (category: Category) => void;
-  handleSelectAllCategories: (isSelectAll: boolean) => void;
-}
+export function EventFilters() {
+  const { calendarState, handleSelectCategory, handleSelectAllCategories } =
+    useCalendarContext();
 
-export function EventFilters({
-  calendarState,
-  handleSelectCategory,
-  handleSelectAllCategories,
-}: EventFiltersProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,13 +32,13 @@ export function EventFilters({
         <DropdownMenuCheckboxItem
           className="cursor-pointer"
           checked={
-            calendarState.selectedCategories.length === categories.length
+            calendarState.selectedCategories.length === categoriesData.length
           }
           onCheckedChange={handleSelectAllCategories}
         >
           All
         </DropdownMenuCheckboxItem>
-        {categories.map((category) => (
+        {categoriesData.map((category) => (
           <DropdownMenuCheckboxItem
             key={category}
             className="cursor-pointer"

@@ -1,20 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import {
-  CalendarCheck2,
-  Calendar as CalendarIcon,
-  ListTodo,
-  CirclePlus,
-} from "lucide-react";
+import { Calendar as CalendarIcon, ListTodo, CirclePlus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { type ToDoType } from "./data-table";
+import type { ToDoType } from "../types";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -95,7 +89,6 @@ export function DataTableAddSidebar({
       created_at: new Date(),
       updated_at: new Date(),
     };
-    console.log(toDo);
 
     setToDos([toDo, ...toDos]);
   }

@@ -2,11 +2,16 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
+import { labelsData } from "../_data/labels";
+import { statusesData } from "../_data/statuses";
+import { prioritiesData } from "../_data/priorities";
+
+import type { ToDoType } from "../types";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import { DataTableRowActions } from "./data-table-row-actions";
-import { labels, priorities, statuses, type ToDoType } from "./data-table";
 
 export const columns: ColumnDef<ToDoType>[] = [
   {
@@ -37,7 +42,9 @@ export const columns: ColumnDef<ToDoType>[] = [
       <DataTableColumnHeader column={column} title="Title" />
     ),
     cell: ({ row }) => {
-      const label = labels.find((label) => label.value === row.original.label);
+      const label = labelsData.find(
+        (label) => label.value === row.original.label
+      );
 
       return (
         <div className="flex space-x-2">
@@ -55,7 +62,7 @@ export const columns: ColumnDef<ToDoType>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = statuses.find(
+      const status = statusesData.find(
         (status) => status.value === row.getValue("status")
       );
 
@@ -82,7 +89,7 @@ export const columns: ColumnDef<ToDoType>[] = [
       <DataTableColumnHeader column={column} title="Priority" />
     ),
     cell: ({ row }) => {
-      const priority = priorities.find(
+      const priority = prioritiesData.find(
         (priority) => priority.value === row.getValue("priority")
       );
 

@@ -3,7 +3,9 @@
 import { Row } from "@tanstack/react-table";
 import { EllipsisVertical } from "lucide-react";
 
-import { labels, ToDoSchema } from "./data-table";
+import { labelsData } from "../_data/labels";
+
+import type { ToDoType } from "../types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +29,7 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const toDo = ToDoSchema.parse(row.original);
+  const toDo = row.original as ToDoType;
 
   return (
     <DropdownMenu>
@@ -49,7 +51,7 @@ export function DataTableRowActions<TData>({
           <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuRadioGroup value={toDo.label}>
-              {labels.map((label) => (
+              {labelsData.map((label) => (
                 <DropdownMenuRadioItem key={label.value} value={label.value}>
                   {label.label}
                 </DropdownMenuRadioItem>

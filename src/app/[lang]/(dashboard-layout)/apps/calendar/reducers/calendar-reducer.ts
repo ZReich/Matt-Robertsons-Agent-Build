@@ -1,18 +1,23 @@
-import type { CalendarAction, CalendarState, Category, Event } from "../types";
+import type {
+  CalendarActionType,
+  CalendarStateType,
+  CategoryType,
+  EventType,
+} from "../types";
 
-export function calendarReducer(
-  calendarState: CalendarState,
-  action: CalendarAction
-): CalendarState {
+export function CalendarReducer(
+  calendarState: CalendarStateType,
+  action: CalendarActionType
+): CalendarStateType {
   switch (action.type) {
-    case "add": {
+    case "addEvent": {
       return {
         ...calendarState,
-        events: [...calendarState.events, action.event as Event],
+        events: [...calendarState.events, action.event as EventType],
       };
     }
 
-    case "update": {
+    case "updateEvent": {
       const events = calendarState.events.map((event) => {
         if (event.id === action.event?.id) {
           return action.event;
@@ -27,7 +32,7 @@ export function calendarReducer(
       };
     }
 
-    case "delete": {
+    case "deleteEvent": {
       const events = calendarState.events.filter(
         (event) => event.id !== action.eventId
       );
@@ -45,17 +50,19 @@ export function calendarReducer(
     case "selectCategory": {
       const tempSelectedCategories = [...calendarState.selectedCategories];
 
-      const index = tempSelectedCategories.indexOf(action.category as Category);
+      const index = tempSelectedCategories.indexOf(
+        action.category as CategoryType
+      );
 
       if (index !== -1) {
         tempSelectedCategories.splice(index, 1);
       } else {
-        tempSelectedCategories.push(action.category as Category);
+        tempSelectedCategories.push(action.category as CategoryType);
       }
 
       const tempSelectedEvents = calendarState.events.filter((event) =>
         tempSelectedCategories.includes(
-          event.extendedProps.category as Category
+          event.extendedProps.category as CategoryType
         )
       );
 
@@ -67,7 +74,7 @@ export function calendarReducer(
     }
 
     case "selectAllCategories": {
-      let tempSelectedCategories: Category[] = [
+      let tempSelectedCategories: CategoryType[] = [
         "Personal",
         "Business",
         "Family",

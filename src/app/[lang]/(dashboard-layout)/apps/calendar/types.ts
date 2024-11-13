@@ -1,4 +1,20 @@
-export type Category =
+import type { CalendarApi } from "@fullcalendar/core/index.js";
+
+export interface CalendarContextType {
+  calendarState: CalendarStateType;
+  calendarApi: CalendarApi | null;
+  setCalendarApi: (val: CalendarApi) => void;
+  eventSidebarIsOpen: boolean;
+  setEventSidebarIsOpen: (val: boolean) => void;
+  handleAddEvent: (event: Omit<EventType, "id">) => void;
+  handleUpdateEvent: (event: EventType) => void;
+  handleDeleteEvent: (eventId: EventType["id"]) => void;
+  handleSelectEvent: (event?: EventType) => void;
+  handleSelectCategory: (category: CategoryType) => void;
+  handleSelectAllCategories: (isSelectAllCategories: boolean) => void;
+}
+
+export type CategoryType =
   | "Business"
   | "Personal"
   | "Family"
@@ -6,7 +22,7 @@ export type Category =
   | "Health"
   | "Miscellaneous";
 
-export type Event = {
+export type EventType = {
   id: string;
   url?: string;
   title: string;
@@ -14,27 +30,27 @@ export type Event = {
   end: Date | null;
   start: Date | null;
   extendedProps: {
-    category: Category;
+    category: CategoryType;
     description?: string;
   };
 };
 
-export type CalendarState = {
-  events: Event[];
-  selectedEvent?: Event;
-  selectedCategories: Category[];
+export type CalendarStateType = {
+  events: EventType[];
+  selectedEvent?: EventType;
+  selectedCategories: CategoryType[];
 };
 
-export type CalendarAction = {
+export type CalendarActionType = {
   type:
-    | "add"
-    | "update"
-    | "delete"
+    | "addEvent"
+    | "updateEvent"
+    | "deleteEvent"
     | "selectEvent"
     | "selectCategory"
     | "selectAllCategories";
-  event?: Event;
-  category?: Category;
+  event?: EventType;
+  category?: CategoryType;
   eventId?: string;
   isSelectAllCategories?: boolean;
 };

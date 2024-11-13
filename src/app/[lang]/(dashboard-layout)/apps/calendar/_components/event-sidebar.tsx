@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,13 +10,14 @@ import {
   Calendar as CalendarIcon,
   CalendarMinus,
 } from "lucide-react";
-import { CalendarApi } from "@fullcalendar/core/index.js";
 
-import { categories } from "../constants";
+import { categoriesData } from "../_data/categories";
 
 import { cn } from "@/lib/utils";
 
-import type { CalendarState, Category, Event } from "../types";
+import { useCalendarContext } from "../hooks/calendar-context";
+
+import type { CategoryType, EventType } from "../types";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -59,35 +60,26 @@ const FormSchema = z.object({
   description: z.string().optional(),
   start: z.date().nullable(),
   end: z.date().nullable(),
-  category: z.custom<Category>(
-    (value) => categories.some((category) => category === value),
+  category: z.custom<CategoryType>(
+    (value) => categoriesData.some((category) => category === value),
     { message: "Invalid label" }
   ),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
 
-export type EventSidebarType = {
-  calendarState: CalendarState;
-  calendarApi: CalendarApi | null;
-  handleAddEvent: (event: Omit<Event, "id">) => void;
-  handleUpdateEvent: (event: Event) => void;
-  handleDeleteEvent: (eventId: Event["id"]) => void;
-  handleSelectEvent: (event: Event | undefined) => void;
-  setEventSidebarIsOpen: (value: boolean) => void;
-  eventSidebarIsOpen: boolean;
-};
+export function EventSidebar() {
+  const {
+    calendarState,
+    calendarApi,
+    handleAddEvent,
+    handleUpdateEvent,
+    handleDeleteEvent,
+    handleSelectEvent,
+    eventSidebarIsOpen,
+    setEventSidebarIsOpen,
+  } = useCalendarContext();
 
-export function EventSidebar({
-  calendarState,
-  calendarApi,
-  handleAddEvent,
-  handleUpdateEvent,
-  handleDeleteEvent,
-  handleSelectEvent,
-  eventSidebarIsOpen,
-  setEventSidebarIsOpen,
-}: EventSidebarType) {
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -98,9 +90,11 @@ export function EventSidebar({
     },
   });
 
+  const { isSubmitting, isValid } = form.formState;
+  const isDisabled = isSubmitting || !isValid;
   const selectedEvent = calendarState.selectedEvent;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedEvent) {
       const { extendedProps, ...eventProps } = selectedEvent;
 
@@ -127,7 +121,7 @@ export function EventSidebar({
   function onSubmit(data: FormValues) {
     if (!calendarApi) return;
 
-    const event: Omit<Event, "id"> = {
+    const event: Omit<EventType, "id"> = {
       ...(data.url && { url: data.url }),
       title: data.title,
       allDay: data.allDay,
@@ -351,7 +345,7 @@ export function EventSidebar({
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isDisabled}>
                 <CalendarCheck2 className="me-1 size-4" />
                 Save
               </Button>
@@ -360,6 +354,7 @@ export function EventSidebar({
                   variant="destructive"
                   className="w-full"
                   onClick={handleDelete}
+                  disabled={isDisabled}
                 >
                   <CalendarMinus className="me-1 size-4" />
                   Delete
