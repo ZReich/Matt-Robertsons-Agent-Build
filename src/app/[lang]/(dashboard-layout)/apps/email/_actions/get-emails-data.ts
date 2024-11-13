@@ -1,6 +1,6 @@
 import { emailsData } from "../_data/emails";
 
-import type { EmailType, EmailState } from "../types";
+import type { EmailState } from "../types";
 
 export async function getEmailsData(
   page: number = 1,

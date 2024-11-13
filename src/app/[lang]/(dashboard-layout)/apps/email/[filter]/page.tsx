@@ -1,9 +1,8 @@
 import { getEmailsData } from "../_actions/get-emails-data";
+import { labelsData } from "../_data/labels";
 
 import { EmailComposerForm } from "../_components/email-composer-form";
 import { EmailList } from "../_components/email-list";
-
-export const labels = ["inbox", "sent", "draft", "starred", "spam", "trash"];
 
 export default async function EmailPage({
   params,
@@ -15,7 +14,7 @@ export default async function EmailPage({
   const filterParam = params.filter;
   const pageQuery = searchParams.page || "1";
 
-  const isValidFilterParam = labels.some((label) => label === filterParam);
+  const isValidFilterParam = labelsData.some((label) => label === filterParam);
 
   if (isValidFilterParam) {
     const emailsData = await getEmailsData(parseInt(pageQuery), filterParam);

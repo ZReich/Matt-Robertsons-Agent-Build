@@ -1,4 +1,4 @@
-import { EmailType } from "../types";
+import type { EmailType } from "../types";
 
 export const emailsData: EmailType[] = [
   {
