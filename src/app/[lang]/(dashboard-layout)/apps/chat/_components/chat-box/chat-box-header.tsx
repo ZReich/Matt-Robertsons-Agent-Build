@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { EllipsisVertical, Menu, Phone, Video } from "lucide-react";
+import { EllipsisVertical, Phone, Video } from "lucide-react";
 
 import { getInitials } from "@/lib/utils";
-
-import { useChatContext } from "../../hooks/use-chat-context";
 
 import type { ChatType, UserType } from "../../types";
 
@@ -22,13 +20,11 @@ import { ChatAvatar } from "../chat-avatar";
 
 export function ChatBoxHeader({
   chat,
-  currentUser,
+  user,
 }: {
   chat: ChatType;
-  currentUser: UserType;
+  user: UserType;
 }) {
-  const { setIsChatSidebarOpen } = useChatContext();
-
   let info;
 
   if (chat?.chatGroup) {
@@ -37,9 +33,7 @@ export function ChatBoxHeader({
       avatar: chat.chatGroup.avatar,
     };
   } else {
-    const againstUser = chat?.users.find(
-      (user) => user.id !== currentUser.id
-    ) as UserType;
+    const againstUser = chat?.users.find((u) => u.id !== user.id) as UserType;
 
     info = {
       name: againstUser.name,
@@ -50,15 +44,6 @@ export function ChatBoxHeader({
 
   return (
     <CardHeader className="flex flex-row items-center space-y-0 gap-x-1.5 py-3 border-b border-border">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="md:hidden"
-        onClick={() => setIsChatSidebarOpen(true)}
-      >
-        <Menu className="size-4" />
-        <span className="sr-only">Open Chat Sidebar</span>
-      </Button>
       <ChatAvatar
         src={info.avatar}
         fallback={getInitials(info.name)}

@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { ChatReducer } from "../reducers/chat-reducer";
 
-import { ChatContextType, ChatType } from "../types";
+import type { ChatContextType, ChatType } from "../types";
 
 export const ChatContext = React.createContext<ChatContextType | undefined>(
   undefined
@@ -21,7 +21,7 @@ export function ChatProvider({
     chats: chatsData,
     selectedChat: null,
   });
-  const [open, setOpen] = React.useState(false);
+  const [isChatSidebarOpen, setIsChatSidebarOpen] = React.useState(false);
 
   const handleSelectChat = (chat: ChatType) => {
     dispatch({ type: "selectChat", chat });
@@ -47,8 +47,8 @@ export function ChatProvider({
     <ChatContext.Provider
       value={{
         chatState,
-        isChatSidebarOpen: open,
-        setIsChatSidebarOpen: setOpen,
+        isChatSidebarOpen,
+        setIsChatSidebarOpen,
         handleSelectChat,
         handleAddTextMessage,
         handleAddImagesMessage,

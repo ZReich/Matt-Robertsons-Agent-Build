@@ -42,7 +42,7 @@ export type NewMessageType = Omit<
 export interface UserType {
   id: string;
   name: string;
-  avatar: string;
+  avatar?: string;
   status: string;
 }
 
@@ -60,8 +60,8 @@ export interface ChatType {
   id: string;
   chatGroup?: ChatGroupType;
   lastMessage?: LastMessageType;
-  name: string;
-  avatar: string;
+  name?: string;
+  avatar?: string;
   status?: string;
   messages: MessageType[];
   users: UserType[];

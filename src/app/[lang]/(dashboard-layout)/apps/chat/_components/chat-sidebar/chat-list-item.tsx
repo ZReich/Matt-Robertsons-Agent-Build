@@ -1,26 +1,29 @@
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 import { formatDistanceToNow } from "@/lib/date-formatters";
 import { cn, getInitials } from "@/lib/utils";
+import { getLocalizedPathname } from "@/lib/i18n";
 
-import { ChatType } from "../../types";
+import type { ChatType } from "../../types";
+import type { Locale } from "@/configs/i18n";
+
+import { useChatContext } from "../../hooks/use-chat-context";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChatAvatar } from "../chat-avatar";
 
-export function ChatListItem({
-  chat,
-  chatIdParam,
-  setIsChatSidebarOpen,
-}: {
-  chat: ChatType;
-  chatIdParam: string;
-  setIsChatSidebarOpen: (val: boolean) => void;
-}) {
+export function ChatListItem({ chat }: { chat: ChatType }) {
+  const { setIsChatSidebarOpen } = useChatContext();
+  const params = useParams();
+
+  const chatIdParam = params.id?.[0];
+  const locale = params.lang as Locale;
+
   return (
     <Link
-      href={`/apps/chat/${chat.id}`}
+      href={getLocalizedPathname(`/apps/chat/${chat.id}`, locale)}
       prefetch={false}
       className={cn(
         buttonVariants({ variant: "ghost" }),
@@ -32,7 +35,7 @@ export function ChatListItem({
       <li className="w-full flex items-center gap-2">
         <ChatAvatar
           src={chat.avatar}
-          fallback={getInitials(chat.name)}
+          fallback={getInitials(chat.name || "")}
           status={chat.status}
           size={1.75}
           className="shrink-0"

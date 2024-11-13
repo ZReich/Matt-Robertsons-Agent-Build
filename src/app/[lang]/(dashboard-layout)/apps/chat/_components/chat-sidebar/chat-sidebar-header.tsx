@@ -7,11 +7,8 @@ import {
   CircleDashed,
   ListFilter,
   MoreVertical,
-  Plus,
   Search,
-  Smile,
   SquarePen,
-  Users,
 } from "lucide-react";
 import {
   DropdownMenu,

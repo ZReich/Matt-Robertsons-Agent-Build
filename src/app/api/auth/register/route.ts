@@ -41,6 +41,7 @@ export async function POST(req: Request) {
   const { firstName, lastName, username, email, password } = parsedData.data;
 
   try {
+    return NextResponse.json(null, { status: 201 }); // Remove this line if you want to make the registration works on production
     // Check if the user already exists
     const user = await db.user.findUnique({ where: { email } });
     if (user) {

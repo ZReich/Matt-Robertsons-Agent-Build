@@ -24,7 +24,7 @@ const sidebarLabels = [
   { icon: Trash2, label: "Trash", param: "trash" },
 ];
 
-export function Sidebar() {
+export function EmailSidebar() {
   const params = useParams();
   const isTablet = useMedia("(max-width: 767px)");
 

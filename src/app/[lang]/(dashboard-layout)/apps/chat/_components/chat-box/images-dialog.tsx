@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import * as React from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -65,8 +65,9 @@ type FormType = z.infer<typeof FormSchema>;
 
 export function ImagesDialog() {
   const { handleAddImagesMessage } = useChatContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
+
   const form = useForm<FormType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -89,7 +90,7 @@ export function ImagesDialog() {
     setIsOpen(false);
   };
 
-  const handleImageChange = useCallback(
+  const handleImageChange = React.useCallback(
     (acceptedImages: FileList | File[] | null) => {
       if (!acceptedImages) return;
 

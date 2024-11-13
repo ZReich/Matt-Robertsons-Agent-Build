@@ -1,4 +1,4 @@
-import { Sidebar } from "../_components/email-sidebar";
+import { EmailSidebar } from "../_components/email-sidebar";
 
 export default function EmailLayout({
   children,
@@ -7,7 +7,7 @@ export default function EmailLayout({
 }) {
   return (
     <div className="container h-full w-full flex gap-4 p-4">
-      <Sidebar />
+      <EmailSidebar />
       {children}
     </div>
   );

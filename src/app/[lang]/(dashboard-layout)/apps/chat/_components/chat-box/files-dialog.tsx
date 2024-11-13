@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,8 +61,8 @@ type FormType = z.infer<typeof FormSchema>;
 
 export function FilesDialog() {
   const { handleAddFilesMessage } = useChatContext();
-  const [isOpen, setIsOpen] = useState(false);
-  const [fileUrls, setFileUrls] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [fileUrls, setFileUrls] = React.useState<string[]>([]);
   const form = useForm<FormType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -85,7 +85,7 @@ export function FilesDialog() {
     setIsOpen(false);
   };
 
-  const handleFilesChange = useCallback(
+  const handleFilesChange = React.useCallback(
     (acceptedFiles: FileList | File[] | null) => {
       if (!acceptedFiles) return;
 

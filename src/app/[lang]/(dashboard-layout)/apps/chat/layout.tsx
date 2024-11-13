@@ -1,7 +1,9 @@
 import { getChatsData } from "./_actions/get-chats-data";
-import { ChatSidebar } from "./_components/chat-sidebar";
+
+import type { ChatType } from "./types";
+
 import { ChatProvider } from "./contexts/chat-context";
-import { ChatType } from "./types";
+import { ChatSidebar } from "./_components/chat-sidebar";
 
 export default async function ChatLayout({
   children,
