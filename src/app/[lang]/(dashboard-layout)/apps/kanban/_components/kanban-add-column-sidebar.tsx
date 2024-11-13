@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,7 +43,7 @@ export function KanbanAddColumnSidebar() {
     resolver: zodResolver(FormSchema),
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     form.reset();
   }, [kanbanAddColumnSidebarIsOpen, form]);
 

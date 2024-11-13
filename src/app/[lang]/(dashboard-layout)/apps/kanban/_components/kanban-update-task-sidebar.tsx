@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { labels } from "./kanban";
+import { labelsData } from "../_data/labels";
 import { getTeamMembersSearchData } from "../_actions/get-team-members-search-data";
 
 import { cn } from "@/lib/utils";
@@ -92,7 +92,7 @@ const FormSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
   description: z.string().optional(),
   label: z.custom<string>(
-    (value) => labels.some((label) => label.name === value),
+    (value) => labelsData.some((label) => label.name === value),
     { message: "Invalid label. Please select a valid label." }
   ),
   assigned: z
@@ -112,8 +112,8 @@ type FormValues = z.infer<typeof FormSchema>;
 type TeamMemberType = z.infer<typeof UserSchema>;
 
 export function KanbanUpdateTaskSidebar() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [searchTeamMembers, setSearchTeamMembers] = useState("");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [searchTeamMembers, setSearchTeamMembers] = React.useState("");
   const [
     searchTeamMembersResults,
     searchTeamMembersAction,
@@ -136,7 +136,7 @@ export function KanbanUpdateTaskSidebar() {
   const selectedTask = kanbanState.selectedTask;
   const assignedIds = new Set(assigned?.map((m) => m.id));
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedTask) {
       form.reset({
         title: selectedTask?.title,
@@ -252,7 +252,7 @@ export function KanbanUpdateTaskSidebar() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {labels.map((label) => (
+                        {labelsData.map((label) => (
                           <SelectItem key={label.id} value={label.name}>
                             {label.name}
                           </SelectItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -47,7 +47,7 @@ export function KanbanUpdateColumnSidebar() {
 
   const selectedColumn = kanbanState.selectedColumn;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedColumn) {
       form.reset({
         title: selectedColumn?.title,

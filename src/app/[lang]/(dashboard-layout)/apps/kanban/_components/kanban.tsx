@@ -15,16 +15,6 @@ import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "./kanban-column";
 import { useKanbanContext } from "../hooks/use-kanban-context";
 
-export const labels: { id: string; name: string }[] = [
-  { id: "research", name: "Research" },
-  { id: "design", name: "Design" },
-  { id: "development", name: "Development" },
-  { id: "meeting", name: "Meeting" },
-  { id: "documentation", name: "Documentation" },
-  { id: "qa", name: "QA" },
-  { id: "marketing", name: "Marketing" },
-];
-
 export function Kanban() {
   const {
     kanbanState,

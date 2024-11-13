@@ -45,6 +45,11 @@ export interface KanbanState {
   selectedTask?: TaskType;
 }
 
+export interface Label {
+  id: string;
+  name: string;
+}
+
 export type KanbanAction =
   | { type: "addColumn"; column: Omit<ColumnType, "id" | "order" | "tasks"> }
   | { type: "updateColumn"; column: ColumnType }
