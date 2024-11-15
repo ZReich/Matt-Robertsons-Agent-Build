@@ -59,8 +59,7 @@ export function CommandMenu({ ...props }: DialogProps) {
         onClick={() => setOpen(true)}
         {...props}
       >
-        <span className="hidden lg:inline-flex">Search documentation...</span>
-        <span className="inline-flex lg:hidden">Search...</span>
+        <span className="inline-flex">Search...</span>
         <Keyboard className="hidden absolute right-[0.3rem] top-[0.4.5rem] sm:flex">
           K
         </Keyboard>

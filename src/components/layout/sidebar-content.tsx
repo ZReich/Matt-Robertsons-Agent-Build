@@ -5,9 +5,11 @@ import { useParams } from "next/navigation";
 
 import { getLocalizedPathname } from "@/lib/i18n";
 
-import { i18n, Locale } from "@/configs/i18n";
+import { i18n } from "@/configs/i18n";
 
 import { groupNavs } from "@/data/navigation";
+
+import type { Locale } from "@/configs/i18n";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Nav } from "@/components/layout/nav";

@@ -4,8 +4,8 @@ import { signOut, useSession } from "next-auth/react";
 
 import { cn, getInitials } from "@/lib/utils";
 
-import { Direction } from "@/types";
-import { Locale } from "@/configs/i18n";
+import type { Direction } from "@/types";
+import type { Locale } from "@/configs/i18n";
 
 import { getLocalizedPathname } from "@/lib/i18n";
 
@@ -72,7 +72,7 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
               href={getLocalizedPathname("/dashboard", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
-                "w-full justify-start gap-2"
+                "w-full justify-start gap-2 focus-visible:ring-0"
               )}
             >
               <LayoutGrid className="size-4 text-muted-foreground" />
@@ -84,7 +84,7 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
               href={getLocalizedPathname("/account", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
-                "w-full justify-start gap-2"
+                "w-full justify-start gap-2 focus-visible:ring-0"
               )}
             >
               <User className="size-4 text-muted-foreground" />
@@ -96,7 +96,7 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
               href={getLocalizedPathname("/account/settings", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
-                "w-full justify-start gap-2"
+                "w-full justify-start gap-2 focus-visible:ring-0"
               )}
             >
               <UserCog className="size-4 text-muted-foreground" />

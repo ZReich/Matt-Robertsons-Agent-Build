@@ -47,7 +47,7 @@ export function ChatBox({ user }: { user: UserType }) {
 
   if (!chatIdParam) {
     return (
-      <div className="size-full flex flex-col justify-center items-center gap-2">
+      <div className="size-full flex flex-col justify-center items-center gap-2 m-auto">
         <MessageCircleDashed className="size-24 text-primary" />
         <span className="text-muted-foreground">
           Select a chat to start a conversation.
