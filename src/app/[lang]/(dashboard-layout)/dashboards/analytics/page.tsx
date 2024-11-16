@@ -10,7 +10,7 @@ import { MonthlyConversionSummary } from "./_components/monthly-conversion-summa
 
 export default function AnalyticsPage() {
   return (
-    <div className="container grid gap-4 p-4">
+    <section className="container grid gap-4 p-4">
       <Overview />
       <TrafficSources />
       <GeographicLocation />
@@ -20,6 +20,6 @@ export default function AnalyticsPage() {
       <PerformanceOverTime />
       <WeeklyTrafficOverview />
       <MonthlyConversionSummary />
-    </div>
+    </section>
   );
 }
