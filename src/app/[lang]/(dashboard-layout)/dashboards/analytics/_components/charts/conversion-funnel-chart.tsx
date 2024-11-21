@@ -1,23 +1,26 @@
 "use client";
 
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
-import { useSettings } from "@/hooks/use-settings";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Check, CreditCard, Eye, ShoppingCart } from "lucide-react";
 
 import { chartConfig } from "@/configs/chart-config";
 
 import { remToPx } from "@/lib/utils";
 
-import type { ConversionFunnelType } from "../conversion-funnel";
+import type { ConversionFunnelType } from "../../types";
 
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { useSettings } from "@/hooks/use-settings";
+
+import { ChartContainer } from "@/components/ui/chart";
+import { Badge } from "@/components/ui/badge";
+
+const funnelStageIcons = {
+  "Visited Page": Eye,
+  "Added to Cart": ShoppingCart,
+  "Initiated Checkout": CreditCard,
+  "Completed Purchase": Check,
+};
 
 export function ConversionFunnelChart({
   data,
@@ -26,37 +29,43 @@ export function ConversionFunnelChart({
 }) {
   const { settings } = useSettings();
 
-  const conversionFunnelData = Object.entries(data).map(
-    ([name, value], index) => ({
-      name: name
-        .replace(/_+/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase()),
-      value,
-      fill: `hsl(var(--chart-${index + 1}))`,
-    })
-  );
   return (
-    <ChartContainer config={chartConfig}>
-      <BarChart
-        accessibilityLayer
-        data={conversionFunnelData}
-        layout="vertical"
-        margin={{
-          left: 25,
-        }}
+    <div className="flex flex-col justify-center items-center gap-6 md:flex-row">
+      <div className="shrink-0 grid grid-cols-2 gap-4 md:grid-cols-1">
+        {data.map((stage) => {
+          const Icon =
+            funnelStageIcons[stage.name as keyof typeof funnelStageIcons];
+
+          return (
+            <div key={stage.name} className="flex gap-x-2">
+              <Badge
+                style={{
+                  backgroundColor: stage.fill,
+                }}
+                className="size-12 aspect-square shadow-none"
+                aria-hidden
+              >
+                <Icon className="size-full" />
+              </Badge>
+              <div>
+                <p className="text-2xl">{stage.value.toLocaleString()}</p>
+                <h4 className="text-xs">{stage.name}</h4>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <ChartContainer
+        config={chartConfig}
+        className="grow aspect-square w-full max-h-[250px]"
       >
-        <CartesianGrid horizontal={false} />
-        <XAxis type="number" dataKey="value" hide />
-        <YAxis
-          dataKey="name"
-          type="category"
-          tickLine={false}
-          tickMargin={10}
-          axisLine={false}
-        />
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <Bar dataKey="value" radius={remToPx(settings.radius) - 2} />
-      </BarChart>
-    </ChartContainer>
+        <BarChart accessibilityLayer data={data}>
+          <CartesianGrid vertical={false} />
+          <XAxis dataKey="name" type="category" hide />
+          <Bar dataKey="value" radius={remToPx(settings.radius) - 2} />
+        </BarChart>
+      </ChartContainer>
+    </div>
   );
 }

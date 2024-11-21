@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { EllipsisVertical } from "lucide-react";
 
-import { getEngagementByDeviceData } from "../_actions/get-engagement-by-device-data";
+import { engagementByDeviceData } from "../_data/engagement-by-device";
 
 import {
   Card,
@@ -10,29 +10,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EngagementByDeviceTable } from "./tables/engagement-trends-table";
-
-export const EngagementByDeviceSchema = z.object({
-  device_type: z.string(),
-  session_duration: z.number().nonnegative(),
-  pages_per_session: z.number().nonnegative(),
-  bounce_rate: z.number().min(0).max(1),
-});
-
-export type EngagementByDeviceType = z.infer<typeof EngagementByDeviceSchema>;
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export async function EngagementByDevice() {
-  const engagementTrendsData: EngagementByDeviceType[] =
-    await getEngagementByDeviceData();
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Engagement By Device</CardTitle>
-        <CardDescription>Last month</CardDescription>
-      </CardHeader>
-      <CardContent className="pb-0">
-        <EngagementByDeviceTable data={engagementTrendsData} />
-      </CardContent>
-    </Card>
+    <article className="md:col-span-7">
+      <Card>
+        <CardHeader className="flex-row justify-between items-start space-y-0">
+          <div>
+            <CardTitle>Engagement By Device</CardTitle>
+            <CardDescription>Last month</CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger aria-label="More options">
+              <EllipsisVertical className="h-4 w-4" />
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+        </CardHeader>
+        <CardContent>
+          <EngagementByDeviceTable data={engagementByDeviceData} />
+        </CardContent>
+      </Card>
+    </article>
   );
 }

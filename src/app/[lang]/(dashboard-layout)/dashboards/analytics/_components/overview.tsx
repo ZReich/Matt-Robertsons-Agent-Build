@@ -1,89 +1,67 @@
-import { z } from "zod";
 import {
   FileText,
   HandCoins,
-  Hourglass,
-  Lightbulb,
+  Timer,
   MousePointerIcon,
-  Target,
-  User,
+  RefreshCw,
+  Sparkles,
   Users,
 } from "lucide-react";
 
-import { getOverviewData } from "../_actions/get-overview-data";
+import { overviewData } from "../_data/overview";
 
 import { OverviewCard } from "@/components/OverviewCard";
 
-export const MetricSchema = z.object({
-  value: z.number(),
-  percentage_change: z.number(),
-});
-
-export const OverviewSchema = z.object({
-  total_visitors: MetricSchema,
-  unique_visitors: MetricSchema,
-  total_page_views: MetricSchema,
-  average_session_duration: MetricSchema,
-  bounce_rate: MetricSchema,
-  total_conversions: MetricSchema,
-  conversion_rate: MetricSchema,
-  total_revenue: MetricSchema,
-});
-
-export type OverviewType = z.infer<typeof OverviewSchema>;
-
 export async function Overview() {
-  const overviewData: OverviewType = await getOverviewData();
-
   return (
-    <div className="grid grid-cols-2 gap-4 md:col-span-2 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 md:col-span-full md:grid-cols-4">
       <OverviewCard
-        data={overviewData.total_visitors}
+        data={overviewData.totalVisitors}
         title="Total Visitors"
         description="Last month"
         icon={Users}
       />
       <OverviewCard
-        data={overviewData.unique_visitors}
+        data={overviewData.uniqueVisitors}
         title="Unique Visitors"
         description="Last month"
-        icon={User}
+        icon={Sparkles}
       />
       <OverviewCard
-        data={overviewData.total_page_views}
+        data={overviewData.totalPageViews}
         title="Total Page Views"
         description="Last month"
         icon={FileText}
       />
       <OverviewCard
-        data={overviewData.average_session_duration}
+        data={overviewData.averageSessionDuration}
         title="Avg. Session Duration"
         description="Last month"
-        icon={Hourglass}
+        icon={Timer}
         formatStyle="duration"
       />
       <OverviewCard
-        data={overviewData.bounce_rate}
+        data={overviewData.bounceRate}
         title="Bounce Rate"
         description="Last month"
         icon={MousePointerIcon}
         formatStyle="percent"
       />
       <OverviewCard
-        data={overviewData.total_conversions}
+        data={overviewData.totalConversions}
         title="Total Conversions"
         description="Last month"
-        icon={Target}
+        icon={RefreshCw}
       />
       <OverviewCard
-        data={overviewData.conversion_rate}
+        data={overviewData.conversionRate}
         title="Conversion Rate"
         description="Last month"
-        icon={Lightbulb}
+        icon={RefreshCw}
         formatStyle="percent"
       />
       <OverviewCard
-        data={overviewData.total_revenue}
+        data={overviewData.totalRevenue}
         title="Total Revenue"
         description="Last month"
         icon={HandCoins}

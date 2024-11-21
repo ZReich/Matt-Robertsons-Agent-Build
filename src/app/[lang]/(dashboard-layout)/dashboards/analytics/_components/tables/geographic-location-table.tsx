@@ -2,20 +2,20 @@
 
 import flags from "react-phone-number-input/flags";
 import { Country } from "react-phone-number-input";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { Eye, TrendingDown, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { GeographicLocationType } from "../../types";
+import type { GeographicLocationType } from "../../types";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+
+function getPercentageChangeColor(isPositiveChange: boolean) {
+  if (isPositiveChange)
+    return "bg-success text-success-foreground hover:bg-success/80";
+  return "bg-destructive text-destructive-foreground hover:bg-destructive/80";
+}
 
 export function GeographicLocationTable({
   data,
@@ -24,18 +24,6 @@ export function GeographicLocationTable({
 }) {
   return (
     <Table className="rounded-lg overflow-hidden">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-10" aria-label="Order">
-            #
-          </TableHead>
-          <TableHead>Country</TableHead>
-          <TableHead className="">Visitors</TableHead>
-          <TableHead className="w-10" aria-label="Growth rate">
-            %
-          </TableHead>
-        </TableRow>
-      </TableHeader>
       <TableBody>
         {data.map((item, index) => {
           const Flag = flags[item.countryCode as Country] as React.ElementType;
@@ -43,8 +31,13 @@ export function GeographicLocationTable({
 
           return (
             <TableRow key={item.country}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell className="inline-flex items-center gap-1.5">
+              <TableCell className="text-muted-foreground" aria-label="Order">
+                {index + 1}
+              </TableCell>
+              <TableCell
+                className="min-w-40 inline-flex items-center gap-2 font-semibold"
+                aria-label="Country"
+              >
                 <Flag
                   title={item.country}
                   className="h-4 rounded-sm"
@@ -52,26 +45,35 @@ export function GeographicLocationTable({
                 />
                 <span>{item.country}</span>
               </TableCell>
-              <TableCell>${item.visitors.toLocaleString()}</TableCell>
-              <TableCell
-                className={cn(
-                  "flex gap-1 text-destructive",
-                  isPositiveChange && "text-success"
-                )}
-              >
-                <span>
-                  {new Intl.NumberFormat("en-US", {
-                    style: "percent",
-                    maximumFractionDigits: 2,
-                  }).format(item.percentageChange)}
-                </span>
-                <span className="ms-auto" aria-hidden>
-                  {isPositiveChange ? (
-                    <TrendingUp className="size-4 text-green-500" />
-                  ) : (
-                    <TrendingDown className="size-4 text-destructive" />
+              <TableCell aria-label="Visitors">
+                <Badge variant="secondary" className="justify-center gap-x-1">
+                  <Eye className="h-3.5 w-3.5" aria-hidden />
+                  <span>{item.visitors.toLocaleString()}</span>
+                </Badge>
+              </TableCell>
+              <TableCell className="w-0" aria-label="Growth rate">
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "justify-center",
+                    getPercentageChangeColor(isPositiveChange)
                   )}
-                </span>
+                >
+                  {isPositiveChange && <span>+</span>}
+                  <span>
+                    {new Intl.NumberFormat("en-US", {
+                      style: "percent",
+                      maximumFractionDigits: 2,
+                    }).format(item.percentageChange)}
+                  </span>
+                  <span className="ms-1" aria-hidden>
+                    {isPositiveChange ? (
+                      <TrendingUp className="h-3.5 w-3.5" />
+                    ) : (
+                      <TrendingDown className="h-3.5 w-3.5" />
+                    )}
+                  </span>
+                </Badge>
               </TableCell>
             </TableRow>
           );

@@ -1,4 +1,4 @@
-import { GeographicLocationType } from "../types";
+import type { GeographicLocationType } from "../types";
 
 export const geographicLocationsData: GeographicLocationType[] = [
   {

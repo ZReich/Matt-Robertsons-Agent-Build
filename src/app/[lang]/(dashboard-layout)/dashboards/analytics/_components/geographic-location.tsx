@@ -1,7 +1,4 @@
-import Link from "next/link";
-import { z } from "zod";
-
-import { cn } from "@/lib/utils";
+import { EllipsisVertical } from "lucide-react";
 
 import { geographicLocationsData } from "../_data/geographic-locations";
 
@@ -9,41 +6,39 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
 import { GeographicLocationTable } from "./tables/geographic-location-table";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-export const GeographicLocationSchema = z.object({
-  country: z.string(),
-  country_code: z.string().length(2),
-  visitors: z.number().nonnegative(),
-  percentage_change: z.number(),
-});
-
-export type GeographicLocationType = z.infer<typeof GeographicLocationSchema>;
-
-export async function GeographicLocation() {
+export function GeographicLocation() {
   return (
-    <article>
+    <article className="md:col-span-5">
       <Card>
-        <CardHeader>
-          <CardTitle>Geographic Location</CardTitle>
-          <CardDescription>Last month</CardDescription>
+        <CardHeader className="flex-row justify-between items-start space-y-0">
+          <div>
+            <CardTitle>Geographic Location</CardTitle>
+            <CardDescription>Last month</CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger aria-label="More options">
+              <EllipsisVertical className="h-4 w-4" />
+            </DropdownMenuTrigger>
+          </DropdownMenu>
         </CardHeader>
-        <CardContent className="pb-0">
-          <GeographicLocationTable data={geographicLocationsData} />
-        </CardContent>
-        <CardFooter>
-          <Link
-            href="#"
-            className={cn(buttonVariants({ variant: "link" }), "w-full")}
+        <CardContent>
+          <ScrollArea
+            orientation="horizontal"
+            className="w-[calc(100vw-5rem)] md:w-auto"
           >
-            View More
-          </Link>
-        </CardFooter>
+            <GeographicLocationTable data={geographicLocationsData} />
+          </ScrollArea>
+        </CardContent>
       </Card>
     </article>
   );

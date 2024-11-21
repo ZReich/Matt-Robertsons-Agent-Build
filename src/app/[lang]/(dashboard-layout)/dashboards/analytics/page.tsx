@@ -5,21 +5,17 @@ import { EngagementByDevice } from "./_components/engagement-by-device";
 import { TopPages } from "./_components/top-pages";
 import { ConversionFunnel } from "./_components/conversion-funnel";
 import { PerformanceOverTime } from "./_components/performance-over-time";
-import { WeeklyTrafficOverview } from "./_components/weekly-traffic-overview";
-import { MonthlyConversionSummary } from "./_components/monthly-conversion-summary";
 
 export default function AnalyticsPage() {
   return (
-    <section className="container grid gap-4 p-4">
+    <section className="container grid gap-4 p-4 md:grid-cols-12">
       <Overview />
-      <TrafficSources />
-      <GeographicLocation />
-      <EngagementByDevice />
-      <TopPages />
       <ConversionFunnel />
+      <GeographicLocation />
+      <TopPages />
       <PerformanceOverTime />
-      <WeeklyTrafficOverview />
-      <MonthlyConversionSummary />
+      <TrafficSources />
+      <EngagementByDevice />
     </section>
   );
 }
