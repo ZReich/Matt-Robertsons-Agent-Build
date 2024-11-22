@@ -13,7 +13,3 @@ interface IconProps extends React.SVGAttributes<SVGElement> {
   color?: string;
 }
 export type Icon = React.ComponentType<IconProps> | LucideIcon;
-
-export function ratingToPercentage(rating: number, maxRating: number) {
-  return (rating / maxRating) * 100;
-}

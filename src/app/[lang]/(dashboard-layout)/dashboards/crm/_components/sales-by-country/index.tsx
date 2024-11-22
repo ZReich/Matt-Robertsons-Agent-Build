@@ -1,5 +1,6 @@
 import { EllipsisVertical } from "lucide-react";
-import { leadSourcesData } from "../_data/lead-sources";
+
+import { salesByCountryData } from "../../_data/sales-by-country";
 
 import {
   Card,
@@ -12,15 +13,16 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LeadSourcesChart } from "./charts/lead-sources-chart";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { SalesByCountryTable } from "./sales-by-country.table";
 
-export function LeadSources() {
+export function SalesByCountry() {
   return (
     <article>
       <Card>
         <CardHeader className="flex-row justify-between items-start space-y-0">
           <div>
-            <CardTitle>Lead Sources</CardTitle>
+            <CardTitle>Sales By Country</CardTitle>
             <CardDescription>Last month</CardDescription>
           </div>
           <DropdownMenu>
@@ -30,7 +32,12 @@ export function LeadSources() {
           </DropdownMenu>
         </CardHeader>
         <CardContent>
-          <LeadSourcesChart data={leadSourcesData} />
+          <ScrollArea
+            orientation="horizontal"
+            className="w-[calc(100vw-5rem)] md:w-auto"
+          >
+            <SalesByCountryTable data={salesByCountryData} />
+          </ScrollArea>
         </CardContent>
       </Card>
     </article>

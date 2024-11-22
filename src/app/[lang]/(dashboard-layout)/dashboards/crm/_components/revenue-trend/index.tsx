@@ -1,5 +1,6 @@
 import { EllipsisVertical } from "lucide-react";
-import { leadSourcesData } from "../_data/lead-sources";
+
+import { revenueTrendData } from "../../_data/revenue-trend";
 
 import {
   Card,
@@ -12,15 +13,15 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LeadSourcesChart } from "./charts/lead-sources-chart";
+import { RevenueTrendChart } from "./revenue-trend-chart";
 
-export function LeadSources() {
+export function RevenueTrend() {
   return (
     <article>
       <Card>
         <CardHeader className="flex-row justify-between items-start space-y-0">
           <div>
-            <CardTitle>Lead Sources</CardTitle>
+            <CardTitle>Revenue Trend</CardTitle>
             <CardDescription>Last month</CardDescription>
           </div>
           <DropdownMenu>
@@ -30,7 +31,7 @@ export function LeadSources() {
           </DropdownMenu>
         </CardHeader>
         <CardContent>
-          <LeadSourcesChart data={leadSourcesData} />
+          <RevenueTrendChart data={revenueTrendData} />
         </CardContent>
       </Card>
     </article>
