@@ -1,7 +1,8 @@
-import { Locale } from "@/configs/i18n";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
+
+import type { Locale } from "@/configs/i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -99,4 +100,16 @@ export function formatFileType(type: string) {
 
 export function ratingToPercentage(rating: number, maxRating: number) {
   return (rating / maxRating) * 100;
+}
+
+export function formatCurrency(
+  amount: number,
+  locales: string = "en",
+  currency: string = "USD"
+) {
+  return new Intl.NumberFormat(locales, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }

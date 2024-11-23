@@ -30,7 +30,7 @@ export async function TopProducts() {
             </DropdownMenuTrigger>
           </DropdownMenu>
         </CardHeader>
-        <CardContent className="pt-8 pb-[4.5rem]">
+        <CardContent>
           <TopProductsTable data={topProductsData} />
         </CardContent>
       </Card>

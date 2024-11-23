@@ -11,8 +11,13 @@ export interface OverviewType {
 }
 
 export interface SalesTrendType {
-  date: number;
-  sales: number;
+  summary: {
+    lowestSales: { date: number; sales: number };
+    highestSales: { date: number; sales: number };
+    avgSales: number;
+    totalSales: number;
+  };
+  weekly: Array<{ date: number; sales: number }>;
 }
 
 export interface TopProductType {

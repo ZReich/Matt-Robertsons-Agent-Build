@@ -17,11 +17,11 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-export function SalesTrendChart({ data }: { data: SalesTrendType[] }) {
+export function SalesTrendChart({ data }: { data: SalesTrendType["weekly"] }) {
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={chartConfig} className="h-[250px] w-full">
+    <ChartContainer config={chartConfig} className="h-[307px] w-full">
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <ChartTooltip
@@ -46,14 +46,14 @@ export function SalesTrendChart({ data }: { data: SalesTrendType[] }) {
           tickLine={false}
           axisLine={false}
           tickMargin={10}
-          tickFormatter={(value) => format(value, "dd")}
+          tickFormatter={(value) => format(value, "MMM dd")}
         />
-        <YAxis
+        {/* <YAxis
           tickLine={false}
           tickMargin={10}
           axisLine={false}
           tickFormatter={(value) => "$" + value.toLocaleString()}
-        />
+        /> */}
 
         <Bar
           dataKey="sales"

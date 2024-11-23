@@ -31,7 +31,7 @@ export function InvoiceTableRowActions<TData>({
   const invoice = row.original as InvoiceType;
 
   return (
-    <div className="flex justify-end">
+    <div className="flex justify-end me-4">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

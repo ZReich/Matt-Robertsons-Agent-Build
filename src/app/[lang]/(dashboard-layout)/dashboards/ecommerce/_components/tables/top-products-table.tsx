@@ -16,8 +16,13 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
+import { useSettings } from "@/hooks/use-settings";
 
 export function TopProductsTable({ data }: { data: TopProductType[] }) {
+  const { settings } = useSettings();
+
+  const layout = settings.layout;
+
   return (
     <Carousel
       plugins={[
@@ -28,19 +33,25 @@ export function TopProductsTable({ data }: { data: TopProductType[] }) {
         }),
       ]}
       opts={{
-        align: "center",
+        align: "start",
+        loop: true,
       }}
       orientation="vertical"
       className="w-full select-none"
     >
-      <CarouselContent className="h-[260px] grid gap-2">
+      <CarouselContent className="h-[500px] grid gap-2">
         {data.map((product, index) => {
           const isPositiveSalesChange = product.sales.percentageChange > 0;
 
           return (
             <CarouselItem key={product.sku}>
               <Card className="overflow-hidden">
-                <CardContent className="grid p-0 md:grid-cols-2">
+                <CardContent
+                  className={cn(
+                    "grid p-0 md:grid-cols-2",
+                    layout === "vertical" && "md:grid-cols-1"
+                  )}
+                >
                   <div className="flex items-center gap-4 p-4">
                     <Image
                       src={product.image}
@@ -70,10 +81,11 @@ export function TopProductsTable({ data }: { data: TopProductType[] }) {
                       value={`$${product.revenue.value.toLocaleString()}`}
                       percentageChange={product.revenue.percentageChange}
                     />
-                    <div className="flex items-center gap-1">
-                      <p className="text-sm text-muted-foreground">Stock:</p>
-                      <p className="text-lg">{product.inventoryLeft}</p>
-                      <p className="text-sm">units</p>
+                    <div className="flex items-center gap-1 text-sm">
+                      <h5>Stock:</h5>
+                      <p className="font-semibold">
+                        {product.inventoryLeft} units
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -82,8 +94,6 @@ export function TopProductsTable({ data }: { data: TopProductType[] }) {
           );
         })}
       </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
     </Carousel>
   );
 }
@@ -99,10 +109,10 @@ function Stat({
 }) {
   const isPositiveChange = percentageChange >= 0;
   return (
-    <div className="flex items-center gap-1">
-      <p className="text-sm text-muted-foreground">{label}:</p>
+    <div className="flex items-center gap-1 text-sm">
+      <h5>{label}:</h5>
       <div className="flex items-center space-x-2">
-        <p className="text-lg">{value}</p>
+        <p className="font-semibold">{value}</p>
         <Badge
           variant="destructive"
           className={cn(

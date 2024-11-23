@@ -28,6 +28,7 @@ export const columns: ColumnDef<InvoiceType>[] = [
           (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        className="ms-4"
         aria-label="Select all"
       />
     ),
@@ -35,6 +36,7 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
+        className="ms-4"
         aria-label="Select row"
       />
     ),
