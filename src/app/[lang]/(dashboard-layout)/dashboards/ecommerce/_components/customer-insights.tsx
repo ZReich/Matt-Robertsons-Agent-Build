@@ -1,70 +1,107 @@
-import { z } from "zod";
+import {
+  Users,
+  UserPlus,
+  Crown,
+  UserCheck,
+  EllipsisVertical,
+} from "lucide-react";
 
-import { getCustomerInsightsData } from "../_actions/get-customer-insights-data";
+import { customerInsightsData } from "../_data/customer-insights";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserPlus, Crown, UserCheck } from "lucide-react";
-
-export const CustomerInsightsSchema = z.object({
-  total_customers: z.number().nonnegative(),
-  new_customers: z.number().nonnegative(),
-  returning_customers: z.number().nonnegative(),
-  vip_customers: z.number().nonnegative(),
-});
-
-export type CustomerInsightsType = z.infer<typeof CustomerInsightsSchema>;
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export async function CustomerInsights() {
-  const customerInsightsData: CustomerInsightsType =
-    await getCustomerInsightsData();
-
   return (
-    <Card className="col-span-full">
-      <CardHeader>
-        <CardTitle>Customer Insights</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-4 gap-3">
-        <CustomerInsightsCard
-          label="Total"
-          value={customerInsightsData.total_customers.toLocaleString()}
-          icon={Users}
-        />
-        <CustomerInsightsCard
-          label="New"
-          value={customerInsightsData.new_customers.toLocaleString()}
-          icon={UserPlus}
-        />
-        <CustomerInsightsCard
-          label="Returning"
-          value={customerInsightsData.returning_customers.toLocaleString()}
-          icon={UserCheck}
-        />
-        <CustomerInsightsCard
-          label="VIP"
-          value={customerInsightsData.vip_customers.toLocaleString()}
-          icon={Crown}
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-interface CustomerInsightsCardProps {
-  label: string;
-  value: string;
-  icon: React.ElementType;
-}
-
-function CustomerInsightsCard({
-  label,
-  value,
-  icon: Icon,
-}: CustomerInsightsCardProps) {
-  return (
-    <div className="relative rounded-lg border bg-card text-card-foreground p-6">
-      <h4>{label}</h4>
-      <p className="font-bold text-4xl">{value}</p>
-      <Icon className="absolute bottom-0 end-3 size-16 text-foreground opacity-10 md:size-24" />
-    </div>
+    <article>
+      <Card>
+        <CardHeader className="flex-row justify-between items-start">
+          <div>
+            <CardTitle>Customer Insights</CardTitle>
+            <CardDescription>Last month</CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger aria-label="More options">
+              <EllipsisVertical className="h-4 w-4" />
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+        </CardHeader>
+        <CardContent className="grid grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Customers
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {customerInsightsData.totalCustomers.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Lifetime customers
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                New Customers
+              </CardTitle>
+              <UserPlus className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {customerInsightsData.newCustomers}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Acquired this month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Returning Customers
+              </CardTitle>
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {customerInsightsData.returningCustomers}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Repeat purchases this month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                VIP Customers
+              </CardTitle>
+              <Crown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {customerInsightsData.vipCustomers}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                High-value customers
+              </p>
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
+    </article>
   );
 }

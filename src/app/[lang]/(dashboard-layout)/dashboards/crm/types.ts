@@ -69,6 +69,9 @@ export interface SalesByCountryType {
 }
 
 export interface RevenueTrendType {
-  month: string;
-  value: number;
+  summary: {
+    totalRevenue: number;
+    totalPercentageChange: number;
+  };
+  monthly: Array<{ month: string; revenue: number }>;
 }

@@ -9,11 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TrafficSourcesChart } from "./charts/TrafficSourcesChart";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TrafficSourcesChart } from "./charts/TrafficSourcesChart";
 
 export async function TrafficSources() {
   return (

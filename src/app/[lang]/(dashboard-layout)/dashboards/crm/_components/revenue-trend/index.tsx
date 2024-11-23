@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RevenueTrendChart } from "./revenue-trend-chart";
+import { RevenueTrendTotal } from "./revenue-trend-total";
 
 export function RevenueTrend() {
   return (
@@ -22,7 +23,7 @@ export function RevenueTrend() {
         <CardHeader className="flex-row justify-between items-start space-y-0">
           <div>
             <CardTitle>Revenue Trend</CardTitle>
-            <CardDescription>Last month</CardDescription>
+            <CardDescription>2024</CardDescription>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger aria-label="More options">
@@ -30,8 +31,9 @@ export function RevenueTrend() {
             </DropdownMenuTrigger>
           </DropdownMenu>
         </CardHeader>
-        <CardContent>
-          <RevenueTrendChart data={revenueTrendData} />
+        <CardContent className="space-y-4">
+          <RevenueTrendTotal data={revenueTrendData.summary} />
+          <RevenueTrendChart data={revenueTrendData.monthly} />
         </CardContent>
       </Card>
     </article>

@@ -1,8 +1,10 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { RecentOrderType } from "../recent-orders";
+import { formatDuration } from "@/lib/date-formatters";
 
+import type { RecentOrderType } from "../../types";
+
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -11,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDuration } from "@/lib/date-formatters";
 
 export function RecentOrdersTable({ data }: { data: RecentOrderType[] }) {
   return (
@@ -27,13 +28,13 @@ export function RecentOrdersTable({ data }: { data: RecentOrderType[] }) {
       <TableBody>
         {data.map((order) => (
           <TableRow key={order.id}>
-            <TableCell>{order.customer_name}</TableCell>
+            <TableCell>{order.customerName}</TableCell>
             <TableCell>{formatDuration(order.date)}</TableCell>
             <TableCell>
               {new Intl.NumberFormat("en-US", {
                 style: "currency",
                 currency: "USD",
-              }).format(order.total_amount.value)}
+              }).format(order.totalAmount.value)}
             </TableCell>
             <TableCell>
               <Badge

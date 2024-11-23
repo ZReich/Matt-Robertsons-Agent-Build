@@ -1,9 +1,6 @@
-import { z } from "zod";
-import { Users, Ellipsis } from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 
-import { getOverviewData } from "../_actions/get-overview-data";
-
-import type { OverviewType } from "./overview";
+import { salesTrendData } from "../_data/sales-trend";
 
 import {
   Card,
@@ -12,24 +9,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SalesTrendChart } from "./charts/sales-trend-chart";
 
 export async function SalesTrend() {
-  const { sales_trend: salesTrendData }: OverviewType = await getOverviewData();
-
   return (
-    <Card className="col-span-2 md:col-span-4">
-      <CardHeader className="relative pb-2">
-        <CardTitle className="flex items-center gap-2">
-          <Users className="size-4" />
-          Sales Trend
-        </CardTitle>
-        <CardDescription>Last month</CardDescription>
-        <Ellipsis className="absolute top-4 end-6 size-4 hover:cursor-pointer" />
-      </CardHeader>
-      <CardContent>
-        <SalesTrendChart data={salesTrendData} />
-      </CardContent>
-    </Card>
+    <article className="col-span-2">
+      <Card>
+        <CardHeader className="flex-row justify-between items-start">
+          <div>
+            <CardTitle>Sales Trend</CardTitle>
+            <CardDescription>Last month</CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger aria-label="More options">
+              <EllipsisVertical className="h-4 w-4" />
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+        </CardHeader>
+        <CardContent>
+          <SalesTrendChart data={salesTrendData} />
+        </CardContent>
+      </Card>
+    </article>
   );
 }

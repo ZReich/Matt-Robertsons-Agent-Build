@@ -40,12 +40,12 @@ export function DataTablePagination<TData>({
             <SelectTrigger
               className={
                 (buttonVariants({ variant: "outline", size: "sm" }),
-                "h-8 w-fit gap-2")
+                "h-8 w-fit gap-x-2 bg-background hover:bg-accent")
               }
             >
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
-            <SelectContent side="top">
+            <SelectContent side="top" align="center">
               {[10, 20, 30, 40, 50].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}

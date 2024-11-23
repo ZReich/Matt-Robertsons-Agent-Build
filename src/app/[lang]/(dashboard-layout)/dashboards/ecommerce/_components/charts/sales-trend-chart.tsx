@@ -1,55 +1,64 @@
 "use client";
 
-import * as React from "react";
+import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
-import { useSettings } from "@/hooks/use-settings";
 
 import { chartConfig } from "@/configs/chart-config";
 
 import { remToPx } from "@/lib/utils";
 
-import { SalesTrendType } from "../overview";
+import type { SalesTrendType } from "../../types";
+
+import { useSettings } from "@/hooks/use-settings";
 
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { format } from "date-fns";
 
 export function SalesTrendChart({ data }: { data: SalesTrendType[] }) {
   const { settings } = useSettings();
 
-  const conversionFunnelData = Object.entries(data).map(
-    ([name, value], index) => ({
-      name: name
-        .replace(/_+/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase()),
-      value,
-      fill: `hsl(var(--chart-${index + 1}))`,
-    })
-  );
   return (
-    <ChartContainer config={chartConfig}>
+    <ChartContainer config={chartConfig} className="h-[250px] w-full">
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent
+              hideIndicator
+              hideLabel
+              formatter={(value, name) => (
+                <div className="w-full flex justify-between text-xs">
+                  <span className="capitalize text-muted-foreground">
+                    {name}
+                  </span>
+                  <span>{"$" + value.toLocaleString()}</span>
+                </div>
+              )}
+            />
+          }
+        />
         <XAxis
           dataKey="date"
           tickLine={false}
+          axisLine={false}
+          tickMargin={10}
+          tickFormatter={(value) => format(value, "dd")}
+        />
+        <YAxis
+          tickLine={false}
           tickMargin={10}
           axisLine={false}
-          tickFormatter={(value) => format(value, "dd/MM/yyy")}
+          tickFormatter={(value) => "$" + value.toLocaleString()}
         />
-        <YAxis tickLine={false} tickMargin={10} axisLine={false} />
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent indicator="dashed" />}
-        />
+
         <Bar
           dataKey="sales"
-          fill="hsl(var(--chart-1))"
-          radius={remToPx(settings.radius) - 2}
+          fill="hsl(var(--primary))"
+          radius={remToPx(settings.radius)}
         />
       </BarChart>
     </ChartContainer>

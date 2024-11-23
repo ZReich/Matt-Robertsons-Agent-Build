@@ -1,6 +1,6 @@
 "use client";
 
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { chartConfig } from "@/configs/chart-config";
 
@@ -11,11 +11,22 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useSettings } from "@/hooks/use-settings";
+import { remToPx } from "@/lib/utils";
 
-export function RevenueTrendChart({ data }: { data: RevenueTrendType[] }) {
+export function RevenueTrendChart({
+  data,
+}: {
+  data: RevenueTrendType["monthly"];
+}) {
+  const { settings } = useSettings();
+
   return (
-    <ChartContainer config={chartConfig}>
-      <LineChart
+    <ChartContainer
+      config={chartConfig}
+      className="aspect-auto h-[250px] w-full"
+    >
+      <BarChart
         accessibilityLayer
         data={data}
         margin={{
@@ -28,15 +39,30 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendType[] }) {
           dataKey="month"
           tickLine={false}
           axisLine={false}
-          tickMargin={8}
           tickFormatter={(value) => value.slice(0, 3)}
         />
         <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent hideLabel />}
+          content={
+            <ChartTooltipContent
+              hideIndicator
+              hideLabel
+              formatter={(value, name) => (
+                <div className="w-full flex justify-between text-xs">
+                  <span className="capitalize text-muted-foreground">
+                    {name}
+                  </span>
+                  <span>{"$" + value.toLocaleString()}</span>
+                </div>
+              )}
+            />
+          }
         />
-        <Line dataKey="value" type="natural" strokeWidth={2} dot={false} />
-      </LineChart>
+        <Bar
+          dataKey="revenue"
+          fill={`hsl(var(--primary))`}
+          radius={remToPx(settings.radius)}
+        />
+      </BarChart>
     </ChartContainer>
   );
 }
