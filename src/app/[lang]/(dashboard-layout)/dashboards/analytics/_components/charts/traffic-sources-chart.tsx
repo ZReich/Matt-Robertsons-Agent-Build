@@ -50,19 +50,15 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
-  const { settings } = useSettings();
-
-  const layout = settings.layout;
   const isPositiveTotalChange = data.totalPercentageChange >= 0;
 
   return (
     <div
       className={cn(
-        "flex flex-col justify-center items-center pb-6 sm:flex-row sm:pb-0",
-        layout === "vertical" && "sm:flex-col sm:pb-6"
+        "flex flex-col justify-center items-center pb-6 sm:flex-row sm:pb-0"
       )}
     >
-      <ChartContainer config={chartConfig} className="size-[15.45rem]">
+      <ChartContainer config={chartConfig} className="size-[272px]">
         <PieChart accessibilityLayer>
           <ChartTooltip
             cursor={false}

@@ -9,7 +9,7 @@ import { TopSalesRepresentatives } from "./_components/top-sales-representatives
 
 export default function CRMPage() {
   return (
-    <div className="container grid gap-4 p-4 md:grid-cols-2">
+    <section className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
       <SalesPipeline />
       <TopSalesRepresentatives />
@@ -18,6 +18,6 @@ export default function CRMPage() {
       <ActiveProjects />
       <RevenueTrend />
       <SalesByCountry />
-    </div>
+    </section>
   );
 }

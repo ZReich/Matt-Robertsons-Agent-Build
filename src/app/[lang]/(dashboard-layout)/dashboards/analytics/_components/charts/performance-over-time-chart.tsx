@@ -90,7 +90,7 @@ export function PerformanceOverTimeChart({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <ChartContainer config={chartConfig}>
+      <ChartContainer config={chartConfig} className="h-[288px] w-full">
         <LineChart
           accessibilityLayer
           data={data.monthly}

@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export async function TopPages() {
   return (
-    <article className="md:col-span-7">
+    <article>
       <Card>
         <CardHeader className="flex-row justify-between items-start space-y-0">
           <div>

@@ -37,6 +37,8 @@ export interface EngagementByDeviceType {
   sessionDuration: number;
   pagesPerSession: number;
   bounceRate: number;
+  userPercentage: number;
+  conversionRate: number;
 }
 
 export interface FunnelStageType {

@@ -20,6 +20,12 @@ export const geographicLocationsData: GeographicLocationType[] = [
     percentageChange: -0.01,
   },
   {
+    country: "India",
+    countryCode: "IN",
+    visitors: 1200,
+    percentageChange: 0.06,
+  },
+  {
     country: "Germany",
     countryCode: "DE",
     visitors: 1000,

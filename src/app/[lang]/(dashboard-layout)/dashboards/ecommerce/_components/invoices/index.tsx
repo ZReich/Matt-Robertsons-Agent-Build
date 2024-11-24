@@ -5,7 +5,7 @@ import { InvoicesTable } from "./invoices-table";
 export function Invoices() {
   return (
     <article className="col-span-full">
-      <InvoicesTable invoices={invoicesData} />
+      <InvoicesTable data={invoicesData} />
     </article>
   );
 }

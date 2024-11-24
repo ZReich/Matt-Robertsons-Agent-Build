@@ -13,11 +13,11 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TrafficSourcesChart } from "./charts/TrafficSourcesChart";
+import { TrafficSourcesChart } from "./charts/traffic-sources-chart";
 
 export async function TrafficSources() {
   return (
-    <article className="md:col-span-5">
+    <article>
       <Card>
         <CardHeader className="flex-row justify-between items-start pb-0">
           <div>

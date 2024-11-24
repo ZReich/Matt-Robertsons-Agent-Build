@@ -4,7 +4,7 @@ import { ActiveProjectsCarousel } from "./active-prijects-carousel";
 
 export function ActiveProjects() {
   return (
-    <article>
+    <article className="col-span-full">
       <Card>
         <CardHeader>
           <CardTitle>Active Projects</CardTitle>

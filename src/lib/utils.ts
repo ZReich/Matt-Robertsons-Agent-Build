@@ -113,3 +113,11 @@ export function formatCurrency(
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export function camelCaseToTitleCase(camelCaseStr: string) {
+  let titleCaseStr = camelCaseStr
+    .replace(/([A-Z])/g, " $1") // Insert space before uppercase letters
+    .replace(/^./, (char) => char.toUpperCase()); // Capitalize the first letter
+
+  return titleCaseStr;
+}

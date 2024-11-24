@@ -38,14 +38,17 @@ export function ActiveProjectsCarousel({
         }),
       ]}
       opts={{
-        align: "center",
+        align: "start",
         loop: true,
       }}
       className="w-full select-none"
     >
       <CarouselContent>
         {data.map((project) => (
-          <CarouselItem key={project.name}>
+          <CarouselItem
+            key={project.name}
+            className="md:basis-1/2"
+          >
             <Card>
               <CardHeader>
                 <h4 className="font-semibold leading-none tracking-tight">

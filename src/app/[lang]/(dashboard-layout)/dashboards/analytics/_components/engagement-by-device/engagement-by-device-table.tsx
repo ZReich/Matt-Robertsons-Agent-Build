@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -14,7 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import type { InvoiceType } from "../../types";
+import type { EngagementByDeviceType } from "../../types";
 
 import {
   Table,
@@ -24,23 +23,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { InvoiceTableToolbar } from "./invoice-table-toolbar";
-import { columns } from "./columns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { EngagementByDeviceTableToolbar } from "./engagement-by-device-table-toolbar";
+import { columns } from "./columns";
 
-interface InvoicesTableProps {
-  data: InvoiceType[];
+interface EngagementByDeviceTableProps {
+  data: EngagementByDeviceType[];
 }
 
-export function InvoicesTable({ data }: InvoicesTableProps) {
+export function EngagementByDeviceTable({
+  data,
+}: EngagementByDeviceTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -71,15 +65,15 @@ export function InvoicesTable({ data }: InvoicesTableProps) {
   return (
     <Card>
       <CardHeader className="flex-row justify-between items-center gap-x-1.5 space-y-0">
-        <CardTitle>Invoices</CardTitle>
-        <InvoiceTableToolbar table={table} />
+        <CardTitle>Engagement by Device</CardTitle>
+        <EngagementByDeviceTableToolbar table={table} />
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea
           orientation="horizontal"
-          className="w-[calc(100vw-2.25rem)] md:w-auto"
+          className="w-[calc(100vw-2rem)] md:w-auto"
         >
-          <Table>
+          <Table className="overflow-hidden">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -127,9 +121,6 @@ export function InvoicesTable({ data }: InvoicesTableProps) {
           </Table>
         </ScrollArea>
       </CardContent>
-      <CardFooter className="block py-3">
-        <DataTablePagination table={table} />
-      </CardFooter>
     </Card>
   );
 }

@@ -2,10 +2,10 @@ import type { SalesPipelineType } from "../types";
 
 export const salesPipelineData: SalesPipelineType = {
   summary: {
-    totalLead: 15,
-    totalProposal: 12,
-    totalNegotiation: 8,
-    totalClosed: 5,
+    totalLead: 127,
+    totalProposal: 83,
+    totalNegotiation: 61,
+    totalClosed: 36,
   },
   monthly: [
     { month: "January", lead: 15, proposal: 12, negotiation: 8, closed: 5 },

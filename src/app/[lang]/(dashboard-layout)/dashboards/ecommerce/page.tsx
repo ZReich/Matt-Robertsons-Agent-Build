@@ -6,12 +6,12 @@ import { Invoices } from "./_components/invoices";
 
 export default function EcommercePage() {
   return (
-    <div className="container grid gap-4 p-4 md:grid-cols-2">
+    <section className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
       <SalesTrend />
       <TopProducts />
       <CustomerInsights />
       <Invoices />
-    </div>
+    </section>
   );
 }

@@ -17,7 +17,7 @@ import { ConversionFunnelChart } from "./charts/conversion-funnel-chart";
 
 export async function ConversionFunnel() {
   return (
-    <article className="md:col-span-7">
+    <article>
       <Card>
         <CardHeader className="flex-row justify-between items-start space-y-0">
           <div>

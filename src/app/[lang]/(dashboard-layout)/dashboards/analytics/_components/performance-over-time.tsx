@@ -5,7 +5,7 @@ import { PerformanceOverTimeChart } from "./charts/performance-over-time-chart";
 
 export async function PerformanceOverTime() {
   return (
-    <article className="md:col-span-5">
+    <article>
       <Card>
         <CardHeader>
           <CardTitle>Performance Over Time</CardTitle>

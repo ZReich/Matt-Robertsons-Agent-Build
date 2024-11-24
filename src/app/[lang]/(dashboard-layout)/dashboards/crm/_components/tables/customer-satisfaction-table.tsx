@@ -40,9 +40,9 @@ export function CustomerSatisfactionTable({
       orientation="vertical"
       className="w-full select-none"
     >
-      <CarouselContent className="h-[260px] grid gap-2">
+      <CarouselContent className="h-[260px]">
         {data.map((feedback) => (
-          <CarouselItem key={feedback.name}>
+          <CarouselItem key={feedback.name} className="basis-1/2">
             <Card className="flex flex-col">
               <CardHeader className="flex-row items-center gap-4 p-3">
                 <Avatar className="h-12 w-12">

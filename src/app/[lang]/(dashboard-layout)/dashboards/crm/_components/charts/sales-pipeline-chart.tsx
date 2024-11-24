@@ -23,24 +23,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { buttonVariants } from "@/components/ui/button";
+import { SalesPipelinetList } from "../sales-pipeline-list";
+import { Separator } from "@/components/ui/separator";
 
 export function SalesPipelineChart({ data }: { data: SalesPipelineType }) {
   return (
     <div className="flex flex-col justify-center items-center gap-6">
-      <div className="flex flex-col justify-evenly items-center gap-y-6">
-        <div className="flex justify-between items-center gap-x-2">
-          {Object.entries(data.summary).map(([key, value], index) => (
-            <Badge
-              key={key}
-              variant="secondary"
-              className="shrink-0 flex-col shadow-none"
-              aria-hidden
-            >
-              <p className="text-2xl text-center">{value.toLocaleString()}</p>
-              <h4 className="text-xs">Total {key.slice(5)}</h4>
-            </Badge>
+      <div className="flex justify-evenly items-center gap-x-6">
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(data.summary).map(([key, value]) => (
+            <div key={key} className="grid grid-cols-2 gap-1.5">
+              <Badge className="flex-col shadow-none" aria-hidden>
+                <p className="text-lg text-center">{value.toLocaleString()}</p>
+              </Badge>
+              <h4 className="text-xs">
+                Total
+                <br />
+                {key.slice(5)}
+              </h4>
+            </div>
           ))}
         </div>
+        <Separator orientation="vertical" className="h-20" />
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(
@@ -62,9 +66,16 @@ export function SalesPipelineChart({ data }: { data: SalesPipelineType }) {
       </div>
       <ChartContainer
         config={chartConfig}
-        className="aspect-auto h-[250px] w-full"
+        className="aspect-auto h-[325px] w-full"
       >
-        <AreaChart accessibilityLayer data={data.monthly}>
+        <AreaChart
+          accessibilityLayer
+          data={data.monthly}
+          margin={{
+            left: 12,
+            right: 12,
+          }}
+        >
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="month"
@@ -81,29 +92,29 @@ export function SalesPipelineChart({ data }: { data: SalesPipelineType }) {
             dataKey="lead"
             type="natural"
             fill="hsl(var(--chart-1))"
+            fillOpacity={0.4}
             stroke="hsl(var(--chart-1))"
-            fillOpacity={0.8}
           />
           <Area
             dataKey="proposal"
             type="natural"
             fill="hsl(var(--chart-2))"
+            fillOpacity={0.5}
             stroke="hsl(var(--chart-2))"
-            fillOpacity={0.8}
           />
           <Area
             dataKey="negotiation"
             type="natural"
             fill="hsl(var(--chart-3))"
+            fillOpacity={0.6}
             stroke="hsl(var(--chart-3))"
-            fillOpacity={0.8}
           />
           <Area
             dataKey="closed"
             type="natural"
             fill="hsl(var(--chart-4))"
+            fillOpacity={0.7}
             stroke="hsl(var(--chart-4))"
-            fillOpacity={0.8}
           />
         </AreaChart>
       </ChartContainer>

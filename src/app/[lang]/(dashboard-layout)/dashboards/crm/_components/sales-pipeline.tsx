@@ -8,7 +8,7 @@ export function SalesPipeline() {
     <article>
       <Card>
         <CardHeader>
-          <CardTitle>Conversion Funnel</CardTitle>
+          <CardTitle>Sales Pipeline</CardTitle>
         </CardHeader>
         <CardContent>
           <SalesPipelineChart data={salesPipelineData} />

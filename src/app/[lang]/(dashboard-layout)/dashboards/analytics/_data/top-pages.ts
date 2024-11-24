@@ -26,9 +26,39 @@ export const topPagesData: TopPagesType[] = [
     bounceRate: 0.5,
   },
   {
+    page: "Pricing",
+    views: 5500,
+    avgTimeOnPage: 110000,
+    bounceRate: 0.42,
+  },
+  {
     page: "Blog",
     views: 5000,
     avgTimeOnPage: 180000,
     bounceRate: 0.3,
+  },
+  {
+    page: "Support",
+    views: 4500,
+    avgTimeOnPage: 85000,
+    bounceRate: 0.38,
+  },
+  {
+    page: "FAQ",
+    views: 4000,
+    avgTimeOnPage: 60000,
+    bounceRate: 0.25,
+  },
+  {
+    page: "Portfolio",
+    views: 3500,
+    avgTimeOnPage: 95000,
+    bounceRate: 0.33,
+  },
+  {
+    page: "Careers",
+    views: 3000,
+    avgTimeOnPage: 80000,
+    bounceRate: 0.4,
   },
 ];
