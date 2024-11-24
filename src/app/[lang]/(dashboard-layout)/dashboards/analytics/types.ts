@@ -22,8 +22,7 @@ export interface OverviewType {
 }
 
 export interface TrafficSourcesType {
-  totalVisitors: number;
-  totalPercentageChange: number;
+  summary: { totalVisitors: number; totalPercentageChange: number };
   sources: {
     name: string;
     visitors: number;
