@@ -3,8 +3,23 @@
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { format } from "date-fns";
+import {
+  Archive,
+  ChevronLeft,
+  Clock,
+  Forward,
+  MoreVertical,
+  Reply,
+  Star,
+  Tag,
+  Trash2,
+} from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 import type { EmailType } from "../types";
+
+import { useSettings } from "@/hooks/use-settings";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -22,22 +37,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Archive,
-  ChevronLeft,
-  Clock,
-  Forward,
-  MoreVertical,
-  Reply,
-  Star,
-  Tag,
-  Trash2,
-} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function EmailView({ email }: { email: EmailType }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { settings } = useSettings();
+
+  const layout = settings.layout;
 
   return (
     <Card className="flex-1 w-full md:w-auto">
@@ -92,7 +99,12 @@ export function EmailView({ email }: { email: EmailType }) {
           </div>
         </div>
         <Card className="py-1">
-          <ScrollArea className="h-[calc(100vh-24.3rem)]">
+          <ScrollArea
+            className={cn(
+              "h-[calc(100vh-20.7rem)]",
+              layout === "horizontal" && "md:h-[calc(100vh-24.3rem)]"
+            )}
+          >
             <CardHeader className="flex-row items-center gap-2 py-3">
               <Avatar>
                 <AvatarImage src="" alt="Avatar" />

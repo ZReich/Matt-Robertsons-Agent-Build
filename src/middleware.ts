@@ -6,12 +6,12 @@ import { match as matchLocale } from "@formatjs/intl-localematcher";
 import { i18n, Locale } from "@/configs/i18n";
 
 import { isPathnameMissingLocale, getLocalizedPathname } from "@/lib/i18n";
+import { withoutSuffix } from "@/lib/utils";
 
 import type { NextRequest } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
-import { withoutSuffix } from "./lib/utils";
 
-const HOME_PAGE_PATHNAME = "/dashboards/crm";
+const HOME_PAGE_PATHNAME = "/dashboards/analytics";
 
 const getLocale = (request: NextRequest) => {
   // Try to get locale from pathname
@@ -119,7 +119,6 @@ export default withAuth(
   }
 );
 
-// Matcher Config
 export const config = {
   matcher: [
     /*
@@ -127,11 +126,9 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - all items inside the public folder
-     *    - images (public images)
-     *    - next.svg (Next.js logo)
-     *    - vercel.svg (Vercel logo)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - images folder
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|.+?/hook-examples|.+?/menu-examples|images|next.svg|vercel.svg).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images).*)",
   ],
 };

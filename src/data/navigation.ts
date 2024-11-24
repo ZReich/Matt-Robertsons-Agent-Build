@@ -34,18 +34,17 @@ export const groupNavs: GroupNav[] = [
     title: "Dashboards",
     navs: [
       {
-        title: "CRM",
-        icon: ChartBar,
-        href: "/dashboards/crm",
-      },
-      {
         title: "Analytics",
         icon: ChartPie,
         href: "/dashboards/analytics",
       },
       {
+        title: "CRM",
+        icon: ChartBar,
+        href: "/dashboards/crm",
+      },
+      {
         title: "eCommerce",
-        label: "2 New",
         icon: ShoppingCart,
         href: "/dashboards/ecommerce",
       },
@@ -56,6 +55,7 @@ export const groupNavs: GroupNav[] = [
     navs: [
       {
         title: "Landing",
+        label: "Soon",
         icon: LayoutTemplate,
         href: "/pages/landing",
       },
@@ -70,12 +70,8 @@ export const groupNavs: GroupNav[] = [
         href: "/pages/payment",
       },
       {
-        title: "Checkout",
-        icon: Barcode,
-        href: "/pages/checkout",
-      },
-      {
         title: "Help Center",
+        label: "Soon",
         icon: Headset,
         href: "/pages/help-center",
       },
@@ -106,6 +102,7 @@ export const groupNavs: GroupNav[] = [
       },
       {
         title: "Todo",
+        label: "Soon",
         icon: ListTodo,
         href: "/apps/todo",
       },

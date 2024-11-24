@@ -17,7 +17,6 @@ export const chatsData: ChatType[] = [
         text: "Pretty good! Just getting started with the day.",
         createdAt: new Date("2024-10-31T10:03:00Z"),
         status: "DELIVERED",
-        type: "TEXT",
       },
       {
         id: "msg_11",
@@ -25,7 +24,6 @@ export const chatsData: ChatType[] = [
         text: "How's everyone doing today?",
         createdAt: new Date("2024-10-31T10:02:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_2",
@@ -33,7 +31,6 @@ export const chatsData: ChatType[] = [
         text: "Hey Jane!",
         createdAt: new Date("2024-10-31T10:01:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_1",
@@ -41,7 +38,6 @@ export const chatsData: ChatType[] = [
         text: "Hello everyone!",
         createdAt: new Date("2024-10-31T10:00:00Z"),
         status: "READ",
-        type: "TEXT",
       },
     ],
     users: [
@@ -77,7 +73,6 @@ export const chatsData: ChatType[] = [
         text: "Great! Let's keep it that way.",
         createdAt: new Date("2024-10-31T10:08:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_13",
@@ -85,7 +80,6 @@ export const chatsData: ChatType[] = [
         text: "They look good! I think we're on track.",
         createdAt: new Date("2024-10-31T10:07:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_4",
@@ -93,7 +87,6 @@ export const chatsData: ChatType[] = [
         text: "Yes, I checked them this morning.",
         createdAt: new Date("2024-10-31T10:06:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_3",
@@ -101,7 +94,6 @@ export const chatsData: ChatType[] = [
         text: "Hey, did you see the updates?",
         createdAt: new Date("2024-10-31T10:05:00Z"),
         status: "READ",
-        type: "TEXT",
       },
     ],
     users: [
@@ -136,7 +128,6 @@ export const chatsData: ChatType[] = [
         text: "Sure! I'll prepare that.",
         createdAt: new Date("2024-10-31T10:13:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_15",
@@ -144,7 +135,6 @@ export const chatsData: ChatType[] = [
         text: "Can you send out the agenda before then?",
         createdAt: new Date("2024-10-31T10:12:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_6",
@@ -152,7 +142,6 @@ export const chatsData: ChatType[] = [
         text: "Got it! I'll be there.",
         createdAt: new Date("2024-10-31T10:11:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_5",
@@ -160,7 +149,6 @@ export const chatsData: ChatType[] = [
         text: "Meeting at 3 PM tomorrow.",
         createdAt: new Date("2024-10-31T10:10:00Z"),
         status: "READ",
-        type: "TEXT",
       },
     ],
     users: [
@@ -195,7 +183,6 @@ export const chatsData: ChatType[] = [
         text: "Sounds good! I'll see you then.",
         createdAt: new Date("2024-10-31T10:18:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_17",
@@ -203,7 +190,6 @@ export const chatsData: ChatType[] = [
         text: "How about 1 PM?",
         createdAt: new Date("2024-10-31T10:17:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_8",
@@ -211,7 +197,6 @@ export const chatsData: ChatType[] = [
         text: "Sure! What time?",
         createdAt: new Date("2024-10-31T10:16:00Z"),
         status: "READ",
-        type: "TEXT",
       },
       {
         id: "msg_7",
@@ -219,7 +204,6 @@ export const chatsData: ChatType[] = [
         text: "Let’s grab lunch later?",
         createdAt: new Date("2024-10-31T10:15:00Z"),
         status: "READ",
-        type: "TEXT",
       },
     ],
     users: [

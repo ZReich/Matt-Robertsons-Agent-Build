@@ -69,18 +69,6 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
         <DropdownMenuGroup className="max-w-48">
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href={getLocalizedPathname("/dashboard", locale)}
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "w-full justify-start gap-2 focus-visible:ring-0"
-              )}
-            >
-              <LayoutGrid className="size-4 text-muted-foreground" />
-              Dashboard
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="hover:cursor-pointer" asChild>
-            <Link
               href={getLocalizedPathname("/account", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),

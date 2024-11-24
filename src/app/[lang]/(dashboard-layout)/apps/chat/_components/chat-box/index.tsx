@@ -9,22 +9,27 @@ import { useChatContext } from "../../hooks/use-chat-context";
 
 import type { UserType } from "../../types";
 
+import { useSettings } from "@/hooks/use-settings";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { ChatBoxFooter } from "./chat-box-footer";
 import { ChatBoxHeader } from "./chat-box-header";
 import { MessageBubble } from "./message-bubble";
+import { cn } from "@/lib/utils";
 
 export function ChatBox({ user }: { user: UserType }) {
   const params = useParams();
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const { chatState, handleSelectChat, handleSetUnreadCount } =
     useChatContext();
+  const { settings } = useSettings();
 
   const chatIdParam = params.id?.[0];
   const chat = chatIdParam
     ? chatState.chats.find((c) => c.id === chatIdParam)
     : null;
+  const layout = settings.layout;
 
   React.useEffect(() => {
     if (scrollAreaRef.current) {
@@ -62,7 +67,12 @@ export function ChatBox({ user }: { user: UserType }) {
     <Card className="grow grid">
       <ChatBoxHeader chat={chat} user={user} />
       <CardContent className="p-0">
-        <ScrollAreaPrimitive.Root className="relative h-[calc(100vh-20rem)]">
+        <ScrollAreaPrimitive.Root
+          className={cn(
+            "relative h-[calc(100vh-16.5rem)]",
+            layout === "horizontal" && "md:h-[calc(100vh-20rem)]"
+          )}
+        >
           <ScrollAreaPrimitive.Viewport
             ref={scrollAreaRef}
             className="h-full w-full"

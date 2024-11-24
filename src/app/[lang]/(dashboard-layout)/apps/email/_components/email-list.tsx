@@ -23,6 +23,8 @@ import { cn, ensureSuffix, getInitials } from "@/lib/utils";
 
 import type { EmailState } from "../types";
 
+import { useSettings } from "@/hooks/use-settings";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -63,11 +65,13 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
   const params = useParams();
   const searchParams = useSearchParams();
   const isTablet = useMedia("(max-width: 767px)");
+  const { settings } = useSettings();
 
   const pageQuery = searchParams.get("page")
     ? parseInt(searchParams.get("page") as string)
     : 1;
   const filterParam = params.filter as string;
+  const layout = settings.layout;
 
   React.useEffect(() => {
     const fetchEmailsData = async () => {
@@ -179,7 +183,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
 
         {isTablet ? (
           <ul>
-            <ScrollArea className="h-[calc(100vh-22.1rem)]">
+            <ScrollArea className="h-[calc(100vh-19.1rem)]">
               {emailState.emails.map((email) => (
                 <li
                   key={email.id}
@@ -260,7 +264,12 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
             </ScrollArea>
           </ul>
         ) : (
-          <ScrollArea className="h-[calc(100vh-22.1rem)]">
+          <ScrollArea
+            className={cn(
+              "h-[calc(100vh-19.1rem)]",
+              layout === "horizontal" && "md:h-[calc(100vh-22.1rem)]"
+            )}
+          >
             <Table>
               <TableBody>
                 {emailState.emails.map((email) => (

@@ -1,4 +1,4 @@
-import type { UserType } from "../chat/types";
+import { UserType } from "../types";
 
 export const userData: UserType = {
   id: "1",
