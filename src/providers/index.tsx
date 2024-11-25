@@ -2,7 +2,7 @@ import type { Direction } from "@/types";
 import type { Session } from "next-auth";
 
 import { SettingsProvider } from "./settings-provider";
-import { CustomThemeProvider } from "./custom-theme-provider";
+import { ModeProvider } from "./mode-provider";
 import { ThemeProvider } from "./theme-provider";
 import { NextAuthProvider } from "./next-auth-provider";
 
@@ -17,11 +17,11 @@ export default function Providers({
 }>) {
   return (
     <SettingsProvider direction={direction}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <CustomThemeProvider>
+      <ModeProvider>
+        <ThemeProvider>
           <NextAuthProvider session={session}>{children}</NextAuthProvider>
-        </CustomThemeProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </ModeProvider>
     </SettingsProvider>
   );
 }

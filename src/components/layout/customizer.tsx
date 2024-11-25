@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { useTheme } from "next-themes";
+import * as React from "react";
 import {
   Sun,
   MoonStar,
@@ -17,6 +16,8 @@ import { baseColors } from "@/configs/base-colors";
 
 import { cn } from "@/lib/utils";
 
+import type { Mode } from "@/types";
+
 import { useSettings } from "@/hooks/use-settings";
 
 import { Button } from "@/components/ui/button";
@@ -31,8 +32,14 @@ import { Content as SheetContent } from "@radix-ui/react-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function Customizer() {
-  const { resolvedTheme, setTheme } = useTheme();
   const { settings, updateSettings, resetSettings } = useSettings();
+
+  const setMode = React.useCallback(
+    (modeName: Mode) => {
+      updateSettings({ ...settings, mode: modeName });
+    },
+    [settings, updateSettings]
+  );
 
   return (
     <Sheet>
@@ -85,7 +92,7 @@ export function Customizer() {
                           {
                             "--theme-primary": `hsl(${
                               theme?.activeColor[
-                                resolvedTheme === "dark" ? "dark" : "light"
+                                settings.mode === "dark" ? "dark" : "light"
                               ]
                             })`,
                           } as React.CSSProperties
@@ -138,9 +145,9 @@ export function Customizer() {
                   <Button
                     variant={"outline"}
                     size="sm"
-                    onClick={() => setTheme("light")}
+                    onClick={() => setMode("light")}
                     className={cn(
-                      resolvedTheme === "light" && "border-2 border-primary"
+                      settings.mode === "light" && "border-2 border-primary"
                     )}
                   >
                     <Sun className="size-4 me-1 -translate-x-1" />
@@ -149,9 +156,9 @@ export function Customizer() {
                   <Button
                     variant={"outline"}
                     size="sm"
-                    onClick={() => setTheme("dark")}
+                    onClick={() => setMode("dark")}
                     className={cn(
-                      resolvedTheme === "dark" && "border-2 border-primary"
+                      settings.mode === "dark" && "border-2 border-primary"
                     )}
                   >
                     <MoonStar className="size-4 me-1 -translate-x-1" />
@@ -202,7 +209,7 @@ export function Customizer() {
                 variant={"destructive"}
                 size="sm"
                 onClick={() => {
-                  setTheme("system");
+                  setMode("system");
                   resetSettings();
                 }}
               >

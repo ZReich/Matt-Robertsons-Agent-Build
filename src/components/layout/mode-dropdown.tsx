@@ -1,7 +1,7 @@
 "use client";
 
+import * as React from "react";
 import { useParams } from "next/navigation";
-import { useTheme } from "next-themes";
 import { MoonStar, Sun } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
@@ -9,6 +9,10 @@ import { i18n } from "@/configs/i18n";
 import type { Locale } from "@/configs/i18n";
 
 import type { Dictionary } from "@/lib/getDictionary";
+
+import type { Mode } from "@/types";
+
+import { useSettings } from "@/hooks/use-settings";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,11 +26,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function ModeDropdown({ dictionary }: { dictionary: Dictionary }) {
-  const { setTheme, theme } = useTheme();
+  const { settings, updateSettings } = useSettings();
   const params = useParams();
 
   const locale = params.lang as Locale;
   const direction = i18n.langDirection[locale];
+  const mode = settings.mode;
+
+  const setMode = React.useCallback(
+    (modeName: Mode) => {
+      updateSettings({ ...settings, mode: modeName });
+    },
+    [settings, updateSettings]
+  );
 
   return (
     <DropdownMenu dir={direction}>
@@ -50,25 +62,25 @@ export function ModeDropdown({ dictionary }: { dictionary: Dictionary }) {
           {dictionary.navigation.mode["mode"]}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup value={theme}>
+        <DropdownMenuRadioGroup value={mode}>
           <DropdownMenuRadioItem
             value="light"
             className="hover:cursor-pointer"
-            onClick={() => setTheme("light")}
+            onClick={() => setMode("light")}
           >
             {dictionary.navigation.mode.light}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem
             value="dark"
             className="hover:cursor-pointer"
-            onClick={() => setTheme("dark")}
+            onClick={() => setMode("dark")}
           >
             {dictionary.navigation.mode.dark}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem
             value="system"
             className="hover:cursor-pointer"
-            onClick={() => setTheme("system")}
+            onClick={() => setMode("system")}
           >
             {dictionary.navigation.mode.system}
           </DropdownMenuRadioItem>

@@ -24,6 +24,7 @@ export function ChatBox({ user }: { user: UserType }) {
   const { chatState, handleSelectChat, handleSetUnreadCount } =
     useChatContext();
   const { settings } = useSettings();
+  console.log(settings);
 
   const chatIdParam = params.id?.[0];
   const chat = chatIdParam
