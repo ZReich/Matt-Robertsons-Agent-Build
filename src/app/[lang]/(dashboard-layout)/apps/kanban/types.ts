@@ -1,7 +1,7 @@
 export interface UserType {
   id: string;
   username: string;
-  full_name: string;
+  fullName: string;
   avatar: string;
 }
 
@@ -14,21 +14,21 @@ export interface FileType {
 
 export interface CommentType {
   id: string;
-  user_id: string;
+  userId: string;
   text: string;
-  created_at: Date;
+  createdAt: Date;
 }
 
 export interface TaskType {
   id: string;
-  column_id: string;
+  columnId: string;
   order: number;
   title: string;
   description?: string;
   label: string;
   comments: CommentType[];
   assigned: UserType[];
-  due_date: Date;
+  dueDate: Date;
   attachments: FileType[];
 }
 
@@ -56,7 +56,7 @@ export type KanbanAction =
   | { type: "deleteColumn"; columnId: string }
   | {
       type: "addTask";
-      task: Omit<TaskType, "id" | "order" | "column_id">;
+      task: Omit<TaskType, "id" | "order" | "columnId">;
       columnId: string;
     }
   | { type: "updateTask"; task: TaskType }
@@ -84,7 +84,7 @@ export interface KanbanContextType {
   handleUpdateColumn: (column: ColumnType) => void;
   handleDeleteColumn: (columnId: ColumnType["id"]) => void;
   handleAddTask: (
-    task: Omit<TaskType, "id" | "order" | "column_id">,
+    task: Omit<TaskType, "id" | "order" | "columnId">,
     columnId: ColumnType["id"]
   ) => void;
   handleUpdateTask: (task: TaskType) => void;

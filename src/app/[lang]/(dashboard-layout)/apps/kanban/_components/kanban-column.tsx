@@ -5,9 +5,10 @@ import { GripVertical, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+import type { ColumnType } from "../types";
+
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ColumnType } from "../types";
 import { KanbanTaskCard } from "./kanban-task-card";
 import { useKanbanContext } from "../hooks/use-kanban-context";
 import { KanbanColumnActions } from "./kanban-column-actions";

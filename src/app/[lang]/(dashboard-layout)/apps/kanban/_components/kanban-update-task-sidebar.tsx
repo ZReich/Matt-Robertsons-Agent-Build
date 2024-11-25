@@ -65,11 +65,11 @@ import {
 
 const CommentSchema = z.object({
   id: z.string(),
-  user_id: z.string(),
+  userId: z.string(),
   text: z
     .string()
     .min(2, { message: "Comment must be at least 2 characters." }),
-  created_at: z.date(),
+  createdAt: z.date(),
 });
 
 const FileSchema = z.object({
@@ -84,7 +84,7 @@ const FileSchema = z.object({
 const UserSchema = z.object({
   id: z.string(),
   username: z.string(),
-  full_name: z.string(),
+  fullName: z.string(),
   avatar: z.string(),
 });
 
@@ -99,7 +99,7 @@ const FormSchema = z.object({
     .array(UserSchema)
     .min(1, { message: "At least one user must be assigned." }),
   comments: z.array(CommentSchema),
-  due_date: z.date({
+  dueDate: z.date({
     required_error: "Due date is required.",
     invalid_type_error: "Invalid due date. Please provide a valid date.",
   }),
@@ -144,7 +144,7 @@ export function KanbanUpdateTaskSidebar() {
         label: selectedTask?.label,
         assigned: selectedTask?.assigned || [],
         comments: selectedTask?.comments || [],
-        due_date: selectedTask?.due_date,
+        dueDate: selectedTask?.dueDate,
         attachments: selectedTask?.attachments || [],
       });
     }
@@ -155,7 +155,7 @@ export function KanbanUpdateTaskSidebar() {
       handleUpdateTask({
         ...data,
         id: selectedTask.id,
-        column_id: selectedTask.column_id,
+        columnId: selectedTask.columnId,
         order: selectedTask.order,
         comments: selectedTask.comments,
       });
@@ -310,7 +310,7 @@ export function KanbanUpdateTaskSidebar() {
                                         setSearchTeamMembers("");
                                       }}
                                     >
-                                      {user.full_name}
+                                      {user.fullName}
                                     </CommandItem>
                                   ))}
                             </CommandGroup>
@@ -325,7 +325,7 @@ export function KanbanUpdateTaskSidebar() {
                                   variant="secondary"
                                   className="flex items-center gap-1"
                                 >
-                                  {user.full_name}
+                                  {user.fullName}
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -354,7 +354,7 @@ export function KanbanUpdateTaskSidebar() {
               />
               <FormField
                 control={form.control}
-                name="due_date"
+                name="dueDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Due Date</FormLabel>

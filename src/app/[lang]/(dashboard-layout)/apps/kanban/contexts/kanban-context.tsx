@@ -45,7 +45,7 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   };
 
   const handleAddTask = (
-    task: Omit<TaskType, "id" | "order" | "column_id">,
+    task: Omit<TaskType, "id" | "order" | "columnId">,
     columnId: ColumnType["id"]
   ) => {
     dispatch({ type: "addTask", task, columnId });
