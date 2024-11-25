@@ -6,11 +6,11 @@ import { MoonStar, Sun } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import type { Dictionary } from "@/lib/getDictionary";
 
-import type { Mode } from "@/types";
+import type { ModeType } from "@/types";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -29,12 +29,12 @@ export function ModeDropdown({ dictionary }: { dictionary: Dictionary }) {
   const { settings, updateSettings } = useSettings();
   const params = useParams();
 
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
   const direction = i18n.langDirection[locale];
   const mode = settings.mode;
 
   const setMode = React.useCallback(
-    (modeName: Mode) => {
+    (modeName: ModeType) => {
       updateSettings({ ...settings, mode: modeName });
     },
     [settings, updateSettings]

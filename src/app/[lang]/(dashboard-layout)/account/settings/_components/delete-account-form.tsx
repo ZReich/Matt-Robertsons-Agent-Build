@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 import type { UserType } from "../../types";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 const FormSchema = z.object({});
 
 interface DeleteAccountFormProps extends React.HTMLAttributes<HTMLFormElement> {
-  locale: Locale;
+  locale: LocaleType;
   user: UserType;
 }
 

@@ -5,9 +5,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-import { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import Logo from "@/app/icon.svg";
@@ -19,7 +19,7 @@ interface AuthProps extends React.HTMLAttributes<HTMLDivElement> {
 const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
   ({ className, children, imgSrc, ...props }, ref) => {
     const params = useParams();
-    const locale = params.lang as Locale;
+    const locale = params.lang as LocaleType;
 
     return (
       <div
@@ -31,7 +31,7 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
         {...props}
       >
         <Link
-          href={getLocalizedPathname("/", locale)}
+          href={ensureLocalizedPathname("/", locale)}
           className="absolute top-4 start-4 flex text-foreground font-black z-50 hover:text-primary/90"
         >
           <Logo className="size-6" aira-hidden="true" />

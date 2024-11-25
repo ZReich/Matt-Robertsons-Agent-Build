@@ -13,22 +13,22 @@ import {
   Grid2x2,
 } from "lucide-react";
 
-import { Icon } from "@/types";
+import type { IconType } from "@/types";
 
-export interface Nav {
+export interface NavType {
   title: string;
   label?: string;
-  icon: Icon;
+  icon: IconType;
   href: string;
-  children?: Omit<Nav, "icon">[];
+  children?: Omit<NavType, "icon">[];
 }
 
-export interface GroupNav {
+export interface GroupNavType {
   title?: string;
-  navs: Nav[];
+  navs: NavType[];
 }
 
-export const groupNavs: GroupNav[] = [
+export const groupNavs: GroupNavType[] = [
   {
     title: "Dashboards",
     navs: [

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { VerifyEmailForm } from "./_components/verify-email-form";
 import {
@@ -16,11 +16,7 @@ export const metadata: Metadata = {
   description: "Verify your email address",
 };
 
-export default function VerifyEmailPage({
-  params,
-}: {
-  params: { lang: Locale };
-}) {
+export default function VerifyEmailPage({ params }: { params: { lang: LocaleType } }) {
   return (
     <Auth>
       <AuthHeader>

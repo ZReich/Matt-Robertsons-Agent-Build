@@ -8,7 +8,7 @@ import { LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { Locale } from "@/configs/i18n";
+import { LocaleType } from "@/configs/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -72,7 +72,7 @@ const FormSchema = z.object({
 });
 
 interface ProfileInfoFormProps extends React.HTMLAttributes<HTMLFormElement> {
-  locale: Locale;
+  locale: LocaleType;
   user: UserType;
 }
 

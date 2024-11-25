@@ -1,4 +1,4 @@
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import {
   Card,
@@ -11,7 +11,7 @@ import { ProfileInfoForm } from "./_components/profile-info-form";
 import { DeleteAccountForm } from "./_components/delete-account-form";
 import { userData } from "../_data/user";
 
-export default function SettingsPage({ params }: { params: { lang: Locale } }) {
+export default function SettingsPage({ params }: { params: { lang: LocaleType } }) {
   return (
     <div className="grid gap-4">
       <Card>

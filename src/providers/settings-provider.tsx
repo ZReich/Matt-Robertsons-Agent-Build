@@ -5,19 +5,18 @@ import { useCookie } from "react-use";
 
 import { defaultSettings, SettingsContext } from "@/contexts/settings-context";
 
-import type { Direction } from "@/types";
-import type { Settings } from "@/contexts/settings-context";
+import type { DirectionType, SettingsType } from "@/types";
 
 export function SettingsProvider({
   direction,
   children,
 }: {
-  direction: Direction;
+  direction: DirectionType;
   children: React.ReactNode;
 }) {
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
     useCookie("settings");
-  const [settings, setSettings] = React.useState<Settings | null>(null);
+  const [settings, setSettings] = React.useState<SettingsType | null>(null);
 
   React.useEffect(() => {
     if (storedSettings) {
@@ -28,7 +27,7 @@ export function SettingsProvider({
   }, [storedSettings, direction]);
 
   const updateSettings = React.useCallback(
-    (newSettings: Settings) => {
+    (newSettings: SettingsType) => {
       setStoredSettings(JSON.stringify(newSettings));
       setSettings(newSettings);
     },

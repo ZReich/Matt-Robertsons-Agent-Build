@@ -9,10 +9,10 @@ import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -57,7 +57,7 @@ const FormSchema = z.object({
 type FormType = z.infer<typeof FormSchema>;
 
 interface RegisterFormProps extends React.HTMLAttributes<HTMLFormElement> {
-  locale: Locale;
+  locale: LocaleType;
 }
 
 export function RegisterForm({
@@ -107,7 +107,7 @@ export function RegisterForm({
         });
       } else {
         toast({ title: "Register Successful" });
-        router.push(getLocalizedPathname("/sign-in", locale));
+        router.push(ensureLocalizedPathname("/sign-in", locale));
       }
     } catch (e: unknown) {
       toast({
@@ -206,7 +206,7 @@ export function RegisterForm({
         <div className="-mt-4 text-center text-sm">
           Already have an account?{" "}
           <Link
-            href={getLocalizedPathname("/sign-in", locale)}
+            href={ensureLocalizedPathname("/sign-in", locale)}
             className="underline"
           >
             Sign in

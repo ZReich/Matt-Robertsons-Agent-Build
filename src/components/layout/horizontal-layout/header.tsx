@@ -5,9 +5,9 @@ import { useParams } from "next/navigation";
 
 import { groupNavs } from "@/data/navigation";
 
-import { i18n, Locale } from "@/configs/i18n";
+import { i18n, LocaleType } from "@/configs/i18n";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { Dictionary } from "@/lib/getDictionary";
 
@@ -29,7 +29,7 @@ import { Separator } from "@/components/ui/separator";
 
 export function Header({ dictionary }: { dictionary: Dictionary }) {
   const params = useParams();
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
 
   const dir = i18n.langDirection[locale];
 
@@ -54,7 +54,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
       <div className="container flex h-14 justify-between items-center gap-4">
         <MobileSidebarNav />
         <Link
-          href={getLocalizedPathname("/", locale)}
+          href={ensureLocalizedPathname("/", locale)}
           className="hidden text-foreground font-black hover:text-primary/90 md:flex"
         >
           <Logo className="size-6" aira-hidden="true" />

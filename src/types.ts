@@ -1,15 +1,24 @@
 import type { LucideIcon } from "lucide-react";
+import { BaseColor } from "@/configs/base-colors";
 
-export type Layout = "vertical" | "horizontal";
+export type LayoutType = "vertical" | "horizontal";
 
-export type Mode = "light" | "dark" | "system";
+export type ModeType = "light" | "dark" | "system";
 
-export type Orientation = "vertical" | "horizontal";
+export type OrientationType = "vertical" | "horizontal";
 
-export type Direction = "ltr" | "rtl";
+export type DirectionType = "ltr" | "rtl";
+
+export type SettingsType = {
+  theme: BaseColor["name"];
+  mode: ModeType;
+  radius: number;
+  layout: LayoutType;
+  direction: DirectionType;
+};
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
   children?: never;
   color?: string;
 }
-export type Icon = React.ComponentType<IconProps> | LucideIcon;
+export type IconType = React.ComponentType<IconProps> | LucideIcon;

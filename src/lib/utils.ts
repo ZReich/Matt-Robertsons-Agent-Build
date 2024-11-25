@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 import { z } from "zod";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -70,7 +70,7 @@ export function ratingToPercentage(rating: number, maxRating: number) {
 
 export function formatCurrency(
   value: number,
-  locales: Locale = "en",
+  locales: LocaleType = "en",
   currency: string = "USD"
 ) {
   return new Intl.NumberFormat(locales, {
@@ -80,31 +80,22 @@ export function formatCurrency(
   }).format(value);
 }
 
-export function formatPercent(value: number, locales: Locale = "en") {
+export function formatPercent(value: number, locales: LocaleType = "en") {
   return new Intl.NumberFormat(locales, {
     style: "percent",
     maximumFractionDigits: 0,
   }).format(value);
 }
 
-export function formatDate(
-  value: string | number | Date,
-  locales: Locale = "en"
-) {
+export function formatDate(value: string | number | Date) {
   return format(value, "MMM dd, yyyy");
 }
 
-export function formatDateWithTime(
-  value: string | number | Date,
-  locales: Locale = "en"
-) {
+export function formatDateWithTime(value: string | number | Date) {
   return format(value, "MMM dd, yyyy hh:mm a");
 }
 
-export function formatDateShort(
-  value: string | number | Date,
-  locales: Locale = "en"
-) {
+export function formatDateShort(value: string | number | Date) {
   return format(value, "MMM dd");
 }
 

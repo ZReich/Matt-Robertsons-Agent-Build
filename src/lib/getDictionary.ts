@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 const dictionaries = {
   en: () =>
@@ -9,6 +9,6 @@ const dictionaries = {
     import("@/data/dictionaries/ar.json").then((module) => module.default),
 };
 
-export const getDictionary = async (locale: Locale) => dictionaries[locale]();
+export const getDictionary = async (locale: LocaleType) => dictionaries[locale]();
 
 export type Dictionary = Awaited<ReturnType<typeof getDictionary>>;

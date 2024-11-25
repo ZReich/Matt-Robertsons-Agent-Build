@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { LayoutGrid, LogOut, User, UserCog } from "lucide-react";
+import { LogOut, User, UserCog } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
 import { cn, getInitials } from "@/lib/utils";
 
-import type { Direction } from "@/types";
-import type { Locale } from "@/configs/i18n";
+import type { DirectionType } from "@/types";
+import type { LocaleType } from "@/configs/i18n";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
+export function UserNav({ dir, locale }: { dir: DirectionType; locale: LocaleType }) {
   const { data } = useSession();
   const user = data?.user;
 
@@ -69,7 +69,7 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
         <DropdownMenuGroup className="max-w-48">
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href={getLocalizedPathname("/account", locale)}
+              href={ensureLocalizedPathname("/account", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"
@@ -81,7 +81,7 @@ export function UserNav({ dir, locale }: { dir: Direction; locale: Locale }) {
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href={getLocalizedPathname("/account/settings", locale)}
+              href={ensureLocalizedPathname("/account/settings", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"

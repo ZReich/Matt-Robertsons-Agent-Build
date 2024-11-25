@@ -8,10 +8,10 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,7 @@ const FormSchema = z
   });
 
 interface NewPasswordFormProps extends React.HTMLAttributes<HTMLFormElement> {
-  locale: Locale;
+  locale: LocaleType;
 }
 
 export function NewPasswordForm({
@@ -116,7 +116,7 @@ export function NewPasswordForm({
           </Button>
         </div>
         <Link
-          href={getLocalizedPathname("/sign-in", locale)}
+          href={ensureLocalizedPathname("/sign-in", locale)}
           className="-mt-4 text-center text-sm underline"
         >
           Back to Sign in

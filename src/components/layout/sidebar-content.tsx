@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { i18n } from "@/configs/i18n";
 
 import { groupNavs } from "@/data/navigation";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Nav } from "@/components/layout/nav";
@@ -18,14 +18,14 @@ import Logo from "@/app/icon.svg";
 
 export function SidebarContent() {
   const params = useParams();
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
 
   const dir = i18n.langDirection[locale];
 
   return (
     <>
       <Link
-        href={getLocalizedPathname("/", locale)}
+        href={ensureLocalizedPathname("/", locale)}
         className="flex text-foreground font-black hover:text-primary/90"
       >
         <Logo className="size-6" aira-hidden="true" />

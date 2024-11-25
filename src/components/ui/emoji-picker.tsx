@@ -9,7 +9,7 @@ import { Smile } from "lucide-react";
 import { useSettings } from "@/hooks/use-settings";
 
 import type { PickerProps } from "emoji-mart";
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import {
   Popover,
@@ -23,7 +23,7 @@ export function EmojiPicker(props: Omit<PickerProps, "data">) {
   const params = useParams();
 
   const mode = settings.mode;
-  const locale = params.locale as Locale;
+  const locale = params.locale as LocaleType;
 
   return (
     <Popover>

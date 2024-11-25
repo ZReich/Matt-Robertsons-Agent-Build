@@ -15,7 +15,7 @@ import Typography from "@tiptap/extension-typography";
 
 import { cn } from "@/lib/utils";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,7 +29,7 @@ interface TiptapEditorProps {
 export function EmailComposer({ content, onChange }: TiptapEditorProps) {
   const params = useParams();
 
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
 
   const editor = useEditor({
     extensions: [

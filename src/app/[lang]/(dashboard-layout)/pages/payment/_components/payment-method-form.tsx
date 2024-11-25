@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { SeparatorWithText } from "@/components/ui/separator";
-import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
+import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 
 const FormSchema = z.object({
   paymentOption: z.enum(["card", "bank"]).optional(),

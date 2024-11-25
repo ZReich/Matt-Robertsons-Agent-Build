@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 
 import type { Dictionary } from "@/lib/getDictionary";
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { i18n } from "@/configs/i18n";
 
@@ -15,7 +15,7 @@ import { LanguageDropdown } from "@/components/layout/language-dropdown";
 
 export function Header({ dictionary }: { dictionary: Dictionary }) {
   const params = useParams();
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
 
   const dir = i18n.langDirection[locale];
 

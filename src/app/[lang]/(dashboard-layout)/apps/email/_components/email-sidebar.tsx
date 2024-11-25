@@ -5,10 +5,10 @@ import { useParams } from "next/navigation";
 import { useMedia } from "react-use";
 import { Archive, Clock, Menu, Pencil, Send, Star, Trash2 } from "lucide-react";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -28,14 +28,14 @@ export function EmailSidebar() {
   const params = useParams();
   const isTablet = useMedia("(max-width: 767px)");
 
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
   const filterParam = params.filter;
 
   const content = (
     <>
       <CardHeader className="p-3">
         <Button className="w-full" size="lg" asChild>
-          <Link href={getLocalizedPathname("/apps/email/compose", locale)}>
+          <Link href={ensureLocalizedPathname("/apps/email/compose", locale)}>
             Compose
           </Link>
         </Button>
@@ -45,7 +45,7 @@ export function EmailSidebar() {
           {sidebarLabels.map((item) => (
             <Link
               key={item.label}
-              href={getLocalizedPathname("/apps/email/" + item.param, locale)}
+              href={ensureLocalizedPathname("/apps/email/" + item.param, locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start",

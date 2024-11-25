@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { type DialogProps } from "@radix-ui/react-dialog";
 
 import { cn } from "@/lib/utils";
+
+import type { DialogProps } from "@radix-ui/react-dialog";
+
 import { Button } from "@/components/ui/button";
 import {
   CommandDialog,

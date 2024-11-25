@@ -8,7 +8,7 @@ import { CreditCard, Landmark, LoaderCircle } from "lucide-react";
 
 import { getCreditCardBrandName } from "@/lib/utils";
 
-import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
+import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 import {
   Card,
   CardHeader,

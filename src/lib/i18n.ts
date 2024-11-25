@@ -2,7 +2,6 @@ import { i18n } from "@/configs/i18n";
 
 import { ensurePrefix } from "@/lib/utils";
 
-// Check if there is any supported locale in the pathname
 export const isPathnameMissingLocale = (pathname: string) => {
   return i18n.locales.every(
     (locale) =>
@@ -10,8 +9,7 @@ export const isPathnameMissingLocale = (pathname: string) => {
   );
 };
 
-// Get the localized pathname
-export const getLocalizedPathname = (
+export const ensureLocalizedPathname = (
   pathname: string,
   languageCode: string
 ): string => {

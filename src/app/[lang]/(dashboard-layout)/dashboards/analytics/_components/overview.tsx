@@ -10,7 +10,7 @@ import {
 
 import { overviewData } from "../_data/overview";
 
-import { OverviewCard } from "@/components/OverviewCard";
+import { OverviewCard } from "@/components/overview-card";
 
 export async function Overview() {
   return (

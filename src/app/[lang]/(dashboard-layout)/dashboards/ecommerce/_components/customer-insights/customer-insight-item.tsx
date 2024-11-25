@@ -1,6 +1,6 @@
 "use client";
 
-import type { Icon } from "@/types";
+import type { IconType } from "@/types";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -12,7 +12,7 @@ export function CustomerInsightItem({
 }: {
   title: string;
   value: number;
-  icon: Icon;
+  icon: IconType;
   color: string;
 }) {
   return (

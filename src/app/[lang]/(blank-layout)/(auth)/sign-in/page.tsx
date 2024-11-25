@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { SignInForm } from "./_components/sign-in-form";
 import {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description: "SignIn to your account",
 };
 
-export default function SignInPage({ params }: { params: { lang: Locale } }) {
+export default function SignInPage({ params }: { params: { lang: LocaleType } }) {
   return (
     <Auth imgSrc="/images/placeholder.svg">
       <AuthHeader>

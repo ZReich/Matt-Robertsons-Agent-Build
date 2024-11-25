@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { RegisterForm } from "./_components/register-form";
 import {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description: "Register to your account",
 };
 
-export default function RegisterPage({ params }: { params: { lang: Locale } }) {
+export default function RegisterPage({ params }: { params: { lang: LocaleType } }) {
   return (
     <Auth imgSrc="/images/placeholder.svg">
       <AuthHeader>

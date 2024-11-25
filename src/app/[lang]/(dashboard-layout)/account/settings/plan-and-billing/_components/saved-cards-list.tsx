@@ -11,7 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
+import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 import { Badge } from "@/components/ui/badge";
 
 const cardSchema = z.object({

@@ -69,7 +69,7 @@ export default function SecurityPage() {
           <RecentLogsTable />
         </CardContent>
         <CardFooter className="justify-center">
-          <Link href="#" className={cn(buttonVariants({ variant: "link" }))}>
+          <Link href="/" className={cn(buttonVariants({ variant: "link" }))}>
             View all connections
           </Link>
         </CardFooter>

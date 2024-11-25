@@ -2,7 +2,7 @@ import { TrendingUp, TrendingDown, EllipsisVertical } from "lucide-react";
 
 import { cn, formatCurrency, formatPercent, formatDuration } from "@/lib/utils";
 
-import { Icon } from "@/types";
+import { IconType } from "@/types";
 
 import {
   Card,
@@ -21,7 +21,7 @@ interface OverviewCardProps {
   };
   title: string;
   description: string;
-  icon: Icon;
+  icon: IconType;
   formatStyle?: "percent" | "duration" | "currency" | "regular";
 }
 

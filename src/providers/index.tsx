@@ -1,4 +1,4 @@
-import type { Direction } from "@/types";
+import type { DirectionType } from "@/types";
 import type { Session } from "next-auth";
 
 import { SettingsProvider } from "./settings-provider";
@@ -12,7 +12,7 @@ export default function Providers({
   children,
 }: Readonly<{
   session: Session | null;
-  direction: Direction;
+  direction: DirectionType;
   children: React.ReactNode;
 }>) {
   return (

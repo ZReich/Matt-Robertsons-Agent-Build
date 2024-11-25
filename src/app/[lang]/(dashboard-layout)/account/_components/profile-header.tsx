@@ -2,11 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { UserPen } from "lucide-react";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 import type { UserType } from "../types";
 
 import { cn } from "@/lib/utils";
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,7 +16,7 @@ export function ProfileHeader({
   locale,
   user,
 }: {
-  locale: Locale;
+  locale: LocaleType;
   user: UserType;
 }) {
   const { fullName, role, avatar, background } = user;
@@ -45,7 +45,7 @@ export function ProfileHeader({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              href={getLocalizedPathname("/account/settings", locale)}
+              href={ensureLocalizedPathname("/account/settings", locale)}
               className={cn(buttonVariants({ variant: "default" }))}
             >
               <UserPen className="me-2 size-4 stroke-[1.5]" />

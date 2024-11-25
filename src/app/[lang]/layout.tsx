@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import "../globals.css";
 
 import type { Metadata } from "next";
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import Providers from "@/providers";
 import { Toaster } from "@/components/ui/toaster";
@@ -41,7 +41,7 @@ export default async function RootLayout({
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { lang: Locale };
+  params: { lang: LocaleType };
 }>) {
   const session = await getServerSession(nextAuthOptions);
   const direction = i18n.langDirection[params.lang];

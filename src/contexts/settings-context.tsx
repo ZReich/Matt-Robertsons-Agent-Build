@@ -2,19 +2,9 @@
 
 import * as React from "react";
 
-import { BaseColor } from "@/configs/base-colors";
+import type { SettingsType } from "@/types";
 
-import type { Direction, Layout, Mode } from "@/types";
-
-export type Settings = {
-  theme: BaseColor["name"];
-  mode: Mode;
-  radius: number;
-  layout: Layout;
-  direction: Direction;
-};
-
-export const defaultSettings: Settings = {
+export const defaultSettings: SettingsType = {
   theme: "zinc",
   mode: "system",
   radius: 0.5,
@@ -24,8 +14,8 @@ export const defaultSettings: Settings = {
 
 export const SettingsContext = React.createContext<
   | {
-      settings: Settings;
-      updateSettings: (newSettings: Settings) => void;
+      settings: SettingsType;
+      updateSettings: (newSettings: SettingsType) => void;
       resetSettings: () => void;
     }
   | undefined

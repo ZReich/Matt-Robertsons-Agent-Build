@@ -2,10 +2,10 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import { cn, getInitials, formatDistance } from "@/lib/utils";
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { ChatType } from "../../types";
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { useChatContext } from "../../hooks/use-chat-context";
 
@@ -18,11 +18,11 @@ export function ChatListItem({ chat }: { chat: ChatType }) {
   const params = useParams();
 
   const chatIdParam = params.id?.[0];
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
 
   return (
     <Link
-      href={getLocalizedPathname(`/apps/chat/${chat.id}`, locale)}
+      href={ensureLocalizedPathname(`/apps/chat/${chat.id}`, locale)}
       prefetch={false}
       className={cn(
         buttonVariants({ variant: "ghost" }),

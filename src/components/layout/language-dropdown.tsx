@@ -6,7 +6,7 @@ import { Earth } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 import type { Dictionary } from "@/lib/getDictionary";
 
 import {
@@ -23,13 +23,13 @@ import { Button } from "@/components/ui/button";
 type LanguageDictionary = Dictionary["navigation"]["language"];
 
 type LanguageDataType = {
-  langCode: Locale;
+  langCode: LocaleType;
   langName: keyof LanguageDictionary;
 };
 
-const getLocalePath = (pathName: string, locale: string) => {
-  if (!pathName) return "/";
-  const segments = pathName.split("/");
+const relocalizePathname = (pathname: string, locale: string) => {
+  if (!pathname) return "/";
+  const segments = pathname.split("/");
 
   segments[1] = locale;
 
@@ -48,10 +48,10 @@ const languageData: LanguageDataType[] = [
 ];
 
 export function LanguageDropdown({ dictionary }: { dictionary: Dictionary }) {
-  const pathName = usePathname();
+  const pathname = usePathname();
   const params = useParams();
 
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
   const direction = i18n.langDirection[locale];
 
   return (
@@ -73,7 +73,7 @@ export function LanguageDropdown({ dictionary }: { dictionary: Dictionary }) {
           {languageData.map((locale) => (
             <Link
               key={locale.langCode}
-              href={getLocalePath(pathName, locale.langCode)}
+              href={relocalizePathname(pathname, locale.langCode)}
             >
               <DropdownMenuRadioItem
                 value={locale.langCode}

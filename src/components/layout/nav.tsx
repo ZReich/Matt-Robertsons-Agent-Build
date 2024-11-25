@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ChevronDown, Circle } from "lucide-react";
 
-import type { Nav as NavType } from "@/data/navigation";
-import type { Direction } from "@/types";
-import type { Locale } from "@/configs/i18n";
+import type { NavType } from "@/data/navigation";
+import type { DirectionType } from "@/types";
+import type { LocaleType } from "@/configs/i18n";
 
 import { cn } from "@/lib/utils";
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import {
 
 interface NavProps {
   navs: NavType[];
-  dir: Direction;
+  dir: DirectionType;
   isRoot?: boolean;
 }
 
@@ -29,12 +29,12 @@ export function Nav({ navs, dir, isRoot = true }: NavProps) {
   const pathname = usePathname();
   const params = useParams();
 
-  const locale = params.lang as Locale;
+  const locale = params.lang as LocaleType;
 
   return (
     <nav className="grid gap-1" dir={dir}>
       {navs.map((nav) => {
-        const localizedHref = getLocalizedPathname(nav.href, locale);
+        const localizedHref = ensureLocalizedPathname(nav.href, locale);
         const isActive = localizedHref === pathname;
 
         if (nav.children) {

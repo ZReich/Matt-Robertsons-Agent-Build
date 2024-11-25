@@ -10,10 +10,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +49,7 @@ const FormSchema = z.object({
 type FormType = z.infer<typeof FormSchema>;
 
 interface SignInFormProps extends React.HTMLAttributes<HTMLFormElement> {
-  locale: Locale;
+  locale: LocaleType;
 }
 
 export function SignInForm({ className, locale, ...props }: SignInFormProps) {
@@ -125,7 +125,7 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
                 <div className="flex items-center">
                   <FormLabel>Password</FormLabel>
                   <Link
-                    href={getLocalizedPathname("/forgot-password", locale)}
+                    href={ensureLocalizedPathname("/forgot-password", locale)}
                     className="ms-auto inline-block text-sm underline"
                   >
                     Forgot your password?
@@ -146,7 +146,7 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
         <div className="-mt-4 text-center text-sm">
           Don&apos;t have an account?
           <Link
-            href={getLocalizedPathname("/register", locale)}
+            href={ensureLocalizedPathname("/register", locale)}
             className="underline"
           >
             Sign up

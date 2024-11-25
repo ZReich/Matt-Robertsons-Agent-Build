@@ -3,11 +3,12 @@ import { withAuth } from "next-auth/middleware";
 import Negotiator from "negotiator";
 import { match as matchLocale } from "@formatjs/intl-localematcher";
 
-import { i18n, Locale } from "@/configs/i18n";
+import { i18n } from "@/configs/i18n";
 
-import { isPathnameMissingLocale, getLocalizedPathname } from "@/lib/i18n";
+import { isPathnameMissingLocale, ensureLocalizedPathname } from "@/lib/i18n";
 import { withoutSuffix } from "@/lib/utils";
 
+import type { LocaleType } from "@/configs/i18n";
 import type { NextRequest } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
 
@@ -36,15 +37,19 @@ const getLocale = (request: NextRequest) => {
 
   const locale = matchLocale(languages, locales, i18n.defaultLocale);
 
-  return locale as Locale;
+  return locale as LocaleType;
 };
 
-function redirectTo(pathname: string, request: NextRequest, locale?: Locale) {
+function redirectTo(
+  pathname: string,
+  request: NextRequest,
+  locale?: LocaleType
+) {
   let redirectPathname = pathname;
 
   // Localize the pathname if it's missing a locale
   if (isPathnameMissingLocale(pathname)) {
-    redirectPathname = getLocalizedPathname(
+    redirectPathname = ensureLocalizedPathname(
       pathname,
       locale ?? i18n.defaultLocale
     );
@@ -60,7 +65,7 @@ function getFirstSegment(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
 
   // Return the next segment if the first one is a locale
-  return i18n.locales.includes(segments[0] as Locale)
+  return i18n.locales.includes(segments[0] as LocaleType)
     ? segments[1]
     : segments[0];
 }

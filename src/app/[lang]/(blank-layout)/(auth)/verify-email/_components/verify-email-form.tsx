@@ -6,10 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import type { Locale } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -22,7 +22,7 @@ const FormSchema = z.object({
 });
 
 interface VerifyEmailFormProps extends React.HTMLAttributes<HTMLFormElement> {
-  locale: Locale;
+  locale: LocaleType;
 }
 
 export function VerifyEmailForm({
@@ -73,7 +73,7 @@ export function VerifyEmailForm({
         {...props}
       >
         <Link
-          href={getLocalizedPathname("/", locale)}
+          href={ensureLocalizedPathname("/", locale)}
           className={cn(buttonVariants({ variant: "default" }))}
         >
           Skip for now

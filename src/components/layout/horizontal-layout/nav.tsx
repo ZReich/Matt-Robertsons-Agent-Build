@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
-import { getLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import type { Nav as NavType } from "@/data/navigation";
+import type { NavType } from "@/data/navigation";
+import type { LocaleType } from "@/configs/i18n";
 
 import {
   MenubarItem,
@@ -18,14 +19,14 @@ import { Badge } from "@/components/ui/badge";
 
 export function Nav({ navs }: { navs: NavType[] }) {
   const pathname = usePathname();
+  const params = useParams();
+
+  const locale = params.lang as LocaleType;
 
   return (
     <>
       {navs.map((nav, index) => {
-        const localizedHref = getLocalizedPathname(
-          nav.href,
-          pathname.slice(0, 3) // Language code.
-        );
+        const localizedHref = ensureLocalizedPathname(nav.href, locale);
         const isActive = localizedHref === pathname;
 
         if (nav.children) {

@@ -16,7 +16,7 @@ import { baseColors } from "@/configs/base-colors";
 
 import { cn } from "@/lib/utils";
 
-import type { Mode } from "@/types";
+import type { ModeType } from "@/types";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -35,7 +35,7 @@ export function Customizer() {
   const { settings, updateSettings, resetSettings } = useSettings();
 
   const setMode = React.useCallback(
-    (modeName: Mode) => {
+    (modeName: ModeType) => {
       updateSettings({ ...settings, mode: modeName });
     },
     [settings, updateSettings]

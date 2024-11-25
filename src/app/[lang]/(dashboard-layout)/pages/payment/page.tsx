@@ -32,11 +32,11 @@ export default async function PaymentPage() {
         <CardFooter className="justify-center md:justify-start">
           <p className="text-sm text-muted-foreground">
             Payment processed by{" "}
-            <a href="#" className="underline">
+            <a href="/" className="underline">
               Stripe
             </a>{" "}
             for{" "}
-            <a href="#" className="underline">
+            <a href="/" className="underline">
               Shadboard
             </a>{" "}
             - United States Of America
