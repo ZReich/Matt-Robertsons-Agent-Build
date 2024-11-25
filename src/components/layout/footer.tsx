@@ -1,27 +1,34 @@
-import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+import { buttonVariants } from "@/components/ui/button";
 
 export function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="container flex items-center bg-background py-4">
-      <p className="text-xs md:text-sm leading-loose text-muted-foreground text-left">
-        Built on top of{" "}
-        <Link
-          href="https://ui.shadcn.com"
+    <footer className="container flex justify-between items-center bg-background p-4 md:px-6">
+      <p className="text-xs text-muted-foreground md:text-sm">
+        © {currentYear}{" "}
+        <a
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium underline underline-offset-4"
+          className={cn(buttonVariants({ variant: "link" }), "inline p-0")}
         >
-          shadcn/ui
-        </Link>
-        . The source code is available on{" "}
-        <Link
-          href="https://github.com/salimi-my/shadcn-ui-sidebar"
+          Shadboard
+        </a>
+        .
+      </p>
+      <p className="text-xs text-muted-foreground md:text-sm">
+        Designed & Developed by{" "}
+        <a
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium underline underline-offset-4"
+          className={cn(buttonVariants({ variant: "link" }), "inline p-0")}
         >
-          GitHub
-        </Link>
+          Qualiora
+        </a>
         .
       </p>
     </footer>

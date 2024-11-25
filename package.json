@@ -1,6 +1,7 @@
 {
-  "name": "shadboard",
-  "version": "0.1.0",
+  "name": "shadboard-nextjs-admin-dashboard-template",
+  "version": "1.0.0",
+  "license": "Commercial",
   "private": true,
   "scripts": {
     "dev": "next dev",
