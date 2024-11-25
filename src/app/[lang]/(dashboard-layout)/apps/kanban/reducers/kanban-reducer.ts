@@ -41,7 +41,7 @@ export const KanbanReducer = (
             const newTask = {
               ...action.task,
               id: crypto.randomUUID(),
-              column_id: action.columnId,
+              columnId: action.columnId,
               order: column.tasks.length,
             };
             return {
