@@ -19,7 +19,7 @@ import {
 
 import { getEmailsData } from "../_actions/get-emails-data";
 
-import { cn, ensureSuffix, getInitials } from "@/lib/utils";
+import { cn, ensureSuffix, formatDate, getInitials } from "@/lib/utils";
 
 import type { EmailState } from "../types";
 
@@ -216,7 +216,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
                       From {email.sender.name}
                     </span>
                     <span className="text-sm text-muted-foreground">
-                      {format(new Date(email.createdAt), "MMM dd, yyyy")}
+                      {formatDate(email.createdAt)}
                     </span>
                   </div>
                   <Button
@@ -339,7 +339,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
                     </TableCell>
                     <TableCell className="w-28">
                       <span className="text-sm text-muted-foreground">
-                        {format(new Date(email.createdAt), "MMM dd, yyyy")}
+                        {formatDate(email.createdAt)}
                       </span>
                     </TableCell>
                     <TableCell className="w-10">

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { format } from "date-fns";
 import {
   Archive,
   ChevronLeft,
@@ -15,7 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 import type { EmailType } from "../types";
 
@@ -115,7 +114,7 @@ export function EmailView({ email }: { email: EmailType }) {
                 <CardDescription>{email.sender.email}</CardDescription>
               </div>
               <CardDescription className="ms-auto">
-                {format(email.createdAt, "MMM dd, yyyy")}
+                {formatDate(email.createdAt)}
               </CardDescription>
             </CardHeader>
             <CardContent className="whitespace-pre-wrap">

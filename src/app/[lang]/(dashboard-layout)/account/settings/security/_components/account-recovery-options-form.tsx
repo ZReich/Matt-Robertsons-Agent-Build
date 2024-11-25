@@ -35,7 +35,7 @@ export function AccountRecoveryOptionsForm({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      option: user.account_reovery_option,
+      option: user.accountReoveryOption,
     },
   });
 

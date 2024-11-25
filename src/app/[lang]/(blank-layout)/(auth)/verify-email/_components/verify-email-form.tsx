@@ -5,9 +5,6 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-// import { signIn, type SignInResponse } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { LoaderCircle } from "lucide-react";
 
 import { getLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -17,13 +14,7 @@ import type { Locale } from "@/configs/i18n";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
 const FormSchema = z.object({
@@ -42,7 +33,7 @@ export function VerifyEmailForm({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      email: "d",
+      email: "",
     },
   });
 

@@ -24,27 +24,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserType } from "../../types";
 
 const FormSchema = z.object({
-  first_name: z
+  firstName: z
     .string()
     .min(2, { message: "First Name must contain at least 2 character(s)" }),
-  last_name: z
+  lastName: z
     .string()
     .min(2, { message: "Last Name must contain at least 2 character(s)" }),
   username: z
     .string()
     .min(3, { message: "Username must contain at least 3 character(s)" }),
   email: z.string().email(),
-  phone_number: z
+  phoneNumber: z
     .string()
     .min(10, { message: "Phone Number must be at least 10 digits" }),
   state: z.string(),
   country: z.string(),
   address: z.string(),
-  zip_code: z
+  zipCode: z
     .string()
     .min(5, { message: "Zip Code must be at least 5 digits" }),
   language: z.string(),
-  time_zone: z.string(),
+  timeZone: z.string(),
   currency: z.string(),
   organization: z.string().optional(),
   avatar: z
@@ -113,7 +113,7 @@ export function ProfileInfoForm({
           <div className="col-span-2 flex items-center gap-4 mb-4">
             <Avatar className="size-24">
               <AvatarImage src={photoPreview || ""} alt="Profile Avatar" />
-              <AvatarFallback>{user.first_name.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{user.firstName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-2 md:flex-row">
               <FormField
@@ -167,7 +167,7 @@ export function ProfileInfoForm({
           </div>
           <FormField
             control={form.control}
-            name="first_name"
+            name="firstName"
             render={({ field }) => (
               <FormItem className="grow">
                 <FormLabel>First Name</FormLabel>
@@ -180,7 +180,7 @@ export function ProfileInfoForm({
           />
           <FormField
             control={form.control}
-            name="last_name"
+            name="lastName"
             render={({ field }) => (
               <FormItem className="grow">
                 <FormLabel>Last Name</FormLabel>
@@ -223,7 +223,7 @@ export function ProfileInfoForm({
           />
           <FormField
             control={form.control}
-            name="phone_number"
+            name="phoneNumber"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
@@ -275,7 +275,7 @@ export function ProfileInfoForm({
           />
           <FormField
             control={form.control}
-            name="zip_code"
+            name="zipCode"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Zip Code</FormLabel>
@@ -301,7 +301,7 @@ export function ProfileInfoForm({
           />
           <FormField
             control={form.control}
-            name="time_zone"
+            name="timeZone"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Time Zone</FormLabel>

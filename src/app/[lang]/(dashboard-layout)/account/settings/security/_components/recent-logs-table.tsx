@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { formatDateWithTime } from "@/lib/utils";
 
 import { logsData } from "../../../_data/logs";
 
@@ -28,9 +28,7 @@ export function RecentLogsTable() {
             <TableCell>{log.userAgent}</TableCell>
             <TableCell>{log.device}</TableCell>
             <TableCell>{log.location}</TableCell>
-            <TableCell>
-              {format(new Date(log.created_at), "dd/MM/yyyy hh:mm a")}
-            </TableCell>
+            <TableCell>{formatDateWithTime(log.createdAt)}</TableCell>
           </TableRow>
         ))}
       </TableBody>

@@ -1,7 +1,6 @@
 import { EllipsisVertical } from "lucide-react";
 
-import { formatDistanceToNow } from "@/lib/date-formatters";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatDistance } from "@/lib/utils";
 
 import { MessageType, UserType } from "../../../types";
 
@@ -50,7 +49,7 @@ export function MessageBubble({
         />
         <div className="flex items-center gap-1">
           <span className="text-sm font-normal text-muted-foreground">
-            {formatDistanceToNow(message.createdAt)}
+            {formatDistance(message.createdAt)}
           </span>
           {isByCurrentUser && <MessageStatusIcon status={message.status} />}
         </div>

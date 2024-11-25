@@ -1,8 +1,9 @@
 "use client";
 
 import Autoplay from "embla-carousel-autoplay";
-import { format } from "date-fns";
 import { Calendar } from "lucide-react";
+
+import { formatDate } from "@/lib/utils";
 
 import type { ActiveProjectType } from "../../types";
 
@@ -45,10 +46,7 @@ export function ActiveProjectsCarousel({
     >
       <CarouselContent>
         {data.map((project) => (
-          <CarouselItem
-            key={project.name}
-            className="md:basis-1/2"
-          >
+          <CarouselItem key={project.name} className="md:basis-1/2">
             <Card>
               <CardHeader>
                 <h4 className="font-semibold leading-none tracking-tight">
@@ -69,8 +67,8 @@ export function ActiveProjectsCarousel({
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Calendar className="me-2 h-4 w-4" aria-hidden />
                     <p>
-                      {format(project.startDate, "MMM dd, yyyy")} -{" "}
-                      {format(project.dueDate, "MMM dd, yyyy")}
+                      {formatDate(project.startDate)} -{" "}
+                      {formatDate(project.dueDate)}
                     </p>
                   </div>
                 </div>

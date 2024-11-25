@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/form";
 
 const FormSchema = z.object({
-  two_factor_auth: z.boolean().default(false).optional(),
-  login_alerts: z.boolean().default(true).optional(),
+  twoFactorAuth: z.boolean().default(false).optional(),
+  loginAlerts: z.boolean().default(true).optional(),
 });
 
 interface SecurityPreferencesFormProps
@@ -34,8 +34,8 @@ export function SecurityPreferencesForm({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      two_factor_auth: user.two_factor_auth,
-      login_alerts: user.login_alerts,
+      twoFactorAuth: user.twoFactorAuth,
+      loginAlerts: user.loginAlerts,
     },
   });
 
@@ -50,7 +50,7 @@ export function SecurityPreferencesForm({
         <div className="grid gap-3">
           <FormField
             control={form.control}
-            name="two_factor_auth"
+            name="twoFactorAuth"
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
                 <FormControl>
@@ -71,7 +71,7 @@ export function SecurityPreferencesForm({
           />
           <FormField
             control={form.control}
-            name="login_alerts"
+            name="loginAlerts"
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
                 <FormControl>

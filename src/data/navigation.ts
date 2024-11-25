@@ -4,7 +4,6 @@ import {
   ShoppingCart,
   LayoutTemplate,
   CircleDollarSign,
-  Barcode,
   CreditCard,
   Headset,
   AtSign,

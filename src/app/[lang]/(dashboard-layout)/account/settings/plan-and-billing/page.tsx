@@ -1,4 +1,5 @@
-import { getPlansAndSubscriptionsData } from "./actions/get-plans-and-subscriptions-data";
+import { plansData } from "../../_data/plans";
+import { subscriptionsData } from "../../_data/subscriptions";
 
 import {
   Card,
@@ -16,8 +17,6 @@ import { PaymentMethodForm } from "./_components/payment-method-form";
 import { SavedCardsList } from "./_components/saved-cards-list";
 
 export default async function PlanAndBillingPage() {
-  const { plans, subscriptions } = await getPlansAndSubscriptionsData();
-
   return (
     <div className="grid gap-4">
       <Card className="w-full">
@@ -124,7 +123,7 @@ export default async function PlanAndBillingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChangePlanForm plans={plans} subscriptions={subscriptions} />
+          <ChangePlanForm plans={plansData} subscriptions={subscriptionsData} />
         </CardContent>
       </Card>
       <PaymentMethodForm />

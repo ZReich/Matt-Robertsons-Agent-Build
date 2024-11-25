@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 
 import type { Locale } from "@/configs/i18n";
 import type { UserType } from "../../types";
@@ -23,7 +22,6 @@ export function DeleteAccountForm({
   user,
   ...props
 }: DeleteAccountFormProps) {
-  const router = useRouter();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {

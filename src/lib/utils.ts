@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 import { z } from "zod";
 
 import type { Locale } from "@/configs/i18n";
@@ -17,41 +18,6 @@ export function getInitials(fullName: string) {
   const initials = names.map((name) => name.charAt(0).toUpperCase()).join("");
 
   return initials;
-}
-
-export function ensurePrefix(str: string, prefix: string) {
-  return str.startsWith(prefix) ? str : `${prefix}${str}`;
-}
-
-export function ensureSuffix(str: string, suffix: string) {
-  return str.endsWith(suffix) ? str : `${str}${suffix}`;
-}
-
-export function withoutSuffix(str: string, suffix: string) {
-  return str.endsWith(suffix) ? str.slice(0, -suffix.length) : str;
-}
-
-export function withoutPrefix(str: string, prefix: string) {
-  return str.startsWith(prefix) ? str.slice(prefix.length) : str;
-}
-
-export function shuffleArray(array: any[]) {
-  let currentIndex = array.length;
-  let randomIndex;
-
-  // While there remain elements to shuffle.
-  while (currentIndex !== 0) {
-    // Pick a remaining element.
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-    // And swap it with the current element.
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
-  }
-
-  return array;
 }
 
 export const isEven = (num: number) => num % 2 === 0;
@@ -103,15 +69,82 @@ export function ratingToPercentage(rating: number, maxRating: number) {
 }
 
 export function formatCurrency(
-  amount: number,
-  locales: string = "en",
+  value: number,
+  locales: Locale = "en",
   currency: string = "USD"
 ) {
   return new Intl.NumberFormat(locales, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(value);
+}
+
+export function formatPercent(value: number, locales: Locale = "en") {
+  return new Intl.NumberFormat(locales, {
+    style: "percent",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+export function formatDate(
+  value: string | number | Date,
+  locales: Locale = "en"
+) {
+  return format(value, "MMM dd, yyyy");
+}
+
+export function formatDateWithTime(
+  value: string | number | Date,
+  locales: Locale = "en"
+) {
+  return format(value, "MMM dd, yyyy hh:mm a");
+}
+
+export function formatDateShort(
+  value: string | number | Date,
+  locales: Locale = "en"
+) {
+  return format(value, "MMM dd");
+}
+
+export function formatDuration(value: string | number | Date) {
+  const duration = intervalToDuration({ start: 0, end: value });
+
+  const hours = duration.hours ? `${duration.hours}h` : "";
+  const minutes = duration.minutes ? `${duration.minutes}m` : "";
+  const seconds = duration.seconds ? `${duration.seconds}s` : "";
+
+  return `${hours} ${minutes} ${seconds}`.trim();
+}
+
+export function formatDistance(value: string | number | Date) {
+  const distance = formatDistanceToNow(value, { addSuffix: true });
+
+  const replacements: Record<string, string> = {
+    minute: "min",
+    minutes: "mins",
+    hour: "hr",
+    hours: "hrs",
+    day: "day",
+    days: "days",
+    month: "mo",
+    months: "mos",
+    year: "yr",
+    years: "yrs",
+  };
+
+  if (distance === "less than a minute ago") {
+    return "just now";
+  }
+
+  // Replace phrases based on the mapping
+  return distance
+    .replace(
+      /less than a minute|minute|minutes|hour|hours|day|days|month|months|year|years/g,
+      (match) => replacements[match]
+    )
+    .replace(/\b(over|almost|about)\b/g, "");
 }
 
 export function camelCaseToTitleCase(camelCaseStr: string) {
@@ -120,4 +153,39 @@ export function camelCaseToTitleCase(camelCaseStr: string) {
     .replace(/^./, (char) => char.toUpperCase()); // Capitalize the first letter
 
   return titleCaseStr;
+}
+
+export function ensurePrefix(str: string, prefix: string) {
+  return str.startsWith(prefix) ? str : `${prefix}${str}`;
+}
+
+export function ensureSuffix(str: string, suffix: string) {
+  return str.endsWith(suffix) ? str : `${str}${suffix}`;
+}
+
+export function withoutSuffix(str: string, suffix: string) {
+  return str.endsWith(suffix) ? str.slice(0, -suffix.length) : str;
+}
+
+export function withoutPrefix(str: string, prefix: string) {
+  return str.startsWith(prefix) ? str.slice(prefix.length) : str;
+}
+
+export function shuffleArray(array: any[]) {
+  let currentIndex = array.length;
+  let randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex !== 0) {
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
 }

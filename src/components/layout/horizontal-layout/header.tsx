@@ -24,7 +24,7 @@ import { LanguageDropdown } from "@/components/layout/language-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
 import { Nav } from "./nav";
 
-import ShadboardLogo from "/public/images/logos/shadboard.svg";
+import Logo from "@/app/icon.svg";
 import { Separator } from "@/components/ui/separator";
 
 export function Header({ dictionary }: { dictionary: Dictionary }) {
@@ -57,7 +57,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
           href={getLocalizedPathname("/", locale)}
           className="hidden text-foreground font-black hover:text-primary/90 md:flex"
         >
-          <ShadboardLogo className="size-6" aira-hidden="true" />
+          <Logo className="size-6" aira-hidden="true" />
           Shadboard
         </Link>
         <div className="flex gap-2">

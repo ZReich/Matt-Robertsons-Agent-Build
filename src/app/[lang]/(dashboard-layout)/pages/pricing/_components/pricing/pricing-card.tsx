@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -47,10 +47,7 @@ export function PricingCard({
       <CardContent>
         <div className="flex justify-center items-baseline mb-8 mt-2">
           <span className="text-4xl font-black">
-            {new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-            }).format(price / 100)}
+            {formatCurrency(price / 100)}
           </span>
           <span className="text-muted-foreground">/{period}</span>
         </div>

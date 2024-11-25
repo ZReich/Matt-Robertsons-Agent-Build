@@ -13,7 +13,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { cn } from "@/lib/utils";
+import { cn, formatPercent } from "@/lib/utils";
 import { useSettings } from "@/hooks/use-settings";
 
 export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
@@ -39,6 +39,7 @@ export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
     >
       <CarouselContent className="h-[500px] grid gap-2">
         {data.map((product, index) => {
+          const isPositiveRevenueChange = product.revenue.percentageChange > 0;
           const isPositiveSalesChange = product.sales.percentageChange > 0;
 
           return (
@@ -69,16 +70,56 @@ export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
                     </div>
                   </div>
                   <div className="bg-accent p-4 space-y-2">
-                    <Stat
-                      label="Sales"
-                      value={product.sales.value}
-                      percentageChange={product.sales.percentageChange}
-                    />
-                    <Stat
-                      label="Revenue"
-                      value={`$${product.revenue.value.toLocaleString()}`}
-                      percentageChange={product.revenue.percentageChange}
-                    />
+                    <div className="flex items-center gap-1 text-sm">
+                      <h5>Sales:</h5>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-semibold">{`$${product.revenue.value.toLocaleString()}`}</p>
+                        <Badge
+                          variant="destructive"
+                          className={cn(
+                            "justify-center",
+                            isPositiveRevenueChange &&
+                              "bg-success hover:bg-success/90"
+                          )}
+                        >
+                          {isPositiveRevenueChange && <span>+</span>}
+                          <span>
+                            {formatPercent(product.revenue.percentageChange)}
+                          </span>
+                          <span className="ms-1" aria-hidden>
+                            {isPositiveRevenueChange ? (
+                              <TrendingUp className="size-4" />
+                            ) : (
+                              <TrendingDown className="size-4" />
+                            )}
+                          </span>
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm">
+                      <h5>Revenue:</h5>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-semibold">{`$${product.revenue.value.toLocaleString()}`}</p>
+                        <Badge
+                          variant="destructive"
+                          className={cn(
+                            "justify-center",
+                            isPositiveSalesChange &&
+                              "bg-success hover:bg-success/90"
+                          )}
+                        >
+                          {isPositiveSalesChange && <span>+</span>}
+                          <span>{formatPercent(product.revenue.value)}</span>
+                          <span className="ms-1" aria-hidden>
+                            {isPositiveSalesChange ? (
+                              <TrendingUp className="size-4" />
+                            ) : (
+                              <TrendingDown className="size-4" />
+                            )}
+                          </span>
+                        </Badge>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-1 text-sm">
                       <h5>Stock:</h5>
                       <p className="font-semibold">
@@ -93,47 +134,5 @@ export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
         })}
       </CarouselContent>
     </Carousel>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  percentageChange,
-}: {
-  label: string;
-  value: string | number;
-  percentageChange: number;
-}) {
-  const isPositiveChange = percentageChange >= 0;
-  return (
-    <div className="flex items-center gap-1 text-sm">
-      <h5>{label}:</h5>
-      <div className="flex items-center space-x-2">
-        <p className="font-semibold">{value}</p>
-        <Badge
-          variant="destructive"
-          className={cn(
-            "justify-center",
-            isPositiveChange && "bg-success hover:bg-success/90"
-          )}
-        >
-          {isPositiveChange && <span>+</span>}
-          <span>
-            {new Intl.NumberFormat("en-US", {
-              style: "percent",
-              maximumFractionDigits: 2,
-            }).format(percentageChange)}
-          </span>
-          <span className="ms-1" aria-hidden>
-            {isPositiveChange ? (
-              <TrendingUp className="size-4" />
-            ) : (
-              <TrendingDown className="size-4" />
-            )}
-          </span>
-        </Badge>
-      </div>
-    </div>
   );
 }

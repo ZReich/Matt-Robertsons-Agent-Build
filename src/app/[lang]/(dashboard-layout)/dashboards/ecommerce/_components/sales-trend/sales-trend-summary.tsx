@@ -1,9 +1,8 @@
 "use client";
 
 import { useMedia } from "react-use";
-import { format } from "date-fns";
 
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDateShort } from "@/lib/utils";
 
 import type { SalesTrendType } from "../../types";
 
@@ -25,7 +24,7 @@ export function SalesTrendSummary({
             {formatCurrency(data.highestSales.sales)}
           </p>
           <p className="text-xs text-muted-foreground">
-            on {format(data.highestSales.date, "MMM dd")}
+            on {formatDateShort(data.highestSales.date)}
           </p>
         </li>
         <li>
@@ -34,7 +33,7 @@ export function SalesTrendSummary({
             {formatCurrency(data.lowestSales.sales)}
           </p>
           <p className="text-xs text-muted-foreground">
-            on {format(data.lowestSales.date, "MMM dd")}
+            on {formatDateShort(data.lowestSales.date)}
           </p>
         </li>
       </div>

@@ -7,7 +7,7 @@ import { CreditCard, Landmark } from "lucide-react";
 
 import { getCreditCardBrandName } from "@/lib/utils";
 
-import type { CardType } from "../actions/getSavedCards";
+import type { CardType } from "../types";
 
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -27,27 +27,27 @@ import { SeparatorWithText } from "@/components/ui/separator";
 import { CreditCardBrandIcon } from "@/components/CreditCardBrandIcon";
 
 const FormSchema = z.object({
-  payment_option: z.enum(["card", "bank"]).optional(),
-  card_number: z.string().min(1, "Card number is required"),
-  card_name: z.string().min(1, "Cardholder's name is required"),
+  paymentOption: z.enum(["card", "bank"]).optional(),
+  cardNumber: z.string().min(1, "Card number is required"),
+  cardName: z.string().min(1, "Cardholder's name is required"),
   expiry: z.string().min(1, "Expiry date is required"),
   cvc: z.string().min(3, "CVC is required").max(4, "CVC is too long"),
-  account_number: z.string().optional(),
-  routing_number: z.string().optional(),
-  save_card: z.boolean().optional(),
-  saved_card: z.string().optional(),
+  accountNumber: z.string().optional(),
+  routingNumber: z.string().optional(),
+  saveCard: z.boolean().optional(),
+  savedCard: z.string().optional(),
 });
 
 export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      save_card: false,
+      saveCard: false,
     },
   });
 
-  const cardNumber = form.watch("card_number");
-  const paymentOption = form.watch("payment_option");
+  const cardNumber = form.watch("cardNumber");
+  const paymentOption = form.watch("paymentOption");
 
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
@@ -61,7 +61,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="saved_card"
+            name="savedCard"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Select From The Saved Cards</FormLabel>
@@ -70,12 +70,12 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
                     value={field.value === undefined ? "" : field.value}
                     onValueChange={(e) => {
                       field.onChange(e);
-                      form.setValue("payment_option", undefined);
+                      form.setValue("paymentOption", undefined);
                     }}
                     className="space-y-4 mb-6"
                   >
                     {savedCards.map((card) => {
-                      const isBankAccount = !card?.card_type;
+                      const isBankAccount = !card?.cardType;
 
                       return (
                         <Card
@@ -96,13 +96,13 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
                               <>
                                 <div>
                                   <span className="capitalize">
-                                    {card.card_type}
+                                    {card.cardType}
                                   </span>{" "}
                                   <span>ending in {card.last4}</span>
                                 </div>
                                 <img
-                                  src={`/images/logos/${card.card_type}.svg`}
-                                  alt={`${card.card_type} logo`}
+                                  src={`/images/logos/${card.cardType}.svg`}
+                                  alt={`${card.cardType} logo`}
                                   className="h-6 ms-auto md:h-8"
                                 />
                               </>
@@ -122,7 +122,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
 
           <FormField
             control={form.control}
-            name="payment_option"
+            name="paymentOption"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Select Payment Option</FormLabel>
@@ -131,7 +131,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
                     value={field.value === undefined ? "" : field.value}
                     onValueChange={(e) => {
                       field.onChange(e);
-                      form.setValue("saved_card", undefined);
+                      form.setValue("savedCard", undefined);
                     }}
                     className="flex flex-col space-y-1"
                   >
@@ -166,7 +166,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
             <>
               <FormField
                 control={form.control}
-                name="card_number"
+                name="cardNumber"
                 render={({ field }) => (
                   <FormItem className="relative">
                     <FormLabel>Card Number</FormLabel>
@@ -187,7 +187,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
               />
               <FormField
                 control={form.control}
-                name="card_name"
+                name="cardName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Name on Card</FormLabel>
@@ -228,7 +228,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
               </div>
               <FormField
                 control={form.control}
-                name="save_card"
+                name="saveCard"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center space-x-2">
@@ -252,7 +252,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
             <>
               <FormField
                 control={form.control}
-                name="account_number"
+                name="accountNumber"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Account Number</FormLabel>
@@ -268,7 +268,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
               />
               <FormField
                 control={form.control}
-                name="routing_number"
+                name="routingNumber"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Routing Number</FormLabel>

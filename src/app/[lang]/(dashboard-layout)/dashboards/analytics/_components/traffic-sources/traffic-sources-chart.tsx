@@ -5,7 +5,7 @@ import { Label, Pie, PieChart } from "recharts";
 
 import { chartConfig } from "@/configs/chart-config";
 
-import { cn } from "@/lib/utils";
+import { cn, formatPercent } from "@/lib/utils";
 
 import type { TrafficSourcesType } from "../../types";
 
@@ -72,10 +72,7 @@ export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
                             : "fill-destructive"
                         }
                       >
-                        {new Intl.NumberFormat("en-US", {
-                          style: "percent",
-                          maximumFractionDigits: 2,
-                        }).format(data.summary.totalPercentageChange)}
+                        {formatPercent(data.summary.totalPercentageChange)}
                       </tspan>
                     </text>
                   );
@@ -109,12 +106,7 @@ export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
                 )}
               >
                 {isPositiveChange && <span>+</span>}
-                <span>
-                  {new Intl.NumberFormat("en-US", {
-                    style: "percent",
-                    maximumFractionDigits: 2,
-                  }).format(source.percentageChange)}
-                </span>
+                <span>{formatPercent(source.percentageChange)}</span>
                 <span className="ms-1" aria-hidden>
                   {isPositiveChange ? (
                     <TrendingUp className="size-4" />

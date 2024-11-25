@@ -1,7 +1,6 @@
 import { TrendingUp, TrendingDown, EllipsisVertical } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { formatDuration } from "@/lib/date-formatters";
+import { cn, formatCurrency, formatPercent, formatDuration } from "@/lib/utils";
 
 import { Icon } from "@/types";
 
@@ -38,20 +37,13 @@ export function OverviewCard({
   let value;
   switch (formatStyle) {
     case "percent":
-      value = new Intl.NumberFormat("en-US", {
-        style: "percent",
-        maximumFractionDigits: 2,
-      }).format(data.value);
+      value = formatPercent(data.value);
       break;
     case "duration":
       value = formatDuration(data.value);
       break;
     case "currency":
-      value = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-      }).format(data.value);
+      value = formatCurrency(data.value);
       break;
     default:
       value = data.value.toLocaleString();

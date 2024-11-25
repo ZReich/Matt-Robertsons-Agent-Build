@@ -2,8 +2,7 @@
 
 import { Eye, MousePointer, Timer } from "lucide-react";
 
-import { formatDuration } from "@/lib/date-formatters";
-import { cn } from "@/lib/utils";
+import { cn, formatPercent, formatDuration } from "@/lib/utils";
 
 import type { TopPagesType } from "../../types";
 
@@ -57,12 +56,7 @@ export function TopPagesTable({ data }: { data: TopPagesType[] }) {
                 )}
               >
                 <MousePointer className="h-3.5 w-3.5" aria-hidden />
-                <span>
-                  {new Intl.NumberFormat("en-US", {
-                    style: "percent",
-                    maximumFractionDigits: 2,
-                  }).format(item.bounceRate)}
-                </span>
+                <span>{formatPercent(item.bounceRate)}</span>
               </Badge>
             </TableCell>
           </TableRow>

@@ -14,7 +14,7 @@ import type { Locale } from "@/configs/i18n";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Nav } from "@/components/layout/nav";
 
-import ShadboardLogo from "/public/images/logos/shadboard.svg";
+import Logo from "@/app/icon.svg";
 
 export function SidebarContent() {
   const params = useParams();
@@ -28,7 +28,7 @@ export function SidebarContent() {
         href={getLocalizedPathname("/", locale)}
         className="flex text-foreground font-black hover:text-primary/90"
       >
-        <ShadboardLogo className="size-6" aira-hidden="true" />
+        <Logo className="size-6" aira-hidden="true" />
         Shadboard
       </Link>
       <ScrollArea className="h-full -mx-5 p-2.5" dir={dir}>

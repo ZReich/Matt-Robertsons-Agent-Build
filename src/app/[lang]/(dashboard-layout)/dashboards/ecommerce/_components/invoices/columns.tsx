@@ -1,14 +1,16 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { PackageCheck, Truck, Plane, Package, Clock } from "lucide-react";
+
+import { formatCurrency, formatDate } from "@/lib/utils";
+
+import type { InvoiceType } from "../../types";
+
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header";
 import { InvoiceTableRowActions } from "./invoice-table-row-actions";
-
-import type { InvoiceType } from "../../types";
-import { PackageCheck, Truck, Plane, Package, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
 
 const deliveryStatusIcons = {
   Delivered: PackageCheck,
@@ -77,7 +79,7 @@ export const columns: ColumnDef<InvoiceType>[] = [
     cell: ({ row }) => {
       const orderDate = row.getValue("orderDate") as string;
 
-      return format(orderDate, "MMM dd, yyyy");
+      return formatDate(orderDate);
     },
   },
   {
@@ -88,7 +90,7 @@ export const columns: ColumnDef<InvoiceType>[] = [
     cell: ({ row }) => {
       const dueDate = row.getValue("dueDate") as string;
 
-      return <span>{format(dueDate, "MMM dd, yyyy")}</span>;
+      return <span>{formatDate(dueDate)}</span>;
     },
   },
   {
@@ -99,15 +101,7 @@ export const columns: ColumnDef<InvoiceType>[] = [
     cell: ({ row }) => {
       const totalAmount = row.getValue("totalAmount") as number;
 
-      return (
-        <span>
-          {new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 0,
-          }).format(totalAmount)}
-        </span>
-      );
+      return <span>{formatCurrency(totalAmount)}</span>;
     },
   },
   {

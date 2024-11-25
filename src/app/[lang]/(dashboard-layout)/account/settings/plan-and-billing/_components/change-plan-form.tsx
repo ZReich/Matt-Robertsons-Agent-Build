@@ -42,7 +42,7 @@ export function ChangePlanForm({
   subscriptions: Subscription[];
 }) {
   const lastSubscribedPlan = plans.find(
-    (p) => p.id === subscriptions[0].plan_id
+    (p) => p.id === subscriptions[0].planId
   );
 
   const form = useForm<z.infer<typeof FormSchema>>({

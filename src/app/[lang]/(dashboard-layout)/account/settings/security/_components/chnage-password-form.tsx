@@ -22,13 +22,13 @@ import {
 import { Input } from "@/components/ui/input";
 
 const FormSchema = z.object({
-  current_password: z.string().min(8, {
+  currentPassword: z.string().min(8, {
     message: "Current password must contain at least 8 character(s)",
   }),
-  new_password: z.string().min(8, {
+  newPassword: z.string().min(8, {
     message: "New password must contain at least 8 character(s)",
   }),
-  confirm_password: z.string().min(8, {
+  confirmPassword: z.string().min(8, {
     message: "Confirm password must contain at least 8 character(s)",
   }),
 });
@@ -46,9 +46,9 @@ export function ChangePasswordForm({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      current_password: "",
-      new_password: "",
-      confirm_password: "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
@@ -67,7 +67,7 @@ export function ChangePasswordForm({
         <div className="grid gap-2">
           <FormField
             control={form.control}
-            name="current_password"
+            name="currentPassword"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Current Password</FormLabel>
@@ -80,7 +80,7 @@ export function ChangePasswordForm({
           />
           <FormField
             control={form.control}
-            name="new_password"
+            name="newPassword"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>New Password</FormLabel>
@@ -93,7 +93,7 @@ export function ChangePasswordForm({
           />
           <FormField
             control={form.control}
-            name="confirm_password"
+            name="confirmPassword"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>

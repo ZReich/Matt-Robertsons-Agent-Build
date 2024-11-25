@@ -1,8 +1,6 @@
 import * as React from "react";
 
-import { getSavedCards } from "./actions/getSavedCards";
-
-import type { CardType } from "./actions/getSavedCards";
+import { savedCardsData } from "./_data/saved-cards";
 
 import {
   Card,
@@ -15,8 +13,6 @@ import { PaymentMethodForm } from "./_components/payment-method-form";
 import { PaymentSummary } from "./_components/payment-summary";
 
 export default async function PaymentPage() {
-  const savedCards: CardType[] = await getSavedCards();
-
   return (
     <section className="container py-8 lg:py-16">
       <Card>
@@ -24,7 +20,7 @@ export default async function PaymentPage() {
           <CardTitle>Payment</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-8 lg:flex-row">
-          <PaymentMethodForm savedCards={savedCards} />
+          <PaymentMethodForm savedCards={savedCardsData} />
           <PaymentSummary
             originalPrice="6,592.00"
             savings="299.00"

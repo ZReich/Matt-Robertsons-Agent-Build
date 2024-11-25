@@ -12,8 +12,6 @@ import { DeleteAccountForm } from "./_components/delete-account-form";
 import { userData } from "../_data/user";
 
 export default function SettingsPage({ params }: { params: { lang: Locale } }) {
-  const user = userData;
-
   return (
     <div className="grid gap-4">
       <Card>
@@ -22,7 +20,7 @@ export default function SettingsPage({ params }: { params: { lang: Locale } }) {
           <CardDescription>Update your public profile details.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProfileInfoForm locale={params.lang} user={user} />
+          <ProfileInfoForm locale={params.lang} user={userData} />
         </CardContent>
       </Card>
       <Card>
@@ -34,7 +32,7 @@ export default function SettingsPage({ params }: { params: { lang: Locale } }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DeleteAccountForm locale={params.lang} user={user} />
+          <DeleteAccountForm locale={params.lang} user={userData} />
         </CardContent>
       </Card>
     </div>

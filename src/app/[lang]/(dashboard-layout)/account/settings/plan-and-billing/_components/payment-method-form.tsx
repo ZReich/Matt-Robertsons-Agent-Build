@@ -32,16 +32,16 @@ import {
 } from "@/components/ui/form";
 
 const FormSchema = z.object({
-  payment_type: z.enum(["visa", "mastercard", "amex", "discover"], {
+  paymentType: z.enum(["visa", "mastercard", "amex", "discover"], {
     required_error: "You need to select a payment type.",
   }),
-  card_number: z.string().min(1, "Card number is required"),
-  card_name: z.string().min(1, "Cardholder's name is required"),
+  cardNumber: z.string().min(1, "Card number is required"),
+  cardName: z.string().min(1, "Cardholder's name is required"),
   expiry: z.string().min(1, "Expiry date is required"),
   cvc: z.string().min(3, "CVC is required").max(4, "CVC is too long"),
-  account_number: z.string().optional(),
-  routing_number: z.string().optional(),
-  save_card: z.boolean().optional(),
+  accountNumber: z.string().optional(),
+  routingNumber: z.string().optional(),
+  saveCard: z.boolean().optional(),
 });
 
 export function PaymentMethodForm() {
@@ -50,12 +50,12 @@ export function PaymentMethodForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      payment_type: "visa",
-      save_card: false,
+      paymentType: "visa",
+      saveCard: false,
     },
   });
 
-  const cardNumber = form.watch("card_number");
+  const cardNumber = form.watch("cardNumber");
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid;
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
@@ -75,7 +75,7 @@ export function PaymentMethodForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="payment_type"
+              name="paymentType"
               render={() => (
                 <FormItem>
                   <FormLabel>Select Payment Type</FormLabel>
@@ -113,7 +113,7 @@ export function PaymentMethodForm() {
               <>
                 <FormField
                   control={form.control}
-                  name="card_number"
+                  name="cardNumber"
                   render={({ field }) => (
                     <FormItem className="relative">
                       <FormLabel>Card Number</FormLabel>
@@ -138,7 +138,7 @@ export function PaymentMethodForm() {
 
                 <FormField
                   control={form.control}
-                  name="card_name"
+                  name="cardName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Name on Card</FormLabel>
@@ -191,7 +191,7 @@ export function PaymentMethodForm() {
 
                 <FormField
                   control={form.control}
-                  name="save_card"
+                  name="saveCard"
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center space-x-2">
@@ -218,7 +218,7 @@ export function PaymentMethodForm() {
               <>
                 <FormField
                   control={form.control}
-                  name="account_number"
+                  name="accountNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Account Number</FormLabel>
@@ -238,7 +238,7 @@ export function PaymentMethodForm() {
 
                 <FormField
                   control={form.control}
-                  name="routing_number"
+                  name="routingNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Routing Number</FormLabel>
@@ -264,7 +264,7 @@ export function PaymentMethodForm() {
               disabled={isDisabled}
               aria-live="assertive"
             >
-              {isDisabled && (
+              {isSubmitting && (
                 <LoaderCircle
                   className="me-2 size-4 animate-spin"
                   aria-label="Loading"

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { formatDistanceToNow } from "@/lib/date-formatters";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatDistance } from "@/lib/utils";
 import { getLocalizedPathname } from "@/lib/i18n";
 
 import type { ChatType } from "../../types";
@@ -49,7 +48,7 @@ export function ChatListItem({ chat }: { chat: ChatType }) {
           </div>
           <div className="flex flex-col items-end gap-1">
             <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(chat.lastMessage?.createdAt ?? new Date())}
+              {formatDistance(chat.lastMessage?.createdAt ?? new Date())}
             </span>
             {!!chat?.unreadCount && (
               <Badge className="hover:bg-primary">{chat.unreadCount}</Badge>

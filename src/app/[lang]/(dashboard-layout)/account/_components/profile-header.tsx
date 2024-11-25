@@ -19,7 +19,7 @@ export function ProfileHeader({
   locale: Locale;
   user: UserType;
 }) {
-  const { full_name, role, avatar, background } = user;
+  const { fullName, role, avatar, background } = user;
 
   return (
     <section className="container px-0">
@@ -36,10 +36,10 @@ export function ProfileHeader({
           <div className="flex items-center gap-4">
             <Avatar className="size-14 md:size-16">
               <AvatarImage src={avatar} alt="Profile Avatar" />
-              <AvatarFallback>{full_name.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{fullName.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">{full_name}</h1>
+              <h1 className="text-2xl font-bold">{fullName}</h1>
               <p className="text-muted-foreground">{role}</p>
             </div>
           </div>

@@ -44,41 +44,27 @@ export function SavedCardsList() {
             {card.default && <Badge>default</Badge>}
           </h4>
           <div>
-            <MenuButton card={card} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <EllipsisVertical className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  disabled={card.default}
+                >
+                  Set Default
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </li>
       ))}
     </ul>
-  );
-}
-
-function MenuButton({ card }: { card: Card }) {
-  function handleSetDefault(id: number) {}
-
-  function handleDelete(id: number) {}
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <EllipsisVertical className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem
-          onClick={() => handleSetDefault(card.id)}
-          className="cursor-pointer"
-          disabled={card.default}
-        >
-          Set Default
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleDelete(card.id)}
-          className="cursor-pointer text-destructive focus:text-destructive"
-        >
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

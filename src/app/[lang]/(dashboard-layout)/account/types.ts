@@ -11,11 +11,11 @@ export interface Plan {
 
 export interface Subscription {
   id: number;
-  plan_id: number;
+  planId: number;
   interval: "monthly" | "yearly";
-  start_date: string;
-  end_date: string;
+  startDate: string;
+  endDate: string;
   status: "active" | "expired" | "canceled";
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

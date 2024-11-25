@@ -1,9 +1,8 @@
 "use client";
 
 import Autoplay from "embla-carousel-autoplay";
-import { format } from "date-fns";
 
-import { getInitials } from "@/lib/utils";
+import { formatDate, getInitials } from "@/lib/utils";
 
 import type { CustomerSatisfactionType } from "../../types";
 
@@ -70,7 +69,7 @@ export function CustomerSatisfactionCarousel({
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {format(feedback.createdAt, "MMM dd, yyyy")}
+                    {formatDate(feedback.createdAt)}
                   </p>
                 </div>
                 <ShowMoreText
