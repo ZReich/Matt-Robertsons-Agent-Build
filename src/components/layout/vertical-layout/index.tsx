@@ -16,7 +16,9 @@ export default function VerticalLayout({
       <Sidebar />
       <div className="w-full grid md:grid-rows-[auto,_1fr,_auto]">
         <Header dictionary={dictionary} />
-        <main className="bg-muted/40 overflow-x-hidden">{children}</main>
+        <main className="min-h-[calc(100vh-6.771rem)] bg-muted/40 overflow-x-hidden">
+          {children}
+        </main>
         <Footer />
       </div>
     </div>

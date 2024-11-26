@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 import Negotiator from "negotiator";
-import { match as matchLocale } from "@formatjs/intl-localematcher";
+import { match } from "@formatjs/intl-localematcher";
 
 import { i18n } from "@/configs/i18n";
 
@@ -15,27 +15,19 @@ import type { NextRequestWithAuth } from "next-auth/middleware";
 const HOME_PAGE_PATHNAME = "/dashboards/analytics";
 
 const getLocale = (request: NextRequest) => {
-  // Try to get locale from pathname
-  const pathnameLocale = i18n.locales.find((locale) =>
-    request.nextUrl.pathname.startsWith(`/${locale}`)
-  );
+  const { pathname } = request.nextUrl;
 
+  const pathnameLocale = i18n.locales.find(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  );
   if (pathnameLocale) return pathnameLocale;
 
-  // Negotiator expects plain object so we need to transform headers
-  const negotiatorHeaders: Record<string, string> = {};
+  const supportedLocales = [...i18n.locales];
+  const preferredLocales = new Negotiator({
+    headers: Object.fromEntries(request.headers.entries()),
+  }).languages(supportedLocales);
 
-  request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
-
-  // @ts-ignore locales are readonly
-  const locales: string[] = i18n.locales;
-
-  // Use negotiator and intl-localematcher to get best locale
-  const languages = new Negotiator({ headers: negotiatorHeaders }).languages(
-    locales
-  );
-
-  const locale = matchLocale(languages, locales, i18n.defaultLocale);
+  const locale = match(preferredLocales, supportedLocales, i18n.defaultLocale);
 
   return locale as LocaleType;
 };
@@ -47,7 +39,6 @@ function redirectTo(
 ) {
   let redirectPathname = pathname;
 
-  // Localize the pathname if it's missing a locale
   if (isPathnameMissingLocale(pathname)) {
     redirectPathname = ensureLocalizedPathname(
       pathname,
@@ -55,16 +46,13 @@ function redirectTo(
     );
   }
 
-  // Create and return a redirect response
   const redirectUrl = new URL(redirectPathname, request.url).toString();
   return NextResponse.redirect(redirectUrl);
 }
 
 function getFirstSegment(pathname: string) {
-  // Split the pathname by '/' and filter out empty segments
   const segments = pathname.split("/").filter(Boolean);
 
-  // Return the next segment if the first one is a locale
   return i18n.locales.includes(segments[0] as LocaleType)
     ? segments[1]
     : segments[0];

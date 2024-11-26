@@ -59,7 +59,7 @@ export function Customizer() {
               <span className="sr-only">Close</span>
             </SheetClose>
             <div className="flex flex-1 flex-col space-y-4">
-              <div className="space-y-1">
+              <div className="mt-3 space-y-1">
                 <div className="font-semibold leading-none tracking-tight">
                   Customize
                 </div>

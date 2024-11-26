@@ -24,7 +24,7 @@ export interface NavType {
 }
 
 export interface GroupNavType {
-  title?: string;
+  title: string;
   navs: NavType[];
 }
 
