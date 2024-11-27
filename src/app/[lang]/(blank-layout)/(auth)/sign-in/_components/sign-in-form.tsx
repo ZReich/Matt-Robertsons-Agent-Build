@@ -10,6 +10,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
+import { userData } from "@/data/user";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -61,8 +63,8 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
   const form = useForm<FormType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: userData.email,
+      password: userData.password,
     },
   });
   const isLoading = form.formState.isLoading;

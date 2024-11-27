@@ -4,8 +4,8 @@ import { z } from "zod";
 import { userData } from "@/data/user";
 
 const signInSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email().toLowerCase().trim(),
+  password: z.string().min(8).max(250),
 });
 
 export async function POST(req: Request) {
