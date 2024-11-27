@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { LogOut, User, UserCog } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+
+import { userData } from "@/data/user";
 
 import { cn, getInitials } from "@/lib/utils";
 
 import type { DirectionType } from "@/types";
-import type { LocaleType } from "@/configs/i18n";
-
-import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,21 +19,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav({ dir, locale }: { dir: DirectionType; locale: LocaleType }) {
-  const { data } = useSession();
-  const user = data?.user;
-
+export function UserNav({ dir }: { dir: DirectionType }) {
   return (
     <DropdownMenu dir={dir}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full">
           <Avatar className="size-9">
             <AvatarImage
-              src={user?.avatar as string | undefined}
+              src={userData?.avatar as string | undefined}
               alt="Avatar"
             />
             <AvatarFallback className="bg-transparent">
-              {user?.name && getInitials(user.name)}
+              {userData?.name && getInitials(userData.name)}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -50,18 +45,18 @@ export function UserNav({ dir, locale }: { dir: DirectionType; locale: LocaleTyp
           >
             <Avatar className="size-9">
               <AvatarImage
-                src={user?.avatar as string | undefined}
+                src={userData?.avatar as string | undefined}
                 alt="Avatar"
               />
               <AvatarFallback className="bg-transparent">
-                {user?.name && getInitials(user.name)}
+                {userData?.name && getInitials(userData.name)}
               </AvatarFallback>
             </Avatar>
           </Button>
           <dl className="flex flex-col overflow-hidden">
             <dt className="text-sm font-medium truncate">John Doe</dt>
             <dd className="text-xs text-muted-foreground truncate">
-              {user?.email}
+              {userData?.email}
             </dd>
           </dl>
         </DropdownMenuLabel>
@@ -69,7 +64,7 @@ export function UserNav({ dir, locale }: { dir: DirectionType; locale: LocaleTyp
         <DropdownMenuGroup className="max-w-48">
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href={ensureLocalizedPathname("/account", locale)}
+              href="/"
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"
@@ -81,7 +76,7 @@ export function UserNav({ dir, locale }: { dir: DirectionType; locale: LocaleTyp
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href={ensureLocalizedPathname("/account/settings", locale)}
+              href="/"
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"
@@ -94,11 +89,7 @@ export function UserNav({ dir, locale }: { dir: DirectionType; locale: LocaleTyp
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="p-0">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            onClick={() => signOut()}
-          >
+          <Button variant="ghost" className="w-full justify-start gap-2">
             <LogOut className="size-4 text-muted-foreground" />
             Sign out
           </Button>

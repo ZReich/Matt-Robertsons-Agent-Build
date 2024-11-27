@@ -12,11 +12,15 @@ import {
 } from "../_components/auth-layout";
 
 export const metadata: Metadata = {
-  title: "SignIn",
-  description: "SignIn to your account",
+  title: "Sign In",
+  description: "Sign in to your account",
 };
 
-export default function SignInPage({ params }: { params: { lang: LocaleType } }) {
+export default function SignInPage({
+  params,
+}: {
+  params: { lang: LocaleType };
+}) {
   return (
     <Auth imgSrc="/images/placeholder.svg">
       <AuthHeader>
