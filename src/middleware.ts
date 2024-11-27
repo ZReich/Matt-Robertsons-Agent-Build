@@ -12,7 +12,7 @@ import type { LocaleType } from "@/configs/i18n";
 import type { NextRequest } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
 
-const HOME_PAGE_PATHNAME = "/dashboards/analytics";
+const HOME_PATHNAME = "/dashboards/analytics";
 
 const getLocale = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
@@ -89,12 +89,12 @@ export default withAuth(
 
     // Redirect authenticated users away from guest routes
     if (isUserAuthenticated && isGuestRoute) {
-      return redirectTo(HOME_PAGE_PATHNAME, request, locale);
+      return redirectTo(HOME_PATHNAME, request, locale);
     }
 
     // Redirect to home page if the request is for the root or locale root
     if (pathname === "/" || pathname === `/${locale}`) {
-      return redirectTo(HOME_PAGE_PATHNAME, request, locale);
+      return redirectTo(HOME_PATHNAME, request, locale);
     }
 
     // Redirect to loclized url if the pathname is missing a locale
