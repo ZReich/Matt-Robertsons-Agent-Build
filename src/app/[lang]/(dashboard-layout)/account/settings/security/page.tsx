@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { userData } from "../../_data/user";
+import { userData } from "@/data/user";
 
 import { cn } from "@/lib/utils";
 

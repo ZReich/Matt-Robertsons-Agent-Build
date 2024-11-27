@@ -1,4 +1,4 @@
-import { userData } from "../_data/user";
+import { userData } from "@/data/user";
 
 import { ChatBox } from "../_components/chat-box";
 

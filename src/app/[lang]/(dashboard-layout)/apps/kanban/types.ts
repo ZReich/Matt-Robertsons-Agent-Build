@@ -1,7 +1,7 @@
 export interface UserType {
   id: string;
   username: string;
-  fullName: string;
+  name: string;
   avatar: string;
 }
 

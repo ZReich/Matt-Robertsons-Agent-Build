@@ -30,7 +30,7 @@ export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
   const avatars = React.useMemo(() => {
     return task.assigned.map((member) => ({
       src: member.avatar,
-      alt: member.fullName,
+      alt: member.name,
       href: `/profile/${member.username}`,
     }));
   }, [task.assigned]);

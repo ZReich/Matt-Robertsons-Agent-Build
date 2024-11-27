@@ -19,7 +19,7 @@ export async function getTeamMembersSearchData(
 
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(teamMembers.filter((member) => regex.test(member.fullName)));
+      resolve(teamMembers.filter((member) => regex.test(member.name)));
     }, 300);
   });
 }

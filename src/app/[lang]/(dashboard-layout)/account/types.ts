@@ -1,4 +1,4 @@
-import { userData } from "./_data/user";
+import { userData } from "@/data/user";
 
 export type UserType = typeof userData;
 

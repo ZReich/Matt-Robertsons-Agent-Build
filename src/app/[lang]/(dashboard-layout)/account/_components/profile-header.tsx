@@ -5,7 +5,7 @@ import { UserPen } from "lucide-react";
 import type { LocaleType } from "@/configs/i18n";
 import type { UserType } from "../types";
 
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,7 +19,7 @@ export function ProfileHeader({
   locale: LocaleType;
   user: UserType;
 }) {
-  const { fullName, role, avatar, background } = user;
+  const { name, role, avatar, background } = user;
 
   return (
     <section className="container px-0">
@@ -36,10 +36,10 @@ export function ProfileHeader({
           <div className="flex items-center gap-4">
             <Avatar className="size-14 md:size-16">
               <AvatarImage src={avatar} alt="Profile Avatar" />
-              <AvatarFallback>{fullName.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{getInitials(name)}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">{fullName}</h1>
+              <h1 className="text-2xl font-bold">{name}</h1>
               <p className="text-muted-foreground">{role}</p>
             </div>
           </div>

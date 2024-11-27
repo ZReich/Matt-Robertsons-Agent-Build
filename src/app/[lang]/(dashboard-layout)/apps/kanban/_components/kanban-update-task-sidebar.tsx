@@ -84,7 +84,7 @@ const FileSchema = z.object({
 const UserSchema = z.object({
   id: z.string(),
   username: z.string(),
-  fullName: z.string(),
+  name: z.string(),
   avatar: z.string(),
 });
 
@@ -310,7 +310,7 @@ export function KanbanUpdateTaskSidebar() {
                                         setSearchTeamMembers("");
                                       }}
                                     >
-                                      {user.fullName}
+                                      {user.name}
                                     </CommandItem>
                                   ))}
                             </CommandGroup>
@@ -325,7 +325,7 @@ export function KanbanUpdateTaskSidebar() {
                                   variant="secondary"
                                   className="flex items-center gap-1"
                                 >
-                                  {user.fullName}
+                                  {user.name}
                                   <Button
                                     variant="ghost"
                                     size="icon"

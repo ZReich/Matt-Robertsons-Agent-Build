@@ -1,7 +1,7 @@
-import { compare } from "bcryptjs";
-import { db } from "@/lib/prisma";
-import { z } from "zod";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+import { userData } from "@/data/user";
 
 const signInSchema = z.object({
   email: z.string().email(),
@@ -19,35 +19,25 @@ export async function POST(req: Request) {
   const { email, password } = parsedData.data;
 
   try {
-    const user = await db.user.findUnique({ where: { email } });
-
-    if (!user || !user.password) {
+    if (userData.email !== email || userData.password !== password) {
       return NextResponse.json(
         { message: "Invalid email or password", email },
         { status: 401 }
       );
     }
 
-    const isPasswordValid = await compare(password, user.password);
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        { message: "Invalid email or password" },
-        { status: 401 }
-      );
-    }
-
     return NextResponse.json(
       {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        status: user.status,
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        avatar: userData.avatar,
+        status: userData.status,
       },
       { status: 200 }
     );
   } catch (e) {
-    console.error(e);
+    console.error("Error signing in:", e);
     return NextResponse.json({ error: "Error signing in" }, { status: 500 });
   }
 }

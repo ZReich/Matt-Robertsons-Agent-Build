@@ -62,6 +62,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { NavigationMenuIndicator } from "@/components/ui/navigation-menu";
 
 const CommentSchema = z.object({
   id: z.string(),
@@ -84,7 +85,7 @@ const FileSchema = z.object({
 const UserSchema = z.object({
   id: z.string(),
   username: z.string(),
-  fullName: z.string(),
+  name: z.string(),
   avatar: z.string(),
 });
 
@@ -297,7 +298,7 @@ export function KanbanAddTaskSidebar() {
                                         setSearchTeamMembers("");
                                       }}
                                     >
-                                      {user.fullName}
+                                      {user.name}
                                     </CommandItem>
                                   ))}
                             </CommandGroup>
@@ -312,7 +313,7 @@ export function KanbanAddTaskSidebar() {
                                   variant="secondary"
                                   className="flex items-center gap-1"
                                 >
-                                  {user.fullName}
+                                  {user.name}
                                   <Button
                                     variant="ghost"
                                     size="icon"
