@@ -119,10 +119,10 @@ export function formatDistance(value: string | number | Date) {
     hours: "hrs",
     day: "day",
     days: "days",
-    month: "mo",
-    months: "mos",
-    year: "yr",
-    years: "yrs",
+    month: "month",
+    months: "months",
+    year: "year",
+    years: "years",
   };
 
   if (distance === "less than a minute ago") {
