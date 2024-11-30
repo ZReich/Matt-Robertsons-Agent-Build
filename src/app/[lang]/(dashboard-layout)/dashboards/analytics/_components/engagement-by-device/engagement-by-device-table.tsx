@@ -2,9 +2,6 @@
 
 import * as React from "react";
 import {
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -13,6 +10,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import type {
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+} from "@tanstack/react-table";
 import type { EngagementByDeviceType } from "../../types";
 
 import {
