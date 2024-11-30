@@ -62,7 +62,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { NavigationMenuIndicator } from "@/components/ui/navigation-menu";
 
 const CommentSchema = z.object({
   id: z.string(),
