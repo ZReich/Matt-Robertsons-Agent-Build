@@ -83,7 +83,10 @@ export function MessageBubbleContent({
     content = message.files.map((file) => (
       <div
         key={file.id}
-        className="flex justify-between items-center bg-muted-foreground/40 p-4 rounded-lg break-all"
+        className={cn(
+          "flex justify-between items-center bg-muted-foreground/20 p-4 rounded-lg break-all",
+          isByCurrentUser && "bg-muted-foreground/40"
+        )}
         aria-label="File"
       >
         <FileThumbnail fileName={file.name} />
