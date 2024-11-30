@@ -3,6 +3,100 @@ import { ChatType } from "../types";
 export const chatsData: ChatType[] = [
   {
     id: "chat_1",
+    chatGroup: { name: "Tech Team Discussions" },
+    lastMessage: {
+      content: "Thank you for the update. I'll review it shortly.",
+      createdAt: new Date("2024-10-31T10:37:00Z"),
+    },
+    name: "Tech Team Discussions",
+    messages: [
+      {
+        id: "msg_24",
+        senderId: "1",
+        text: "Thank you for the update. I'll review it shortly.",
+        createdAt: new Date("2024-10-31T10:37:00Z"),
+        status: "DELIVERED",
+      },
+      {
+        id: "msg_23",
+        senderId: "5",
+        files: [
+          {
+            id: "file_1",
+            name: "Flowchart_Updated.pdf",
+            type: "application/pdf",
+            size: 204800,
+            url: "",
+          },
+        ],
+        createdAt: new Date("2024-10-31T10:34:00Z"),
+        status: "READ",
+      },
+      {
+        id: "msg_22",
+        senderId: "5",
+        text: "Here's the updated flowchart for review.",
+        files: [
+          {
+            id: "file_1",
+            name: "flowchart-updated",
+            type: "application/pdf",
+            size: 204800,
+            url: "",
+          },
+        ],
+        createdAt: new Date("2024-10-31T10:33:00Z"),
+        status: "READ",
+      },
+      {
+        id: "msg_21",
+        senderId: "1",
+        text: "Looks good! Do we have an alternative version?",
+        createdAt: new Date("2024-10-31T10:10:00Z"),
+        status: "READ",
+      },
+      {
+        id: "msg_20",
+        senderId: "5",
+        text: "These mockups might help visualize the design.",
+
+        createdAt: new Date("2024-10-31T10:08:00Z"),
+        status: "READ",
+      },
+      {
+        id: "msg_19",
+        senderId: "5",
+        images: [
+          {
+            id: "img_1",
+            name: "mockup-home-page",
+            type: "image/png",
+            size: 512000,
+            url: "/images/mockup-home-page.png",
+          },
+        ],
+        createdAt: new Date("2024-10-31T10:07:00Z"),
+        status: "READ",
+      },
+    ],
+    users: [
+      {
+        id: "1",
+        name: "John Doe",
+        avatar: "/images/avatars/01.png",
+        status: "ONLINE",
+      },
+      {
+        id: "5",
+        name: "Sarah Connor",
+        avatar: "/images/avatars/05.png",
+        status: "ONLINE",
+      },
+    ],
+    typingUsers: [],
+  },
+  {
+    id: "chat_2",
     chatGroup: { name: "General Group", avatar: "/images/avatars/group.png" },
     lastMessage: {
       content: "Hello everyone!",
@@ -58,7 +152,7 @@ export const chatsData: ChatType[] = [
     unreadCount: 1,
   },
   {
-    id: "chat_2",
+    id: "chat_3",
     lastMessage: {
       content: "Hey, did you see the updates?",
       createdAt: new Date("2024-10-31T10:08:00Z"),
@@ -113,7 +207,7 @@ export const chatsData: ChatType[] = [
     typingUsers: [],
   },
   {
-    id: "chat_3",
+    id: "chat_4",
     chatGroup: { name: "Work Team", avatar: "/images/avatars/work.png" },
     lastMessage: {
       content: "Meeting at 3 PM tomorrow.",
@@ -168,7 +262,7 @@ export const chatsData: ChatType[] = [
     typingUsers: [],
   },
   {
-    id: "chat_4",
+    id: "chat_5",
     lastMessage: {
       content: "Let’s grab lunch later?",
       createdAt: new Date("2024-10-31T10:18:00Z"),
