@@ -1,18 +1,8 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
-import { chartConfig } from "@/configs/chart-config";
-
 import type { RevenueTrendType } from "../../types";
 
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { useSettings } from "@/hooks/use-settings";
-import { cn, remToPx } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
