@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useParams } from "next/navigation";
 import {
   DragDropContext,
   DropResult,
@@ -8,7 +9,11 @@ import {
 } from "react-beautiful-dnd";
 import { Plus } from "lucide-react";
 
+import { i18n } from "@/configs/i18n";
+
 import { StrictModeDroppable } from "@/lib/strict-mode-droppable";
+
+import type { LocaleType } from "@/configs/i18n";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -22,6 +27,10 @@ export function Kanban() {
     handleReorderTasks,
     setKanbanAddColumnSidebarIsOpen,
   } = useKanbanContext();
+  const params = useParams();
+
+  const locale = params.lang as LocaleType;
+  const direction = i18n.langDirection[locale];
 
   const handleDragDrop = (result: DropResult) => {
     const { source, destination, type } = result;
@@ -48,7 +57,7 @@ export function Kanban() {
         direction="horizontal"
       >
         {(provided: DroppableProvided) => (
-          <ScrollArea orientation="horizontal">
+          <ScrollArea orientation="horizontal" dir={direction}>
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
