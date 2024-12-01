@@ -140,10 +140,14 @@ function ChangeButton({ form, field }: ChangeButtonProps) {
         <DropdownMenuCheckboxItem
           checked={field.value.email}
           onCheckedChange={() =>
-            form.setValue(field.name, {
-              ...field.value,
-              email: !field.value.email,
-            })
+            form.setValue(
+              field.name,
+              {
+                ...field.value,
+                email: !field.value.email,
+              },
+              { shouldDirty: true }
+            )
           }
           className="cursor-pointer"
         >
@@ -152,10 +156,14 @@ function ChangeButton({ form, field }: ChangeButtonProps) {
         <DropdownMenuCheckboxItem
           checked={field.value.browser}
           onCheckedChange={() =>
-            form.setValue(field.name, {
-              ...field.value,
-              browser: !field.value.browser,
-            })
+            form.setValue(
+              field.name,
+              {
+                ...field.value,
+                browser: !field.value.browser,
+              },
+              { shouldDirty: true }
+            )
           }
           className="cursor-pointer"
         >
@@ -164,10 +172,14 @@ function ChangeButton({ form, field }: ChangeButtonProps) {
         <DropdownMenuCheckboxItem
           checked={field.value.sms}
           onCheckedChange={() =>
-            form.setValue(field.name, {
-              ...field.value,
-              sms: !field.value.sms,
-            })
+            form.setValue(
+              field.name,
+              {
+                ...field.value,
+                sms: !field.value.sms,
+              },
+              { shouldDirty: true }
+            )
           }
           className="cursor-pointer"
         >
