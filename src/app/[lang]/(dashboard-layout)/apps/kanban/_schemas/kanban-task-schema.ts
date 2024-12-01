@@ -11,7 +11,9 @@ const CommentSchema = z.object({
   userId: z.string(),
   text: z
     .string()
-    .min(2, { message: "Comment must be at least 2 characters." }),
+    .trim()
+    .min(2, { message: "Comment must be at least 2 characters." })
+    .min(250, { message: "Comment must be at most 250 characters." }),
   createdAt: z.date(),
 });
 
@@ -25,8 +27,17 @@ const FileSchema = z.object({
 });
 
 export const KanbanTaskSchema = z.object({
-  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  description: z.string().optional(),
+  title: z
+    .string()
+    .trim()
+    .min(2, { message: "Title must be at least 2 characters." })
+    .max(50, { message: "Title must be at most 50 characters." }),
+  description: z
+    .string()
+    .trim()
+    .min(2, { message: "Description must be at least 2 characters." })
+    .max(250, { message: "Description must be at most 250 characters." })
+    .optional(),
   label: z.custom<string>(
     (value) => labelsData.some((label) => label.name === value),
     { message: "Invalid label. Please select a valid label." }

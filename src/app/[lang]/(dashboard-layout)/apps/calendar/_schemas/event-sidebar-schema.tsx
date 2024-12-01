@@ -6,9 +6,9 @@ import type { CategoryType } from "../types";
 
 export const EventSidebarSchema = z.object({
   url: z.string().url({ message: "Invalid url" }).optional().or(z.literal("")),
-  title: z.string().min(1, { message: "Title is required" }),
+  title: z.string().min(1, { message: "Title is required" }).trim(),
   allDay: z.boolean(),
-  description: z.string().optional(),
+  description: z.string().trim().optional(),
   start: z.date().nullable(),
   end: z.date().nullable(),
   category: z.custom<CategoryType>(
