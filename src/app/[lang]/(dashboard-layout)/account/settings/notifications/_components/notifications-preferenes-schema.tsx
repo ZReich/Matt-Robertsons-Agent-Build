@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { LoaderCircle } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn, FieldPath } from "react-hook-form";
 import { z } from "zod";
@@ -44,6 +45,9 @@ export function NotificationPreferencesForm() {
       },
     },
   });
+
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid;
 
   function onSubmit(data: z.infer<typeof NotificationPreferencesSchema>) {}
 
@@ -104,7 +108,15 @@ export function NotificationPreferencesForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={isDisabled} aria-live="assertive">
+          {isSubmitting && (
+            <LoaderCircle
+              className="me-2 size-4 animate-spin"
+              aria-label="Loading"
+            />
+          )}
+          Save
+        </Button>
       </form>
     </Form>
   );

@@ -51,8 +51,8 @@ export function ChangePlanForm({
   });
 
   const isAnnual = form.watch("interval");
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid;
 
   function onSubmit(data: z.infer<typeof ChangePlanSchema>) {}
 
@@ -144,7 +144,7 @@ export function ChangePlanForm({
           )}
         />
         <Button type="submit" disabled={isDisabled} aria-live="assertive">
-          {isDisabled && (
+          {isSubmitting && (
             <LoaderCircle
               className="me-2 size-4 animate-spin"
               aria-label="Loading"

@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
+import { ChangePasswordSchema } from "../../_schemas/chnage-password-schema";
+
 import { cn } from "@/lib/utils";
 
 import type { UserType } from "../../../types";
@@ -21,18 +23,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-const FormSchema = z.object({
-  currentPassword: z.string().min(8, {
-    message: "Current password must contain at least 8 character(s)",
-  }),
-  newPassword: z.string().min(8, {
-    message: "New password must contain at least 8 character(s)",
-  }),
-  confirmPassword: z.string().min(8, {
-    message: "Confirm password must contain at least 8 character(s)",
-  }),
-});
-
 interface ChangePasswordFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -43,8 +33,8 @@ export function ChangePasswordForm({
   user,
   ...props
 }: ChangePasswordFormProps) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof ChangePasswordSchema>>({
+    resolver: zodResolver(ChangePasswordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -55,7 +45,7 @@ export function ChangePasswordForm({
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid;
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {}
+  async function onSubmit(data: z.infer<typeof ChangePasswordSchema>) {}
 
   return (
     <Form {...form}>

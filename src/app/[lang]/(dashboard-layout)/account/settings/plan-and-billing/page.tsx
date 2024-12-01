@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Briefcase, Users, FileText, BarChart2 } from "lucide-react";
 import { ChangePlanForm } from "./_components/change-plan-form";
 import { PaymentMethodForm } from "./_components/payment-method-form";
-import { SavedCardsList } from "./_schemas/card-schema";
+import { SavedCardsList } from "./_components/saved-cards-list";
 
 export default async function PlanAndBillingPage() {
   return (

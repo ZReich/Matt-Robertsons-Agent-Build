@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import { MAX_AVATAR_SIZE } from "../../constants";
+
+import { formatFileSize } from "@/lib/utils";
+
+export const fomratedAvatarSize = formatFileSize(MAX_AVATAR_SIZE);
+
 export const ProfileInfoSchema = z.object({
   firstName: z
     .string()
@@ -23,25 +29,9 @@ export const ProfileInfoSchema = z.object({
   currency: z.string(),
   organization: z.string().optional(),
   avatar: z
-    .any()
-    .optional()
-    .refine(
-      (file) =>
-        file === null || file === undefined || file.size <= 2 * 1024 * 1024,
-      "Max file size is 2MB"
-    )
-    .refine(
-      (file) =>
-        file === null ||
-        file === undefined ||
-        [
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-          "image/svg+xml",
-          "image/webp",
-          "image/jpg",
-        ].includes(file.type),
-      "Only JPEG, PNG, GIF, SVG, and WebP files are allowed"
-    ),
+    .instanceof(File)
+    .refine((avatar) => avatar.size <= MAX_AVATAR_SIZE, {
+      message: `Avatar must be ${fomratedAvatarSize} or less.`,
+    })
+    .optional(),
 });

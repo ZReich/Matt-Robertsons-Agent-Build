@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
+import { SecurityPreferencesSchema } from "../../_schemas/security-preferences-form";
+
 import type { UserType } from "../../../types";
 
 import { Button } from "@/components/ui/button";
@@ -18,11 +20,6 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 
-const FormSchema = z.object({
-  twoFactorAuth: z.boolean().default(false).optional(),
-  loginAlerts: z.boolean().default(true).optional(),
-});
-
 interface SecurityPreferencesFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -31,18 +28,18 @@ interface SecurityPreferencesFormProps
 export function SecurityPreferencesForm({
   user,
 }: SecurityPreferencesFormProps) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof SecurityPreferencesSchema>>({
+    resolver: zodResolver(SecurityPreferencesSchema),
     defaultValues: {
       twoFactorAuth: user.twoFactorAuth,
       loginAlerts: user.loginAlerts,
     },
   });
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid;
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {}
+  function onSubmit(data: z.infer<typeof SecurityPreferencesSchema>) {}
 
   return (
     <Form {...form}>
@@ -92,7 +89,7 @@ export function SecurityPreferencesForm({
           />
         </div>
         <Button type="submit" disabled={isDisabled} aria-live="assertive">
-          {isDisabled && (
+          {isSubmitting && (
             <LoaderCircle
               className="me-2 size-4 animate-spin"
               aria-label="Loading"

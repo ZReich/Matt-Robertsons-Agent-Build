@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useDropzone } from "react-dropzone";
 import { X, Upload, LoaderCircle, Paperclip, Send } from "lucide-react";
 
-import { MAX_FILES, MAX_SIZE, MIN_FILES } from "../../constants";
+import { MAX_FILES, MAX_FILE_SIZE, MIN_FILES } from "../../constants";
 
 import { FilesDialogSchema } from "../../_schemas/files-dialog-schema";
 
@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileThumbnail } from "@/components/file-thumbnail";
 
-const fomratedFileSize = formatFileSize(MAX_SIZE);
+const fomratedFileSize = formatFileSize(MAX_FILE_SIZE);
 
 type FormType = z.infer<typeof FilesDialogSchema>;
 
@@ -112,7 +112,7 @@ export function FilesDialog() {
     onDropAccepted: handleFilesChange,
     noClick: true,
     maxFiles: MAX_FILES,
-    maxSize: MAX_SIZE,
+    maxSize: MAX_FILE_SIZE,
   });
 
   return (

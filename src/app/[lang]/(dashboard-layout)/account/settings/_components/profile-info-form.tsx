@@ -8,7 +8,7 @@ import { LoaderCircle } from "lucide-react";
 
 import { ProfileInfoSchema } from "../_schemas/profile-info-form";
 
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 import { LocaleType } from "@/configs/i18n";
 
@@ -40,20 +40,21 @@ export function ProfileInfoForm({
     resolver: zodResolver(ProfileInfoSchema),
     defaultValues: {
       ...user,
+      avatar: undefined,
     },
   });
-  const [photoPreview, setPhotoPreview] = React.useState<string | null>(
+  const [photoPreview, setPhotoPreview] = React.useState<string | undefined>(
     user?.avatar
   );
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid;
 
   async function onSubmit(data: z.infer<typeof ProfileInfoSchema>) {}
 
   function handleResetForm() {
-    form.reset(user);
-    setPhotoPreview(user?.avatar || null);
+    form.reset();
+    setPhotoPreview(user?.avatar);
   }
 
   return (
@@ -66,14 +67,14 @@ export function ProfileInfoForm({
         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           <div className="col-span-2 flex items-center gap-4 mb-4">
             <Avatar className="size-24">
-              <AvatarImage src={photoPreview || ""} alt="Profile Avatar" />
-              <AvatarFallback>{user.firstName.charAt(0)}</AvatarFallback>
+              <AvatarImage src={photoPreview} alt="Profile Avatar" />
+              <AvatarFallback>{getInitials(user.firstName)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-2 md:flex-row">
               <FormField
                 control={form.control}
                 name="avatar"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel
                       className={cn(
@@ -97,7 +98,7 @@ export function ProfileInfoForm({
                             };
                             reader.readAsDataURL(file);
                           } else {
-                            setPhotoPreview(null);
+                            setPhotoPreview(undefined);
                           }
                           form.setValue("avatar", file);
                         }}
@@ -111,8 +112,8 @@ export function ProfileInfoForm({
                 type="button"
                 variant="destructive"
                 onClick={() => {
-                  form.setValue("avatar", null);
-                  setPhotoPreview(null);
+                  form.resetField("avatar");
+                  setPhotoPreview(undefined);
                 }}
               >
                 Remove Photo

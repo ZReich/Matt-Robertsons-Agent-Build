@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
+import { AccountRecoveryOptionsSchema } from "../../_schemas/account-recovery-options-schema";
+
 import type { UserType } from "../../../types";
 
 import { Button } from "@/components/ui/button";
@@ -18,12 +20,6 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-const FormSchema = z.object({
-  option: z.enum(["email", "sms", "codes"], {
-    required_error: "You need to select an account recovery option.",
-  }),
-});
-
 interface AccountRecoveryOptionsFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -32,17 +28,17 @@ interface AccountRecoveryOptionsFormProps
 export function AccountRecoveryOptionsForm({
   user,
 }: AccountRecoveryOptionsFormProps) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof AccountRecoveryOptionsSchema>>({
+    resolver: zodResolver(AccountRecoveryOptionsSchema),
     defaultValues: {
       option: user.accountReoveryOption,
     },
   });
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid;
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {}
+  function onSubmit(data: z.infer<typeof AccountRecoveryOptionsSchema>) {}
 
   return (
     <Form {...form}>
@@ -110,7 +106,7 @@ export function AccountRecoveryOptionsForm({
           disabled={isDisabled}
           aria-live="assertive"
         >
-          {isDisabled && (
+          {isSubmitting && (
             <LoaderCircle
               className="me-2 size-4 animate-spin"
               aria-label="Loading"
