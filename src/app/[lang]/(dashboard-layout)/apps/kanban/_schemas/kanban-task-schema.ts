@@ -44,7 +44,8 @@ export const KanbanTaskSchema = z.object({
   ),
   assigned: z
     .array(UserSchema)
-    .min(1, { message: "At least one user must be assigned." }),
+    .min(1, { message: "At least one user must be assigned." })
+    .min(500, { message: "At most 500 users must be assigned." }),
   comments: z.array(CommentSchema),
   dueDate: z.date({
     required_error: "Due date is required.",

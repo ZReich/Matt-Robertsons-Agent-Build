@@ -3,24 +3,25 @@ import { z } from "zod";
 export const RegisterSchema = z.object({
   firstName: z
     .string()
-    .min(2, {
-      message: "Fisrt name must contain at least 2 character(s)",
-    })
-    .trim(),
+    .trim()
+    .min(2, { message: "First Name must contain at least 2 characters." })
+    .max(50, { message: "First Name must be at most 50 characters." }),
   lastName: z
     .string()
-    .min(2, {
-      message: "Last name must contain at least 2 character(s)",
-    })
-    .trim(),
+    .trim()
+    .min(2, { message: "Last Name must contain at least 2 characters." })
+    .max(50, { message: "Last Name must be at most 50 characters." }),
   username: z
     .string()
-    .min(3, {
-      message: "Usernmae must contain at least 3 character(s)",
-    })
+    .toLowerCase()
+    .trim()
+    .min(3, { message: "Username must contain at least 3 characters." })
+    .max(50, { message: "Username must be at most 50 characters." }),
+  email: z
+    .string()
+    .email({ message: "Invalid email address" })
     .toLowerCase()
     .trim(),
-  email: z.string().email().toLowerCase().trim(),
   password: z
     .string()
     .min(8, {
