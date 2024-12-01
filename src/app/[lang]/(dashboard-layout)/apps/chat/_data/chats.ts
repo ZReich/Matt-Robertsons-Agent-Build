@@ -3,7 +3,6 @@ import { ChatType } from "../types";
 export const chatsData: ChatType[] = [
   {
     id: "chat_1",
-    chatGroup: { name: "Tech Team Discussions" },
     lastMessage: {
       content: "Thank you for the update. I'll review it shortly.",
       createdAt: new Date("2024-10-31T10:37:00Z"),
@@ -97,13 +96,11 @@ export const chatsData: ChatType[] = [
   },
   {
     id: "chat_2",
-    chatGroup: { name: "General Group", avatar: "/images/avatars/group.png" },
     lastMessage: {
       content: "Hello everyone!",
       createdAt: new Date("2024-10-31T10:03:00Z"),
     },
     name: "General Group",
-    avatar: "/images/avatars/group.png",
     messages: [
       {
         id: "msg_12",
@@ -208,13 +205,11 @@ export const chatsData: ChatType[] = [
   },
   {
     id: "chat_4",
-    chatGroup: { name: "Work Team", avatar: "/images/avatars/work.png" },
     lastMessage: {
       content: "Meeting at 3 PM tomorrow.",
       createdAt: new Date("2024-10-31T10:13:00Z"),
     },
     name: "Work Team",
-    avatar: "/images/avatars/work.png",
     messages: [
       {
         id: "msg_16",

@@ -46,11 +46,6 @@ export interface UserType {
   status: string;
 }
 
-export interface ChatGroupType {
-  name: string;
-  avatar?: string;
-}
-
 export interface LastMessageType {
   content: string;
   createdAt: Date;
@@ -58,9 +53,8 @@ export interface LastMessageType {
 
 export interface ChatType {
   id: string;
-  chatGroup?: ChatGroupType;
-  lastMessage?: LastMessageType;
-  name?: string;
+  lastMessage: LastMessageType;
+  name: string;
   avatar?: string;
   status?: string;
   messages: MessageType[];

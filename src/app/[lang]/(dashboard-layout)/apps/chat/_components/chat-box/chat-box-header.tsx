@@ -25,32 +25,15 @@ export function ChatBoxHeader({
   chat: ChatType;
   user: UserType;
 }) {
-  let info;
-
-  if (chat?.chatGroup) {
-    info = {
-      name: chat.chatGroup.name,
-      avatar: chat.chatGroup.avatar,
-    };
-  } else {
-    const againstUser = chat?.users.find((u) => u.id !== user.id) as UserType;
-
-    info = {
-      name: againstUser.name,
-      avatar: againstUser.avatar,
-      status: againstUser.status,
-    };
-  }
-
   return (
     <CardHeader className="flex flex-row items-center space-y-0 gap-x-1.5 py-3 border-b border-border">
       <ChatAvatar
-        src={info.avatar}
-        fallback={getInitials(info.name)}
-        status={info.status as string | undefined}
+        src={chat.avatar}
+        fallback={getInitials(chat.name)}
+        status={chat.status as string | undefined}
         size={2}
       />
-      <CardTitle>{info.name}</CardTitle>
+      <CardTitle>{chat.name}</CardTitle>
       <div className="flex gap-1 ms-auto">
         <Button variant="ghost" size="icon">
           <Phone className="size-4" />

@@ -34,7 +34,7 @@ export function ChatListItem({ chat }: { chat: ChatType }) {
       <li className="w-full flex items-center gap-2">
         <ChatAvatar
           src={chat.avatar}
-          fallback={getInitials(chat.name || "")}
+          fallback={getInitials(chat.name)}
           status={chat.status}
           size={1.75}
           className="shrink-0"

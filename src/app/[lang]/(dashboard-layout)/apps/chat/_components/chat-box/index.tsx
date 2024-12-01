@@ -61,7 +61,7 @@ export function ChatBox({ user }: { user: UserType }) {
     );
   }
 
-  if (!chat) throw new Error("This chat not exists");
+  if (!chat) throw new Error("This chat does not exist");
 
   return (
     <Card className="grow grid">
