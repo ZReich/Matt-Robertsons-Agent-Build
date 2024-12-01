@@ -7,6 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useDropzone } from "react-dropzone";
 import { X, Upload, LoaderCircle, Paperclip, Send } from "lucide-react";
 
+import { MAX_FILES, MAX_SIZE, MIN_FILES } from "../../constants";
+
+import { FilesDialogSchema } from "../../_schemas/files-dialog-schema";
+
 import { formatFileSize } from "@/lib/utils";
 
 import { useChatContext } from "../../hooks/use-chat-context";
@@ -37,34 +41,16 @@ import {
 } from "@/components/ui/dialog";
 import { FileThumbnail } from "@/components/file-thumbnail";
 
-const MIN_FILES = 1;
-const MAX_FILES = 5;
-const MAX_SIZE = 500000000; // 500 MB
 const fomratedFileSize = formatFileSize(MAX_SIZE);
 
-const FormSchema = z.object({
-  files: z
-    .array(z.instanceof(File))
-    .min(MIN_FILES, {
-      message: `You must select at least ${MIN_FILES} file${
-        MIN_FILES > 1 ? "s" : ""
-      }.`,
-    })
-    .max(MAX_FILES, {
-      message: `You can select a maximum of ${MAX_FILES} files.`,
-    })
-    .refine((fileArray) => fileArray.every((file) => file.size <= MAX_SIZE), {
-      message: `Each file must be ${fomratedFileSize} or less.`,
-    }),
-});
-type FormType = z.infer<typeof FormSchema>;
+type FormType = z.infer<typeof FilesDialogSchema>;
 
 export function FilesDialog() {
   const { handleAddFilesMessage } = useChatContext();
   const [isOpen, setIsOpen] = React.useState(false);
   const [fileUrls, setFileUrls] = React.useState<string[]>([]);
   const form = useForm<FormType>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(FilesDialogSchema),
     defaultValues: {
       files: [],
     },

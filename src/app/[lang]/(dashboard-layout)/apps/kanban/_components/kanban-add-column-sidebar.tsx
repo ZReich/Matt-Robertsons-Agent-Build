@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Grid2x2Plus } from "lucide-react";
 
+import { KanbanColumnSchema } from "../_schemas/kanban-column-schema";
+
 import { useKanbanContext } from "../hooks/use-kanban-context";
 
 import { Button } from "@/components/ui/button";
@@ -26,11 +28,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const FormSchema = z.object({
-  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-});
-
-type FormValues = z.infer<typeof FormSchema>;
+type FormValues = z.infer<typeof KanbanColumnSchema>;
 
 export function KanbanAddColumnSidebar() {
   const {
@@ -40,7 +38,7 @@ export function KanbanAddColumnSidebar() {
   } = useKanbanContext();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(KanbanColumnSchema),
   });
 
   React.useEffect(() => {

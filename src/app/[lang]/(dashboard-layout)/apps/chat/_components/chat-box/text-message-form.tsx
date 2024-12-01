@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, Send } from "lucide-react";
 
+import { TextMessageSchema } from "../../_schemas/text-message-schema";
+
 import { useChatContext } from "../../hooks/use-chat-context";
 
 import { Button } from "@/components/ui/button";
@@ -18,19 +20,12 @@ import {
 } from "@/components/ui/form";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 
-const FormSchema = z.object({
-  text: z
-    .string()
-    .min(1, "Message text cannot be empty")
-    .max(280, "Message text cannot exceed 280 characters"),
-});
-
-type FormType = z.infer<typeof FormSchema>;
+type FormType = z.infer<typeof TextMessageSchema>;
 
 export function TextMessageForm() {
   const { handleAddTextMessage } = useChatContext();
   const form = useForm<FormType>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(TextMessageSchema),
     defaultValues: {
       text: "",
     },

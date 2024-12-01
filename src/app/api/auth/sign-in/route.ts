@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import { userData } from "@/data/user";
 
-const signInSchema = z.object({
-  email: z.string().email().toLowerCase().trim(),
-  password: z.string().min(8).max(250),
-});
+import { SignInSchema } from "../_schemas/sign-in-schema";
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const parsedData = signInSchema.safeParse(body);
+  const parsedData = SignInSchema.safeParse(body);
 
   if (!parsedData.success) {
     return NextResponse.json(parsedData.error, { status: 400 });

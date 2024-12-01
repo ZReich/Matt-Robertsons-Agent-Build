@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn, FieldPath } from "react-hook-form";
 import { z } from "zod";
 
+import { NotificationPreferencesSchema } from "../_schemas/notifications-preferenes-schema";
+
 import {
   Form,
   FormControl,
@@ -21,27 +23,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const formSchema = z.object({
-  security: z.object({
-    email: z.boolean(),
-    browser: z.boolean(),
-    sms: z.boolean(),
-  }),
-  communication: z.object({
-    email: z.boolean(),
-    browser: z.boolean(),
-    sms: z.boolean(),
-  }),
-  meetups: z.object({
-    email: z.boolean(),
-    browser: z.boolean(),
-    sms: z.boolean(),
-  }),
-});
-
 export function NotificationPreferencesForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof NotificationPreferencesSchema>>({
+    resolver: zodResolver(NotificationPreferencesSchema),
     defaultValues: {
       security: {
         email: true,
@@ -61,7 +45,7 @@ export function NotificationPreferencesForm() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {}
+  function onSubmit(data: z.infer<typeof NotificationPreferencesSchema>) {}
 
   return (
     <Form {...form}>
@@ -127,9 +111,9 @@ export function NotificationPreferencesForm() {
 }
 
 interface ChangeButtonProps {
-  form: UseFormReturn<z.infer<typeof formSchema>>;
+  form: UseFormReturn<z.infer<typeof NotificationPreferencesSchema>>;
   field: {
-    name: FieldPath<z.infer<typeof formSchema>>;
+    name: FieldPath<z.infer<typeof NotificationPreferencesSchema>>;
     value: { email: boolean; browser: boolean; sms: boolean };
   };
 }

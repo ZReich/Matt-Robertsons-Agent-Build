@@ -63,7 +63,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
         <div className="flex gap-2">
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
-          <UserNav dir={dir} locale={locale} />
+          <UserNav dir={dir} />
         </div>
       </div>
     </header>

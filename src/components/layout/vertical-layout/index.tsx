@@ -1,4 +1,4 @@
-import { Dictionary } from "@/lib/getDictionary";
+import type { Dictionary } from "@/lib/getDictionary";
 
 import { Sidebar } from "./sidebar";
 import { Footer } from "../footer";

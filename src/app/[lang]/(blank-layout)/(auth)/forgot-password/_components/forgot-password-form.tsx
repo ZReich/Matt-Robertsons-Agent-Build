@@ -8,6 +8,8 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
+import { ForgotPasswordSchema } from "../_schemas/forgot-passward-schema";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +27,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
-const FormSchema = z.object({
-  email: z.string().email(),
-});
-
 interface ForgotPasswordFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
@@ -40,8 +38,8 @@ export function ForgotPasswordForm({
   ...props
 }: ForgotPasswordFormProps) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
+    resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
       email: "",
     },
@@ -49,7 +47,7 @@ export function ForgotPasswordForm({
 
   const isLoading = form.formState.isLoading;
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: z.infer<typeof ForgotPasswordSchema>) {
     try {
       console.log(data);
       toast({

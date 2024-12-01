@@ -12,6 +12,8 @@ import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
 import { userData } from "@/data/user";
 
+import { SignInSchema } from "../_schemas/sign-in-schema";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -30,25 +32,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
 
-const FormSchema = z.object({
-  email: z
-    .string()
-    .email()
-    .transform((val) => val.toLowerCase()),
-  password: z
-    .string()
-    .min(8, {
-      message: "Password must contain at least 8 character(s)",
-    })
-    .regex(/(?=.*[a-zA-Z])/, {
-      message: "Password must contain at least one letter.",
-    })
-    .regex(/(?=.*[0-9])/, {
-      message: "Password must contain at least one number.",
-    }),
-});
-
-type FormType = z.infer<typeof FormSchema>;
+type FormType = z.infer<typeof SignInSchema>;
 
 interface SignInFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
@@ -61,7 +45,7 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
   const redirectPathname = searchParams.get("redirectTo") ?? "/";
 
   const form = useForm<FormType>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(SignInSchema),
     defaultValues: {
       email: userData.email,
       password: userData.password,

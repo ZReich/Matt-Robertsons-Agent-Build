@@ -1,4 +1,4 @@
-import { NavList } from "./_components/NavList";
+import { NavList } from "./_components/nav-list";
 
 export default function SettingsLayout({
   children,

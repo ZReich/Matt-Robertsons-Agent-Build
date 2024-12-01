@@ -4,12 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { DeleteAccountSchema } from "../_schemas/delete-account-schema";
+
 import type { LocaleType } from "@/configs/i18n";
 import type { UserType } from "../../types";
 
 import { Button } from "@/components/ui/button";
-
-const FormSchema = z.object({});
 
 interface DeleteAccountFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
@@ -22,8 +22,8 @@ export function DeleteAccountForm({
   user,
   ...props
 }: DeleteAccountFormProps) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof DeleteAccountSchema>>({
+    resolver: zodResolver(DeleteAccountSchema),
     defaultValues: {
       ...user,
     },
@@ -32,7 +32,7 @@ export function DeleteAccountForm({
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid;
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {}
+  async function onSubmit(data: z.infer<typeof DeleteAccountSchema>) {}
 
   return (
     <div className="flex gap-2">

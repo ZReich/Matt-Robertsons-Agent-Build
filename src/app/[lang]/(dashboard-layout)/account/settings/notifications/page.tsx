@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { NotificationPreferencesForm } from "./_components/notifications-preferenes-Form";
+import { NotificationPreferencesForm } from "./_components/notifications-preferenes-schema";
 
 export default function SecurityPage() {
   return (

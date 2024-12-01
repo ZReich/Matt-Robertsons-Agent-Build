@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
+import { ProfileInfoSchema } from "../_schemas/profile-info-form";
+
 import { cn } from "@/lib/utils";
 
 import { LocaleType } from "@/configs/i18n";
@@ -23,54 +25,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserType } from "../../types";
 
-const FormSchema = z.object({
-  firstName: z
-    .string()
-    .min(2, { message: "First Name must contain at least 2 character(s)" }),
-  lastName: z
-    .string()
-    .min(2, { message: "Last Name must contain at least 2 character(s)" }),
-  username: z
-    .string()
-    .min(3, { message: "Username must contain at least 3 character(s)" }),
-  email: z.string().email(),
-  phoneNumber: z
-    .string()
-    .min(10, { message: "Phone Number must be at least 10 digits" }),
-  state: z.string(),
-  country: z.string(),
-  address: z.string(),
-  zipCode: z
-    .string()
-    .min(5, { message: "Zip Code must be at least 5 digits" }),
-  language: z.string(),
-  timeZone: z.string(),
-  currency: z.string(),
-  organization: z.string().optional(),
-  avatar: z
-    .any()
-    .optional()
-    .refine(
-      (file) =>
-        file === null || file === undefined || file.size <= 2 * 1024 * 1024,
-      "Max file size is 2MB"
-    )
-    .refine(
-      (file) =>
-        file === null ||
-        file === undefined ||
-        [
-          "image/jpeg",
-          "image/png",
-          "image/gif",
-          "image/svg+xml",
-          "image/webp",
-          "image/jpg",
-        ].includes(file.type),
-      "Only JPEG, PNG, GIF, SVG, and WebP files are allowed"
-    ),
-});
-
 interface ProfileInfoFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
   user: UserType;
@@ -82,8 +36,8 @@ export function ProfileInfoForm({
   user,
   ...props
 }: ProfileInfoFormProps) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof ProfileInfoSchema>>({
+    resolver: zodResolver(ProfileInfoSchema),
     defaultValues: {
       ...user,
     },
@@ -95,7 +49,7 @@ export function ProfileInfoForm({
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid;
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {}
+  async function onSubmit(data: z.infer<typeof ProfileInfoSchema>) {}
 
   function handleResetForm() {
     form.reset(user);

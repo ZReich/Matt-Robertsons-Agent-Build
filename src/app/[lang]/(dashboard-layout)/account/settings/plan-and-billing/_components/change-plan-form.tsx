@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
+import { ChangePlanSchema } from "../_schemas/change-plan-schema";
+
 import { cn } from "@/lib/utils";
 
 import type { Plan, Subscription } from "../../../types";
@@ -29,11 +31,6 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-const FormSchema = z.object({
-  plan: z.string(),
-  interval: z.boolean().default(false).optional(),
-});
-
 export function ChangePlanForm({
   plans,
   subscriptions,
@@ -45,8 +42,8 @@ export function ChangePlanForm({
     (p) => p.id === subscriptions[0].planId
   );
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof ChangePlanSchema>>({
+    resolver: zodResolver(ChangePlanSchema),
     defaultValues: {
       plan: lastSubscribedPlan?.name,
       interval: subscriptions[0].interval === "yearly",
@@ -57,7 +54,7 @@ export function ChangePlanForm({
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid;
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {}
+  function onSubmit(data: z.infer<typeof ChangePlanSchema>) {}
 
   return (
     <Form {...form}>

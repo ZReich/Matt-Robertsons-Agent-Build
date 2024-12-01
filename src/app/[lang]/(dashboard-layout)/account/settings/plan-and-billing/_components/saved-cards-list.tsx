@@ -4,6 +4,8 @@ import * as React from "react";
 import { z } from "zod";
 import { EllipsisVertical } from "lucide-react";
 
+import { cardSchema } from "../_schemas/card-schema";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,15 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 import { Badge } from "@/components/ui/badge";
-
-const cardSchema = z.object({
-  id: z.number().int().positive(),
-  last4: z
-    .string()
-    .length(4, { message: "last4 must be exactly 4 characters" }),
-  type: z.enum(["visa", "mastercard", "amex", "discover"]),
-  default: z.boolean(),
-});
 
 type Card = z.infer<typeof cardSchema>;
 

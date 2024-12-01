@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
+import { RegisterSchema } from "../_schemas/register-schema";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -27,34 +29,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
 
-const FormSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "Fisrt name must contain at least 2 character(s)",
-  }),
-  lastName: z.string().min(2, {
-    message: "Last name must contain at least 2 character(s)",
-  }),
-  username: z.string().min(3, {
-    message: "Usernmae must contain at least 3 character(s)",
-  }),
-  email: z
-    .string()
-    .email()
-    .transform((val) => val.toLowerCase()),
-  password: z
-    .string()
-    .min(8, {
-      message: "Password must contain at least 8 character(s)",
-    })
-    .regex(/(?=.*[a-zA-Z])/, {
-      message: "Password must contain at least one letter.",
-    })
-    .regex(/(?=.*[0-9])/, {
-      message: "Password must contain at least one number.",
-    }),
-});
-
-type FormType = z.infer<typeof FormSchema>;
+type FormType = z.infer<typeof RegisterSchema>;
 
 interface RegisterFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
@@ -67,7 +42,7 @@ export function RegisterForm({
 }: RegisterFormProps) {
   const router = useRouter();
   const form = useForm<FormType>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(RegisterSchema),
   });
   const isLoading = form.formState.isLoading;
 

@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CreditCard, Landmark } from "lucide-react";
 
+import { PaymentMethodSchema } from "../_schemas/payment-method-schema";
+
 import { getCreditCardBrandName } from "@/lib/utils";
 
 import type { CardType } from "../types";
@@ -26,21 +28,9 @@ import {
 import { SeparatorWithText } from "@/components/ui/separator";
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 
-const FormSchema = z.object({
-  paymentOption: z.enum(["card", "bank"]).optional(),
-  cardNumber: z.string().min(1, "Card number is required"),
-  cardName: z.string().min(1, "Cardholder's name is required"),
-  expiry: z.string().min(1, "Expiry date is required"),
-  cvc: z.string().min(3, "CVC is required").max(4, "CVC is too long"),
-  accountNumber: z.string().optional(),
-  routingNumber: z.string().optional(),
-  saveCard: z.boolean().optional(),
-  savedCard: z.string().optional(),
-});
-
 export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof PaymentMethodSchema>>({
+    resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
       saveCard: false,
     },
@@ -51,7 +41,7 @@ export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
 
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  function onSubmit(data: z.infer<typeof PaymentMethodSchema>) {
     console.log("Submitted data:", data);
   }
 

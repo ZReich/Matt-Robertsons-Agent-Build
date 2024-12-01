@@ -6,20 +6,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { VerifyEmailSchema } from "../_schemas/verify-email-schema";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Form,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-
-const FormSchema = z.object({
-  email: z.string().email(),
-});
 
 interface VerifyEmailFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
@@ -30,14 +26,14 @@ export function VerifyEmailForm({
   locale,
   ...props
 }: VerifyEmailFormProps) {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof VerifyEmailSchema>>({
+    resolver: zodResolver(VerifyEmailSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: z.infer<typeof VerifyEmailSchema>) {
     try {
       const response = await fetch("/api/auth/verify-email", {
         method: "POST",

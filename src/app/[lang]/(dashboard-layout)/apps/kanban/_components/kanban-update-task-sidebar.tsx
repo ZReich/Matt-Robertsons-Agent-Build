@@ -16,6 +16,9 @@ import {
 import { labelsData } from "../_data/labels";
 import { getTeamMembersSearchData } from "../_actions/get-team-members-search-data";
 
+import { KanbanTaskSchema } from "../_schemas/kanban-task-schema";
+import { UserSchema } from "../_schemas/user-schema";
+
 import { cn } from "@/lib/utils";
 
 import { useKanbanContext } from "../hooks/use-kanban-context";
@@ -63,52 +66,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-const CommentSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  text: z
-    .string()
-    .min(2, { message: "Comment must be at least 2 characters." }),
-  createdAt: z.date(),
-});
-
-const FileSchema = z.object({
-  url: z.string(),
-  name: z.string(),
-  size: z.number().max(50 * 1024 * 1024, {
-    message: "File size must be less than or equal to 50 MB.",
-  }),
-  type: z.string(),
-});
-
-const UserSchema = z.object({
-  id: z.string(),
-  username: z.string(),
-  name: z.string(),
-  avatar: z.string(),
-});
-
-const FormSchema = z.object({
-  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  description: z.string().optional(),
-  label: z.custom<string>(
-    (value) => labelsData.some((label) => label.name === value),
-    { message: "Invalid label. Please select a valid label." }
-  ),
-  assigned: z
-    .array(UserSchema)
-    .min(1, { message: "At least one user must be assigned." }),
-  comments: z.array(CommentSchema),
-  dueDate: z.date({
-    required_error: "Due date is required.",
-    invalid_type_error: "Invalid due date. Please provide a valid date.",
-  }),
-  attachments: z
-    .array(FileSchema)
-    .max(10, { message: "You can attach a maximum of 10 files." }),
-});
-
-type FormValues = z.infer<typeof FormSchema>;
+type FormValues = z.infer<typeof KanbanTaskSchema>;
 type TeamMemberType = z.infer<typeof UserSchema>;
 
 export function KanbanUpdateTaskSidebar() {
@@ -128,7 +86,7 @@ export function KanbanUpdateTaskSidebar() {
   } = useKanbanContext();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(KanbanTaskSchema),
   });
 
   const attachments = form.watch("attachments");

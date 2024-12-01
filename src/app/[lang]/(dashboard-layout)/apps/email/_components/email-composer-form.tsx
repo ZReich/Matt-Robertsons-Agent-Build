@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MoreVertical, ListRestart, Send } from "lucide-react";
 
+import { EmailComposerSchema } from "../_schemas/email-composer-schema";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,26 +28,12 @@ import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import { EmailComposer } from "./email-composer";
 
-const formSchema = z.object({
-  to: z.string().email({ message: "Invalid email address" }),
-  cc: z.string().email({ message: "Invalid email address" }).optional(),
-  bcc: z.string().email({ message: "Invalid email address" }).optional(),
-  subject: z
-    .string()
-    .min(1, { message: "Subject must contain at least 1 character" })
-    .max(100, { message: "Subject must contain at most 100 characters" }),
-  content: z
-    .string()
-    .min(1, { message: "Content must contain at least 1 character" })
-    .max(5000, { message: "Content must contain at most 5000 characters" }),
-});
-
 export function EmailComposerForm() {
   const [showCc, setShowCc] = React.useState(false);
   const [showBcc, setShowBcc] = React.useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof EmailComposerSchema>>({
+    resolver: zodResolver(EmailComposerSchema),
     defaultValues: {
       to: "",
       cc: "",
@@ -55,7 +43,7 @@ export function EmailComposerForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {}
+  function onSubmit(values: z.infer<typeof EmailComposerSchema>) {}
 
   return (
     <Card className="flex-1 w-full md:w-auto">

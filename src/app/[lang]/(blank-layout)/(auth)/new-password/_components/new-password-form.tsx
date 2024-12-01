@@ -8,6 +8,8 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
+import { NewPasswordSchema } from "../_schemas/new-passward-schema";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -25,20 +27,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
-const FormSchema = z
-  .object({
-    password: z.string().min(8, {
-      message: "Password must contain at least 8 character(s)",
-    }),
-    confirmPassword: z.string().min(8, {
-      message: "Confirm password must contain at least 8 character(s)",
-    }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords must match",
-    path: ["confirmPassword"],
-  });
-
 interface NewPasswordFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
 }
@@ -49,8 +37,8 @@ export function NewPasswordForm({
   ...props
 }: NewPasswordFormProps) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof NewPasswordSchema>>({
+    resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
       password: "",
       confirmPassword: "",
@@ -59,7 +47,7 @@ export function NewPasswordForm({
 
   const isLoading = form.formState.isLoading;
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: z.infer<typeof NewPasswordSchema>) {
     try {
       console.log(data);
       toast({

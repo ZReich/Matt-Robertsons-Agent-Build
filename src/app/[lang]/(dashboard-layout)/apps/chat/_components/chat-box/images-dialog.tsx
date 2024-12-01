@@ -8,6 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useDropzone } from "react-dropzone";
 import { X, Upload, LoaderCircle, Send, ImageIcon } from "lucide-react";
 
+import { ImagesDialogSchema } from "../../_schemas/images-dialog-schema";
+
 import { formatFileSize } from "@/lib/utils";
 
 import { useChatContext } from "../../hooks/use-chat-context";
@@ -36,32 +38,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { MAX_IMAGE_SIZE, MAX_IMAGES, MIN_IMAGES } from "../../constants";
 
-const MIN_IMAGES = 1;
-const MAX_IMAGES = 5;
-const MAX_IMAGE_SIZE = 500000000; // 500 MB
 const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE);
 
-const FormSchema = z.object({
-  images: z
-    .array(z.instanceof(File))
-    .min(MIN_IMAGES, {
-      message: `You must select at least ${MIN_IMAGES} image${
-        MIN_IMAGES > 1 ? "s" : ""
-      }.`,
-    })
-    .max(MAX_IMAGES, {
-      message: `You can select a maximum of ${MAX_IMAGES} images.`,
-    })
-    .refine(
-      (imageArray) => imageArray.every((image) => image.size <= MAX_IMAGE_SIZE),
-      {
-        message: `Each image must be ${formattedImageSize} or less.`,
-      }
-    ),
-});
-
-type FormType = z.infer<typeof FormSchema>;
+type FormType = z.infer<typeof ImagesDialogSchema>;
 
 export function ImagesDialog() {
   const { handleAddImagesMessage } = useChatContext();
@@ -69,7 +50,7 @@ export function ImagesDialog() {
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
 
   const form = useForm<FormType>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(ImagesDialogSchema),
     defaultValues: {
       images: [],
     },

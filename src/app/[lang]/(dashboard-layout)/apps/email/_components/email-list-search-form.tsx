@@ -5,16 +5,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Search } from "lucide-react";
 
+import { EmailListSearchSchema } from "../_schemas/email-list-search-schema";
+
 import { getEmailsBySearchTermData } from "../_actions/get-emails-by-search-term-data";
 
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-
-const formSchema = z.object({
-  term: z
-    .string()
-    .max(100, { message: "Search term must contain at most 100 characters" }),
-});
 
 interface EmailListSearchFormProps {
   pageQuery: number;
@@ -27,14 +23,14 @@ export function EmailListSearchForm({
   filterParam,
   setEmailState,
 }: EmailListSearchFormProps) {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof EmailListSearchSchema>>({
+    resolver: zodResolver(EmailListSearchSchema),
     defaultValues: {
       term: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof EmailListSearchSchema>) => {
     const newEmailsData = await getEmailsBySearchTermData(
       pageQuery,
       filterParam,

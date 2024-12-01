@@ -11,13 +11,13 @@ import {
   CalendarMinus,
 } from "lucide-react";
 
-import { categoriesData } from "../_data/categories";
+import { EventSidebarSchema } from "../_schemas/event-sidebar-schema";
 
 import { cn } from "@/lib/utils";
 
 import { useCalendarContext } from "../hooks/calendar-context";
 
-import type { CategoryType, EventType } from "../types";
+import type { EventType } from "../types";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -53,20 +53,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const FormSchema = z.object({
-  url: z.string().url({ message: "Invalid url" }).optional().or(z.literal("")),
-  title: z.string().min(1, { message: "Title is required" }),
-  allDay: z.boolean(),
-  description: z.string().optional(),
-  start: z.date().nullable(),
-  end: z.date().nullable(),
-  category: z.custom<CategoryType>(
-    (value) => categoriesData.some((category) => category === value),
-    { message: "Invalid label" }
-  ),
-});
-
-type FormValues = z.infer<typeof FormSchema>;
+type FormValues = z.infer<typeof EventSidebarSchema>;
 
 export function EventSidebar() {
   const {
@@ -81,7 +68,7 @@ export function EventSidebar() {
   } = useCalendarContext();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(EventSidebarSchema),
     defaultValues: {
       allDay: true,
       start: new Date(),
