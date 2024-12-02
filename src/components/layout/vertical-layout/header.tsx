@@ -15,8 +15,8 @@ import { LanguageDropdown } from "@/components/layout/language-dropdown";
 
 export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
-  const locale = params.lang as LocaleType;
 
+  const locale = params.lang as LocaleType;
   const dir = i18n.langDirection[locale];
 
   return (

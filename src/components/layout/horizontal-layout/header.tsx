@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useMedia } from "react-use";
 
 import { groupNavs } from "@/data/navigation";
 
@@ -23,15 +24,16 @@ import { CommandMenu } from "@/components/layout/command-menu";
 import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
+import { Separator } from "@/components/ui/separator";
 import { Nav } from "./nav";
 
 import Logo from "@/app/icon.svg";
-import { Separator } from "@/components/ui/separator";
 
 export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
-  const locale = params.lang as LocaleType;
+  const isMediumOrLarger = useMedia("(min-width: 768px)");
 
+  const locale = params.lang as LocaleType;
   const dir = i18n.langDirection[locale];
 
   return (
@@ -51,7 +53,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
         </Menubar>
         <CommandMenu />
       </div>
-      <Separator className="bg-accent h-[0.5px]" />
+      <Separator className="hidden bg-accent h-[0.5px] md:block" />
       <div className="container flex h-14 justify-between items-center gap-4">
         <MobileSidebarNav />
         <Link
@@ -61,6 +63,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
           <Logo className="size-6" aira-hidden="true" />
           Shadboard
         </Link>
+        {isMediumOrLarger && <CommandMenu />}
         <div className="flex gap-2">
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
