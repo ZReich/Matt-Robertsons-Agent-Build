@@ -26,8 +26,7 @@ export function Nav({ navs }: { navs: NavType[] }) {
   return (
     <>
       {navs.map((nav, index) => {
-        const localizedHref = ensureLocalizedPathname(nav.href, locale);
-        const isActive = localizedHref === pathname;
+        const isActive = pathname.includes(nav.href);
 
         if (nav.children) {
           return (
@@ -62,7 +61,7 @@ export function Nav({ navs }: { navs: NavType[] }) {
               )}
               asChild
             >
-              <Link href={nav.href}>
+              <Link href={ensureLocalizedPathname(nav.href, locale)}>
                 {nav.title}
                 {nav.label && (
                   <Badge variant="secondary" className="ms-auto">

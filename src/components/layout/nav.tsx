@@ -40,8 +40,7 @@ export function Nav({
   return (
     <nav className="grid gap-1" dir={dir}>
       {navs.map((nav) => {
-        const localizedHref = ensureLocalizedPathname(nav.href, locale);
-        const isActive = localizedHref === pathname;
+        const isActive = pathname.includes(nav.href);
 
         if (nav.children) {
           return (
@@ -83,7 +82,7 @@ export function Nav({
         return (
           <Link
             key={nav.href}
-            href={localizedHref}
+            href={ensureLocalizedPathname(nav.href, locale)}
             className={cn(
               buttonVariants({ variant: isActive ? "default" : "ghost" }),
               "w-full justify-start gap-2"
