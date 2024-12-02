@@ -19,7 +19,7 @@ export function PerformanceOverTimeChart({
   data: PerformanceOverTimeType["monthly"];
 }) {
   return (
-    <ChartContainer config={chartConfig} className="h-[288px] w-full">
+    <ChartContainer config={chartConfig} className="w-full md:h-[288px]">
       <LineChart
         accessibilityLayer
         data={data}

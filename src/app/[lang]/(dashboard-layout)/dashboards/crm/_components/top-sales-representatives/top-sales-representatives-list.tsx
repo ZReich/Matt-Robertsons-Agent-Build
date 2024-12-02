@@ -28,7 +28,7 @@ export function TopSalesRepresentativesList({
 
   return (
     <ul className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         {top3.map((rep, index) => (
           <li key={rep.name}>
             <Card className={medalCardColor[index]}>
@@ -81,7 +81,7 @@ export function TopSalesRepresentativesList({
                     {index + 4}
                   </div>
                 </div>
-                <div className="w-full">
+                <div className="flex-1 w-0">
                   <h4 className="text-sm font-semibold break-all truncate">
                     {rep.name}
                   </h4>

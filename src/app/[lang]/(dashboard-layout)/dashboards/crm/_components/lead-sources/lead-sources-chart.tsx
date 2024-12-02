@@ -14,7 +14,7 @@ import {
 
 export function LeadSourcesChart({ data }: { data: LeadSourceType[] }) {
   return (
-    <ChartContainer config={chartConfig} className="h-[245px] w-full">
+    <ChartContainer config={chartConfig} className="w-full md:h-[245px]">
       <PieChart accessibilityLayer>
         <Pie
           data={data}

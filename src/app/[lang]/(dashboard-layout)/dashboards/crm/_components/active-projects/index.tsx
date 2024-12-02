@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { activeProjectsData } from "../../_data/active-projects";
-import { ActiveProjectsCarousel } from "./active-prijects-carousel";
+import { ActiveProjectsCarousel } from "./active-projects-carousel";
 
 export function ActiveProjects() {
   return (

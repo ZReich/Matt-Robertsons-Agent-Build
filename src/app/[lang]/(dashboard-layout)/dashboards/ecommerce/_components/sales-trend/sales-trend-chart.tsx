@@ -21,7 +21,7 @@ export function SalesTrendChart({ data }: { data: SalesTrendType["weekly"] }) {
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={chartConfig} className="h-[307px] w-full">
+    <ChartContainer config={chartConfig} className="w-full md:h-[307px]">
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <ChartTooltip

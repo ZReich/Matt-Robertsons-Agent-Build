@@ -46,7 +46,10 @@ export function ActiveProjectsCarousel({
     >
       <CarouselContent>
         {data.map((project) => (
-          <CarouselItem key={project.name} className="md:basis-1/2">
+          <CarouselItem
+            key={project.name}
+            className="w-8 md:basis-1/2 md:w-auto"
+          >
             <Card>
               <CardHeader>
                 <h4 className="font-semibold leading-none tracking-tight">
@@ -56,7 +59,7 @@ export function ActiveProjectsCarousel({
               <CardContent>
                 <div className="space-y-4">
                   <Progress value={project.progress} className="w-full" />
-                  <div className="flex justify-between">
+                  <div className="flex flex-wrap justify-between">
                     <p className="text-sm text-muted-foreground">
                       {project.progress}% Complete
                     </p>
@@ -65,7 +68,7 @@ export function ActiveProjectsCarousel({
                     </Badge>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="me-2 h-4 w-4" aria-hidden />
+                    <Calendar className="shrink-0 me-2 h-4 w-4" aria-hidden />
                     <p>
                       {formatDate(project.startDate)} -{" "}
                       {formatDate(project.dueDate)}
