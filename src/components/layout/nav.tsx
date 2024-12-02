@@ -23,9 +23,15 @@ interface NavProps {
   navs: NavType[];
   dir: DirectionType;
   isRoot?: boolean;
+  setIsMobileSidebarNavOpen?: (val: boolean) => void;
 }
 
-export function Nav({ navs, dir, isRoot = true }: NavProps) {
+export function Nav({
+  navs,
+  dir,
+  isRoot = true,
+  setIsMobileSidebarNavOpen,
+}: NavProps) {
   const pathname = usePathname();
   const params = useParams();
 
@@ -82,6 +88,7 @@ export function Nav({ navs, dir, isRoot = true }: NavProps) {
               buttonVariants({ variant: isActive ? "default" : "ghost" }),
               "w-full justify-start gap-2"
             )}
+            onClick={() => setIsMobileSidebarNavOpen?.(false)}
           >
             {isRoot ? (
               <nav.icon className="size-4" />

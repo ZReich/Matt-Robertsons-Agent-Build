@@ -16,7 +16,11 @@ import { Nav } from "@/components/layout/nav";
 
 import Logo from "@/app/icon.svg";
 
-export function SidebarContent() {
+export function SidebarContent({
+  setIsMobileSidebarNavOpen,
+}: {
+  setIsMobileSidebarNavOpen?: (val: boolean) => void;
+}) {
   const params = useParams();
   const locale = params.lang as LocaleType;
 
@@ -27,6 +31,7 @@ export function SidebarContent() {
       <Link
         href={ensureLocalizedPathname("/", locale)}
         className="flex text-foreground font-black hover:text-primary/90"
+        onClick={() => setIsMobileSidebarNavOpen?.(false)}
       >
         <Logo className="size-6" aira-hidden="true" />
         Shadboard
@@ -39,7 +44,11 @@ export function SidebarContent() {
                 {group.title}
               </h4>
             )}
-            <Nav navs={group.navs} dir={dir} />
+            <Nav
+              navs={group.navs}
+              dir={dir}
+              setIsMobileSidebarNavOpen={setIsMobileSidebarNavOpen}
+            />
           </div>
         ))}
       </ScrollArea>

@@ -1,3 +1,5 @@
+"use client";
+import * as React from "react";
 import HamburgerMenuIcon from "/public/images/icons/hamburger-menu.svg";
 
 import { Button } from "@/components/ui/button";
@@ -5,8 +7,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "./sidebar-content";
 
 export function MobileSidebarNav() {
+  const [isMobileSidebarNavOpen, setIsMobileSidebarNavOpen] =
+    React.useState(false);
+
   return (
-    <Sheet>
+    <Sheet
+      open={isMobileSidebarNavOpen}
+      onOpenChange={setIsMobileSidebarNavOpen}
+    >
       <SheetTrigger asChild>
         <Button
           variant="ghost"
@@ -17,7 +25,7 @@ export function MobileSidebarNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="dir">
-        <SidebarContent />
+        <SidebarContent setIsMobileSidebarNavOpen={setIsMobileSidebarNavOpen} />
       </SheetContent>
     </Sheet>
   );
