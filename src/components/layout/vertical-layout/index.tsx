@@ -1,4 +1,4 @@
-import type { Dictionary } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import { Sidebar } from "./sidebar";
 import { Footer } from "../footer";
@@ -9,7 +9,7 @@ export default function VerticalLayout({
   dictionary,
 }: {
   children: React.ReactNode;
-  dictionary: Dictionary;
+  dictionary: DictionaryType;
 }) {
   return (
     <div className="min-h-screen w-full grid bg-background md:grid-cols-[auto,_1fr]">

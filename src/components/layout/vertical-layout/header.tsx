@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 
-import type { Dictionary } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/getDictionary";
 import type { LocaleType } from "@/configs/i18n";
 
 import { i18n } from "@/configs/i18n";
@@ -13,7 +13,7 @@ import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
 
-export function Header({ dictionary }: { dictionary: Dictionary }) {
+export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
   const locale = params.lang as LocaleType;
 

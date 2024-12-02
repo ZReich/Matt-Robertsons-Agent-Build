@@ -4,7 +4,7 @@ import React from "react";
 
 import { useSettings } from "@/hooks/use-settings";
 
-import type { Dictionary } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import VerticalLayout from "./vertical-layout";
 import HorizontalLayout from "./horizontal-layout";
@@ -15,7 +15,7 @@ function Layout({
   dictionary,
 }: {
   children: React.ReactNode;
-  dictionary: Dictionary;
+  dictionary: DictionaryType;
 }) {
   const { settings } = useSettings();
   const isVertical = settings.layout === "vertical";

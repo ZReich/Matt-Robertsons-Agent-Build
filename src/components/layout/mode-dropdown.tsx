@@ -8,7 +8,7 @@ import { i18n } from "@/configs/i18n";
 
 import type { LocaleType } from "@/configs/i18n";
 
-import type { Dictionary } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import type { ModeType } from "@/types";
 
@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ModeDropdown({ dictionary }: { dictionary: Dictionary }) {
+export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
   const { settings, updateSettings } = useSettings();
   const params = useParams();
 

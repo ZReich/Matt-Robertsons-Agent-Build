@@ -1,4 +1,4 @@
-import type { Dictionary } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import { Header } from "./header";
 import { Footer } from "../footer";
@@ -8,7 +8,7 @@ export default function HorizontalLayout({
   dictionary,
 }: {
   children: React.ReactNode;
-  dictionary: Dictionary;
+  dictionary: DictionaryType;
 }) {
   return (
     <div className="min-h-screen w-full grid bg-background md:grid-rows-[auto,_1fr,_auto]">

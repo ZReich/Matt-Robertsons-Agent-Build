@@ -7,7 +7,7 @@ import { Earth } from "lucide-react";
 import { i18n } from "@/configs/i18n";
 
 import type { LocaleType } from "@/configs/i18n";
-import type { Dictionary } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-type LanguageDictionary = Dictionary["navigation"]["language"];
+type LanguageDictionary = DictionaryType["navigation"]["language"];
 
 type LanguageDataType = {
   langCode: LocaleType;
@@ -47,7 +47,11 @@ const languageData: LanguageDataType[] = [
   },
 ];
 
-export function LanguageDropdown({ dictionary }: { dictionary: Dictionary }) {
+export function LanguageDropdown({
+  dictionary,
+}: {
+  dictionary: DictionaryType;
+}) {
   const pathname = usePathname();
   const params = useParams();
 

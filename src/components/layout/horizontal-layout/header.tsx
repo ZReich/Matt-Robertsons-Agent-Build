@@ -9,7 +9,7 @@ import { i18n, LocaleType } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import type { Dictionary } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import {
   Menubar,
@@ -27,7 +27,7 @@ import { Nav } from "./nav";
 import Logo from "@/app/icon.svg";
 import { Separator } from "@/components/ui/separator";
 
-export function Header({ dictionary }: { dictionary: Dictionary }) {
+export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
   const locale = params.lang as LocaleType;
 
