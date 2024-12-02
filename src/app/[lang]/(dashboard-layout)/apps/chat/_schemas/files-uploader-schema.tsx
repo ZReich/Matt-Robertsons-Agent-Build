@@ -6,7 +6,7 @@ import { MAX_FILES, MAX_FILE_SIZE, MIN_FILES } from "../constants";
 
 export const fomratedFileSize = formatFileSize(MAX_FILE_SIZE);
 
-export const FilesDialogSchema = z.object({
+export const FilesUploaderSchema = z.object({
   files: z
     .array(z.instanceof(File))
     .min(MIN_FILES, {

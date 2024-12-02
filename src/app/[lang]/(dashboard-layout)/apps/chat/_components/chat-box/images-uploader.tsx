@@ -1,15 +1,14 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDropzone } from "react-dropzone";
-import { X, Upload, LoaderCircle, Paperclip, Send } from "lucide-react";
+import { X, Upload, LoaderCircle, Send, ImageIcon } from "lucide-react";
 
-import { MAX_FILES, MAX_FILE_SIZE, MIN_FILES } from "../../constants";
-
-import { FilesDialogSchema } from "../../_schemas/files-dialog-schema";
+import { ImagesUploaderSchema } from "../../_schemas/images-uploader-schema";
 
 import { formatFileSize } from "@/lib/utils";
 
@@ -39,98 +38,99 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileThumbnail } from "@/components/file-thumbnail";
+import { MAX_IMAGE_SIZE, MAX_IMAGES, MIN_IMAGES } from "../../constants";
 
-const fomratedFileSize = formatFileSize(MAX_FILE_SIZE);
+const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE);
 
-type FormType = z.infer<typeof FilesDialogSchema>;
+type FormType = z.infer<typeof ImagesUploaderSchema>;
 
-export function FilesDialog() {
-  const { handleAddFilesMessage } = useChatContext();
+export function ImagesUploader() {
+  const { handleAddImagesMessage } = useChatContext();
   const [isOpen, setIsOpen] = React.useState(false);
-  const [fileUrls, setFileUrls] = React.useState<string[]>([]);
+  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
+
   const form = useForm<FormType>({
-    resolver: zodResolver(FilesDialogSchema),
+    resolver: zodResolver(ImagesUploaderSchema),
     defaultValues: {
-      files: [],
+      images: [],
     },
   });
 
-  const files = form.watch("files");
+  const images = form.watch("images");
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid;
 
   const onSubmit = async (data: FormType) => {
-    handleAddFilesMessage(data.files);
+    handleAddImagesMessage(data.images);
 
     // Revoke temporary URLs after submission
-    fileUrls.forEach((url) => URL.revokeObjectURL(url));
+    imageUrls.forEach((url) => URL.revokeObjectURL(url));
 
-    setFileUrls([]);
+    setImageUrls([]);
     form.reset();
     setIsOpen(false);
   };
 
-  const handleFilesChange = React.useCallback(
-    (acceptedFiles: FileList | File[] | null) => {
-      if (!acceptedFiles) return;
+  const handleImageChange = React.useCallback(
+    (acceptedImages: FileList | File[] | null) => {
+      if (!acceptedImages) return;
 
-      // Convert accepted files to an array and merge with current files
-      const newFilesArray = [...files, ...Array.from(acceptedFiles)].slice(
+      const newImagesArray = [...images, ...Array.from(acceptedImages)].slice(
         0,
-        MAX_FILES
+        MAX_IMAGES
       );
 
-      form.setValue("files", newFilesArray);
+      form.setValue("images", newImagesArray);
 
-      // Create object URLs for the new files
-      const newFileUrls = Array.from(acceptedFiles).map((file) =>
+      // Create object URLs for the new images
+      const newImageUrls = Array.from(acceptedImages).map((file) =>
         URL.createObjectURL(file)
       );
-      setFileUrls((prevUrls) => [...prevUrls, ...newFileUrls]);
+      setImageUrls((prevUrls) => [...prevUrls, ...newImageUrls]);
 
-      form.trigger("files");
+      form.trigger("images");
     },
-    [form, files]
+    [form, images]
   );
 
-  const handleFileRemove = (index: number) => {
-    // Revoke the object URL for the removed file
-    const urlToRevoke = fileUrls[index];
+  const handleImageRemove = (index: number) => {
+    // Revoke the object URL for the removed image
+    const urlToRevoke = imageUrls[index];
     URL.revokeObjectURL(urlToRevoke);
 
-    // Remove file at specified index
-    const updatedFiles = files.filter((_, i) => i !== index);
-    const updatedUrls = fileUrls.filter((_, i) => i !== index);
+    // Remove image at specified index
+    const updatedImages = images.filter((_, i) => i !== index);
+    const updatedUrls = imageUrls.filter((_, i) => i !== index);
 
-    form.setValue("files", updatedFiles);
-    setFileUrls(updatedUrls);
-    form.trigger("files");
+    form.setValue("images", updatedImages);
+    setImageUrls(updatedUrls);
+    form.trigger("images");
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDropAccepted: handleFilesChange,
+    onDropAccepted: handleImageChange,
+    accept: { "image/*": [] },
     noClick: true,
-    maxFiles: MAX_FILES,
-    maxSize: MAX_FILE_SIZE,
+    maxFiles: MAX_IMAGES,
+    maxSize: MAX_IMAGE_SIZE,
   });
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Paperclip className="h-4 w-4" aria-label="Files" />
+          <ImageIcon className="h-4 w-4" aria-label="Images" />
         </Button>
       </DialogTrigger>
       <DialogContent className="rounded-lg">
         <DialogHeader>
-          <DialogTitle>Send Files</DialogTitle>
+          <DialogTitle>Send Images</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="w-full grid">
             <FormField
               control={form.control}
-              name="files"
+              name="images"
               render={({ field }) => (
                 <FormItem className="space-y-0">
                   <FormLabel
@@ -144,7 +144,7 @@ export function FilesDialog() {
                         {...getInputProps({
                           ref: field.ref,
                           name: field.name,
-                          onChange: (e) => handleFilesChange(e.target.files),
+                          onChange: (e) => handleImageChange(e.target.files),
                           onBlur: field.onBlur,
                           disabled: field.disabled,
                         })}
@@ -158,51 +158,53 @@ export function FilesDialog() {
                       className="mt-2 text-sm text-foreground"
                       id="dnd-description"
                     >
-                      Drag and drop some files here, or click to select files
+                      Drag and drop some images here, or click to select images
                     </span>
                   </FormLabel>
                   <FormDescription>
-                    Select between {MIN_FILES} and {MAX_FILES} files, with a
-                    maximum file size of {fomratedFileSize} per file.
+                    Select between {MIN_IMAGES} and {MAX_IMAGES} images, with a
+                    maximum file size of {formattedImageSize} per image.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {files && files.length > 0 && (
+            {images && images.length > 0 && (
               <div className="mt-2">
                 <h4 className="text-sm font-medium mb-2">
-                  Selected File{files.length > 1 && "s"}:
+                  Selected Image{images.length > 1 && "s"}:
                 </h4>
                 <TooltipProvider>
                   <ul className="grid grid-cols-5 gap-x-2">
-                    {files.map((file, index) => (
+                    {images.map((image, index) => (
                       <Tooltip key={crypto.randomUUID()} delayDuration={0}>
                         <TooltipTrigger className="cursor-default">
                           <li
-                            className="relative aspect-square flex flex-col justify-center items-center bg-accent text-accent-foreground break-all rounded-md"
-                            aria-label="File"
+                            className="relative aspect-square bg-accent text-accent-foreground rounded-md"
+                            aria-label="Image"
                           >
                             <Button
                               variant="secondary"
                               size="icon"
                               className="absolute top-1 end-1 size-4 z-10"
-                              onClick={() => handleFileRemove(index)}
+                              onClick={() => handleImageRemove(index)}
                             >
                               <X
                                 className="size-4 hover:text-destructive"
                                 aria-label="Remove"
                               />
                             </Button>
-                            <FileThumbnail fileName={file.name} />
-                            <span className="text-xs">
-                              {formatFileSize(file.size)}
-                            </span>
+                            <Image
+                              src={imageUrls[index]} // Use the stored URL
+                              alt={image.name}
+                              className="object-cover rounded-md"
+                              fill
+                            />
                           </li>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{file.name}</p>
+                          <p>{image.name}</p>
                         </TooltipContent>
                       </Tooltip>
                     ))}

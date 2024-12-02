@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CardFooter } from "@/components/ui/card";
 import { TextMessageForm } from "./text-message-form";
-import { ImagesDialog } from "./images-dialog";
-import { FilesDialog } from "./files-dialog";
+import { ImagesUploader } from "./images-uploader";
+import { FilesUploader } from "./files-uploader";
 
 export function ChatBoxFooter() {
   const isMobile = useMedia("(max-width: 480px)");
@@ -39,10 +39,10 @@ export function ChatBoxFooter() {
             className="flex justify-between gap-1.5 min-w-fit"
           >
             <DropdownMenuItem asChild>
-              <ImagesDialog />
+              <ImagesUploader />
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <FilesDialog />
+              <FilesUploader />
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Button type="button" variant="ghost" size="icon">
@@ -63,8 +63,8 @@ export function ChatBoxFooter() {
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="data-[state=closed]:animate-collapsible-left data-[state=open]:animate-collapsible-right duration-1000">
-            <ImagesDialog />
-            <FilesDialog />
+            <ImagesUploader />
+            <FilesUploader />
             <Button type="button" variant="ghost" size="icon">
               <Mic className="size-4" />
               <span className="sr-only">Send a voice message</span>

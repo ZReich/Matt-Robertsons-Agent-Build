@@ -6,7 +6,7 @@ import { MAX_IMAGE_SIZE, MAX_IMAGES, MIN_IMAGES } from "../constants";
 
 const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE);
 
-export const ImagesDialogSchema = z.object({
+export const ImagesUploaderSchema = z.object({
   images: z
     .array(z.instanceof(File))
     .min(MIN_IMAGES, {
