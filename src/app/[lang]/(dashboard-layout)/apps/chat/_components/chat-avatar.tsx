@@ -31,8 +31,14 @@ const ChatAvatar = React.memo(
           className
         )}
       >
-        <Avatar className="size-full" id="ttt">
-          <AvatarImage src={src} alt="" />
+        <Avatar
+          style={{
+            height: size + "rem",
+            width: size + "rem",
+            fontSize: size / 2.5 + "rem",
+          }}
+        >
+          <AvatarImage src={src} alt="Avatar" />
           <AvatarFallback>{fallback}</AvatarFallback>
         </Avatar>
         {status && (
