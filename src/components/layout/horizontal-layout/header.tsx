@@ -35,7 +35,7 @@ export function Header({ dictionary }: { dictionary: Dictionary }) {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background border-b-[1px] border-accent">
-      <div className="container hidden justify-between items-center px-6 py-1 md:flex">
+      <div className="container hidden justify-between items-center py-1 md:flex">
         <Menubar className="shadow-none border-0" dir={dir}>
           {groupNavs.map((group, index) => (
             <MenubarMenu key={index}>
