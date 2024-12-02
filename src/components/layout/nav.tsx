@@ -21,14 +21,14 @@ import {
 
 interface NavProps {
   navs: NavType[];
-  dir: DirectionType;
+  direction: DirectionType;
   isRoot?: boolean;
   setIsMobileSidebarNavOpen?: (val: boolean) => void;
 }
 
 export function Nav({
   navs,
-  dir,
+  direction,
   isRoot = true,
   setIsMobileSidebarNavOpen,
 }: NavProps) {
@@ -38,7 +38,7 @@ export function Nav({
   const locale = params.lang as LocaleType;
 
   return (
-    <nav className="grid gap-1" dir={dir}>
+    <nav className="grid gap-1" dir={direction}>
       {navs.map((nav) => {
         const isActive = pathname.includes(nav.href);
 
@@ -71,7 +71,7 @@ export function Nav({
               <CollapsibleContent className="mt-1 ms-2 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                 <Nav
                   navs={nav.children as NavType[]}
-                  dir={dir}
+                  direction={direction}
                   isRoot={false}
                 />
               </CollapsibleContent>

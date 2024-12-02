@@ -24,7 +24,7 @@ export function SidebarContent({
   const params = useParams();
   const locale = params.lang as LocaleType;
 
-  const dir = i18n.langDirection[locale];
+  const direction = i18n.langDirection[locale];
 
   return (
     <>
@@ -36,7 +36,7 @@ export function SidebarContent({
         <Logo className="size-6" aira-hidden="true" />
         Shadboard
       </Link>
-      <ScrollArea className="h-full -mx-5 p-2.5" dir={dir}>
+      <ScrollArea className="h-full -mx-5 p-2.5" dir={direction}>
         {groupNavs.map((group, index) => (
           <div className="py-2" key={index}>
             {group.title && (
@@ -46,7 +46,7 @@ export function SidebarContent({
             )}
             <Nav
               navs={group.navs}
-              dir={dir}
+              direction={direction}
               setIsMobileSidebarNavOpen={setIsMobileSidebarNavOpen}
             />
           </div>

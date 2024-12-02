@@ -2,13 +2,17 @@
 
 import { DirectionProvider as DirectionProviderPrimitive } from "@radix-ui/react-direction";
 
-import { useSettings } from "@/hooks/use-settings";
+import type { DirectionType } from "@/types";
 
-export function DirectionProvider({ children }: { children: React.ReactNode }) {
-  const { settings } = useSettings();
-
+export function DirectionProvider({
+  direction,
+  children,
+}: {
+  direction: DirectionType;
+  children: React.ReactNode;
+}) {
   return (
-    <DirectionProviderPrimitive dir={settings.direction}>
+    <DirectionProviderPrimitive dir={direction}>
       {children}
     </DirectionProviderPrimitive>
   );

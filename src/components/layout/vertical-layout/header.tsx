@@ -17,7 +17,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
 
   const locale = params.lang as LocaleType;
-  const dir = i18n.langDirection[locale];
+  const direction = i18n.langDirection[locale];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background border-b-[1px] border-accent">
@@ -27,7 +27,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
         <div className="flex gap-2">
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
-          <UserNav dir={dir} />
+          <UserNav direction={direction} />
         </div>
       </div>
     </header>

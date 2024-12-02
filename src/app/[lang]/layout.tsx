@@ -56,7 +56,7 @@ export default async function RootLayout({
           cairoFont.variable
         )}
       >
-        <Providers locale={params.lang} session={session}>
+        <Providers locale={params.lang} direction={direction} session={session}>
           {children}
           <Toaster />
         </Providers>

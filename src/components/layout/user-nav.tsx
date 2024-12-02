@@ -19,9 +19,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav({ dir }: { dir: DirectionType }) {
+export function UserNav({ direction }: { direction: DirectionType }) {
   return (
-    <DropdownMenu dir={dir}>
+    <DropdownMenu dir={direction}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full">
           <Avatar className="size-9">
