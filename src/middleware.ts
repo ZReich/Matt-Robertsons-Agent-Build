@@ -15,8 +15,18 @@ import type { NextRequestWithAuth } from "next-auth/middleware";
 const HOME_PATHNAME = "/dashboards/analytics";
 
 const getLocale = (request: NextRequest) => {
-  const { pathname } = request.nextUrl;
+  const settingsCookie = request.cookies.get("settings")?.value;
+  try {
+    const parsedSettingsCookie = settingsCookie && JSON.parse(settingsCookie);
 
+    if (parsedSettingsCookie?.locale) {
+      return parsedSettingsCookie.locale as LocaleType;
+    }
+  } catch (error) {
+    console.error("Failed to parse settings cookie:", error);
+  }
+
+  const { pathname } = request.nextUrl;
   const pathnameLocale = i18n.locales.find(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );

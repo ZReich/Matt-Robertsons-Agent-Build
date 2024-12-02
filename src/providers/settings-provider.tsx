@@ -5,13 +5,14 @@ import { useCookie } from "react-use";
 
 import { defaultSettings, SettingsContext } from "@/contexts/settings-context";
 
-import type { DirectionType, SettingsType } from "@/types";
+import type { SettingsType } from "@/types";
+import type { LocaleType } from "@/configs/i18n";
 
 export function SettingsProvider({
-  direction,
+  locale,
   children,
 }: {
-  direction: DirectionType;
+  locale: LocaleType;
   children: React.ReactNode;
 }) {
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
@@ -22,9 +23,9 @@ export function SettingsProvider({
     if (storedSettings) {
       setSettings(JSON.parse(storedSettings));
     } else {
-      setSettings({ ...defaultSettings, direction });
+      setSettings({ ...defaultSettings, locale });
     }
-  }, [storedSettings, direction]);
+  }, [storedSettings, locale]);
 
   const updateSettings = React.useCallback(
     (newSettings: SettingsType) => {

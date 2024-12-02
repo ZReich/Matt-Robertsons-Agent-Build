@@ -1,6 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import { BaseColor } from "@/configs/base-colors";
 
+import type { LocaleType } from "./configs/i18n";
+
 export type LayoutType = "vertical" | "horizontal";
 
 export type ModeType = "light" | "dark" | "system";
@@ -14,7 +16,7 @@ export type SettingsType = {
   mode: ModeType;
   radius: number;
   layout: LayoutType;
-  direction: DirectionType;
+  locale: LocaleType;
 };
 
 interface IconProps extends React.SVGAttributes<SVGElement> {

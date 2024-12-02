@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { Earth } from "lucide-react";
@@ -8,6 +9,8 @@ import { i18n } from "@/configs/i18n";
 
 import type { LocaleType } from "@/configs/i18n";
 import type { DictionaryType } from "@/lib/getDictionary";
+
+import { useSettings } from "@/hooks/use-settings";
 
 import {
   DropdownMenu,
@@ -54,9 +57,17 @@ export function LanguageDropdown({
 }) {
   const pathname = usePathname();
   const params = useParams();
+  const { settings, updateSettings } = useSettings();
 
   const locale = params.lang as LocaleType;
   const direction = i18n.langDirection[locale];
+
+  const setLocale = React.useCallback(
+    (localeName: LocaleType) => {
+      updateSettings({ ...settings, locale: localeName });
+    },
+    [settings, updateSettings]
+  );
 
   return (
     <DropdownMenu dir={direction}>
@@ -78,6 +89,7 @@ export function LanguageDropdown({
             <Link
               key={locale.langCode}
               href={relocalizePathname(pathname, locale.langCode)}
+              onClick={() => setLocale(locale.langCode)}
             >
               <DropdownMenuRadioItem
                 value={locale.langCode}

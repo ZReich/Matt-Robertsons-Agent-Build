@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     default: "Shadboard",
   },
   description: "",
-  metadataBase: new URL("http://localhost:3000/"),
+  metadataBase: new URL(process.env.BASE_URL as string),
 };
 
 const latoFont = Lato({
@@ -56,7 +56,7 @@ export default async function RootLayout({
           cairoFont.variable
         )}
       >
-        <Providers direction={direction} session={session}>
+        <Providers locale={params.lang} session={session}>
           {children}
           <Toaster />
         </Providers>

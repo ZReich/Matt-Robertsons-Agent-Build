@@ -1,4 +1,4 @@
-import type { DirectionType } from "@/types";
+import { LocaleType } from "@/configs/i18n";
 import type { Session } from "next-auth";
 
 import { SettingsProvider } from "./settings-provider";
@@ -9,15 +9,15 @@ import { DirectionProvider } from "./direction-provider";
 
 export default function Providers({
   session,
-  direction,
+  locale,
   children,
 }: Readonly<{
   session: Session | null;
-  direction: DirectionType;
+  locale: LocaleType;
   children: React.ReactNode;
 }>) {
   return (
-    <SettingsProvider direction={direction}>
+    <SettingsProvider locale={locale}>
       <ModeProvider>
         <ThemeProvider>
           <DirectionProvider>

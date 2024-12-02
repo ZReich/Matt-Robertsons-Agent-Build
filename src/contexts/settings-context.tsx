@@ -9,7 +9,7 @@ export const defaultSettings: SettingsType = {
   mode: "system",
   radius: 0.5,
   layout: "vertical",
-  direction: "ltr",
+  locale: "en",
 };
 
 export const SettingsContext = React.createContext<
