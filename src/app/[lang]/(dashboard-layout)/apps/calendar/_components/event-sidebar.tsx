@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 import { useCalendarContext } from "../hooks/calendar-context";
 
-import type { EventType } from "../types";
+import type { EventWithoutIdType } from "../types";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -108,7 +108,7 @@ export function EventSidebar() {
   function onSubmit(data: FormValues) {
     if (!calendarApi) return;
 
-    const event: Omit<EventType, "id"> = {
+    const event: EventWithoutIdType = {
       ...(data.url && { url: data.url }),
       title: data.title,
       allDay: data.allDay,

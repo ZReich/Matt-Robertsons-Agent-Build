@@ -6,7 +6,12 @@ import { categoriesData } from "../_data/categories";
 
 import { CalendarReducer } from "../reducers/calendar-reducer";
 
-import type { CalendarContextType, CategoryType, EventType } from "../types";
+import type {
+  CalendarContextType,
+  CategoryType,
+  EventType,
+  EventWithoutIdType,
+} from "../types";
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 
 export const CalendarContext = React.createContext<
@@ -29,7 +34,7 @@ export function CalendarProvider({
   );
   const [eventSidebarIsOpen, setEventSidebarIsOpen] = React.useState(false);
 
-  const handleAddEvent = (event: Omit<EventType, "id">) => {
+  const handleAddEvent = (event: EventWithoutIdType) => {
     dispatch({
       type: "addEvent",
       event: { ...event, id: calendarState.events.length.toString() },

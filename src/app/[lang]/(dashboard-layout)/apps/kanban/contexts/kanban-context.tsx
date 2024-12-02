@@ -4,7 +4,13 @@ import * as React from "react";
 
 import { KanbanReducer } from "../reducers/kanban-reducer";
 
-import type { ColumnType, KanbanContextType, TaskType } from "../types";
+import type {
+  ColumnType,
+  ColumnWithoutIdAndOrderAndTasksType,
+  KanbanContextType,
+  TaskType,
+  TaskWithoutIdAndOrderAndColumnIdType,
+} from "../types";
 
 export const KanbanContext = React.createContext<KanbanContextType | undefined>(
   undefined
@@ -30,9 +36,7 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   const [kanbanUpdateColumnSidebarIsOpen, setKanbanUpdateColumnSidebarIsOpen] =
     React.useState(false);
 
-  const handleAddColumn = (
-    column: Omit<ColumnType, "id" | "order" | "tasks">
-  ) => {
+  const handleAddColumn = (column: ColumnWithoutIdAndOrderAndTasksType) => {
     dispatch({ type: "addColumn", column });
   };
 
@@ -45,7 +49,7 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   };
 
   const handleAddTask = (
-    task: Omit<TaskType, "id" | "order" | "columnId">,
+    task: TaskWithoutIdAndOrderAndColumnIdType,
     columnId: ColumnType["id"]
   ) => {
     dispatch({ type: "addTask", task, columnId });

@@ -6,7 +6,7 @@ export interface CalendarContextType {
   setCalendarApi: (val: CalendarApi) => void;
   eventSidebarIsOpen: boolean;
   setEventSidebarIsOpen: (val: boolean) => void;
-  handleAddEvent: (event: Omit<EventType, "id">) => void;
+  handleAddEvent: (event: EventWithoutIdType) => void;
   handleUpdateEvent: (event: EventType) => void;
   handleDeleteEvent: (eventId: EventType["id"]) => void;
   handleSelectEvent: (event?: EventType) => void;
@@ -34,6 +34,8 @@ export type EventType = {
     description?: string;
   };
 };
+
+export type EventWithoutIdType = Omit<EventType, "id">;
 
 export type CalendarStateType = {
   events: EventType[];

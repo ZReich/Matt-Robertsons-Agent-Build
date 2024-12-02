@@ -39,6 +39,16 @@ export interface ColumnType {
   tasks: TaskType[];
 }
 
+export type ColumnWithoutIdAndOrderAndTasksType = Omit<
+  ColumnType,
+  "id" | "order" | "tasks"
+>;
+
+export type TaskWithoutIdAndOrderAndColumnIdType = Omit<
+  TaskType,
+  "id" | "order" | "columnId"
+>;
+
 export interface KanbanState {
   columns: ColumnType[];
   selectedColumn?: ColumnType;
@@ -51,12 +61,12 @@ export interface Label {
 }
 
 export type KanbanAction =
-  | { type: "addColumn"; column: Omit<ColumnType, "id" | "order" | "tasks"> }
+  | { type: "addColumn"; column: ColumnWithoutIdAndOrderAndTasksType }
   | { type: "updateColumn"; column: ColumnType }
   | { type: "deleteColumn"; columnId: string }
   | {
       type: "addTask";
-      task: Omit<TaskType, "id" | "order" | "columnId">;
+      task: TaskWithoutIdAndOrderAndColumnIdType;
       columnId: string;
     }
   | { type: "updateTask"; task: TaskType }
@@ -80,11 +90,11 @@ export interface KanbanContextType {
   setKanbanAddColumnSidebarIsOpen: (value: boolean) => void;
   kanbanUpdateColumnSidebarIsOpen: boolean;
   setKanbanUpdateColumnSidebarIsOpen: (value: boolean) => void;
-  handleAddColumn: (column: Omit<ColumnType, "id" | "order" | "tasks">) => void;
+  handleAddColumn: (column: ColumnWithoutIdAndOrderAndTasksType) => void;
   handleUpdateColumn: (column: ColumnType) => void;
   handleDeleteColumn: (columnId: ColumnType["id"]) => void;
   handleAddTask: (
-    task: Omit<TaskType, "id" | "order" | "columnId">,
+    task: TaskWithoutIdAndOrderAndColumnIdType,
     columnId: ColumnType["id"]
   ) => void;
   handleUpdateTask: (task: TaskType) => void;
