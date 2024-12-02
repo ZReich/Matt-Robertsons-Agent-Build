@@ -5,6 +5,7 @@ import { SettingsProvider } from "./settings-provider";
 import { ModeProvider } from "./mode-provider";
 import { ThemeProvider } from "./theme-provider";
 import { NextAuthProvider } from "./next-auth-provider";
+import { DirectionProvider } from "./direction-provider";
 
 export default function Providers({
   session,
@@ -19,7 +20,9 @@ export default function Providers({
     <SettingsProvider direction={direction}>
       <ModeProvider>
         <ThemeProvider>
-          <NextAuthProvider session={session}>{children}</NextAuthProvider>
+          <DirectionProvider>
+            <NextAuthProvider session={session}>{children}</NextAuthProvider>
+          </DirectionProvider>
         </ThemeProvider>
       </ModeProvider>
     </SettingsProvider>
