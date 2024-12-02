@@ -26,7 +26,7 @@ const sidebarLabels = [
 
 export function EmailSidebar() {
   const params = useParams();
-  const isTablet = useMedia("(max-width: 767px)");
+  const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
   const locale = params.lang as LocaleType;
   const filterParam = params.filter;
@@ -64,7 +64,7 @@ export function EmailSidebar() {
     </>
   );
 
-  if (!isTablet) {
+  if (!isMediumOrSmaller) {
     return (
       <aside>
         <Card className="h-full w-72 border border-border">{content}</Card>

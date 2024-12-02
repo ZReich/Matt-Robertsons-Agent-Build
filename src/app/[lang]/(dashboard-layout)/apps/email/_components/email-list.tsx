@@ -64,7 +64,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
   const pathname = usePathname();
   const params = useParams();
   const searchParams = useSearchParams();
-  const isTablet = useMedia("(max-width: 767px)");
+  const isMediumOrSmaller = useMedia("(max-width: 767px)");
   const { settings } = useSettings();
 
   const pageQuery = searchParams.get("page")
@@ -181,7 +181,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
           </DropdownMenu>
         </div>
 
-        {isTablet ? (
+        {isMediumOrSmaller ? (
           <ul>
             <ScrollArea className="h-[calc(100vh-19.1rem)]">
               {emailState.emails.map((email) => (

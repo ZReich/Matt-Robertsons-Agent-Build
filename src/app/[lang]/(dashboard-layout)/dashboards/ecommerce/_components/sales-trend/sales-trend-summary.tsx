@@ -13,7 +13,7 @@ export function SalesTrendSummary({
 }: {
   data: SalesTrendType["summary"];
 }) {
-  const isMiniTablet = useMedia("(min-width: 640px)");
+  const isSmallOrLarger = useMedia("(min-width: 640px)");
 
   return (
     <ul className="flex flex-col justify-around gap-4 sm:flex-row">
@@ -37,7 +37,7 @@ export function SalesTrendSummary({
           </p>
         </li>
       </div>
-      {isMiniTablet ? (
+      {isSmallOrLarger ? (
         <Separator orientation="vertical" className="h-40" />
       ) : (
         <Separator className="" />

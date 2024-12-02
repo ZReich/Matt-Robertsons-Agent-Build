@@ -15,7 +15,7 @@ import { ChatList } from "./chat-list";
 
 export function ChatSidebar() {
   const { isChatSidebarOpen, setIsChatSidebarOpen } = useChatContext();
-  const isTablet = useMedia("(max-width: 767px)");
+  const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
   const content = (
     <div className="md:w-72">
@@ -24,7 +24,7 @@ export function ChatSidebar() {
     </div>
   );
 
-  if (!isTablet) {
+  if (!isMediumOrSmaller) {
     return (
       <aside>
         <Card>{content}</Card>
