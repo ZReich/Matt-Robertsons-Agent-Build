@@ -17,23 +17,13 @@ import { Card } from "@/components/ui/card";
 import { CalendarHeader } from "./calendar-header";
 import { useCalendarContext } from "../hooks/calendar-context";
 
-const getEventColor = (category: CategoryType) => {
-  switch (category) {
-    case "Business":
-      return "hsl(var(--chart-1))";
-    case "Personal":
-      return "hsl(var(--chart-2))";
-    case "Family":
-      return "hsl(var(--chart-3))";
-    case "Holiday":
-      return "hsl(var(--chart-4))";
-    case "Health":
-      return "hsl(var(--chart-5))";
-    case "Miscellaneous":
-      return "hsl(var(--primary))";
-    default:
-      return "hsl(var(--primary))";
-  }
+const eventColors: Record<CategoryType, string> = {
+  Business: "hsl(var(--chart-1))",
+  Personal: "hsl(var(--chart-2))",
+  Family: "hsl(var(--chart-3))",
+  Holiday: "hsl(var(--chart-4))",
+  Health: "hsl(var(--chart-5))",
+  Miscellaneous: "hsl(var(--primary))",
 };
 
 export function Calendar() {
@@ -87,7 +77,7 @@ export function Calendar() {
           (event: EventType): EventSourceInput[] => ({
             ...event,
             // @ts-ignore
-            color: getEventColor(event.extendedProps.category),
+            color: eventColors[event.extendedProps.category],
           })
         )}
         eventClassNames={() => [

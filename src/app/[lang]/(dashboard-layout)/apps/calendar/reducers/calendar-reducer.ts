@@ -1,3 +1,5 @@
+import { CATEGORIES } from "../constants";
+
 import type {
   CalendarActionType,
   CalendarStateType,
@@ -60,7 +62,7 @@ export function CalendarReducer(
         tempSelectedCategories.push(action.category as CategoryType);
       }
 
-      const tempSelectedEvents = calendarState.events.filter((event) =>
+      const tempSelectedEvents = calendarState.initalEvents.filter((event) =>
         tempSelectedCategories.includes(
           event.extendedProps.category as CategoryType
         )
@@ -74,15 +76,8 @@ export function CalendarReducer(
     }
 
     case "selectAllCategories": {
-      let tempSelectedCategories: CategoryType[] = [
-        "Personal",
-        "Business",
-        "Family",
-        "Holiday",
-        "Health",
-        "Miscellaneous",
-      ];
-      let tempEvents = calendarState.events;
+      let tempSelectedCategories = CATEGORIES;
+      let tempEvents = calendarState.initalEvents;
 
       if (!action.isSelectAllCategories) {
         tempSelectedCategories = [];
@@ -94,10 +89,6 @@ export function CalendarReducer(
         events: tempEvents,
         selectedCategories: tempSelectedCategories,
       };
-    }
-
-    default: {
-      throw Error("Unknown action: " + action.type);
     }
   }
 }

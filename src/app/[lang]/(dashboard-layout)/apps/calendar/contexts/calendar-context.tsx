@@ -26,6 +26,7 @@ export function CalendarProvider({
   children: React.ReactNode;
 }) {
   const [calendarState, dispatch] = React.useReducer(CalendarReducer, {
+    initalEvents: events,
     events,
     selectedCategories: [...categoriesData],
   });

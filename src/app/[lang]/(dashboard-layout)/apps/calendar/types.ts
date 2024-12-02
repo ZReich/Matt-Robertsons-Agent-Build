@@ -38,6 +38,7 @@ export type EventType = {
 export type EventWithoutIdType = Omit<EventType, "id">;
 
 export type CalendarStateType = {
+  initalEvents: EventType[];
   events: EventType[];
   selectedEvent?: EventType;
   selectedCategories: CategoryType[];
