@@ -6,13 +6,11 @@ import { INITIAL_VIEW } from "../constants";
 import { useCalendarContext } from "../hooks/calendar-context";
 
 import { Button } from "@/components/ui/button";
+import { CardHeader } from "@/components/ui/card";
 import { EventFilters } from "./event-filters";
 
 export function CalendarHeader() {
-  const {
-    calendarApi,
-    setEventSidebarIsOpen,
-  } = useCalendarContext();
+  const { calendarApi, setEventSidebarIsOpen } = useCalendarContext();
   const [currentView, setCurrentView] = React.useState(INITIAL_VIEW);
   const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
 
@@ -73,8 +71,8 @@ export function CalendarHeader() {
   };
 
   return (
-    <div className="mb-4 flex flex-col justify-between items-center gap-4 md:flex-row">
-      <div className="flex items-center space-x-4">
+    <CardHeader className="justify-between items-center gap-4 space-y-0 md:flex-row">
+      <div className="flex flex-wrap-reverse justify-center items-center gap-4">
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -128,6 +126,6 @@ export function CalendarHeader() {
           List
         </Button>
       </div>
-    </div>
+    </CardHeader>
   );
 }

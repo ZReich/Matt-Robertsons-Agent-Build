@@ -76,51 +76,43 @@ export function Calendar() {
   };
 
   return (
-    <Card className="p-4">
+    <Card>
       <CalendarHeader />
-      <div className="bg-background rounded-lg shadow [&_div_>_div_table]:rounded-lg [&_div_>_div_table]:overflow-hidden">
-        <FullCalendar
-          ref={calendarRef}
-          initialView={INITIAL_VIEW}
-          plugins={[
-            dayGridPlugin,
-            timeGridPlugin,
-            interactionPlugin,
-            listPlugin,
-          ]}
-          eventDisplay="block"
-          height="auto"
-          events={calendarState.events.map(
-            (event: EventType): EventSourceInput[] => ({
-              ...event,
-              // @ts-ignore
-              color: getEventColor(event.extendedProps.category),
-            })
-          )}
-          eventClassNames={() => [
-            "h-[1.62rem] pt-px px-1 rounded-md",
-            "[&_td]:hover:!bg-accent/60",
-          ]}
-          headerToolbar={false}
-          editable
-          eventResizableFromStart
-          dragScroll
-          dayMaxEvents={2}
-          navLinks
-          navLinkDayClick={handleDateClick}
-          eventDrop={({ event }) => handleUpdateEvent(parseEvent(event))}
-          eventResize={({ event }) => handleUpdateEvent(parseEvent(event))}
-          eventClick={({ event, jsEvent }) => {
-            jsEvent.preventDefault();
-            if (event.url) {
-              window.open(event.url, "_blank");
-            }
+      <FullCalendar
+        ref={calendarRef}
+        initialView={INITIAL_VIEW}
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+        eventDisplay="block"
+        events={calendarState.events.map(
+          (event: EventType): EventSourceInput[] => ({
+            ...event,
+            // @ts-ignore
+            color: getEventColor(event.extendedProps.category),
+          })
+        )}
+        eventClassNames={() => [
+          "h-[1.62rem] pt-px px-1 rounded-md",
+          "[&_td]:hover:!bg-accent/60",
+        ]}
+        headerToolbar={false}
+        editable
+        eventResizableFromStart
+        dragScroll
+        dayMaxEvents={2}
+        navLinks
+        navLinkDayClick={handleDateClick}
+        eventDrop={({ event }) => handleUpdateEvent(parseEvent(event))}
+        eventResize={({ event }) => handleUpdateEvent(parseEvent(event))}
+        eventClick={({ event, jsEvent }) => {
+          jsEvent.preventDefault();
+          if (event.url) {
+            window.open(event.url, "_blank");
+          }
 
-            handleSelectEvent(parseEvent(event));
-            setEventSidebarIsOpen(true);
-          }}
-        />
-      </div>
+          handleSelectEvent(parseEvent(event));
+          setEventSidebarIsOpen(true);
+        }}
+      />
     </Card>
   );
 }

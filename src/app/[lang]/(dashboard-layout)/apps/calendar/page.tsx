@@ -9,7 +9,7 @@ export default async function CalendarPage() {
 
   return (
     <CalendarProvider events={eventsData}>
-      <div className="container py-6">
+      <div className="container p-4">
         <Calendar />
         <EventSidebar />
       </div>
