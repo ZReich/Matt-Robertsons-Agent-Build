@@ -1,10 +1,12 @@
 "use client";
+
 import * as React from "react";
-import HamburgerMenuIcon from "/public/images/icons/hamburger-menu.svg";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "./sidebar-content";
+
+import HamburgerMenuIcon from "/public/images/icons/hamburger-menu.svg";
 
 export function MobileSidebarNav() {
   const [isMobileSidebarNavOpen, setIsMobileSidebarNavOpen] =

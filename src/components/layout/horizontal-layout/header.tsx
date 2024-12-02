@@ -5,10 +5,11 @@ import { useParams } from "next/navigation";
 
 import { groupNavs } from "@/data/navigation";
 
-import { i18n, LocaleType } from "@/configs/i18n";
+import { i18n } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
+import type { LocaleType } from "@/configs/i18n";
 import type { DictionaryType } from "@/lib/getDictionary";
 
 import {

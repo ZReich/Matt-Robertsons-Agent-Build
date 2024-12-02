@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ChevronDown, Circle } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+import { ensureLocalizedPathname } from "@/lib/i18n";
+
 import type { NavType } from "@/data/navigation";
 import type { DirectionType } from "@/types";
 import type { LocaleType } from "@/configs/i18n";
-
-import { cn } from "@/lib/utils";
-import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";

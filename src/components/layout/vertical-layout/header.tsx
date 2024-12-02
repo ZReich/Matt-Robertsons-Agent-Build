@@ -2,10 +2,10 @@
 
 import { useParams } from "next/navigation";
 
+import { i18n } from "@/configs/i18n";
+
 import type { DictionaryType } from "@/lib/getDictionary";
 import type { LocaleType } from "@/configs/i18n";
-
-import { i18n } from "@/configs/i18n";
 
 import { CommandMenu } from "@/components/layout/command-menu";
 import { MobileSidebarNav } from "@/components/layout/mobile-sidebar-nav";
