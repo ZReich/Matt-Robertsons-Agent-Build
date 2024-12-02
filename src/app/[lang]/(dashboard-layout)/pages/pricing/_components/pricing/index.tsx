@@ -9,7 +9,7 @@ export default function Pricing() {
   const [isAnnual, setIsAnnual] = React.useState(false);
 
   return (
-    <section className="py-8 px-4 mx-auto max-w-screen-xl md:py-16 md:px-6">
+    <section className="container p-4">
       <PricingHeader isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
       <div className="space-y-8 md:grid md:grid-cols-3 md:gap-4 md:space-y-0">
         <PricingCard

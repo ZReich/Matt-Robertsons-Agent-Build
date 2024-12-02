@@ -10,8 +10,9 @@ export default function AccountPage({
   params: { lang: LocaleType };
 }) {
   return (
-    <div>
+    <div className="container px-0">
       <ProfileHeader locale={params.lang} user={userData} />
+      <section className="p-4"></section>
     </div>
   );
 }

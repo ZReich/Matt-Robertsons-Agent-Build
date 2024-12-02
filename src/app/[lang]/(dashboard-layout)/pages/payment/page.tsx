@@ -2,19 +2,13 @@ import * as React from "react";
 
 import { savedCardsData } from "./_data/saved-cards";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentMethodForm } from "./_components/payment-method-form";
 import { PaymentSummary } from "./_components/payment-summary";
 
 export default async function PaymentPage() {
   return (
-    <section className="container py-8 lg:py-16">
+    <section className="container p-4">
       <Card>
         <CardHeader>
           <CardTitle>Payment</CardTitle>
@@ -29,19 +23,6 @@ export default async function PaymentPage() {
             total="7,191.00"
           />
         </CardContent>
-        <CardFooter className="justify-center md:justify-start">
-          <p className="text-sm text-muted-foreground">
-            Payment processed by{" "}
-            <a href="/" className="underline">
-              Stripe
-            </a>{" "}
-            for{" "}
-            <a href="/" className="underline">
-              Shadboard
-            </a>{" "}
-            - United States Of America
-          </p>
-        </CardFooter>
       </Card>
     </section>
   );

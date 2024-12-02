@@ -22,7 +22,7 @@ export function ProfileHeader({
   const { name, role, avatar, background } = user;
 
   return (
-    <section className="container px-0">
+    <section className="border border-border">
       <div className="relative h-[180px] w-full md:h-[250px]">
         <Image
           src={background || "/images/placeholder.svg"}
@@ -53,7 +53,6 @@ export function ProfileHeader({
             </Link>
           </div>
         </div>
-        <Separator className="mt-8" />
       </div>
     </section>
   );

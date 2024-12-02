@@ -57,11 +57,15 @@ export function Kanban() {
         direction="horizontal"
       >
         {(provided: DroppableProvided) => (
-          <ScrollArea orientation="horizontal" dir={direction}>
+          <ScrollArea
+            orientation="horizontal"
+            dir={direction}
+            className="container p-4"
+          >
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="flex p-4"
+              className="flex gap-x-2"
             >
               {kanbanState.columns.map((column, index) => (
                 <KanbanColumn key={column.id} column={column} index={index} />
