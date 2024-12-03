@@ -28,9 +28,13 @@ export function ChatBoxFooter() {
       {isMobile ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" variant="ghost" size="icon">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="More options"
+            >
               <CirclePlus className="size-4" />
-              <span className="sr-only">Menu</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -45,9 +49,13 @@ export function ChatBoxFooter() {
               <FilesUploader />
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Button type="button" variant="ghost" size="icon">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Send a voice message"
+              >
                 <Mic className="size-4" />
-                <span className="sr-only">Send a voice message</span>
               </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -58,16 +66,20 @@ export function ChatBoxFooter() {
             className="[&[data-state=open]>svg]:rotate-180"
             asChild
           >
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="More options">
               <ChevronRight className="size-4 transition-transform duration-200" />
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="data-[state=closed]:animate-collapsible-left data-[state=open]:animate-collapsible-right duration-1000">
             <ImagesUploader />
             <FilesUploader />
-            <Button type="button" variant="ghost" size="icon">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Send a voice message"
+            >
               <Mic className="size-4" />
-              <span className="sr-only">Send a voice message</span>
             </Button>
           </CollapsibleContent>
         </Collapsible>

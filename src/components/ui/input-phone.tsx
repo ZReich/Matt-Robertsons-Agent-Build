@@ -132,17 +132,15 @@ function CountrySelect({
                       {`+${RPNInput.getCountryCallingCode(option.value)}`}
                     </span>
                   )}
-                  <span>
+                  <span
+                    aria-label={option.value === value ? "Selected" : undefined}
+                  >
                     <Check
                       className={cn(
                         "ml-auto size-4",
                         option.value === value ? "opacity-100" : "opacity-0"
                       )}
-                      aria-hidden
                     />
-                    {option.value === value && (
-                      <span className="sr-only">Selected</span>
-                    )}
                   </span>
                 </CommandItem>
               ))}
@@ -162,9 +160,10 @@ function FlagComponent({ country, countryName }: RPNInput.FlagProps) {
       {Flag ? (
         <Flag title={countryName} />
       ) : (
-        <div className="bg-foreground/20 size-full">
-          <span className="sr-only">International</span>
-        </div>
+        <div
+          className="bg-foreground/20 size-full"
+          aria-label="International"
+        ></div>
       )}
     </div>
   );

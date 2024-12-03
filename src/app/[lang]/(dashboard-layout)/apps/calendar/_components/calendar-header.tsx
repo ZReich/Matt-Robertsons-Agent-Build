@@ -78,18 +78,26 @@ export function CalendarHeader() {
             variant="outline"
             size="sm"
             onClick={() => setEventSidebarIsOpen(true)}
+            aria-label="Add new event"
           >
             <CalendarPlus className="h-4 w-4" />
-            <span className="sr-only">Add New Event</span>
           </Button>
           <EventFilters />
-          <Button variant="outline" size="sm" onClick={handlePrev}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrev}
+            aria-label="Previous month"
+          >
             <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Previous Month</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={handleNext}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNext}
+            aria-label="Next month"
+          >
             <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Next Month</span>
           </Button>
         </div>
         <h2 className="text-lg font-semibold">

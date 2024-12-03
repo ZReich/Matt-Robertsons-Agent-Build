@@ -44,9 +44,8 @@ export function Customizer() {
   return (
     <Sheet>
       <SheetTrigger className="fixed bottom-10 end-0 z-50" asChild>
-        <Button size="icon" className="rounded-e-none">
+        <Button size="icon" className="rounded-e-none" aria-label="Customizer">
           <Settings className="size-4" />
-          <span className="sr-only">Config settings</span>
         </Button>
       </SheetTrigger>
       <SheetPortal>
@@ -54,9 +53,11 @@ export function Customizer() {
           className={cn(sheetVariants({ side: "oppositeDir" }), "px-0")}
         >
           <ScrollArea className="h-full px-6">
-            <SheetClose className="absolute end-4 top-4 me-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+            <SheetClose
+              className="absolute end-4 top-4 me-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
+              aria-label="Close"
+            >
               <X className="size-4" />
-              <span className="sr-only">Close</span>
             </SheetClose>
             <div className="flex flex-1 flex-col space-y-4">
               <div className="mt-3 space-y-1">

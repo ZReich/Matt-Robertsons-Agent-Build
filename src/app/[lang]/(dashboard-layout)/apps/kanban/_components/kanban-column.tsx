@@ -37,9 +37,9 @@ export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
                 "text-secondary-foreground/50 cursor-grab"
               )}
               {...provided.dragHandleProps}
+              aria-label="Move task"
             >
               <GripVertical className="size-4" />
-              <span className="sr-only">Move task</span>
             </div>
             <CardTitle className="me-auto">{column.title}</CardTitle>
             <KanbanColumnActions column={column} />

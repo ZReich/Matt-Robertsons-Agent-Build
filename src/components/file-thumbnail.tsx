@@ -21,10 +21,10 @@ const FileThumbnail = React.forwardRef<HTMLDivElement, FileThumbnailProps>(
         <div
           className="absolute inset-0 flex justify-center items-center text-[6px] font-black"
           id="file-name"
-          aria-hidden="true"
+          aria-hidden
         >
           <span>{fileExtension}</span>
-          <span className="sr-only">file</span>
+          <span className="sr-only">File</span>
         </div>
       </div>
     );

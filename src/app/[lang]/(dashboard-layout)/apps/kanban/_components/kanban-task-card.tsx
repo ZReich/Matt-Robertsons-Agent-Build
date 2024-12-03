@@ -57,9 +57,9 @@ export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
                 "text-secondary-foreground/50 cursor-grab"
               )}
               {...provided.dragHandleProps}
+              aria-label="Move task"
             >
               <GripVertical className="size-4" />
-              <span className="sr-only">Move task</span>
             </div>
             <Badge>{task.label}</Badge>
             <KanbanTaskCardActions task={task} />

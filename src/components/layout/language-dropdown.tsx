@@ -72,11 +72,12 @@ export function LanguageDropdown({
   return (
     <DropdownMenu dir={direction}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Earth className="size-4" aria-hidden />
-          <span className="sr-only">
-            {dictionary.navigation.language["select-language"]}
-          </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          label={dictionary.navigation.language["select-language"]}
+        >
+          <Earth className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

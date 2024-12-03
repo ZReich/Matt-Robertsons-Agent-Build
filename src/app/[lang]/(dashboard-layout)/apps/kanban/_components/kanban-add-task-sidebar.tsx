@@ -282,9 +282,9 @@ export function KanbanAddTaskSidebar() {
                                         )
                                       )
                                     }
+                                    aria-label="Remove"
                                   >
                                     <X className="size-3" />
-                                    <span className="sr-only">Remove</span>
                                   </Button>
                                 </Badge>
                               )
@@ -405,9 +405,9 @@ export function KanbanAddTaskSidebar() {
                             size="icon"
                             className="absolute top-3 end-1 size-4"
                             onClick={() => handleFileRemove(index)}
+                            aria-label="Remove"
                           >
                             <X className="size-3" />
-                            <span className="sr-only">Remove</span>
                           </Button>
                         </div>
                       ))}

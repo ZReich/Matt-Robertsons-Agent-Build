@@ -50,15 +50,19 @@ export function MessageBubbleContent({
     content = <p className="p-2">{renderMessageWithLinks(message.text)}</p>;
   } else if (message.images) {
     content = (
-      <div
+      <ul
         className={cn(
           "grid gap-2 rounded-lg",
           message.images.length > 1 && "grid-cols-2"
         )}
       >
-        {message.images.slice(0, 4).map((image, index) => (
-          <div key={image.id} className="relative" aria-label="images">
-            <Link href="" className="block size-full aspect-square">
+        {message.images.slice(0, 3).map((image) => (
+          <li key={image.id}>
+            <Link
+              href=""
+              className="relative block aspect-square"
+              aria-label="Image"
+            >
               <Image
                 src={image.url}
                 alt={image.name}
@@ -66,18 +70,28 @@ export function MessageBubbleContent({
                 fill
               />
             </Link>
-            {index === 3 && message.images && message.images.length > 4 && (
-              <Link
-                href=""
-                className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-2xl text-white rounded-lg hover:bg-opacity-75"
-              >
-                <span>+{message.images.length - 4}</span>
-                <span className="sr-only">more images</span>
-              </Link>
-            )}
-          </div>
+          </li>
         ))}
-      </div>
+
+        {message.images && message.images.length >= 4 && (
+          <li>
+            <Link href="" className="relative size-full block aspect-square ">
+              <Image
+                src={message.images[3].url}
+                alt={message.images[3].name}
+                className="object-cover rounded-lg"
+                fill
+              />
+              {message.images.length > 4 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-2xl text-white rounded-lg hover:bg-opacity-75">
+                  <span>+{message.images.length - 4}</span>
+                  <span className="sr-only">More images</span>
+                </div>
+              )}
+            </Link>
+          </li>
+        )}
+      </ul>
     );
   } else if (message.files) {
     content = message.files.map((file) => (

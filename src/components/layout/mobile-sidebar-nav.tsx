@@ -21,9 +21,9 @@ export function MobileSidebarNav() {
         <Button
           variant="ghost"
           className="px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          aria-label="Toggle navigation menu"
         >
           <HamburgerMenuIcon className="size-5" />
-          <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="dir">
