@@ -31,7 +31,7 @@ import Logo from "@/app/icon.svg";
 
 export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
-  const isMediumOrLarger = useMedia("(min-width: 768px)");
+  const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
   const locale = params.lang as LocaleType;
   const direction = i18n.langDirection[locale];
@@ -63,7 +63,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
           <Logo className="size-6" aira-hidden="true" />
           Shadboard
         </Link>
-        {isMediumOrLarger && <CommandMenu />}
+        {isMediumOrSmaller && <CommandMenu />}
         <div className="flex gap-2">
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />

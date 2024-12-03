@@ -75,7 +75,7 @@ export function LanguageDropdown({
         <Button
           variant="ghost"
           size="icon"
-          label={dictionary.navigation.language["select-language"]}
+          aria-label={dictionary.navigation.language["select-language"]}
         >
           <Earth className="size-4" />
         </Button>
