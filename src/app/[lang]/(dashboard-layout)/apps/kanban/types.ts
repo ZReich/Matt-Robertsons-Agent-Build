@@ -2,7 +2,7 @@ export interface UserType {
   id: string;
   username: string;
   name: string;
-  avatar: string;
+  avatar?: string;
 }
 
 export interface FileType {
