@@ -12,6 +12,7 @@ import { MobileSidebarNav } from "@/components/layout/mobile-sidebar-nav";
 import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
+import { Notifications } from "@/components/layout/notifications";
 
 export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
@@ -25,6 +26,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
         <MobileSidebarNav />
         <CommandMenu />
         <div className="flex gap-2">
+          <Notifications />
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
           <UserNav direction={direction} />

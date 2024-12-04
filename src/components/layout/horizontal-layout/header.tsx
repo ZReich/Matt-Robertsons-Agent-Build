@@ -26,6 +26,7 @@ import { LanguageDropdown } from "@/components/layout/language-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
 import { Separator } from "@/components/ui/separator";
 import { Nav } from "./nav";
+import { Notifications } from "../notifications";
 
 import Logo from "@/app/icon.svg";
 
@@ -65,6 +66,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
         </Link>
         {isMediumOrSmaller && <CommandMenu />}
         <div className="flex gap-2">
+          <Notifications />
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
           <UserNav direction={direction} />

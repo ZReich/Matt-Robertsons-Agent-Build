@@ -1,6 +1,8 @@
-import type { LucideIcon } from "lucide-react";
+import { icons } from "lucide-react";
+
 import { BaseColor } from "@/configs/base-colors";
 
+import type { LucideIcon } from "lucide-react";
 import type { LocaleType } from "./configs/i18n";
 
 export type LayoutType = "vertical" | "horizontal";
@@ -24,3 +26,17 @@ interface IconProps extends React.SVGAttributes<SVGElement> {
   color?: string;
 }
 export type IconType = React.ComponentType<IconProps> | LucideIcon;
+
+export type DynamicIconNameType = keyof typeof icons;
+
+export interface NotificationType {
+  unreadCount: number;
+  notifications: Array<{
+    id: string;
+    icon: DynamicIconNameType;
+    content: string;
+    url: string;
+    date: Date;
+    isRead: boolean;
+  }>;
+}

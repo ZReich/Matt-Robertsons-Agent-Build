@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // See https://lucide.dev/guide/packages/lucide-react#nextjs-example
+  transpilePackages: ["lucide-react"],
+  
   webpack(config) {
     // Grab the existing rule that handles SVG imports
     const fileLoaderRule = config.module.rules.find((rule) =>

@@ -163,7 +163,7 @@ function FlagComponent({ country, countryName }: RPNInput.FlagProps) {
         <div
           className="bg-foreground/20 size-full"
           aria-label="International"
-        ></div>
+        />
       )}
     </div>
   );
