@@ -55,20 +55,20 @@ export function CommandMenu({ ...props }: DialogProps) {
       <Button
         variant="outline"
         className={cn(
-          "relative h-8 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64"
+          "relative h-8 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pe-12 md:w-40 lg:w-64"
         )}
         onClick={() => setOpen(true)}
         {...props}
       >
         <span className="inline-flex">Search...</span>
-        <Keyboard className="hidden absolute right-[0.3rem] top-[0.4.5rem] sm:flex">
+        <Keyboard className="hidden absolute end-[0.3rem] top-[0.4.5rem] sm:flex">
           K
         </Keyboard>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search..." />
         <CommandList className="overflow-hidden">
-          <ScrollArea className="h-[300px] max-h-[300px] px-1">
+          <ScrollArea className="h-[300px] max-h-[300px]">
             <CommandEmpty>No results found.</CommandEmpty>
             {groupNavs.map((groupNav) => (
               <CommandGroup key={groupNav.title} heading={groupNav.title}>

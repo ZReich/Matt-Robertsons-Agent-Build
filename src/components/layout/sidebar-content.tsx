@@ -30,13 +30,13 @@ export function SidebarContent({
     <>
       <Link
         href={ensureLocalizedPathname("/", locale)}
-        className="flex text-foreground font-black hover:text-primary/90"
+        className="flex text-foreground font-black p-2 pb-0 hover:text-primary/90"
         onClick={() => setIsMobileSidebarNavOpen?.(false)}
       >
-        <Logo className="size-6" aira-hidden="true" />
+        <Logo className="size-6" aira-hidden />
         Shadboard
       </Link>
-      <ScrollArea className="h-full -mx-5 p-2.5" dir={direction}>
+      <ScrollArea className="h-full w-full" dir={direction}>
         {groupNavs.map((group, index) => (
           <div className="py-2" key={index}>
             {group.title && (

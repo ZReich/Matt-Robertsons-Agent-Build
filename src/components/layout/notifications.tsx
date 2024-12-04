@@ -23,7 +23,7 @@ export function Notifications() {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="size-4 stroke-[1.5]" />
+          <Bell className="size-4" />
           {!!unreadCount && (
             <Badge
               className="absolute -top-1 -end-1 h-4 max-w-8 flex justify-center"

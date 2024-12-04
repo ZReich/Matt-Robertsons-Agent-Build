@@ -23,12 +23,11 @@ import { useSettings } from "@/hooks/use-settings";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
-  SheetClose,
+  SheetContent,
   SheetPortal,
   SheetTrigger,
   sheetVariants,
 } from "@/components/ui/sheet";
-import { Content as SheetContent } from "@radix-ui/react-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function Customizer() {
@@ -50,20 +49,14 @@ export function Customizer() {
       </SheetTrigger>
       <SheetPortal>
         <SheetContent
-          className={cn(sheetVariants({ side: "oppositeDir" }), "px-0")}
+          className={cn(sheetVariants({ side: "oppositeDir" }), "p-0")}
         >
-          <ScrollArea className="h-full px-6">
-            <SheetClose
-              className="absolute end-4 top-4 me-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
-              aria-label="Close"
-            >
-              <X className="size-4" />
-            </SheetClose>
+          <ScrollArea className="h-full p-4">
             <div className="flex flex-1 flex-col space-y-4">
-              <div className="mt-3 space-y-1">
-                <div className="font-semibold leading-none tracking-tight">
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold leading-none tracking-tight">
                   Customize
-                </div>
+                </h3>
                 <div className="text-xs text-muted-foreground">
                   Pick a style and color for the dashboard.
                 </div>
