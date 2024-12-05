@@ -52,12 +52,14 @@ export function ChatBox({ user }: { user: UserType }) {
 
   if (!chatIdParam) {
     return (
-      <div className="size-full flex flex-col justify-center items-center gap-2 m-auto">
-        <MessageCircleDashed className="size-24 text-primary" />
-        <span className="text-muted-foreground">
-          Select a chat to start a conversation.
-        </span>
-      </div>
+      <Card className="grow h-[calc(100vh-8.78rem)] md:h-auto">
+        <CardContent className="size-full flex flex-col justify-center items-center gap-2 p-0">
+          <MessageCircleDashed className="size-24 text-primary/50" />
+          <span className="text-muted-foreground">
+            Select a chat to start a conversation.
+          </span>
+        </CardContent>
+      </Card>
     );
   }
 
