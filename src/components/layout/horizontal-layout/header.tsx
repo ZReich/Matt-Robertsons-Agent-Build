@@ -44,7 +44,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
           {groupNavs.map((group, index) => (
             <MenubarMenu key={index}>
               <MenubarTrigger className="gap-2 hover:cursor-pointer focus:bg-primary focus:text-primary-foreground data-[state=open]:bg-primary data-[state=open]:text-primary-foreground">
-                {group.title}
+                {group.name}
               </MenubarTrigger>
               <MenubarContent>
                 <Nav navs={group.navs} />

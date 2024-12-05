@@ -27,18 +27,18 @@ export function SidebarContent({
   const direction = i18n.langDirection[locale];
 
   return (
-    <>
+    <nav>
       <Link
         href={ensureLocalizedPathname("/", locale)}
-        className="flex text-foreground font-black p-2 pb-0 hover:text-primary/90"
+        className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
         onClick={() => setIsMobileSidebarNavOpen?.(false)}
       >
-        <Logo className="size-6" aira-hidden />
-        Shadboard
+        <Logo className="size-6" aria-hidden />
+        <span>Shadboard</span>
       </Link>
       <ScrollArea className="h-[calc(100vh-3rem)]" dir={direction}>
-        {groupNavs.map((group, index) => (
-          <div className="py-2" key={index}>
+        {groupNavs.map((group) => (
+          <div className="py-2" key={group.name}>
             {group.name && (
               <h4 className="mx-4 mb-1 text-muted-foreground text-sm">
                 {group.name}
@@ -52,6 +52,6 @@ export function SidebarContent({
           </div>
         ))}
       </ScrollArea>
-    </>
+    </nav>
   );
 }

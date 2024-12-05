@@ -38,7 +38,7 @@ export function Nav({ navs }: { navs: NavType[] }) {
                     "bg-primary text-primary-foreground focus:bg-primary focus:text-primary-foreground"
                 )}
               >
-                {nav.title}
+                {nav.name}
                 {nav.label && (
                   <Badge variant="secondary" className="ms-auto">
                     {nav.label}
@@ -61,8 +61,11 @@ export function Nav({ navs }: { navs: NavType[] }) {
               )}
               asChild
             >
-              <Link href={ensureLocalizedPathname(nav.href, locale)}>
-                {nav.title}
+              <Link
+                href={ensureLocalizedPathname(nav.href, locale)}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {nav.name}
                 {nav.label && (
                   <Badge variant="secondary" className="ms-auto">
                     {nav.label}
