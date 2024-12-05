@@ -5,7 +5,7 @@ export const notificationData: NotificationType = {
   notifications: [
     {
       id: "1",
-      icon: "MessageSquare",
+      iconName: "MessageSquare",
       content: "You have requested to withdrawal",
       url: "",
       date: new Date("2024-12-03T10:00:00Z"),
@@ -13,7 +13,7 @@ export const notificationData: NotificationType = {
     },
     {
       id: "2",
-      icon: "UserPlus",
+      iconName: "UserPlus",
       content: "A new user added in Trezo",
       url: "",
       date: new Date("2024-12-03T09:00:00Z"),
@@ -21,7 +21,7 @@ export const notificationData: NotificationType = {
     },
     {
       id: "3",
-      icon: "ArrowUpRight",
+      iconName: "ArrowUpRight",
       content: "You have requested to withdrawal",
       url: "",
       date: new Date("2024-12-02T12:00:00Z"),

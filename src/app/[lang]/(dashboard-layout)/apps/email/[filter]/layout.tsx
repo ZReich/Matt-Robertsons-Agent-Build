@@ -1,3 +1,5 @@
+import { sidebarLabelsData } from "../_data/emails-sidebar-labels";
+
 import { EmailSidebar } from "../_components/email-sidebar";
 
 export default function EmailLayout({
@@ -7,7 +9,7 @@ export default function EmailLayout({
 }) {
   return (
     <div className="container h-full w-full flex gap-4 p-4">
-      <EmailSidebar />
+      <EmailSidebar data={sidebarLabelsData} />
       {children}
     </div>
   );

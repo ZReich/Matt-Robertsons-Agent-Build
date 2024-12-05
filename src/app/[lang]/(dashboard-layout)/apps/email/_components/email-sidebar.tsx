@@ -3,28 +3,21 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMedia } from "react-use";
-import { Archive, Clock, Menu, Pencil, Send, Star, Trash2 } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
+import type { EmailSidebarLabel } from "../types";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DynamicIcon } from "@/components/dynamic-icon";
 
-const sidebarLabels = [
-  { icon: Archive, label: "Inbox", param: "inbox", unreadCount: 3 },
-  { icon: Send, label: "Sent", param: "sent" },
-  { icon: Pencil, label: "Draft", param: "draft", unreadCount: 4 },
-  { icon: Star, label: "Starred", param: "starred" },
-  { icon: Clock, label: "Spam", param: "spam", unreadCount: 2 },
-  { icon: Trash2, label: "Trash", param: "trash" },
-];
-
-export function EmailSidebar() {
+export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
   const params = useParams();
   const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
@@ -42,23 +35,31 @@ export function EmailSidebar() {
       </CardHeader>
       <CardContent className="p-3 pt-0">
         <nav className="space-y-1.5">
-          {sidebarLabels.map((item) => (
-            <Link
-              key={item.label}
-              href={ensureLocalizedPathname("/apps/email/" + item.param, locale)}
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "w-full justify-start",
-                filterParam === item.param && "bg-muted"
-              )}
-            >
-              <item.icon className="me-2 h-4 w-4" />
-              {item.label}
-              {item?.unreadCount && (
-                <Badge className="ms-auto">{item.unreadCount}</Badge>
-              )}
-            </Link>
-          ))}
+          {data.map((item) => {
+            const unreadCount =
+              item.unreadCount >= 100 ? "+99" : item.unreadCount;
+
+            return (
+              <Link
+                key={item.label}
+                href={ensureLocalizedPathname(
+                  "/apps/email/" + item.param,
+                  locale
+                )}
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "w-full justify-start",
+                  filterParam === item.param && "bg-accent"
+                )}
+              >
+                <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
+                {item.label}
+                {!!unreadCount && (
+                  <Badge className="ms-auto">{unreadCount}</Badge>
+                )}
+              </Link>
+            );
+          })}
         </nav>
       </CardContent>
     </>

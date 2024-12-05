@@ -53,7 +53,10 @@ export function Notifications() {
                   className="flex items-center gap-2 py-4 px-6 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <Badge className="h-10 w-10">
-                    <DynamicIcon name={notification.icon} className="h-5 w-5" />
+                    <DynamicIcon
+                      name={notification.iconName}
+                      className="h-5 w-5"
+                    />
                   </Badge>
                   <div className="flex-1 w-0">
                     <p className="text-sm break-all truncate">

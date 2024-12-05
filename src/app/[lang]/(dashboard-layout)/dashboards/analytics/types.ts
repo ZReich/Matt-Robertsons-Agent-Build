@@ -1,3 +1,5 @@
+import type { DynamicIconNameType } from "@/types";
+
 export interface GeographicLocationType {
   country: string;
   countryCode: string;
@@ -44,6 +46,7 @@ export interface FunnelStageType {
   name: string;
   value: number;
   fill: string;
+  iconName: DynamicIconNameType;
 }
 
 export type ConversionFunnelType = Array<FunnelStageType>;

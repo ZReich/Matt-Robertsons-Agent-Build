@@ -33,7 +33,7 @@ export interface NotificationType {
   unreadCount: number;
   notifications: Array<{
     id: string;
-    icon: DynamicIconNameType;
+    iconName: DynamicIconNameType;
     content: string;
     url: string;
     date: Date;

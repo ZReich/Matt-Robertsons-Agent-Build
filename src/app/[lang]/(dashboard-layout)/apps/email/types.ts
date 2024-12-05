@@ -1,3 +1,5 @@
+import type { DynamicIconNameType } from "@/types";
+
 export interface UserType {
   id: string;
   name: string;
@@ -25,4 +27,11 @@ export interface EmailState {
   totalPages: number;
   currentPage: number;
   totalEmails: number;
-};
+}
+
+export interface EmailSidebarLabel {
+  iconName: DynamicIconNameType;
+  label: string;
+  param: string;
+  unreadCount: number;
+}
