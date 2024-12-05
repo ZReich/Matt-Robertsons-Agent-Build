@@ -15,6 +15,11 @@
       "dark": "Dark",
       "light": "Light",
       "system": "System"
+    },
+    "user-nav": {
+      "profile": "Profile",
+      "settings": "Settings",
+      "sign-out": "Sign out"
     }
   }
 }

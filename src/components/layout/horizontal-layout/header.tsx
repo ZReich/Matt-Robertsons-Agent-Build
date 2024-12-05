@@ -35,12 +35,11 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
   const locale = params.lang as LocaleType;
-  const direction = i18n.langDirection[locale];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background border-b-[1px] border-accent">
       <div className="container hidden justify-between items-center py-1 md:flex">
-        <Menubar className="shadow-none border-0" dir={direction}>
+        <Menubar className="shadow-none border-0">
           {groupNavs.map((group, index) => (
             <MenubarMenu key={index}>
               <MenubarTrigger className="gap-2 hover:cursor-pointer focus:bg-primary focus:text-primary-foreground data-[state=open]:bg-primary data-[state=open]:text-primary-foreground">
@@ -69,7 +68,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
           <Notifications />
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
-          <UserNav direction={direction} />
+          <UserNav dictionary={dictionary} />
         </div>
       </div>
     </header>

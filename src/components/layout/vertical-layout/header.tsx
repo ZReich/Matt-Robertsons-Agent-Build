@@ -29,7 +29,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
           <Notifications />
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
-          <UserNav direction={direction} />
+          <UserNav dictionary={dictionary} />
         </div>
       </div>
     </header>

@@ -5,7 +5,7 @@ import { userData } from "@/data/user";
 
 import { cn, getInitials } from "@/lib/utils";
 
-import type { DirectionType } from "@/types";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,9 +19,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav({ direction }: { direction: DirectionType }) {
+export function UserNav({ dictionary }: { dictionary: DictionaryType }) {
   return (
-    <DropdownMenu dir={direction}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" className="rounded-full">
           <Avatar className="size-9">
@@ -71,7 +71,7 @@ export function UserNav({ direction }: { direction: DirectionType }) {
               )}
             >
               <User className="size-4 text-muted-foreground" />
-              Account
+              {dictionary.navigation["user-nav"].profile}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
@@ -83,7 +83,7 @@ export function UserNav({ direction }: { direction: DirectionType }) {
               )}
             >
               <UserCog className="size-4 text-muted-foreground" />
-              Settings
+              {dictionary.navigation["user-nav"].settings}
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -91,7 +91,7 @@ export function UserNav({ direction }: { direction: DirectionType }) {
         <DropdownMenuItem className="p-0">
           <Button variant="ghost" className="w-full justify-start gap-2">
             <LogOut className="size-4 text-muted-foreground" />
-            Sign out
+            {dictionary.navigation["user-nav"]["sign-out"]}
           </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>
