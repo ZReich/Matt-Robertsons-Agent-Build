@@ -65,7 +65,7 @@ export function Kanban() {
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="flex gap-x-2"
+              className="flex gap-x-4"
             >
               {kanbanState.columns.map((column, index) => (
                 <KanbanColumn key={column.id} column={column} index={index} />
