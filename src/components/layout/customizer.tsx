@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Sun,
   MoonStar,
+  SunMoon,
   Check,
   X,
   RotateCcw,
@@ -157,6 +158,17 @@ export function Customizer() {
                   >
                     <MoonStar className="size-4 me-1 -translate-x-1" />
                     Dark
+                  </Button>
+                  <Button
+                    variant={"outline"}
+                    size="sm"
+                    onClick={() => setMode("system")}
+                    className={cn(
+                      settings.mode === "system" && "border-2 border-primary"
+                    )}
+                  >
+                    <SunMoon className="size-4 me-1 -translate-x-1" />
+                    System
                   </Button>
                 </div>
               </div>

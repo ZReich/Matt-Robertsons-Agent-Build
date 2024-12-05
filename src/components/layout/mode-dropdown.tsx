@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { MoonStar, Sun } from "lucide-react";
+import { MoonStar, Sun, SunMoon } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
@@ -23,6 +23,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const modeIcons = {
+  light: Sun,
+  dark: MoonStar,
+  system: SunMoon,
+};
+
 export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
   const { settings, updateSettings } = useSettings();
   const params = useParams();
@@ -30,6 +36,7 @@ export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
   const locale = params.lang as LocaleType;
   const direction = i18n.langDirection[locale];
   const mode = settings.mode;
+  const ModeIcon = modeIcons[mode];
 
   const setMode = React.useCallback(
     (modeName: ModeType) => {
@@ -46,8 +53,7 @@ export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
           size="icon"
           aria-label={dictionary.navigation.mode["select-mode"]}
         >
-          <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <MoonStar className="absolute size-4 stroke-[1.5] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <ModeIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
