@@ -1,109 +1,94 @@
-import {
-  ChartPie,
-  ChartBar,
-  ShoppingCart,
-  LayoutTemplate,
-  CircleDollarSign,
-  CreditCard,
-  Headset,
-  AtSign,
-  MessageCircle,
-  Calendar,
-  ListTodo,
-  Grid2x2,
-} from "lucide-react";
-
-import type { IconType } from "@/types";
+import type { DynamicIconNameType } from "@/types";
 
 export interface NavType {
-  title: string;
+  name: string;
   label?: string;
-  icon: IconType;
+  iconName: DynamicIconNameType;
   href: string;
   children?: Omit<NavType, "icon">[];
 }
 
 export interface GroupNavType {
-  title: string;
+  name: string;
   navs: NavType[];
 }
 
 export const groupNavs: GroupNavType[] = [
   {
-    title: "Dashboards",
+    name: "Dashboards",
     navs: [
       {
-        title: "Analytics",
-        icon: ChartPie,
+        name: "Analytics",
+        iconName: "ChartPie",
         href: "/dashboards/analytics",
       },
       {
-        title: "CRM",
-        icon: ChartBar,
+        name: "CRM",
+        iconName: "ChartBar",
         href: "/dashboards/crm",
       },
       {
-        title: "eCommerce",
-        icon: ShoppingCart,
+        name: "eCommerce",
+        iconName: "ShoppingCart",
         href: "/dashboards/ecommerce",
       },
     ],
   },
   {
-    title: "Pages",
+    name: "Pages",
     navs: [
       {
-        title: "Landing",
+        name: "Landing",
         label: "Soon",
-        icon: LayoutTemplate,
-        href: "/pages/landing",
+        iconName: "LayoutTemplate",
+        href: '#',
       },
       {
-        title: "Pricing",
-        icon: CircleDollarSign,
+        name: "Pricing",
+        iconName: "CircleDollarSign",
         href: "/pages/pricing",
       },
       {
-        title: "Payment",
-        icon: CreditCard,
+        name: "Payment",
+        iconName: "CreditCard",
         href: "/pages/payment",
       },
       {
-        title: "Help Center",
+        name: "Help Center",
         label: "Soon",
-        icon: Headset,
-        href: "/pages/help-center",
+        iconName: "Headset",
+        href: '#',
       },
     ],
   },
   {
-    title: "Apps",
+    name: "Apps",
     navs: [
       {
-        title: "Email",
-        icon: AtSign,
+        name: "Email",
+        iconName: "AtSign",
         href: "/apps/email",
       },
       {
-        title: "Chat",
-        icon: MessageCircle,
+        name: "Chat",
+        iconName: "MessageCircle",
         href: "/apps/chat",
       },
       {
-        title: "Calendar",
-        icon: Calendar,
+        name: "Calendar",
+        iconName: "Calendar",
         href: "/apps/calendar",
       },
       {
-        title: "Kanban",
-        icon: Grid2x2,
+        name: "Kanban",
+        iconName: "Grid2x2",
         href: "/apps/kanban",
       },
       {
-        title: "Todo",
+        name: "Todo",
         label: "Soon",
-        icon: ListTodo,
-        href: "/apps/todo",
+        iconName: "ListTodo",
+        href: '#',
       },
     ],
   },

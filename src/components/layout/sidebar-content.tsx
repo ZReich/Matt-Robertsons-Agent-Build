@@ -36,12 +36,12 @@ export function SidebarContent({
         <Logo className="size-6" aira-hidden />
         Shadboard
       </Link>
-      <ScrollArea className="h-full w-full" dir={direction}>
+      <ScrollArea className="h-[calc(100vh-3rem)]" dir={direction}>
         {groupNavs.map((group, index) => (
           <div className="py-2" key={index}>
-            {group.title && (
+            {group.name && (
               <h4 className="mx-4 mb-1 text-muted-foreground text-sm">
-                {group.title}
+                {group.name}
               </h4>
             )}
             <Nav

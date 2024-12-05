@@ -18,6 +18,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { DynamicIcon } from "@/components/dynamic-icon";
 
 interface NavProps {
   navs: NavType[];
@@ -53,11 +54,11 @@ export function Nav({
               >
                 <div className="flex items-center gap-2">
                   {isRoot ? (
-                    <nav.icon className="size-4" />
+                    <DynamicIcon name={nav.iconName} className="size-4" />
                   ) : (
                     <Circle className="size-2" />
                   )}
-                  {nav.title}
+                  {nav.name}
                 </div>
                 <div className="flex items-center gap-2">
                   {nav.label && (
@@ -90,11 +91,11 @@ export function Nav({
             onClick={() => setIsMobileSidebarNavOpen?.(false)}
           >
             {isRoot ? (
-              <nav.icon className="size-4" />
+              <DynamicIcon name={nav.iconName} className="size-4" />
             ) : (
               <Circle className="size-2" />
             )}
-            {nav.title}
+            {nav.name}
             {nav.label && (
               <Badge variant="secondary" className="ms-auto">
                 {nav.label}
