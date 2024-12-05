@@ -61,7 +61,7 @@ export function MessageBubble({
             <EllipsisVertical className="size-4 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent align={isByCurrentUser ? "start" : "end"}>
           <DropdownMenuItem>Edit</DropdownMenuItem>
           <DropdownMenuItem>Reply</DropdownMenuItem>
           <DropdownMenuItem>Forward</DropdownMenuItem>
