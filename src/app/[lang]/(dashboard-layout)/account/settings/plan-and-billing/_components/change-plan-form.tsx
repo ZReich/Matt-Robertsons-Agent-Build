@@ -46,11 +46,11 @@ export function ChangePlanForm({
     resolver: zodResolver(ChangePlanSchema),
     defaultValues: {
       plan: lastSubscribedPlan?.name,
-      interval: subscriptions[0].interval === "yearly",
+      isAnnual: subscriptions[0].interval === "yearly",
     },
   });
 
-  const isAnnual = form.watch("interval");
+  const isAnnual = form.watch("isAnnual");
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid;
 
@@ -61,7 +61,7 @@ export function ChangePlanForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="interval"
+          name="isAnnual"
           render={({ field }) => (
             <FormItem>
               <FormControl>
