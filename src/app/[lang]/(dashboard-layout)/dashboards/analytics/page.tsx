@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
+
 import { Overview } from "./_components/overview";
 import { TrafficSources } from "./_components/traffic-sources";
 import { EngagementByDevice } from "./_components/engagement-by-device";
 import { TopPages } from "./_components/top-pages";
 import { ConversionFunnel } from "./_components/conversion-funnel";
 import { PerformanceOverTime } from "./_components/performance-over-time";
+
+export const metadata: Metadata = {
+  title: "Analytics",
+};
 
 export default function AnalyticsPage() {
   return (

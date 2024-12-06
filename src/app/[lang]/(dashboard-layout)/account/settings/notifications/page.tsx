@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import {
   Card,
   CardContent,
@@ -6,6 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { NotificationPreferencesForm } from "./_components/notifications-preferenes-schema";
+
+export const metadata: Metadata = {
+  title: "Security Settings",
+};
 
 export default function SecurityPage() {
   return (

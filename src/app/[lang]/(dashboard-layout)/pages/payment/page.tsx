@@ -2,9 +2,15 @@ import * as React from "react";
 
 import { savedCardsData } from "./_data/saved-cards";
 
+import type { Metadata } from "next";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentMethodForm } from "./_components/payment-method-form";
 import { PaymentSummary } from "./_components/payment-summary";
+
+export const metadata: Metadata = {
+  title: "Payment",
+};
 
 export default async function PaymentPage() {
   return (

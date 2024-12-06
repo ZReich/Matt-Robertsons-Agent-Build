@@ -13,7 +13,6 @@ import {
 
 export const metadata: Metadata = {
   title: "New Password",
-  description: "Set new password",
 };
 
 export default function NewPasswordPage({ params }: { params: { lang: LocaleType } }) {

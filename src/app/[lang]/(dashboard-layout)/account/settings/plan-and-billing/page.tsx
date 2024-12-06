@@ -1,6 +1,8 @@
 import { plansData } from "../../_data/plans";
 import { subscriptionsData } from "../../_data/subscriptions";
 
+import type { Metadata } from "next";
+
 import {
   Card,
   CardContent,
@@ -15,6 +17,10 @@ import { Briefcase, Users, FileText, BarChart2 } from "lucide-react";
 import { ChangePlanForm } from "./_components/change-plan-form";
 import { PaymentMethodForm } from "./_components/payment-method-form";
 import { SavedCardsList } from "./_components/saved-cards-list";
+
+export const metadata: Metadata = {
+  title: "Plan and Billing Settings",
+};
 
 export default async function PlanAndBillingPage() {
   return (

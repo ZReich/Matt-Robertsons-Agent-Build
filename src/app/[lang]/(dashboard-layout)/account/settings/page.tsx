@@ -1,5 +1,6 @@
 import { userData } from "@/data/user";
 
+import type { Metadata } from "next";
 import type { LocaleType } from "@/configs/i18n";
 
 import {
@@ -12,7 +13,11 @@ import {
 import { ProfileInfoForm } from "./_components/profile-info-form";
 import { DeleteAccountForm } from "./_components/delete-account-form";
 
-export default function SettingsPage({
+export const metadata: Metadata = {
+  title: "Profile Information Settings",
+};
+
+export default function ProfileInfoPage({
   params,
 }: {
   params: { lang: LocaleType };

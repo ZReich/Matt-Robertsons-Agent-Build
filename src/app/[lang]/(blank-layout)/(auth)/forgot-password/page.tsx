@@ -13,10 +13,13 @@ import {
 
 export const metadata: Metadata = {
   title: "Forgot Password",
-  description: "Register instructions to reset your password",
 };
 
-export default function ForgotPasswordPage({ params }: { params: { lang: LocaleType } }) {
+export default function ForgotPasswordPage({
+  params,
+}: {
+  params: { lang: LocaleType };
+}) {
   return (
     <Auth>
       <AuthHeader>

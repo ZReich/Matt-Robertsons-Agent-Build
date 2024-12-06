@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
+
 import { CustomerInsights } from "./_components/customer-insights";
 import { Overview } from "./_components/overview";
 import { SalesTrend } from "./_components/sales-trend";
 import { TopProducts } from "./_components/top-products";
 import { Invoices } from "./_components/invoices";
+
+export const metadata: Metadata = {
+  title: "Ecommerce",
+};
 
 export default function EcommercePage() {
   return (

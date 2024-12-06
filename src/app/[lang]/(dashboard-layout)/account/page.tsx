@@ -1,10 +1,15 @@
 import { userData } from "@/data/user";
 
+import type { Metadata } from "next";
 import type { LocaleType } from "@/configs/i18n";
 
 import { ProfileHeader } from "./_components/profile-header";
 
-export default function AccountPage({
+export const metadata: Metadata = {
+  title: "Profile",
+};
+
+export default function ProfilePage({
   params,
 }: {
   params: { lang: LocaleType };

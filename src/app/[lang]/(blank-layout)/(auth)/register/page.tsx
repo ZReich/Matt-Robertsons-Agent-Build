@@ -13,7 +13,6 @@ import {
 
 export const metadata: Metadata = {
   title: "Register",
-  description: "Register to your account",
 };
 
 export default function RegisterPage({ params }: { params: { lang: LocaleType } }) {

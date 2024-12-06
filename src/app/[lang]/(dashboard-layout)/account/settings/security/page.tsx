@@ -4,6 +4,8 @@ import { userData } from "@/data/user";
 
 import { cn } from "@/lib/utils";
 
+import type { Metadata } from "next";
+
 import {
   Card,
   CardContent,
@@ -17,6 +19,10 @@ import { SecurityPreferencesForm } from "./_components/security-preferences-form
 import { RecentLogsTable } from "./_components/recent-logs-table";
 import { AccountRecoveryOptionsForm } from "./_components/account-recovery-options-form";
 import { buttonVariants } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Security Settings",
+};
 
 export default function SecurityPage() {
   return (

@@ -13,7 +13,6 @@ import {
 
 export const metadata: Metadata = {
   title: "Verify Email",
-  description: "Verify your email address",
 };
 
 export default function VerifyEmailPage({ params }: { params: { lang: LocaleType } }) {

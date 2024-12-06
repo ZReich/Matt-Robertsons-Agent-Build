@@ -1,9 +1,14 @@
 import { getChatsData } from "./_actions/get-chats-data";
 
+import type { Metadata } from "next";
 import type { ChatType } from "./types";
 
 import { ChatProvider } from "./contexts/chat-context";
 import { ChatSidebar } from "./_components/chat-sidebar";
+
+export const metadata: Metadata = {
+  title: "Chat",
+};
 
 export default async function ChatLayout({
   children,
