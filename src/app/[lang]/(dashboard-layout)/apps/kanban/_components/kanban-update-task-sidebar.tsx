@@ -171,7 +171,7 @@ export function KanbanUpdateTaskSidebar() {
       open={kanbanUpdateTaskSidebarIsOpen}
       onOpenChange={() => handleSidebarClose()}
     >
-      <SheetContent className="p-0" side="oppositeDir">
+      <SheetContent className="p-0" side="end">
         <ScrollArea className="h-full p-4">
           <SheetHeader>
             <SheetTitle>Update Task</SheetTitle>

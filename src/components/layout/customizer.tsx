@@ -49,9 +49,7 @@ export function Customizer() {
         </Button>
       </SheetTrigger>
       <SheetPortal>
-        <SheetContent
-          className={cn(sheetVariants({ side: "oppositeDir" }), "p-0")}
-        >
+        <SheetContent className={cn(sheetVariants({ side: "end" }), "p-0")}>
           <ScrollArea className="h-full p-4">
             <div className="flex flex-1 flex-col space-y-4">
               <div className="space-y-1">

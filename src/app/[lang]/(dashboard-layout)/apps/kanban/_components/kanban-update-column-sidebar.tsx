@@ -77,7 +77,7 @@ export function KanbanUpdateColumnSidebar() {
       open={kanbanUpdateColumnSidebarIsOpen}
       onOpenChange={() => handleSidebarClose()}
     >
-      <SheetContent className="p-0" side="oppositeDir">
+      <SheetContent className="p-0" side="end">
         <ScrollArea className="h-full p-4">
           <SheetHeader>
             <SheetTitle>Update Column</SheetTitle>

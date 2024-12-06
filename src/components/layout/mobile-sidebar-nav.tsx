@@ -26,7 +26,7 @@ export function MobileSidebarNav() {
           <HamburgerMenuIcon className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="dir">
+      <SheetContent side="start">
         <SidebarContent setIsMobileSidebarNavOpen={setIsMobileSidebarNavOpen} />
       </SheetContent>
     </Sheet>

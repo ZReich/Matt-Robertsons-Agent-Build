@@ -84,7 +84,7 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
       >
         <Menu className="h-4 w-4" />
       </SheetTrigger>
-      <SheetContent side="dir">{content}</SheetContent>
+      <SheetContent side="start">{content}</SheetContent>
     </Sheet>
   );
 }
