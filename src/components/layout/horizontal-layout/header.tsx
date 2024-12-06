@@ -6,8 +6,6 @@ import { useMedia } from "react-use";
 
 import { groupNavs } from "@/data/navigation";
 
-import { i18n } from "@/configs/i18n";
-
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { LocaleType } from "@/configs/i18n";
@@ -27,6 +25,7 @@ import { UserNav } from "@/components/layout/user-nav";
 import { Separator } from "@/components/ui/separator";
 import { Nav } from "./nav";
 import { Notifications } from "../notifications";
+import { FullscreenToggle } from "@/components/full-screen-toggle";
 
 import Logo from "@/app/icon.svg";
 
@@ -66,6 +65,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
         {isMediumOrSmaller && <CommandMenu />}
         <div className="flex gap-2">
           <Notifications />
+          <FullscreenToggle />
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
           <UserNav dictionary={dictionary} />
