@@ -13,6 +13,7 @@ import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { UserNav } from "@/components/layout/user-nav";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
 import { Notifications } from "@/components/layout/notifications";
+import { FullscreenToggle } from "@/components/full-screen-toggle";
 
 export function Header({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
@@ -27,6 +28,7 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
         <CommandMenu />
         <div className="flex gap-2">
           <Notifications />
+          <FullscreenToggle />
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />
           <UserNav dictionary={dictionary} />
