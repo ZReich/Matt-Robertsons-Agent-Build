@@ -57,7 +57,7 @@ export function MessageBubble({
 
       <DropdownMenu>
         <DropdownMenuTrigger className="mt-8" asChild>
-          <Button variant="ghost" size="icon" aria-label="More options">
+          <Button variant="ghost" size="icon" aria-label="More actions">
             <EllipsisVertical className="size-4 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>

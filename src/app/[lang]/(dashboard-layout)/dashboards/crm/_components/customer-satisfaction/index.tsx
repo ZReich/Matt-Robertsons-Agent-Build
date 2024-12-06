@@ -26,7 +26,7 @@ export function CustomerSatisfaction() {
             <CardDescription>Last week</CardDescription>
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger aria-label="More options">
+            <DropdownMenuTrigger aria-label="More actions">
               <EllipsisVertical className="h-4 w-4" />
             </DropdownMenuTrigger>
           </DropdownMenu>

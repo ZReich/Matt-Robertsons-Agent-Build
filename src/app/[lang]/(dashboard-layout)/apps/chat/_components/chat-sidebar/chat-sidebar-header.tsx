@@ -40,7 +40,7 @@ export function ChatSidebarHeader() {
           />
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="More options">
+          <Button variant="ghost" size="icon" aria-label="New chat or group">
             <SquarePen className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" aria-label="Filter chat list by">
@@ -48,7 +48,7 @@ export function ChatSidebarHeader() {
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="More options">
+              <Button variant="ghost" size="icon" aria-label="More actions">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

@@ -33,7 +33,7 @@ export function KanbanColumnActions({ column }: KanbanColumnActionsProps) {
         <Button
           variant="ghost"
           className="flex h-8 w-8 p-0 ms-auto data-[state=open]:bg-muted"
-          aria-label="More options"
+          aria-label="More actions"
         >
           <EllipsisVertical className="h-4 w-4" />
         </Button>

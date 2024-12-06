@@ -32,7 +32,7 @@ export function ChatBoxFooter() {
               type="button"
               variant="ghost"
               size="icon"
-              aria-label="More options"
+              aria-label="More actions"
             >
               <CirclePlus className="size-4" />
             </Button>
@@ -66,7 +66,7 @@ export function ChatBoxFooter() {
             className="[&[data-state=open]>svg]:rotate-180"
             asChild
           >
-            <Button variant="ghost" size="icon" aria-label="More options">
+            <Button variant="ghost" size="icon" aria-label="More actions">
               <ChevronRight className="size-4 transition-transform duration-200" />
             </Button>
           </CollapsibleTrigger>
