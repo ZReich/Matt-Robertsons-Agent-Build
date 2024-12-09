@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import * as React from "react";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -10,7 +10,7 @@ import VerticalLayout from "./vertical-layout";
 import HorizontalLayout from "./horizontal-layout";
 import { Customizer } from "./customizer";
 
-function Layout({
+export function Layout({
   children,
   dictionary,
 }: {
@@ -23,6 +23,7 @@ function Layout({
   return (
     <>
       <Customizer />
+      {/* If the layout is vertical, render a vertical layout; otherwise, render a horizontal layout */}
       {isVertical ? (
         <VerticalLayout dictionary={dictionary}>{children}</VerticalLayout>
       ) : (
@@ -31,5 +32,3 @@ function Layout({
     </>
   );
 }
-
-export default Layout;

@@ -1,3 +1,4 @@
+// More info: https://nextjs.org/docs/app/building-your-application/routing/internationalization#localization
 import "server-only";
 
 import type { LocaleType } from "@/configs/i18n";
@@ -9,6 +10,7 @@ const dictionaries = {
     import("@/data/dictionaries/ar.json").then((module) => module.default),
 };
 
-export const getDictionary = async (locale: LocaleType) => dictionaries[locale]();
+export const getDictionary = async (locale: LocaleType) =>
+  dictionaries[locale]();
 
 export type DictionaryType = Awaited<ReturnType<typeof getDictionary>>;

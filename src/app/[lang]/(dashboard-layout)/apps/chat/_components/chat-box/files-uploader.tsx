@@ -66,6 +66,7 @@ export function FilesUploader() {
     // Revoke temporary URLs after submission
     fileUrls.forEach((url) => URL.revokeObjectURL(url));
 
+    // Reset to default
     setFileUrls([]);
     form.reset();
     setIsOpen(false);
@@ -75,7 +76,7 @@ export function FilesUploader() {
     (acceptedFiles: FileList | File[] | null) => {
       if (!acceptedFiles) return;
 
-      // Convert accepted files to an array and merge with current files
+      // Convert accepted files to an array and merge with current files while respecting the max limit
       const newFilesArray = [...files, ...Array.from(acceptedFiles)].slice(
         0,
         MAX_FILES
@@ -83,13 +84,13 @@ export function FilesUploader() {
 
       form.setValue("files", newFilesArray);
 
-      // Create object URLs for the new files
+      // Create object URLs for new files
       const newFileUrls = Array.from(acceptedFiles).map((file) =>
         URL.createObjectURL(file)
       );
       setFileUrls((prevUrls) => [...prevUrls, ...newFileUrls]);
 
-      form.trigger("files");
+      form.trigger("files"); // Trigger form validation
     },
     [form, files]
   );
@@ -105,9 +106,10 @@ export function FilesUploader() {
 
     form.setValue("files", updatedFiles);
     setFileUrls(updatedUrls);
-    form.trigger("files");
+    form.trigger("files"); // Trigger form validation
   };
 
+  // Configure dropzone for drag-and-drop file uploads
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: handleFilesChange,
     noClick: true,
@@ -137,7 +139,7 @@ export function FilesUploader() {
                     className={`block border-2 border-dashed border-muted-foreground/50 bg-muted/50 rounded-lg py-6 px-4 text-center cursor-pointer transition-colors ${
                       isDragActive ? "border-primary bg-primary/10" : ""
                     }`}
-                    {...getRootProps()}
+                    {...getRootProps()} // Dropzone root props for drag-and-drop functionality
                   >
                     <FormControl>
                       <Input
@@ -147,7 +149,7 @@ export function FilesUploader() {
                           onChange: (e) => handleFilesChange(e.target.files),
                           onBlur: field.onBlur,
                           disabled: field.disabled,
-                        })}
+                        })} // Dropzone root props for drag-and-drop functionality
                       />
                     </FormControl>
                     <Upload
@@ -170,6 +172,7 @@ export function FilesUploader() {
               )}
             />
 
+            {/* Display selected files if they are available */}
             {files && files.length > 0 && (
               <div className="mt-2">
                 <h4 className="text-sm font-medium mb-2">

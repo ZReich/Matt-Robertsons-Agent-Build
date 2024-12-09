@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 import {
   Tooltip,
@@ -27,7 +27,7 @@ const KanbanAvatarStack = React.memo(
     className,
     ...props
   }: AvatarStackProps) => {
-    const limitedAvatars = avatars.slice(0, limit);
+    const limitedAvatars = avatars.slice(0, limit); // Restrict avatars to the specified limit
 
     return (
       <div className={cn("flex -space-x-2.5", className)} {...props}>
@@ -44,11 +44,7 @@ const KanbanAvatarStack = React.memo(
                       className={`size-${size} transition duration-300 hover:scale-105 hover:z-10`}
                     >
                       <AvatarImage src={avatar.src} />
-                      <AvatarFallback>
-                        {avatar.alt
-                          .split(" ")
-                          .reduce((acc, subName) => acc + subName[0], "")}
-                      </AvatarFallback>
+                      <AvatarFallback>{getInitials(avatar.alt)}</AvatarFallback>
                     </Avatar>
                   </Link>
                 ) : (
@@ -56,11 +52,7 @@ const KanbanAvatarStack = React.memo(
                     className={`size-${size} transition duration-300 hover:scale-105 hover:z-10`}
                   >
                     <AvatarImage src={avatar.src} />
-                    <AvatarFallback>
-                      {avatar.alt
-                        .split(" ")
-                        .reduce((acc, subName) => acc + subName[0], "")}
-                    </AvatarFallback>
+                    <AvatarFallback>{getInitials(avatar.alt)}</AvatarFallback>
                   </Avatar>
                 )}
               </TooltipTrigger>
@@ -70,10 +62,13 @@ const KanbanAvatarStack = React.memo(
             </Tooltip>
           </TooltipProvider>
         ))}
+
+        {/* Show "+N" if avatars exceed the limit */}
         {limitedAvatars.length < avatars.length && (
           <Avatar
             className={`size-${size} transition duration-300 cursor-pointer hover:scale-105 hover:z-10`}
           >
+            {/* Display the count of additional avatars beyond the limit */}
             <AvatarFallback>
               +{avatars.length - limitedAvatars.length}
             </AvatarFallback>

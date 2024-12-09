@@ -6,6 +6,7 @@ import { ChatReducer } from "../reducers/chat-reducer";
 
 import type { ChatContextType, ChatType } from "../types";
 
+// Create Kanban context
 export const ChatContext = React.createContext<ChatContextType | undefined>(
   undefined
 );
@@ -17,16 +18,16 @@ export function ChatProvider({
   chatsData: ChatType[];
   children: React.ReactNode;
 }) {
+  // Reducer to manage Kanban state
   const [chatState, dispatch] = React.useReducer(ChatReducer, {
     chats: chatsData,
     selectedChat: null,
   });
+
+  // Sidebar state management
   const [isChatSidebarOpen, setIsChatSidebarOpen] = React.useState(false);
 
-  const handleSelectChat = (chat: ChatType) => {
-    dispatch({ type: "selectChat", chat });
-  };
-
+  // Handlers for message actions
   const handleAddTextMessage = (text: string) => {
     dispatch({ type: "addTextMessage", text });
   };
@@ -39,8 +40,14 @@ export function ChatProvider({
     dispatch({ type: "addFilesMessage", files });
   };
 
+  // Handlers for chat actions
   const handleSetUnreadCount = () => {
     dispatch({ type: "setUnreadCount" });
+  };
+
+  // Selection handlers
+  const handleSelectChat = (chat: ChatType) => {
+    dispatch({ type: "selectChat", chat });
   };
 
   return (

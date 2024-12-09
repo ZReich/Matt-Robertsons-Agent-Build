@@ -3,7 +3,7 @@ import { Bell } from "lucide-react";
 
 import { notificationData } from "@/data/notifications";
 
-import { cn, formatDistance } from "@/lib/utils";
+import { cn, formatDistance, formatUnreadCount } from "@/lib/utils";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
@@ -16,8 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { DynamicIcon } from "@/components/dynamic-icon";
 
 export function Notifications() {
-  const unreadCount =
-    notificationData.unreadCount >= 100 ? "+99" : notificationData.unreadCount;
+  const unreadCount = formatUnreadCount(notificationData.unreadCount);
 
   return (
     <Popover>

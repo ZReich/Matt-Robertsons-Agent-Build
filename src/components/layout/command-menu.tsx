@@ -19,6 +19,7 @@ import {
 import { Keyboard } from "@/components/ui/keyboard";
 import { groupNavs } from "@/data/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DynamicIcon } from "@/components/dynamic-icon";
 
 export function CommandMenu({ ...props }: DialogProps) {
   const router = useRouter();
@@ -71,13 +72,13 @@ export function CommandMenu({ ...props }: DialogProps) {
           <ScrollArea className="h-[300px] max-h-[300px]">
             <CommandEmpty>No results found.</CommandEmpty>
             {groupNavs.map((groupNav) => (
-              <CommandGroup key={groupNav.title} heading={groupNav.title}>
+              <CommandGroup key={groupNav.name} heading={groupNav.name}>
                 {groupNav.navs.map((navItem) => {
                   if (navItem.children) {
                     return navItem.children.map((nestedNavItem) => (
                       <CommandItem
                         key={nestedNavItem.href}
-                        value={nestedNavItem.title}
+                        value={nestedNavItem.name}
                         onSelect={() => {
                           runCommand(() =>
                             router.push(nestedNavItem.href as string)
@@ -85,22 +86,28 @@ export function CommandMenu({ ...props }: DialogProps) {
                         }}
                         className="cursor-pointer"
                       >
-                        <navItem.icon className="me-2 size-4" />
-                        {navItem.title + " - " + nestedNavItem.title}
+                        <DynamicIcon
+                          name={navItem.iconName}
+                          className="me-2 size-4"
+                        />
+                        {navItem.name + " - " + nestedNavItem.name}
                       </CommandItem>
                     ));
                   } else {
                     return (
                       <CommandItem
                         key={navItem.href}
-                        value={navItem.title}
+                        value={navItem.name}
                         onSelect={() => {
                           runCommand(() => router.push(navItem.href as string));
                         }}
                         className="cursor-pointer"
                       >
-                        <navItem.icon className="me-2 size-4" />
-                        {navItem.title}
+                        <DynamicIcon
+                          name={navItem.iconName}
+                          className="me-2 size-4"
+                        />
+                        {navItem.name}
                       </CommandItem>
                     );
                   }

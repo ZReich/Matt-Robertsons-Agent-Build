@@ -1,5 +1,5 @@
 // This is an alternative to the useActionState hook that is not yet released.
-// @see https://react.dev/reference/react/useActionState
+// More info: https://react.dev/reference/react/useActionState
 
 "use client";
 

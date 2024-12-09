@@ -7,15 +7,15 @@ export const ChatReducer = (
   switch (action.type) {
     case "addTextMessage": {
       if (!state.selectedChat) {
-        return state;
+        return state; // No selected chat, return the current state
       }
 
       const newMessage: MessageType = {
-        id: crypto.randomUUID(),
-        senderId: "1",
-        text: action.text,
-        status: "DELIVERED",
-        createdAt: new Date(),
+        id: crypto.randomUUID(), // Generate a unique ID for the message
+        senderId: "1", // Assuming "1" represents the current user
+        text: action.text, // Set the text content
+        status: "DELIVERED", // Message delivery status
+        createdAt: new Date(), // Set the current timestamp
       };
 
       const { id, messages } = state.selectedChat;
@@ -23,14 +23,14 @@ export const ChatReducer = (
       const updatedChat = {
         ...state.selectedChat,
         lastMessage: {
-          content: action.text,
-          createdAt: newMessage.createdAt,
+          content: action.text, // Update the last message content
+          createdAt: newMessage.createdAt, // Update the timestamp
         },
-        messages: [newMessage, ...messages],
+        messages: [newMessage, ...messages], // Add the new message to the top
       };
 
-      const updatedChats = state.chats.map((chat) =>
-        chat.id === id ? updatedChat : chat
+      const updatedChats = state.chats.map(
+        (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
       );
 
       return { ...state, chats: updatedChats };
@@ -38,23 +38,21 @@ export const ChatReducer = (
 
     case "addImagesMessage": {
       if (!state.selectedChat) {
-        return state;
+        return state; // No selected chat, return the current state
       }
 
-      const images = action.images.map((image) => {
-        return {
-          id: crypto.randomUUID(),
-          name: image.name,
-          type: image.type,
-          size: image.size,
-          url: URL.createObjectURL(image),
-        };
-      });
+      const images = action.images.map((image) => ({
+        id: crypto.randomUUID(), // Unique ID for each image
+        name: image.name, // File name
+        type: image.type, // File type
+        size: image.size, // File size
+        url: URL.createObjectURL(image), // Create a URL for the image
+      }));
 
       const newMessage: MessageType = {
         id: crypto.randomUUID(),
         senderId: "1",
-        images: images,
+        images: images, // Attach the images to the message
         status: "DELIVERED",
         createdAt: new Date(),
       };
@@ -64,14 +62,14 @@ export const ChatReducer = (
       const updatedChat = {
         ...state.selectedChat,
         lastMessage: {
-          content: action.images.length > 1 ? "Images" : "Image",
+          content: action.images.length > 1 ? "Images" : "Image", // Update the last message to reflect images
           createdAt: newMessage.createdAt,
         },
-        messages: [newMessage, ...messages],
+        messages: [newMessage, ...messages], // Add the new message
       };
 
-      const updatedChats = state.chats.map((chat) =>
-        chat.id === id ? updatedChat : chat
+      const updatedChats = state.chats.map(
+        (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
       );
 
       return { ...state, chats: updatedChats };
@@ -79,23 +77,21 @@ export const ChatReducer = (
 
     case "addFilesMessage": {
       if (!state.selectedChat) {
-        return state;
+        return state; // No selected chat, return the current state
       }
 
-      const files = action.files.map((file) => {
-        return {
-          id: crypto.randomUUID(),
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-        };
-      });
+      const files = action.files.map((file) => ({
+        id: crypto.randomUUID(), // Unique ID for each file
+        name: file.name, // File name
+        type: file.type, // File type
+        size: file.size, // File size
+        url: URL.createObjectURL(file), // Create a URL for the file
+      }));
 
       const newMessage: MessageType = {
         id: crypto.randomUUID(),
         senderId: "1",
-        files: files,
+        files: files, // Attach the files to the message
         status: "DELIVERED",
         createdAt: new Date(),
       };
@@ -105,14 +101,14 @@ export const ChatReducer = (
       const updatedChat = {
         ...state.selectedChat,
         lastMessage: {
-          content: action.files.length > 1 ? "Files" : "File",
+          content: action.files.length > 1 ? "Files" : "File", // Update the last message to reflect files
           createdAt: newMessage.createdAt,
         },
-        messages: [newMessage, ...messages],
+        messages: [newMessage, ...messages], // Add the new message
       };
 
-      const updatedChats = state.chats.map((chat) =>
-        chat.id === id ? updatedChat : chat
+      const updatedChats = state.chats.map(
+        (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
       );
 
       return { ...state, chats: updatedChats };
@@ -120,28 +116,28 @@ export const ChatReducer = (
 
     case "setUnreadCount": {
       if (!state.selectedChat) {
-        return state;
+        return state; // No selected chat, return the current state
       }
 
       const { id } = state.selectedChat;
 
       const updatedChat = {
         ...state.selectedChat,
-        unreadCount: 0,
+        unreadCount: 0, // Reset unread count for the selected chat
       };
 
-      const updatedChats = state.chats.map((chat) =>
-        chat.id === id ? updatedChat : chat
+      const updatedChats = state.chats.map(
+        (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
       );
 
       return { ...state, chats: updatedChats };
     }
 
     case "selectChat": {
-      return { ...state, selectedChat: action.chat };
+      return { ...state, selectedChat: action.chat }; // Set the selected chat
     }
 
     default:
-      return state;
+      return state; // Return the current state for unknown actions
   }
 };

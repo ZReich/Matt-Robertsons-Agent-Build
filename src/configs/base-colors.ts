@@ -1,3 +1,4 @@
+// Base colors for customizing the dashboard colors
 export const baseColors = [
   {
     name: "zinc",

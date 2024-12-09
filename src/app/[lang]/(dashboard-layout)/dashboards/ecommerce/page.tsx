@@ -6,6 +6,8 @@ import { SalesTrend } from "./_components/sales-trend";
 import { TopProducts } from "./_components/top-products";
 import { Invoices } from "./_components/invoices";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Ecommerce",
 };

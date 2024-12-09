@@ -4,12 +4,14 @@ import type { LucideProps } from "lucide-react";
 import type { DynamicIconNameType } from "@/types";
 
 interface DynamicIconProps extends LucideProps {
-  name: DynamicIconNameType;
+  name: DynamicIconNameType; 
 }
 
+// Component to render a dynamic Lucide icon based on its name.
 export function DynamicIcon({ name, ...props }: DynamicIconProps) {
-  const LucideIcon = icons[name];
+  const LucideIcon = icons[name]; // Dynamically retrieve the icon by name.
 
+  // Return null if the icon name is invalid.
   if (!LucideIcon) return null;
 
   return <LucideIcon {...props} />;

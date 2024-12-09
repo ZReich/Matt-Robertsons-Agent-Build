@@ -40,3 +40,5 @@ export interface NotificationType {
     isRead: boolean;
   }>;
 }
+
+export type FormatStyleType = "percent" | "duration" | "currency" | "regular";

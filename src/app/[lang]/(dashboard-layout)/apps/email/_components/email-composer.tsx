@@ -58,6 +58,7 @@ export function EmailComposer({ content, onChange }: TiptapEditorProps) {
     },
   });
 
+  // Return null if the editor hasn't initialized yet
   if (!editor) {
     return null;
   }

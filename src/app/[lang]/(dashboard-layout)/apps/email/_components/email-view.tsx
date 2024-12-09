@@ -45,6 +45,11 @@ export function EmailView({ email }: { email: EmailType }) {
 
   const layout = settings.layout;
 
+  const handelGoBackButton = () => {
+    // Navigates back to the email list by removing the current email's ID from the path.
+    router.push(pathname.replace(email.id, ""));
+  };
+
   return (
     <Card className="flex-1 w-full md:w-auto">
       <CardHeader className="border-b py-3">
@@ -52,7 +57,7 @@ export function EmailView({ email }: { email: EmailType }) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(pathname.replace(email.id, ""))}
+            onClick={handelGoBackButton}
             aria-label="Go back to email list"
           >
             <ChevronLeft className="h-4 w-4" />

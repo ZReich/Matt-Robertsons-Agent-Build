@@ -1,4 +1,4 @@
-// @see https://github.com/atlassian/react-beautiful-dnd/issues/2399#issuecomment-1175638194
+// More info: https://github.com/atlassian/react-beautiful-dnd/issues/2399#issuecomment-1175638194
 
 import { useEffect, useState } from "react";
 import { Droppable, DroppableProps } from "react-beautiful-dnd";

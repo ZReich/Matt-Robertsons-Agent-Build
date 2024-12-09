@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { Check, CreditCard, Eye, ShoppingCart } from "lucide-react";
 
 import { chartConfig } from "@/configs/chart-config";
 

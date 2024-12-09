@@ -1,35 +1,15 @@
-import * as React from "react";
-
-import { savedCardsData } from "./_data/saved-cards";
+import { paymentData } from "./_data/payment";
 
 import type { Metadata } from "next";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaymentMethodForm } from "./_components/payment-method-form";
-import { PaymentSummary } from "./_components/payment-summary";
+import { Payment } from "./_components/payment";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Payment",
 };
 
 export default async function PaymentPage() {
-  return (
-    <section className="container p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-8 lg:flex-row">
-          <PaymentMethodForm savedCards={savedCardsData} />
-          <PaymentSummary
-            originalPrice="6,592.00"
-            savings="299.00"
-            storePickup="99"
-            tax="799"
-            total="7,191.00"
-          />
-        </CardContent>
-      </Card>
-    </section>
-  );
+  return <Payment data={paymentData} />;
 }

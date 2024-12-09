@@ -9,3 +9,14 @@ export interface CardType {
   routingNumber?: string;
   last4?: string;
 }
+
+export interface PaymentType {
+  summary: {
+    originalPrice: number;
+    savings: number;
+    storePickup: number;
+    tax: number;
+    total: number;
+  };
+  savedCards: CardType[];
+}

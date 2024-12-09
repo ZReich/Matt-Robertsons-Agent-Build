@@ -4,10 +4,11 @@ import { Download } from "lucide-react";
 
 import { cn, formatFileSize } from "@/lib/utils";
 
-import { MessageType } from "../../../types";
+import type { MessageType } from "../../../types";
 
 import { Button } from "@/components/ui/button";
 import { FileThumbnail } from "@/components/file-thumbnail";
+import { TextMessage } from "./text-message";
 
 export function MessageBubbleContent({
   message,
@@ -16,38 +17,11 @@ export function MessageBubbleContent({
   message: MessageType;
   isByCurrentUser: boolean;
 }) {
-  const urlRegex = /(https?:\/\/[^\s]+)/g; // Regex to match URLs
-
-  // Function to replace URLs with anchor tags
-  const renderMessageWithLinks = (text: string) => {
-    if (!text) return null;
-
-    // Split text on the URL regex
-    const parts = text.split(urlRegex);
-    return parts.map((part, index) => {
-      // If the part matches the URL regex, return an anchor tag
-      if (urlRegex.test(part)) {
-        return (
-          <Link
-            key={index}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline-offset-4 hover:underline"
-          >
-            {part}
-          </Link>
-        );
-      }
-      // Otherwise, return the plain text part
-      return part;
-    });
-  };
-
   let content: React.ReactNode;
 
+  // Handle different types of message content
   if (message.text) {
-    content = <p className="p-2">{renderMessageWithLinks(message.text)}</p>;
+    content = <TextMessage text={message.text} />;
   } else if (message.images) {
     content = (
       <ul
@@ -56,6 +30,7 @@ export function MessageBubbleContent({
           message.images.length > 1 && "grid-cols-2"
         )}
       >
+        {/* Map through the first 3 images from `message.images` and render them */}
         {message.images.slice(0, 3).map((image) => (
           <li key={image.id}>
             <Link
@@ -73,6 +48,7 @@ export function MessageBubbleContent({
           </li>
         ))}
 
+        {/* Check if there are 4 or more images and if there are more than 4 render '+N' over the 4th image */}
         {message.images && message.images.length >= 4 && (
           <li>
             <Link href="" className="relative size-full block aspect-square ">

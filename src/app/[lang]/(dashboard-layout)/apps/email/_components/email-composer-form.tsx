@@ -43,7 +43,7 @@ export function EmailComposerForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof EmailComposerSchema>) {}
+  function onSubmit(data: z.infer<typeof EmailComposerSchema>) {}
 
   return (
     <Card className="flex-1 w-full md:w-auto">

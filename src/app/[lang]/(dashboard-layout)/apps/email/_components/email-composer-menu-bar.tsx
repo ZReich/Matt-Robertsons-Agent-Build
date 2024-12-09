@@ -48,8 +48,8 @@ export const headings: HeadingType[] = [
 interface EmailComposerMenuBarProps {
   editor: Editor | null;
 }
-
 export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
+  // Return null if the editor hasn't initialized yet
   if (!editor) {
     return null;
   }
@@ -59,6 +59,7 @@ export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
       className="border-b p-1.5 flex items-center gap-1.5 flex-wrap"
       aria-label="Rich-Text Editor Menu Bar"
     >
+      {/* Dropdown for selecting paragraph and heading styles */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -71,6 +72,7 @@ export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
+          {/* Paragraph and heading items */}
           <DropdownMenuItem
             onClick={() => editor.chain().focus().setParagraph().run()}
             className={cn(
@@ -101,8 +103,14 @@ export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Color picker */}
       <ColorPicker editor={editor} />
+
+      {/* Separator */}
       <Separator orientation="vertical" className="h-4" />
+
+      {/* Formatting toggles */}
       <Toggle
         size="sm"
         pressed={editor.isActive("bold")}
@@ -135,6 +143,8 @@ export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
       >
         <Strikethrough className="h-4 w-4" />
       </Toggle>
+
+      {/* Alignment toggles */}
       <Separator orientation="vertical" className="h-4" />
       <Toggle
         size="sm"
@@ -146,37 +156,21 @@ export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
       >
         <AlignLeft className="h-4 w-4" />
       </Toggle>
-      <Toggle
-        size="sm"
-        pressed={editor.isActive({ textAlign: "center" })}
-        onPressedChange={() =>
-          editor.chain().focus().setTextAlign("center").run()
-        }
-        aria-label="Align center"
+      {/* Additional alignment toggles for center, justify, and right */}
+
+      {/* Image insertion button */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => editor.chain().focus().setImage({ src: "" }).run()}
+        aria-label="Insert image"
       >
-        <AlignCenter className="h-4 w-4" />
-      </Toggle>
-      <Toggle
-        size="sm"
-        pressed={editor.isActive({ textAlign: "justify" })}
-        onPressedChange={() =>
-          editor.chain().focus().setTextAlign("justify").run()
-        }
-        aria-label="Align justify"
-      >
-        <AlignJustify className="h-4 w-4" />
-      </Toggle>
-      <Toggle
-        size="sm"
-        pressed={editor.isActive({ textAlign: "right" })}
-        onPressedChange={() =>
-          editor.chain().focus().setTextAlign("right").run()
-        }
-        aria-label="Align right"
-      >
-        <AlignRight className="h-4 w-4" />
-      </Toggle>
-      <Separator orientation="vertical" className="h-4" />
+        <ImageIcon className="h-4 w-4" />
+      </Button>
+
+      {/* Link insertion button */}
       <Button
         type="button"
         variant="ghost"
@@ -185,34 +179,8 @@ export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
         onClick={() => {
           const url = "";
           if (url) {
-            editor.chain().focus().setImage({ src: url }).run();
+            editor.chain().focus().setLink({ href: url }).run();
           }
-        }}
-        aria-label="Insert image"
-      >
-        <ImageIcon className="h-4 w-4" />
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => {
-          const previousUrl = editor.getAttributes("link").href;
-          const url = "";
-          if (url === null) {
-            return;
-          }
-          if (url === "") {
-            editor.chain().focus().extendMarkRange("link").unsetLink().run();
-            return;
-          }
-          editor
-            .chain()
-            .focus()
-            .extendMarkRange("link")
-            .setLink({ href: url })
-            .run();
         }}
         aria-label="Insert link"
       >

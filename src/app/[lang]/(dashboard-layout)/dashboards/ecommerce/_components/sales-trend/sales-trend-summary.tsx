@@ -40,7 +40,7 @@ export function SalesTrendSummary({
       {isSmallOrLarger ? (
         <Separator orientation="vertical" className="h-40" />
       ) : (
-        <Separator className="" />
+        <Separator />
       )}
       <div className="flex flex-wrap justify-around gap-4 md:flex-col">
         <li>

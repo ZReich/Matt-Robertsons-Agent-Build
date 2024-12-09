@@ -88,11 +88,11 @@ export function formatPercent(value: number, locales: LocaleType = "en") {
 }
 
 export function formatDate(value: string | number | Date) {
-  return format(value, "MMM dd, yyyy");
+  return format(value, "PP");
 }
 
 export function formatDateWithTime(value: string | number | Date) {
-  return format(value, "MMM dd, yyyy hh:mm a");
+  return format(value, "PP hh:mm a");
 }
 
 export function formatDateShort(value: string | number | Date) {
@@ -160,4 +160,41 @@ export function withoutSuffix(value: string, suffix: string) {
 
 export function withoutPrefix(value: string, prefix: string) {
   return value.startsWith(prefix) ? value.slice(prefix.length) : value;
+}
+
+export function isNonNegative(num: number) {
+  return num >= 0;
+}
+
+export function getDiscountedPrice(
+  price: number,
+  discountRate: number,
+  isAnnual: boolean = false
+) {
+  if (isAnnual) {
+    // Apply discount to the annual price
+    const annualPrice = price * 12;
+    const discountedAnnualPrice = annualPrice * (1 - discountRate);
+
+    // Calculate the equivalent monthly price after the discount
+    const monthlyEquivalentPrice = discountedAnnualPrice / 12;
+    return monthlyEquivalentPrice;
+  } else {
+    // Apply discount directly to the monthly price
+    const discountedMonthlyPrice = price * (1 - discountRate);
+    return discountedMonthlyPrice;
+  }
+}
+
+export function isBeforeToday(date: Date) {
+  // Get the start of today
+  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+
+  // Compare the dates
+  return date < startOfToday;
+}
+
+export function formatUnreadCount(unreadCount: number) {
+  // If the unread count is 100 or more, display "+99"; otherwise, display the actual unread count.
+  return unreadCount >= 100 ? "+99" : unreadCount;
 }

@@ -45,6 +45,7 @@ export function KanbanUpdateColumnSidebar() {
 
   const selectedColumn = kanbanState.selectedColumn;
 
+  // Reset the form with the current selected column's values whenever `selectedColumn` changes
   React.useEffect(() => {
     if (selectedColumn) {
       form.reset({
@@ -67,9 +68,9 @@ export function KanbanUpdateColumnSidebar() {
   }
 
   const handleSidebarClose = () => {
-    form.clearErrors();
-    handleSelectColumn(undefined);
-    setKanbanUpdateColumnSidebarIsOpen(false);
+    form.reset(); // Reset the form to the initial values
+    handleSelectColumn(undefined); // Unselect the current column
+    setKanbanUpdateColumnSidebarIsOpen(false); // Close the sidebar
   };
 
   return (

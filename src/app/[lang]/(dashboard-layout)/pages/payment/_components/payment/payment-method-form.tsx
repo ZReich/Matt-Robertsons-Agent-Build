@@ -5,11 +5,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CreditCard, Landmark } from "lucide-react";
 
-import { PaymentMethodSchema } from "../_schemas/payment-method-schema";
+import { PaymentMethodSchema } from "../../_schemas/payment-method-schema";
 
 import { getCreditCardBrandName } from "@/lib/utils";
 
-import type { CardType } from "../types";
+import type { PaymentType } from "../../types";
 
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -28,7 +28,11 @@ import {
 import { SeparatorWithText } from "@/components/ui/separator";
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 
-export function PaymentMethodForm({ savedCards }: { savedCards: CardType[] }) {
+export function PaymentMethodForm({
+  data: savedCards,
+}: {
+  data: PaymentType["savedCards"];
+}) {
   const form = useForm<z.infer<typeof PaymentMethodSchema>>({
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {

@@ -23,12 +23,17 @@ export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
     useKanbanContext();
 
   return (
-    <Draggable draggableId={column.id} index={index}>
+    <Draggable
+      draggableId={column.id} // A unique identifier for this column, which helps the library track and move the item
+      index={index} // The position of this column in the root, used for reordering columns when drag-and-drop occurs
+    >
+      {/* A render callback function that provides the necessary props
+        for the Draggable component to function properly */}
       {(provided: DraggableProvided) => (
         <div
           ref={provided.innerRef}
           className="w-64 h-fit md:w-72"
-          {...provided.draggableProps}
+          {...provided.draggableProps} // Draggable props for drag-and-drop functionality
         >
           <CardHeader className="flex-row items-center space-y-0 gap-x-1.5 p-0">
             <div
@@ -36,7 +41,7 @@ export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
                 buttonVariants({ variant: "ghost", size: "icon" }),
                 "text-secondary-foreground/50 cursor-grab"
               )}
-              {...provided.dragHandleProps}
+              {...provided.dragHandleProps} // Draggable props for drag-and-drop functionality
               aria-label="Move task"
             >
               <GripVertical className="size-4" />
@@ -44,17 +49,22 @@ export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
             <CardTitle className="me-auto">{column.title}</CardTitle>
             <KanbanColumnActions column={column} />
           </CardHeader>
-          <Droppable droppableId={column.id}>
+          <Droppable
+            droppableId={column.id} // A unique identifier for this column, which helps the library track and move the item
+          >
+            {/* A render callback function that provides the necessary props
+        for the Droppable component to function properly */}
             {(provided) => (
               <>
                 <CardContent
                   ref={provided.innerRef}
                   className="grid p-0 min-h-44"
-                  {...provided.droppableProps}
+                  {...provided.droppableProps} // Droppable props for drag-and-drop functionality
                 >
                   {column.tasks.map((task, index) => (
                     <KanbanTaskCard key={task.id} task={task} index={index} />
                   ))}
+                  {/* Placeholder for maintaining layout integrity by creating a visual space for the dragged item */}
                   {provided.placeholder}
                   <Button
                     variant="outline"

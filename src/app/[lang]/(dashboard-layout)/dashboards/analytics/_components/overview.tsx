@@ -10,60 +10,60 @@ import {
 
 import { overviewData } from "../_data/overview";
 
-import { OverviewCard } from "@/components/overview-card";
+import { DashboardOverviewCard } from "@/components/dashboard-card";
 
 export async function Overview() {
   return (
     <div className="grid grid-cols-2 gap-4 md:col-span-full md:grid-cols-4">
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.totalVisitors}
         title="Total Visitors"
-        description="Last month"
+        period="Last month"
         icon={Users}
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.uniqueVisitors}
         title="Unique Visitors"
-        description="Last month"
+        period="Last month"
         icon={Sparkles}
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.totalPageViews}
         title="Total Page Views"
-        description="Last month"
+        period="Last month"
         icon={FileText}
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.averageSessionDuration}
         title="Avg. Session Duration"
-        description="Last month"
+        period="Last month"
         icon={Timer}
         formatStyle="duration"
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.bounceRate}
         title="Bounce Rate"
-        description="Last month"
+        period="Last month"
         icon={MousePointerIcon}
         formatStyle="percent"
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.totalConversions}
         title="Total Conversions"
-        description="Last month"
+        period="Last month"
         icon={RefreshCw}
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.conversionRate}
         title="Conversion Rate"
-        description="Last month"
+        period="Last month"
         icon={RefreshCw}
         formatStyle="percent"
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.totalRevenue}
         title="Total Revenue"
-        description="Last month"
+        period="Last month"
         icon={HandCoins}
         formatStyle="currency"
       />

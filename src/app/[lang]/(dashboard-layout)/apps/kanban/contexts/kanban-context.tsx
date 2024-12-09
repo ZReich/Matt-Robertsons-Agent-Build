@@ -12,6 +12,7 @@ import type {
   TaskWithoutIdAndOrderAndColumnIdType,
 } from "../types";
 
+// Create Kanban context
 export const KanbanContext = React.createContext<KanbanContextType | undefined>(
   undefined
 );
@@ -22,11 +23,14 @@ interface KanbanProviderProps {
 }
 
 export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
+  // Reducer to manage Kanban state
   const [kanbanState, dispatch] = React.useReducer(KanbanReducer, {
     columns: kanbanData,
     selectedColumn: undefined,
     selectedTask: undefined,
   });
+
+  // Sidebar state management
   const [kanbanAddTaskSidebarIsOpen, setKanbanAddTaskSidebarIsOpen] =
     React.useState(false);
   const [kanbanUpdateTaskSidebarIsOpen, setKanbanUpdateTaskSidebarIsOpen] =
@@ -36,6 +40,7 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   const [kanbanUpdateColumnSidebarIsOpen, setKanbanUpdateColumnSidebarIsOpen] =
     React.useState(false);
 
+  // Handlers for column actions
   const handleAddColumn = (column: ColumnWithoutIdAndOrderAndTasksType) => {
     dispatch({ type: "addColumn", column });
   };
@@ -48,6 +53,7 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     dispatch({ type: "deleteColumn", columnId });
   };
 
+  // Handlers for task actions
   const handleAddTask = (
     task: TaskWithoutIdAndOrderAndColumnIdType,
     columnId: ColumnType["id"]
@@ -63,6 +69,7 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     dispatch({ type: "deleteTask", taskId });
   };
 
+  // Reorder handlers
   const handleReorderColumns = (
     sourceIndex: number,
     destinationIndex: number
@@ -95,6 +102,7 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     });
   };
 
+  // Selection handlers
   const handleSelectColumn = (column: ColumnType | undefined) => {
     dispatch({ type: "selectColumn", column });
   };

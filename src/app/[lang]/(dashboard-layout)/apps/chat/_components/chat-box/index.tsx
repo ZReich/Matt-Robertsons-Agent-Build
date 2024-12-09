@@ -25,12 +25,13 @@ export function ChatBox({ user }: { user: UserType }) {
     useChatContext();
   const { settings } = useSettings();
 
-  const chatIdParam = params.id?.[0];
+  const chatIdParam = params.id?.[0]; // Get the chat ID from route params
   const chat = chatIdParam
-    ? chatState.chats.find((c) => c.id === chatIdParam)
+    ? chatState.chats.find((c) => c.id === chatIdParam) // Find the chat by ID
     : null;
   const layout = settings.layout;
 
+  // Synchronize chat selection and scroll to the bottom on updates
   React.useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
@@ -45,11 +46,13 @@ export function ChatBox({ user }: { user: UserType }) {
     }
   }, [chat, chatState.selectedChat, handleSelectChat, handleSetUnreadCount]);
 
+  // A map of chat users for quick lookup
   const userMap = React.useMemo(
     () => new Map(chat?.users.map((user) => [user.id, user])),
     [chat?.users]
   );
 
+  // If no chat is selected, show a placeholder UI
   if (!chatIdParam) {
     return (
       <Card className="grow h-[calc(100vh-8.78rem)] md:h-auto">
@@ -63,11 +66,12 @@ export function ChatBox({ user }: { user: UserType }) {
     );
   }
 
+  // If chat ID exists but no matching chat is found, throw an error
   if (!chat) throw new Error("This chat does not exist");
 
   return (
     <Card className="grow grid">
-      <ChatBoxHeader chat={chat} user={user} />
+      <ChatBoxHeader chat={chat} />
       <CardContent className="p-0">
         <ScrollAreaPrimitive.Root
           className={cn(

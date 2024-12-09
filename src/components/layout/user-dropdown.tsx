@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserNav({ dictionary }: { dictionary: DictionaryType }) {
+export function UserDropdown({ dictionary }: { dictionary: DictionaryType }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

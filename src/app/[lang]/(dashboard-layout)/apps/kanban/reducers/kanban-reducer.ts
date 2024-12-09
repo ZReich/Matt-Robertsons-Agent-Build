@@ -8,18 +8,19 @@ export const KanbanReducer = (
     case "addColumn": {
       const newColumn: ColumnType = {
         ...action.column,
-        id: crypto.randomUUID(),
-        order: state.columns.length,
-        tasks: [],
+        id: crypto.randomUUID(), // Generate a unique ID for the new column
+        order: state.columns.length, // Assign the new column's order
+        tasks: [], // Initialize with an empty task array
       };
-      return { ...state, columns: [...state.columns, newColumn] };
+      return { ...state, columns: [...state.columns, newColumn] }; // Add the new column to the list
     }
 
     case "updateColumn": {
       return {
         ...state,
-        columns: state.columns.map((column) =>
-          column.id === action.column.id ? { ...action.column } : column
+        columns: state.columns.map(
+          (column) =>
+            column.id === action.column.id ? { ...action.column } : column // Update the matching column
         ),
       };
     }
@@ -28,7 +29,7 @@ export const KanbanReducer = (
       return {
         ...state,
         columns: state.columns.filter(
-          (column) => column.id !== action.columnId
+          (column) => column.id !== action.columnId // Remove the column with the specified ID
         ),
       };
     }
@@ -40,13 +41,13 @@ export const KanbanReducer = (
           if (column.id === action.columnId) {
             const newTask = {
               ...action.task,
-              id: crypto.randomUUID(),
-              columnId: action.columnId,
-              order: column.tasks.length,
+              id: crypto.randomUUID(), // Generate a unique ID for the task
+              columnId: action.columnId, // Associate task with the column
+              order: column.tasks.length, // Assign order within the column
             };
             return {
               ...column,
-              tasks: [...column.tasks, newTask],
+              tasks: [...column.tasks, newTask], // Add the new task to the column's task list
             };
           }
           return column;
@@ -60,10 +61,10 @@ export const KanbanReducer = (
         columns: state.columns.map((column) => {
           const updatedTasks = column.tasks.map((task) =>
             task.id === action.task.id
-              ? { ...action.task, column_id: column.id }
+              ? { ...action.task, column_id: column.id } // Update the matching task
               : task
           );
-          return { ...column, tasks: updatedTasks };
+          return { ...column, tasks: updatedTasks }; // Replace the column's task list with updated tasks
         }),
       };
     }
@@ -73,9 +74,9 @@ export const KanbanReducer = (
         ...state,
         columns: state.columns.map((column) => {
           const updatedTasks = column.tasks.filter(
-            (task) => task.id !== action.taskId
+            (task) => task.id !== action.taskId // Remove the task with the specified ID
           );
-          return { ...column, tasks: updatedTasks };
+          return { ...column, tasks: updatedTasks }; // Update column tasks
         }),
       };
     }
@@ -83,14 +84,14 @@ export const KanbanReducer = (
     case "reorderColumns": {
       const { sourceIndex, destinationIndex } = action;
       const reorderedColumns = [...state.columns];
-      const [movedColumn] = reorderedColumns.splice(sourceIndex, 1);
-      reorderedColumns.splice(destinationIndex, 0, movedColumn);
+      const [movedColumn] = reorderedColumns.splice(sourceIndex, 1); // Remove the column from its original position
+      reorderedColumns.splice(destinationIndex, 0, movedColumn); // Insert it at the new position
 
       return {
         ...state,
         columns: reorderedColumns.map((column, index) => ({
           ...column,
-          order: index,
+          order: index, // Reassign order based on new positions
         })),
       };
     }
@@ -105,15 +106,14 @@ export const KanbanReducer = (
           columns: state.columns.map((column) => {
             if (column.id === source.columnId) {
               const updatedTasks = [...column.tasks];
-              const [movedTask] = updatedTasks.splice(source.index, 1);
-              updatedTasks.splice(destination.index, 0, movedTask);
+              const [movedTask] = updatedTasks.splice(source.index, 1); // Remove the task
+              updatedTasks.splice(destination.index, 0, movedTask); // Insert it at the new index
 
-              // Update order for tasks in this column
               return {
                 ...column,
                 tasks: updatedTasks.map((task, index) => ({
                   ...task,
-                  order: index, // Set the order based on the new index
+                  order: index, // Update task order
                 })),
               };
             }
@@ -124,20 +124,20 @@ export const KanbanReducer = (
         // If the task is moved to a different column
         let movedTask: TaskType | undefined;
 
-        // Update source column to remove the moved task
+        // Update source column to remove the task
         const updatedState = {
           ...state,
           columns: state.columns.map((column) => {
             if (column.id === source.columnId) {
               const updatedSourceTasks = [...column.tasks];
-              [movedTask] = updatedSourceTasks.splice(source.index, 1);
+              [movedTask] = updatedSourceTasks.splice(source.index, 1); // Remove the task
               return { ...column, tasks: updatedSourceTasks };
             }
             return column;
           }),
         };
 
-        // Update destination column to add the moved task
+        // Update destination column to add the task
         return {
           ...updatedState,
           columns: updatedState.columns.map((column) => {
@@ -145,8 +145,8 @@ export const KanbanReducer = (
               const updatedDestinationTasks = [...column.tasks];
               const movedTaskWithUpdatedColumnId = {
                 ...movedTask,
-                column_id: destination.columnId,
-                order: updatedDestinationTasks.length, // Set order based on new position
+                column_id: destination.columnId, // Update column ID for the moved task
+                order: updatedDestinationTasks.length, // Assign new order
               };
               updatedDestinationTasks.splice(
                 destination.index,
@@ -154,12 +154,11 @@ export const KanbanReducer = (
                 movedTaskWithUpdatedColumnId
               );
 
-              // Update order for all tasks in this column
               return {
                 ...column,
                 tasks: updatedDestinationTasks.map((task, index) => ({
                   ...task,
-                  order: index, // Set the order based on the new index
+                  order: index, // Update task order
                 })),
               };
             }
@@ -170,14 +169,14 @@ export const KanbanReducer = (
     }
 
     case "selectColumn": {
-      return { ...state, selectedColumn: action.column };
+      return { ...state, selectedColumn: action.column }; // Update the selected column
     }
 
     case "selectTask": {
-      return { ...state, selectedTask: action.task };
+      return { ...state, selectedTask: action.task }; // Update the selected task
     }
 
     default:
-      return state;
+      return state; // Return the current state for unknown actions
   }
 };

@@ -20,16 +20,21 @@ export function ChatListItem({ chat }: { chat: ChatType }) {
   const chatIdParam = params.id?.[0];
   const locale = params.lang as LocaleType;
 
+  const handleOnCLick = () => {
+    // Close the sidebar when a chat is selected
+    setIsChatSidebarOpen(false);
+  };
+
   return (
     <Link
       href={ensureLocalizedPathname(`/apps/chat/${chat.id}`, locale)}
       prefetch={false}
       className={cn(
         buttonVariants({ variant: "ghost" }),
-        chatIdParam === chat.id && "bg-accent",
+        chatIdParam === chat.id && "bg-accent", // Highlight the current chat
         "h-fit w-full"
       )}
-      onClick={() => setIsChatSidebarOpen(false)}
+      onClick={handleOnCLick}
     >
       <li className="w-full flex items-center gap-2">
         <ChatAvatar
@@ -50,6 +55,7 @@ export function ChatListItem({ chat }: { chat: ChatType }) {
             <span className="text-xs text-muted-foreground">
               {formatDistance(chat.lastMessage?.createdAt ?? new Date())}
             </span>
+            {/* Display unread count if available */}
             {!!chat?.unreadCount && (
               <Badge className="hover:bg-primary">{chat.unreadCount}</Badge>
             )}

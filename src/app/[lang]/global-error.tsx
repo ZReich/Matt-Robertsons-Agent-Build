@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import * as React from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +13,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function Error({
   error,
@@ -20,7 +21,7 @@ export default function Error({
   error: Error & { digest?: string },
   reset: () => void,
 }) {
-  useEffect(() => {
+  React.useEffect(() => {
     // Log the error to an error reporting service
     console.error(error);
   }, [error]);

@@ -13,7 +13,7 @@ const CommentSchema = z.object({
     .string()
     .trim()
     .min(2, { message: "Comment must be at least 2 characters." })
-    .min(250, { message: "Comment must be at most 250 characters." }),
+    .max(250, { message: "Comment must be at most 250 characters." }),
   createdAt: z.date(),
 });
 
@@ -45,13 +45,14 @@ export const KanbanTaskSchema = z.object({
   assigned: z
     .array(UserSchema)
     .min(1, { message: "At least one user must be assigned." })
-    .min(500, { message: "At most 500 users must be assigned." }),
+    .max(500, { message: "At most 500 users must be assigned." }),
   comments: z.array(CommentSchema),
   dueDate: z.date({
     required_error: "Due date is required.",
     invalid_type_error: "Invalid due date. Please provide a valid date.",
   }),
-  attachments: z
-    .array(FileSchema)
-    .max(10, { message: "You can attach a maximum of 10 files." }),
+  attachments: z.array(FileSchema).max(10, {
+    message:
+      "At most you can attach a maximum of 10 files.",
+  }),
 });

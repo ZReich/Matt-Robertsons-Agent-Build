@@ -27,25 +27,32 @@ interface KanbanTaskCardProps {
 }
 
 export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
+  // Memoize avatars to avoid unnecessary recalculations
   const avatars = React.useMemo(() => {
     return task.assigned.map((member) => ({
       src: member.avatar,
       alt: member.name,
-      href: `/profile/${member.username}`,
+      href: `/profile/${member.username}`, // Link to member's profile
     }));
   }, [task.assigned]);
 
+  // Check for an image attachment
   const imageAttachment = task.attachments.find((attachment) =>
     attachment.type.includes("image")
   );
 
   return (
-    <Draggable draggableId={task.id} index={index}>
+    <Draggable
+      draggableId={task.id} // A unique identifier for this task, which helps the library track and move the item
+      index={index} // The position of this task in its column, used for reordering tasks when drag-and-drop occurs
+    >
+      {/* A render callback function that provides the necessary props
+        for the Draggable component to function properly */}
       {(provided) => (
         <Card
           ref={provided.innerRef}
           className="my-2 w-64 md:w-72"
-          {...provided.draggableProps}
+          {...provided.draggableProps} // Draggable props for drag-and-drop functionality
         >
           <CardHeader className="flex-row items-center space-y-0 gap-x-1.5 px-3 py-3.5">
             <div
@@ -56,7 +63,7 @@ export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
                 }),
                 "text-secondary-foreground/50 cursor-grab"
               )}
-              {...provided.dragHandleProps}
+              {...provided.dragHandleProps} // Draggable props for drag-and-drop functionality
               aria-label="Move task"
             >
               <GripVertical className="size-4" />
@@ -67,6 +74,7 @@ export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
           <CardContent>
             <CardTitle>{task.title}</CardTitle>
             <CardDescription>{task.description}</CardDescription>
+            {/* Display image attachment if available */}
             {imageAttachment && (
               <img
                 src={imageAttachment.url}

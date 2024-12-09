@@ -9,6 +9,7 @@ export async function getEmailData(
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 250));
 
+    // Find the email in the emailsData array that matches the provided emailId
     const email = emailsData.find((email) => email.id === emailId);
 
     return email;

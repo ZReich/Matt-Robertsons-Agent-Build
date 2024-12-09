@@ -7,6 +7,8 @@ import { TopPages } from "./_components/top-pages";
 import { ConversionFunnel } from "./_components/conversion-funnel";
 import { PerformanceOverTime } from "./_components/performance-over-time";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Analytics",
 };

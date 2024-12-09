@@ -7,7 +7,6 @@ import {
   DropResult,
   DroppableProvided,
 } from "react-beautiful-dnd";
-import { Plus } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
@@ -16,9 +15,9 @@ import { StrictModeDroppable } from "@/lib/strict-mode-droppable";
 import type { LocaleType } from "@/configs/i18n";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { KanbanColumn } from "./kanban-column";
 import { useKanbanContext } from "../hooks/use-kanban-context";
+import { KanbanAddNewColumnButton } from "./kanban-add-new-column-button";
 
 export function Kanban() {
   const {
@@ -35,6 +34,7 @@ export function Kanban() {
   const handleDragDrop = (result: DropResult) => {
     const { source, destination, type } = result;
 
+    // Ignore if there's no destination
     if (!destination) return;
 
     if (type === "Column") {
@@ -52,10 +52,12 @@ export function Kanban() {
   return (
     <DragDropContext onDragEnd={handleDragDrop}>
       <StrictModeDroppable
-        droppableId="root"
-        type="Column"
-        direction="horizontal"
+        droppableId="root" // Unique identifier for the droppable area. Used to track drag-and-drop events
+        type="Column" // Specifies the type of draggable items this droppable area will accept. Helps differentiate between column and task movements
+        direction="horizontal" // Indicates the drag direction within the droppable area (horizontal layout for Kanban columns)
       >
+        {/* A render callback function that provides the necessary props
+        for the Droppable component to function properly */}
         {(provided: DroppableProvided) => (
           <ScrollArea
             orientation="horizontal"
@@ -64,14 +66,15 @@ export function Kanban() {
           >
             <div
               ref={provided.innerRef}
-              {...provided.droppableProps}
+              {...provided.droppableProps} // Droppable props for drag-and-drop functionality
               className="flex gap-x-4"
             >
               {kanbanState.columns.map((column, index) => (
                 <KanbanColumn key={column.id} column={column} index={index} />
               ))}
+              {/* Placeholder for maintaining layout integrity by creating a visual space for the dragged item */}
               {provided.placeholder}
-              <AddNewColumn
+              <KanbanAddNewColumnButton
                 setKanbanAddColumnSidebarIsOpen={
                   setKanbanAddColumnSidebarIsOpen
                 }
@@ -81,22 +84,5 @@ export function Kanban() {
         )}
       </StrictModeDroppable>
     </DragDropContext>
-  );
-}
-
-function AddNewColumn({
-  setKanbanAddColumnSidebarIsOpen,
-}: {
-  setKanbanAddColumnSidebarIsOpen: (value: boolean) => void;
-}) {
-  return (
-    <Button
-      variant="outline"
-      className="w-64 md:w-72 shadow-none mx-2"
-      onClick={() => setKanbanAddColumnSidebarIsOpen(true)}
-    >
-      <Plus className="me-2 size-4 text-muted-foreground" />
-      Add New Column
-    </Button>
   );
 }

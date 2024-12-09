@@ -46,7 +46,6 @@ export function SidebarContent({
             )}
             <Nav
               navs={group.navs}
-              direction={direction}
               setIsMobileSidebarNavOpen={setIsMobileSidebarNavOpen}
             />
           </div>

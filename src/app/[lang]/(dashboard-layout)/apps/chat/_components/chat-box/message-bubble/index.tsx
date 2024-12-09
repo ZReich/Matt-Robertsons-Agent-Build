@@ -2,7 +2,7 @@ import { EllipsisVertical } from "lucide-react";
 
 import { cn, getInitials, formatDistance } from "@/lib/utils";
 
-import { MessageType, UserType } from "../../../types";
+import type { MessageType, UserType } from "../../../types";
 
 import {
   DropdownMenu,
@@ -67,11 +67,13 @@ export function MessageBubble({
           <DropdownMenuItem>Forward</DropdownMenuItem>
           <DropdownMenuItem>Copy</DropdownMenuItem>
           <DropdownMenuSeparator />
+          {/* Show 'Report' only if the message is not sent by the current user */}
           {!isByCurrentUser && (
             <DropdownMenuItem className="text-destructive focus:text-destructive">
               Report
             </DropdownMenuItem>
           )}
+          {/* Show 'Delete' only if the message is sent by the current user */}
           {isByCurrentUser && (
             <DropdownMenuItem className="text-destructive focus:text-destructive">
               Delete

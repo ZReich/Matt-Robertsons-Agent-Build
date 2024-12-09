@@ -2,7 +2,7 @@ import { getDictionary } from "@/lib/getDictionary";
 
 import type { LocaleType } from "@/configs/i18n";
 
-import Layout from "@/components/layout";
+import { Layout } from "@/components/layout";
 
 export default async function DashboardLayout({
   children,

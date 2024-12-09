@@ -2,35 +2,35 @@ import { BadgePercent, HandCoins, ShoppingBag } from "lucide-react";
 
 import { overviewData } from "../_data/overview";
 
-import { OverviewCard } from "@/components/overview-card";
+import { DashboardOverviewCard } from "@/components/dashboard-card";
 
 export async function Overview() {
   return (
     <div className="grid grid-cols-2 gap-4 md:col-span-2 md:grid-cols-4">
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.totalSales}
         title="Total Sales"
-        description="Last month"
+        period="Last month"
         icon={BadgePercent}
         formatStyle="currency"
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.revenueSummary}
         title="Revenue Summary"
-        description="Last month"
+        period="Last month"
         icon={HandCoins}
         formatStyle="currency"
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.numberOfOrders}
         title="Number of Orders"
-        description="Last month"
+        period="Last month"
         icon={ShoppingBag}
       />
-      <OverviewCard
+      <DashboardOverviewCard
         data={overviewData.averageOrderValue}
         title="Avg. Order Value"
-        description="Last month"
+        period="Last month"
         icon={HandCoins}
         formatStyle="currency"
       />

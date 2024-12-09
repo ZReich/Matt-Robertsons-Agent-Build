@@ -13,7 +13,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { cn, formatPercent } from "@/lib/utils";
+import { cn, formatCurrency, formatPercent, isNonNegative } from "@/lib/utils";
 import { useSettings } from "@/hooks/use-settings";
 
 export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
@@ -39,8 +39,12 @@ export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
     >
       <CarouselContent className="h-[500px] grid gap-2">
         {data.map((product, index) => {
-          const isPositiveRevenueChange = product.revenue.percentageChange > 0;
-          const isPositiveSalesChange = product.sales.percentageChange > 0;
+          const isNonNegativeRevenueChange = isNonNegative(
+            product.revenue.percentageChange
+          );
+          const isNonNegativeSalesChange = isNonNegative(
+            product.sales.percentageChange
+          );
 
           return (
             <CarouselItem key={product.sku}>
@@ -73,21 +77,23 @@ export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
                     <div className="flex items-center gap-1 text-sm">
                       <h5>Sales:</h5>
                       <div className="flex items-center space-x-2">
-                        <p className="font-semibold">{`$${product.revenue.value.toLocaleString()}`}</p>
+                        <p className="font-semibold">
+                          {formatCurrency(product.revenue.value)}
+                        </p>
                         <Badge
                           variant="destructive"
                           className={cn(
                             "justify-center",
-                            isPositiveRevenueChange &&
+                            isNonNegativeRevenueChange &&
                               "bg-success hover:bg-success/90"
                           )}
                         >
-                          {isPositiveRevenueChange && <span>+</span>}
+                          {isNonNegativeRevenueChange && <span>+</span>}
                           <span>
                             {formatPercent(product.revenue.percentageChange)}
                           </span>
                           <span className="ms-1" aria-hidden>
-                            {isPositiveRevenueChange ? (
+                            {isNonNegativeRevenueChange ? (
                               <TrendingUp className="size-4" />
                             ) : (
                               <TrendingDown className="size-4" />
@@ -99,19 +105,21 @@ export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
                     <div className="flex items-center gap-1 text-sm">
                       <h5>Revenue:</h5>
                       <div className="flex items-center space-x-2">
-                        <p className="font-semibold">{`$${product.revenue.value.toLocaleString()}`}</p>
+                        <p className="font-semibold">
+                          {formatCurrency(product.revenue.value)}
+                        </p>
                         <Badge
                           variant="destructive"
                           className={cn(
                             "justify-center",
-                            isPositiveSalesChange &&
+                            isNonNegativeSalesChange &&
                               "bg-success hover:bg-success/90"
                           )}
                         >
-                          {isPositiveSalesChange && <span>+</span>}
+                          {isNonNegativeSalesChange && <span>+</span>}
                           <span>{formatPercent(product.revenue.value)}</span>
                           <span className="ms-1" aria-hidden>
-                            {isPositiveSalesChange ? (
+                            {isNonNegativeSalesChange ? (
                               <TrendingUp className="size-4" />
                             ) : (
                               <TrendingDown className="size-4" />

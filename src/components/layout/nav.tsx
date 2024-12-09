@@ -9,7 +9,7 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { NavType } from "@/data/navigation";
 import type { DirectionType } from "@/types";
-import type { LocaleType } from "@/configs/i18n";
+import { i18n, type LocaleType } from "@/configs/i18n";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -22,14 +22,12 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 
 interface NavProps {
   navs: NavType[];
-  direction: DirectionType;
   isRoot?: boolean;
   setIsMobileSidebarNavOpen?: (val: boolean) => void;
 }
 
 export function Nav({
   navs,
-  direction,
   isRoot = true,
   setIsMobileSidebarNavOpen,
 }: NavProps) {
@@ -37,12 +35,14 @@ export function Nav({
   const params = useParams();
 
   const locale = params.lang as LocaleType;
+  const direction = i18n.langDirection[locale];
 
   return (
     <ul className="grid gap-1" dir={direction}>
       {navs.map((nav) => {
         const isActive = pathname.includes(nav.href);
 
+        // If the item has children, render a collapsible.
         if (nav.children) {
           return (
             <li key={nav.href}>
@@ -75,17 +75,14 @@ export function Nav({
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-1 ms-2 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-                  <Nav
-                    navs={nav.children as NavType[]}
-                    direction={direction}
-                    isRoot={false}
-                  />
+                  <Nav navs={nav.children as NavType[]} isRoot={false} />
                 </CollapsibleContent>
               </Collapsible>
             </li>
           );
         }
 
+        // If the item has no children, render a link.
         return (
           <li key={nav.name}>
             <Link

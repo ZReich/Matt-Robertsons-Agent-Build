@@ -9,7 +9,8 @@ export default async function EmailViewPage({
 }) {
   const emailData = await getEmailData(params.id);
 
-  if (!emailData) throw new Error("Something went wrong.");
+  // If the email data is not found, throw an error indicating that the email does not exist
+  if (!emailData) throw new Error("This Email does not exist.");
 
   return <EmailView email={emailData} />;
 }

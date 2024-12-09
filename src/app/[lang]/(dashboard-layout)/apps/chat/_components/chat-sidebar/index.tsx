@@ -17,6 +17,7 @@ export function ChatSidebar() {
   const { isChatSidebarOpen, setIsChatSidebarOpen } = useChatContext();
   const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
+  // Content to display in the chat sidebar
   const content = (
     <div className="md:w-72">
       <ChatSidebarHeader />
@@ -24,6 +25,7 @@ export function ChatSidebar() {
     </div>
   );
 
+  // Render a persistent sidebar for larger screens
   if (!isMediumOrSmaller) {
     return (
       <aside>
@@ -32,6 +34,7 @@ export function ChatSidebar() {
     );
   }
 
+  // Render a sheet sidebar for smaller screens
   return (
     <Sheet open={isChatSidebarOpen} onOpenChange={setIsChatSidebarOpen}>
       <SheetTrigger

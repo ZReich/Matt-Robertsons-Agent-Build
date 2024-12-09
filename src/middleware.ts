@@ -19,6 +19,7 @@ const getLocale = (request: NextRequest) => {
   try {
     const parsedSettingsCookie = settingsCookie && JSON.parse(settingsCookie);
 
+    // Return locale from settings cookie if available
     if (parsedSettingsCookie?.locale) {
       return parsedSettingsCookie.locale as LocaleType;
     }
@@ -30,6 +31,8 @@ const getLocale = (request: NextRequest) => {
   const pathnameLocale = i18n.locales.find(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
+
+  // Return locale based on pathname if it matches a supported locale
   if (pathnameLocale) return pathnameLocale;
 
   const supportedLocales = [...i18n.locales];
@@ -37,6 +40,7 @@ const getLocale = (request: NextRequest) => {
     headers: Object.fromEntries(request.headers.entries()),
   }).languages(supportedLocales);
 
+  // Match preferred locales with supported locales
   const locale = match(preferredLocales, supportedLocales, i18n.defaultLocale);
 
   return locale as LocaleType;
@@ -49,6 +53,7 @@ function redirectTo(
 ) {
   let redirectPathname = pathname;
 
+  // Add locale to pathname if it's missing
   if (isPathnameMissingLocale(pathname)) {
     redirectPathname = ensureLocalizedPathname(
       pathname,
@@ -63,6 +68,7 @@ function redirectTo(
 function getFirstSegment(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
 
+  // Return the first segment of the pathname, excluding locale if present
   return i18n.locales.includes(segments[0] as LocaleType)
     ? segments[1]
     : segments[0];
@@ -107,7 +113,7 @@ export default withAuth(
       return redirectTo(HOME_PATHNAME, request, locale);
     }
 
-    // Redirect to loclized url if the pathname is missing a locale
+    // Redirect to localized URL if the pathname is missing a locale
     if (isPathnameMissingLocale(pathname)) {
       return redirectTo(pathname, request, locale);
     }

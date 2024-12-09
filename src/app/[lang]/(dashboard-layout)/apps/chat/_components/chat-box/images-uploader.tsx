@@ -66,6 +66,7 @@ export function ImagesUploader() {
     // Revoke temporary URLs after submission
     imageUrls.forEach((url) => URL.revokeObjectURL(url));
 
+    // Reset to default
     setImageUrls([]);
     form.reset();
     setIsOpen(false);
@@ -75,6 +76,7 @@ export function ImagesUploader() {
     (acceptedImages: FileList | File[] | null) => {
       if (!acceptedImages) return;
 
+      // Convert accepted images to an array and merge with current images while respecting the max limit
       const newImagesArray = [...images, ...Array.from(acceptedImages)].slice(
         0,
         MAX_IMAGES
@@ -82,13 +84,13 @@ export function ImagesUploader() {
 
       form.setValue("images", newImagesArray);
 
-      // Create object URLs for the new images
+      // Create object URLs for new image
       const newImageUrls = Array.from(acceptedImages).map((file) =>
         URL.createObjectURL(file)
       );
       setImageUrls((prevUrls) => [...prevUrls, ...newImageUrls]);
 
-      form.trigger("images");
+      form.trigger("images"); // Trigger form validation
     },
     [form, images]
   );
@@ -104,9 +106,10 @@ export function ImagesUploader() {
 
     form.setValue("images", updatedImages);
     setImageUrls(updatedUrls);
-    form.trigger("images");
+    form.trigger("images"); // Trigger form validation
   };
 
+  // Configure dropzone for drag-and-drop file uploads
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: handleImageChange,
     accept: { "image/*": [] },
@@ -137,7 +140,7 @@ export function ImagesUploader() {
                     className={`block border-2 border-dashed border-muted-foreground/50 bg-muted/50 rounded-lg py-6 px-4 text-center cursor-pointer transition-colors ${
                       isDragActive ? "border-primary bg-primary/10" : ""
                     }`}
-                    {...getRootProps()}
+                    {...getRootProps()} // Dropzone root props for drag-and-drop functionality
                   >
                     <FormControl>
                       <Input
@@ -147,7 +150,7 @@ export function ImagesUploader() {
                           onChange: (e) => handleImageChange(e.target.files),
                           onBlur: field.onBlur,
                           disabled: field.disabled,
-                        })}
+                        })} // Dropzone input props for drag-and-drop functionality
                       />
                     </FormControl>
                     <Upload
@@ -170,6 +173,7 @@ export function ImagesUploader() {
               )}
             />
 
+            {/* Display selected images if they are available */}
             {images && images.length > 0 && (
               <div className="mt-2">
                 <h4 className="text-sm font-medium mb-2">

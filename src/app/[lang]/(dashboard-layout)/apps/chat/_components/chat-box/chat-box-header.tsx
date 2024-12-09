@@ -5,7 +5,7 @@ import { EllipsisVertical, Phone, Video } from "lucide-react";
 
 import { getInitials } from "@/lib/utils";
 
-import type { ChatType, UserType } from "../../types";
+import type { ChatType } from "../../types";
 
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,19 +18,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChatAvatar } from "../chat-avatar";
 
-export function ChatBoxHeader({
-  chat,
-  user,
-}: {
-  chat: ChatType;
-  user: UserType;
-}) {
+export function ChatBoxHeader({ chat }: { chat: ChatType }) {
   return (
     <CardHeader className="flex flex-row items-center space-y-0 gap-x-1.5 py-3 border-b border-border">
       <ChatAvatar
         src={chat.avatar}
         fallback={getInitials(chat.name)}
-        status={chat.status as string | undefined}
+        status={chat.status}
         size={2}
       />
       <CardTitle>{chat.name}</CardTitle>

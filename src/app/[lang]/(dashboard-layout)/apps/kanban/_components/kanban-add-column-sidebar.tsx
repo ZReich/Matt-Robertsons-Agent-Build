@@ -41,6 +41,7 @@ export function KanbanAddColumnSidebar() {
     resolver: zodResolver(KanbanColumnSchema),
   });
 
+  // Reset the form whenever `kanbanAddColumnSidebarIsOpen` changes
   React.useEffect(() => {
     form.reset();
   }, [kanbanAddColumnSidebarIsOpen, form]);
@@ -52,8 +53,8 @@ export function KanbanAddColumnSidebar() {
   }
 
   const handleSidebarClose = () => {
-    form.clearErrors();
-    setKanbanAddColumnSidebarIsOpen(false);
+    form.clearErrors(); // Reset the form to the initial values
+    setKanbanAddColumnSidebarIsOpen(false); // Close the sidebar
   };
 
   return (

@@ -6,7 +6,7 @@ import { useMedia } from "react-use";
 import { Menu } from "lucide-react";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import { cn, formatUnreadCount } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
 import type { EmailSidebarLabel } from "../types";
@@ -22,8 +22,9 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
   const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
   const locale = params.lang as LocaleType;
-  const filterParam = params.filter;
+  const segmentParam = params.segment;
 
+  // Content to display in the chat sidebar
   const content = (
     <>
       <CardHeader className="p-3">
@@ -36,8 +37,7 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
       <CardContent className="p-3 pt-0">
         <nav className="space-y-1.5">
           {data.map((item) => {
-            const unreadCount =
-              item.unreadCount >= 100 ? "+99" : item.unreadCount;
+            const unreadCount = formatUnreadCount(item.unreadCount);
 
             return (
               <Link
@@ -49,11 +49,12 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
                 className={cn(
                   buttonVariants({ variant: "ghost" }),
                   "w-full justify-start",
-                  filterParam === item.param && "bg-accent"
+                  segmentParam === item.param && "bg-accent" // Highlight the current section
                 )}
               >
                 <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
                 {item.label}
+                {/* Display the badge only if there is an unread count */}
                 {!!unreadCount && (
                   <Badge className="ms-auto">{unreadCount}</Badge>
                 )}
@@ -65,6 +66,7 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
     </>
   );
 
+  // Render a persistent sidebar for larger screens
   if (!isMediumOrSmaller) {
     return (
       <aside>
@@ -73,6 +75,7 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
     );
   }
 
+  // Render a sheet sidebar for smaller screens
   return (
     <Sheet>
       <SheetTrigger

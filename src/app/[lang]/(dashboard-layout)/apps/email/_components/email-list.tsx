@@ -7,7 +7,6 @@ import {
   useSearchParams,
   useParams,
 } from "next/navigation";
-import { format } from "date-fns";
 import { useMedia } from "react-use";
 import {
   Star,
@@ -69,7 +68,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
 
   const pageQuery = searchParams.get("page")
     ? parseInt(searchParams.get("page") as string)
-    : 1;
+    : 1; // Get the current page from the search params, default to page 1
   const filterParam = params.filter as string;
   const layout = settings.layout;
 
@@ -82,26 +81,37 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
   }, [pageQuery, filterParam]);
 
   const toggleSelectEmail = (emailId: string) => {
-    setSelectedEmails((current) =>
-      current.includes(emailId)
-        ? current.filter((id) => id !== emailId)
-        : [...current, emailId]
+    setSelectedEmails(
+      (current) =>
+        current.includes(emailId)
+          ? current.filter((id) => id !== emailId) // Remove the email ID if it is already selected
+          : [...current, emailId] // Add the email ID if it is not yet selected
     );
   };
 
   const toggleStarEmail = (emailId: string) => {
-    setStarredEmails((current) =>
-      current.includes(emailId)
-        ? current.filter((id) => id !== emailId)
-        : [...current, emailId]
+    setStarredEmails(
+      (current) =>
+        current.includes(emailId)
+          ? current.filter((id) => id !== emailId) // Remove the email ID from starred if it is already starred
+          : [...current, emailId] // Add the email ID to starred if it is not already starred
     );
   };
 
   const toggleSelectAll = () => {
     if (selectedEmails.length === emailState.emails.length) {
-      setSelectedEmails([]);
+      setSelectedEmails([]); // Deselect all if all emails are currently selected
     } else {
-      setSelectedEmails(emailState.emails.map((email) => email.id));
+      setSelectedEmails(emailState.emails.map((email) => email.id)); // Select all emails if none or some are selected
+    }
+  };
+
+  const navigateToEmailOnKeyPress = (
+    e: React.KeyboardEvent,
+    emailId: string
+  ) => {
+    if (e.key === "Enter" || e.key === " ") {
+      router.push(ensureSuffix(pathname, "/") + emailId);
     }
   };
 
@@ -153,7 +163,6 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
           </PaginationContent>
         </Pagination>
       </CardHeader>
-
       <CardContent className="p-0">
         <div className="flex items-center justify-between p-1 ps-3 border-b border-border md:p-2 md:ps-4">
           <Checkbox
@@ -180,7 +189,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
+        {/* Render the list of emails in a mobile-friendly layout if needed */}
         {isMediumOrSmaller ? (
           <ul>
             <ScrollArea className="h-[calc(100vh-19.1rem)]">
@@ -195,11 +204,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
                     router.push(ensureSuffix(pathname, "/") + email.id)
                   }
                   tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      router.push(ensureSuffix(pathname, "/") + email.id);
-                    }
-                  }}
+                  onKeyDown={(e) => navigateToEmailOnKeyPress(e, email.id)}
                 >
                   <Checkbox
                     checked={selectedEmails.includes(email.id)}
@@ -264,6 +269,7 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
             </ScrollArea>
           </ul>
         ) : (
+          // Render the email list in a table format for larger screens
           <ScrollArea
             className={cn(
               "h-[calc(100vh-19.1rem)]",
@@ -368,7 +374,6 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
           </ScrollArea>
         )}
       </CardContent>
-
       <CardFooter className="justify-center py-3 border-t border-border">
         <p className="text-muted-foreground" role="status" aria-live="polite">
           {emailState.emails.length
