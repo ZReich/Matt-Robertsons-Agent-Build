@@ -1,6 +1,6 @@
-import { Subscription } from "../types";
+import type { SubscriptionType } from "../types";
 
-export const subscriptionsData: Subscription[] = [
+export const subscriptionsData: SubscriptionType[] = [
   {
     id: 1,
     planId: 1,

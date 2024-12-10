@@ -20,6 +20,8 @@ import { RecentLogsTable } from "./_components/recent-logs-table";
 import { AccountRecoveryOptionsForm } from "./_components/account-recovery-options-form";
 import { buttonVariants } from "@/components/ui/button";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Security Settings",
 };

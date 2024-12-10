@@ -6,6 +6,8 @@ import { CalendarProvider } from "./contexts/calendar-context";
 import { Calendar } from "./_components/calendar";
 import { EventSidebar } from "./_components/event-sidebar";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Calendar",
 };

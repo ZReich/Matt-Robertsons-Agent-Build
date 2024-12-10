@@ -28,6 +28,7 @@ export function EventFilters() {
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
           className="cursor-pointer"
+          // The "All" checkbox is checked if all categories are selected
           checked={
             calendarState.selectedCategories.length === categoriesData.length
           }
@@ -39,6 +40,7 @@ export function EventFilters() {
           <DropdownMenuCheckboxItem
             key={category}
             className="cursor-pointer"
+            // Checkbox is checked if the current category is included in the selected categories array
             checked={calendarState.selectedCategories.includes(category)}
             onCheckedChange={() => handleSelectCategory(category)}
           >

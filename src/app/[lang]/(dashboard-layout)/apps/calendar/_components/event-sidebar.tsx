@@ -5,11 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import {
-  CalendarCheck2,
-  Calendar as CalendarIcon,
-  CalendarMinus,
-} from "lucide-react";
+import { CalendarCheck2, CalendarIcon, CalendarMinus } from "lucide-react";
 
 import { EventSidebarSchema } from "../_schemas/event-sidebar-schema";
 
@@ -69,18 +65,13 @@ export function EventSidebar() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(EventSidebarSchema),
-    defaultValues: {
-      allDay: true,
-      start: new Date(),
-      end: new Date(),
-      category: "Miscellaneous",
-    },
   });
 
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid;
   const selectedEvent = calendarState.selectedEvent;
 
+  // Reset the form with the current selected event's values if it exists; otherwise reset to the default state. This runs whenever `selectedEvent` or `eventSidebarIsOpen` changes
   React.useEffect(() => {
     if (selectedEvent) {
       const { extendedProps, ...eventProps } = selectedEvent;
@@ -92,24 +83,23 @@ export function EventSidebar() {
     } else {
       form.reset({
         allDay: true,
-        category: "Miscellaneous",
         start: new Date(),
         end: new Date(),
+        category: "Miscellaneous",
       });
     }
   }, [eventSidebarIsOpen, selectedEvent, form]);
 
   const handleSidebarClose = async () => {
-    form.clearErrors();
-    handleSelectEvent(undefined);
-    setEventSidebarIsOpen(false);
+    handleSelectEvent(undefined); // Unselect the current event
+    setEventSidebarIsOpen(false); // Close the sidebar
   };
 
   function onSubmit(data: FormValues) {
-    if (!calendarApi) return;
+    if (!calendarApi) return; // Ensure the calendar API is available before proceeding
 
     const event: EventWithoutIdType = {
-      ...(data.url && { url: data.url }),
+      ...(data.url && { url: data.url }), // Optional URL
       title: data.title,
       allDay: data.allDay,
       start: data.start,
@@ -122,22 +112,26 @@ export function EventSidebar() {
 
     if (selectedEvent) {
       handleUpdateEvent({
-        id: selectedEvent.id,
+        id: selectedEvent.id, // Use the ID of the currently selected event
         ...event,
       });
     } else {
       handleAddEvent(event);
     }
 
+    // Refresh the calendar and close the sidebar
     calendarApi.refetchEvents();
     handleSidebarClose();
   }
 
-  function handleDelete() {
-    if (!calendarApi) return;
+  function handleOnDeleteEvent() {
+    if (!calendarApi) return; // Ensure the calendar API is available before proceeding
 
+    // Check if an event is currently selected
     if (selectedEvent) {
-      handleDeleteEvent(selectedEvent.id);
+      handleDeleteEvent(selectedEvent.id); // Delete the event
+
+      // Refresh the calendar and close the sidebar
       calendarApi.refetchEvents();
       handleSidebarClose();
     }
@@ -336,12 +330,12 @@ export function EventSidebar() {
                 <CalendarCheck2 className="me-1 size-4" />
                 Save
               </Button>
+              {/* Display the delete button only when an event is selected to avoid showing it during event creation */}
               {selectedEvent && (
                 <Button
                   variant="destructive"
                   className="w-full"
-                  onClick={handleDelete}
-                  disabled={isDisabled}
+                  onClick={handleOnDeleteEvent}
                 >
                   <CalendarMinus className="me-1 size-4" />
                   Delete

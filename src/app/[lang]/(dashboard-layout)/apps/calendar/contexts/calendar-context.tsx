@@ -14,6 +14,7 @@ import type {
 } from "../types";
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 
+// Create Kanban context
 export const CalendarContext = React.createContext<
   CalendarContextType | undefined
 >(undefined);
@@ -25,16 +26,20 @@ export function CalendarProvider({
   events: EventType[];
   children: React.ReactNode;
 }) {
+  // Reducer to manage Calendar state
   const [calendarState, dispatch] = React.useReducer(CalendarReducer, {
     initalEvents: events,
     events,
     selectedCategories: [...categoriesData],
   });
+
+  // State management
   const [calendarApi, setCalendarApi] = React.useState<null | CalendarApi>(
     null
   );
   const [eventSidebarIsOpen, setEventSidebarIsOpen] = React.useState(false);
 
+  // Handlers for event actions
   const handleAddEvent = (event: EventWithoutIdType) => {
     dispatch({
       type: "addEvent",
@@ -50,6 +55,7 @@ export function CalendarProvider({
     dispatch({ type: "deleteEvent", eventId });
   };
 
+  // Selection handlers
   const handleSelectEvent = (event?: EventType) => {
     dispatch({ type: "selectEvent", event: event });
   };

@@ -84,12 +84,11 @@ export function RegisterForm({
         toast({ title: "Register Successful" });
         router.push(ensureLocalizedPathname("/sign-in", locale));
       }
-    } catch (e: unknown) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Register Failed",
-        description:
-          e instanceof Error ? e.message : "An unknown error occurred.",
+        description: error instanceof Error ? error.message : undefined,
       });
     }
   }

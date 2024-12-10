@@ -26,8 +26,9 @@ export function NavList() {
             key={link.title}
             href={localizedPathname}
             className={cn(
-              pathname === localizedPathname && "font-semibold text-primary"
+              pathname === localizedPathname && "font-semibold text-primary" // Highlight the current page
             )}
+            aria-current={pathname === localizedPathname ? "page" : undefined}
           >
             {link.title}
           </Link>

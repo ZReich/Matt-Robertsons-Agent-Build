@@ -16,17 +16,12 @@ import {
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 import { Badge } from "@/components/ui/badge";
 
-type Card = z.infer<typeof cardSchema>;
+type CardType = z.infer<typeof cardSchema>;
 
-export function SavedCardsList() {
-  const data: Card[] = [
-    { id: 1, last4: "4242", type: "visa", default: true },
-    { id: 2, last4: "5678", type: "mastercard", default: false },
-  ];
-
+export function SavedCardsList({ savedCards }: { savedCards: CardType[] }) {
   return (
     <ul className="space-y-2">
-      {data.map((card) => (
+      {savedCards.map((card) => (
         <li
           key={card.last4}
           className="flex justify-between items-center gap-8 space-y-0 px-4 py-2 border rounded-md shadow"
@@ -34,7 +29,8 @@ export function SavedCardsList() {
           <h4 className="flex justify-center items-center gap-2">
             <CreditCardBrandIcon brandName={card.type} />
             <span>**** **** **** {card.last4}</span>
-            {card.default && <Badge>default</Badge>}
+            {/* Display a `Default` badge if the card is marked as the default */}
+            {card.default && <Badge>Default</Badge>}
           </h4>
           <div>
             <DropdownMenu>

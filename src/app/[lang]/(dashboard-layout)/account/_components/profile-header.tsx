@@ -10,7 +10,6 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 export function ProfileHeader({
   locale,
@@ -25,7 +24,7 @@ export function ProfileHeader({
     <section className="border border-border">
       <div className="relative h-[180px] w-full md:h-[250px]">
         <Image
-          src={background || "/images/placeholder.svg"}
+          src={background || "/images/placeholder.svg"} // Fallback placeholder image
           fill
           className="object-cover"
           alt="Profile Background"

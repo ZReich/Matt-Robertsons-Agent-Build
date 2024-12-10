@@ -10,7 +10,8 @@ import { ProfileInfoSchema } from "../_schemas/profile-info-form";
 
 import { cn, getInitials } from "@/lib/utils";
 
-import { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/configs/i18n";
+import type { UserType } from "../../types";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserType } from "../../types";
 
 interface ProfileInfoFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
@@ -48,13 +48,32 @@ export function ProfileInfoForm({
   );
 
   const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid;
+  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
   async function onSubmit(data: z.infer<typeof ProfileInfoSchema>) {}
 
   function handleResetForm() {
-    form.reset();
-    setPhotoPreview(user?.avatar);
+    form.reset(); // Reset the form to the initial state
+    setPhotoPreview(user?.avatar); // Reset photoPreview to the initial state
+  }
+
+  function handleUploadPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    // Get the selected file from the file input
+    const file = e.target.files?.[0];
+
+    if (file) {
+      // Generate a temporary URL for the uploaded image for preview purposes
+      const imageUrl = URL.createObjectURL(file);
+
+      setPhotoPreview(imageUrl);
+      form.setValue("avatar", file);
+      form.trigger("avatar"); // Trigger validation for the "avatar" field
+    }
+  }
+
+  function handleRemovePhoto() {
+    form.resetField("avatar"); // Reset the "avatar" field in the form to its initial state
+    setPhotoPreview(undefined);
   }
 
   return (
@@ -68,7 +87,7 @@ export function ProfileInfoForm({
           <div className="col-span-2 flex items-center gap-4 mb-4">
             <Avatar className="size-24">
               <AvatarImage src={photoPreview} alt="Profile Avatar" />
-              <AvatarFallback>{getInitials(user.firstName)}</AvatarFallback>
+              <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-2 md:flex-row">
               <FormField
@@ -89,19 +108,7 @@ export function ProfileInfoForm({
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setPhotoPreview(reader.result as string);
-                            };
-                            reader.readAsDataURL(file);
-                          } else {
-                            setPhotoPreview(undefined);
-                          }
-                          form.setValue("avatar", file);
-                        }}
+                        onChange={handleUploadPhoto}
                       />
                     </FormControl>
                     <FormMessage />
@@ -111,10 +118,7 @@ export function ProfileInfoForm({
               <Button
                 type="button"
                 variant="destructive"
-                onClick={() => {
-                  form.resetField("avatar");
-                  setPhotoPreview(undefined);
-                }}
+                onClick={handleRemovePhoto}
               >
                 Remove Photo
               </Button>

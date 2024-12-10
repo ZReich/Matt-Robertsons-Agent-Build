@@ -11,6 +11,8 @@ import {
   AuthForm,
 } from "../_components/auth-layout";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "New Password",
 };

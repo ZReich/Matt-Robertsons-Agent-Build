@@ -5,6 +5,8 @@ import type { LocaleType } from "@/configs/i18n";
 
 import { ProfileHeader } from "./_components/profile-header";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Profile",
 };

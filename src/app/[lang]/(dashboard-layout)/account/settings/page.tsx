@@ -13,6 +13,8 @@ import {
 import { ProfileInfoForm } from "./_components/profile-info-form";
 import { DeleteAccountForm } from "./_components/delete-account-form";
 
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Profile Information Settings",
 };

@@ -1,6 +1,6 @@
-import { Plan } from "../types";
+import type { PlanType } from "../types";
 
-export const plansData: Plan[] = [
+export const plansData: PlanType[] = [
   {
     id: 1,
     name: "Starter",

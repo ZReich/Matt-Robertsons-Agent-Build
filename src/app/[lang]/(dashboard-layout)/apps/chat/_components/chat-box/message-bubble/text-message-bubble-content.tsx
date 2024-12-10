@@ -1,5 +1,5 @@
-export function TextMessage({ text }: { text: string }) {
-  if (!text) return null; // Return null if the input text is empty
+export function TextMessageBubbleContent({ text }: { text: string }) {
+  if (!text) return null; // Return null if the text is empty
 
   const urlRegex = /(https?:\/\/[^\s]+)/g; // Regex to match URLs
   const parts = text.split(urlRegex); // Split the text into parts using the URL regex

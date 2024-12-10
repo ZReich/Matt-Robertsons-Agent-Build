@@ -46,7 +46,7 @@ export function PaymentMethodForm() {
 
   const cardNumber = form.watch("cardNumber");
   const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
   function onSubmit(data: z.infer<typeof PaymentMethodSchema>) {}
@@ -98,6 +98,7 @@ export function PaymentMethodForm() {
               )}
             />
 
+            {/* Fields displayed when "card" is selected */}
             {paymentMethod === "card" && (
               <>
                 <FormField
@@ -124,7 +125,6 @@ export function PaymentMethodForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="cardName"
@@ -141,7 +141,6 @@ export function PaymentMethodForm() {
                     </FormItem>
                   )}
                 />
-
                 <div className="flex space-x-4">
                   <FormField
                     control={form.control}
@@ -159,7 +158,6 @@ export function PaymentMethodForm() {
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="cvc"
@@ -177,7 +175,6 @@ export function PaymentMethodForm() {
                     )}
                   />
                 </div>
-
                 <FormField
                   control={form.control}
                   name="saveCard"
@@ -203,6 +200,7 @@ export function PaymentMethodForm() {
               </>
             )}
 
+            {/* Fields displayed when "bank" is selected */}
             {paymentMethod === "bank" && (
               <>
                 <FormField
@@ -224,7 +222,6 @@ export function PaymentMethodForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="routingNumber"
@@ -246,7 +243,7 @@ export function PaymentMethodForm() {
                 />
               </>
             )}
-
+            
             <Button
               type="submit"
               className="mt-6"

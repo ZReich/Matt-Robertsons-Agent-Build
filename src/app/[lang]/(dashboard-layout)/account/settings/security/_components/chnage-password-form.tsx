@@ -43,7 +43,7 @@ export function ChangePasswordForm({
   });
 
   const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
 
   async function onSubmit(data: z.infer<typeof ChangePasswordSchema>) {}
 

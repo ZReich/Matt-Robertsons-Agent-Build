@@ -1,14 +1,10 @@
-import Link from "next/link";
-import Image from "next/image";
-import { Download } from "lucide-react";
-
-import { cn, formatFileSize } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 import type { MessageType } from "../../../types";
 
-import { Button } from "@/components/ui/button";
-import { FileThumbnail } from "@/components/file-thumbnail";
-import { TextMessage } from "./text-message";
+import { TextMessageBubbleContent } from "./text-message-bubble-content";
+import { ImagesMessageBubbleContent } from "./images-message-bubble-content";
+import { FilesMessageBubbleContent } from "./files-message-bubble-content";
 
 export function MessageBubbleContent({
   message,
@@ -21,74 +17,16 @@ export function MessageBubbleContent({
 
   // Handle different types of message content
   if (message.text) {
-    content = <TextMessage text={message.text} />;
+    content = <TextMessageBubbleContent text={message.text} />;
   } else if (message.images) {
-    content = (
-      <ul
-        className={cn(
-          "grid gap-2 rounded-lg",
-          message.images.length > 1 && "grid-cols-2"
-        )}
-      >
-        {/* Map through the first 3 images from `message.images` and render them */}
-        {message.images.slice(0, 3).map((image) => (
-          <li key={image.id}>
-            <Link
-              href=""
-              className="relative block aspect-square"
-              aria-label="Image"
-            >
-              <Image
-                src={image.url}
-                alt={image.name}
-                className="object-cover rounded-lg"
-                fill
-              />
-            </Link>
-          </li>
-        ))}
-
-        {/* Check if there are 4 or more images and if there are more than 4 render '+N' over the 4th image */}
-        {message.images && message.images.length >= 4 && (
-          <li>
-            <Link href="" className="relative size-full block aspect-square ">
-              <Image
-                src={message.images[3].url}
-                alt={message.images[3].name}
-                className="object-cover rounded-lg"
-                fill
-              />
-              {message.images.length > 4 && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-2xl text-white rounded-lg hover:bg-opacity-75">
-                  <span>+{message.images.length - 4}</span>
-                  <span className="sr-only">More images</span>
-                </div>
-              )}
-            </Link>
-          </li>
-        )}
-      </ul>
-    );
+    content = <ImagesMessageBubbleContent images={message.images} />;
   } else if (message.files) {
-    content = message.files.map((file) => (
-      <div
-        key={file.id}
-        className={cn(
-          "flex justify-between items-center bg-muted-foreground/20 p-4 rounded-lg break-all",
-          isByCurrentUser && "bg-muted-foreground/40"
-        )}
-        aria-label="File"
-      >
-        <FileThumbnail fileName={file.name} />
-        <div className="flex-1 grid mx-2 truncate">
-          <span className="truncate">{file.name}</span>
-          <span className="text-xs truncate">{formatFileSize(file.size)}</span>
-        </div>
-        <Button variant="ghost" size="icon" aria-label="Dowmload">
-          <Download className="size-4" />
-        </Button>
-      </div>
-    ));
+    content = (
+      <FilesMessageBubbleContent
+        files={message.files}
+        isByCurrentUser={isByCurrentUser}
+      />
+    );
   } else if (message.voiceMessage) {
     content = <audio controls src={message.voiceMessage.url} />;
   }

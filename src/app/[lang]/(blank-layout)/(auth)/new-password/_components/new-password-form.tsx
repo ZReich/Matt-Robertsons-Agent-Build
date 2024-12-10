@@ -49,17 +49,16 @@ export function NewPasswordForm({
 
   async function onSubmit(data: z.infer<typeof NewPasswordSchema>) {
     try {
-      console.log(data);
       toast({
         title: "Check your email",
         description:
           "We've sent you an email with instructions to reset your password.",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Something went wrong",
-        description: error.message,
+        description: error instanceof Error ? error.message : undefined,
       });
     }
   }

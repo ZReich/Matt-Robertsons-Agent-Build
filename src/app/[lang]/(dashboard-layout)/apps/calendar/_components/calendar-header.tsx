@@ -14,44 +14,51 @@ export function CalendarHeader() {
   const [currentView, setCurrentView] = React.useState(INITIAL_VIEW);
   const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
 
+  // Function to navigate to a specific date on the calendar and update the current date state
   const handleDateChange = (newDate: Date) => {
     if (calendarApi) {
-      calendarApi.gotoDate(newDate);
-      setCurrentDate(newDate);
+      calendarApi.gotoDate(newDate); // Move the calendar to the given date
+      setCurrentDate(newDate); // Update the current date state
     }
   };
 
+  // Function to move the calendar view to the previous period (e.g., previous month)
   const handlePrev = () => {
     if (calendarApi) {
-      calendarApi.prev();
-      handleDateChange(calendarApi.getDate());
+      calendarApi.prev(); // Move to the previous date range
+      handleDateChange(calendarApi.getDate()); // Update the current date state after moving
     }
   };
 
+  // Function to move the calendar view to the next period (e.g., next month)
   const handleNext = () => {
     if (calendarApi) {
-      calendarApi.next();
-      handleDateChange(calendarApi.getDate());
+      calendarApi.next(); // Move to the next date range
+      handleDateChange(calendarApi.getDate()); // Update the current date state after moving
     }
   };
 
+  // Function to change the view mode (e.g., day, week, month, list) of the calendar
   const handleViewChange = (view: string) => {
     if (calendarApi) {
-      calendarApi.changeView(view);
-      handleDateChange(calendarApi.getDate());
-      setCurrentView(view);
+      calendarApi.changeView(view); // Change the view mode
+      handleDateChange(calendarApi.getDate()); // Update the current date state after changing views
+      setCurrentView(view); // Update the current view state
     }
   };
 
+  // Function to format the title based on the current date and view mode
   const formatTitle = (date: Date, view: string) => {
     if (view === "dayGridMonth") {
+      // For month view, display the year and month
       return date.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
       });
     } else if (view === "timeGridWeek" || view === "listWeek") {
+      // For week view, display the range from the start of the week to the end
       const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 6);
+      endDate.setDate(endDate.getDate() + 6); // Calculate the end date (7 days from start)
       return `${date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -61,6 +68,7 @@ export function CalendarHeader() {
         year: "numeric",
       })}`;
     } else {
+      // For day view, display the full date (weekday, month, day, year)
       return date.toLocaleDateString("en-US", {
         weekday: "long",
         year: "numeric",
@@ -106,28 +114,28 @@ export function CalendarHeader() {
       </div>
       <div className="space-x-2">
         <Button
-          variant={currentView === "dayGridMonth" ? "default" : "outline"}
+          variant={currentView === "dayGridMonth" ? "default" : "outline"} // Default variant when it's the active view; otherwise, outline for non-active views
           size="sm"
           onClick={() => handleViewChange("dayGridMonth")}
         >
           Month
         </Button>
         <Button
-          variant={currentView === "timeGridWeek" ? "default" : "outline"}
+          variant={currentView === "timeGridWeek" ? "default" : "outline"} // Default variant when it's the active view; otherwise, outline for non-active views
           size="sm"
           onClick={() => handleViewChange("timeGridWeek")}
         >
           Week
         </Button>
         <Button
-          variant={currentView === "timeGridDay" ? "default" : "outline"}
+          variant={currentView === "timeGridDay" ? "default" : "outline"} // Default variant when it's the active view; otherwise, outline for non-active views
           size="sm"
           onClick={() => handleViewChange("timeGridDay")}
         >
           Day
         </Button>
         <Button
-          variant={currentView === "listWeek" ? "default" : "outline"}
+          variant={currentView === "listWeek" ? "default" : "outline"} // Default variant when it's the active view; otherwise, outline for non-active views
           size="sm"
           onClick={() => handleViewChange("listWeek")}
         >

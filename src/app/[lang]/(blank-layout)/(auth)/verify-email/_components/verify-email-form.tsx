@@ -52,11 +52,11 @@ export function VerifyEmailForm({
         description:
           "We've sent you an email with instructions to verify your email address.",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Something went wrong",
-        description: error.message,
+        description: error instanceof Error ? error.message : undefined,
       });
     }
   }

@@ -47,7 +47,7 @@ export function NotificationPreferencesForm() {
   });
 
   const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid;
+  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
   function onSubmit(data: z.infer<typeof NotificationPreferencesSchema>) {}
 

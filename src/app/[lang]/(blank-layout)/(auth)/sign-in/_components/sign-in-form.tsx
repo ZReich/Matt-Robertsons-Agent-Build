@@ -68,12 +68,11 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
       }
 
       router.push(redirectPathname);
-    } catch (e: unknown) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Sign In Failed",
-        description:
-          e instanceof Error ? e.message : "An unknown error occurred.",
+        description: error instanceof Error ? error.message : undefined,
       });
     }
   }

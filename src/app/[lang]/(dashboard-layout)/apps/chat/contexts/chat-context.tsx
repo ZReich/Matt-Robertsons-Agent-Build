@@ -18,7 +18,7 @@ export function ChatProvider({
   chatsData: ChatType[];
   children: React.ReactNode;
 }) {
-  // Reducer to manage Kanban state
+  // Reducer to manage Chat state
   const [chatState, dispatch] = React.useReducer(ChatReducer, {
     chats: chatsData,
     selectedChat: null,
