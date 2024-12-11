@@ -107,6 +107,9 @@ export function ChangePlanForm({
                               "h-full",
                               field.value === plan.name && "border-primary" // Highlight the selected price
                             )}
+                            aria-current={
+                              field.value === plan.name ? "true" : undefined
+                            }
                           >
                             <CardHeader>
                               <CardTitle>{plan.name}</CardTitle>

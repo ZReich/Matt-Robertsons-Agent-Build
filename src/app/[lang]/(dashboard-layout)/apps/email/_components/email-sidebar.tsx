@@ -49,8 +49,9 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
                 className={cn(
                   buttonVariants({ variant: "ghost" }),
                   "w-full justify-start",
-                  segmentParam === item.param && "bg-accent" // Highlight the current section
+                  segmentParam === item.param && "bg-accent" // Highlight the current email view
                 )}
+                aria-current={segmentParam === item.param ? "true" : undefined}
               >
                 <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
                 {item.label}

@@ -34,10 +34,10 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
           href={ensureLocalizedPathname("/", locale)}
           className="absolute top-4 start-4 flex text-foreground font-black z-50 hover:text-primary/90"
         >
-          <Logo className="size-6" aira-hidden="true" />
+          <Logo className="size-6" aira-hidden />
           Shadboard
         </Link>
-        <div className="w-1/2 max-w-[28rem] m-auto p-8 space-y-6">
+        <div className="w-full max-w-[28rem] m-auto p-8 space-y-6">
           {children}
         </div>
         {imgSrc && <AuthImage imgSrc={imgSrc} />}

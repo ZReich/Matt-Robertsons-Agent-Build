@@ -31,9 +31,10 @@ export function ChatListItem({ chat }: { chat: ChatType }) {
       prefetch={false}
       className={cn(
         buttonVariants({ variant: "ghost" }),
-        chatIdParam === chat.id && "bg-accent", // Highlight the current chat
+        chatIdParam === chat.id && "bg-accent", // Highlight the current chat box
         "h-fit w-full"
       )}
+      aria-current={chatIdParam === chat.id ? "true" : undefined}
       onClick={handleOnCLick}
     >
       <li className="w-full flex items-center gap-2">

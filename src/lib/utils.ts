@@ -198,3 +198,7 @@ export function formatUnreadCount(unreadCount: number) {
   // If the unread count is 100 or more, display "+99"; otherwise, display the actual unread count.
   return unreadCount >= 100 ? "+99" : unreadCount;
 }
+
+export function wait(ms: number = 250) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

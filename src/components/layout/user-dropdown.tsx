@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { LogOut, User, UserCog } from "lucide-react";
 
 import { userData } from "@/data/user";
@@ -89,7 +90,11 @@ export function UserDropdown({ dictionary }: { dictionary: DictionaryType }) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="p-0">
-          <Button variant="ghost" className="w-full justify-start gap-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2"
+            onClick={() => signOut()}
+          >
             <LogOut className="size-4 text-muted-foreground" />
             {dictionary.navigation["user-nav"]["sign-out"]}
           </Button>

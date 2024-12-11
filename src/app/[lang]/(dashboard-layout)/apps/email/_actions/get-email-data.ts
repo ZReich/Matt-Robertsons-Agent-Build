@@ -1,13 +1,14 @@
 import { emailsData } from "../_data/emails";
 
+import { wait } from "@/lib/utils";
+
 import type { EmailType } from "../types";
 
 export async function getEmailData(
   emailId: string
 ): Promise<EmailType | undefined> {
   try {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await wait(); // Simulate a network delay
 
     // Find the email in the emailsData array that matches the provided emailId
     const email = emailsData.find((email) => email.id === emailId);

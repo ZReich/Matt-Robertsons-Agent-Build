@@ -19,7 +19,7 @@ export function Notifications() {
   const unreadCount = formatUnreadCount(notificationData.unreadCount);
 
   return (
-    <Popover>
+    <Popover modal>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="size-4" />
@@ -36,7 +36,7 @@ export function Notifications() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[380px] p-0" align="end">
+      <PopoverContent className="w-[380px] p-0">
         <Card className="border-0">
           <div className="flex items-center justify-between border-b border-border p-3">
             <h3 className="text-sm font-semibold">Notifications</h3>

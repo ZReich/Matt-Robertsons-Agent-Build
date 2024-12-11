@@ -1,5 +1,7 @@
 import { emailsData } from "../_data/emails";
 
+import { wait } from "@/lib/utils";
+
 import type { EmailState } from "../types";
 
 export async function getEmailsData(
@@ -9,8 +11,7 @@ export async function getEmailsData(
   const pageSize = 10;
 
   try {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await wait(); // Simulate a network delay
 
     // Apply filtering based on the filter
     let filteredEmails = emailsData;
