@@ -2,8 +2,6 @@
 
 import { XAxis, CartesianGrid, Area, AreaChart } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import type { SalesPipelineType } from "../../types";
 
 import {
@@ -19,7 +17,7 @@ export function SalesPipelineChart({
 }) {
   return (
     <ChartContainer
-      config={chartConfig}
+      config={{}}
       className="aspect-auto h-[325px] w-full"
     >
       <AreaChart

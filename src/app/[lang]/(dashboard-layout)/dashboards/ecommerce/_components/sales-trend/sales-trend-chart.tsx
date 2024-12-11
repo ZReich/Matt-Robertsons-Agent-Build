@@ -3,8 +3,6 @@
 import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import { remToPx } from "@/lib/utils";
 
 import type { SalesTrendType } from "../../types";
@@ -17,11 +15,15 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-export function SalesTrendChart({ data }: { data: SalesTrendType["salesTrends"] }) {
+export function SalesTrendChart({
+  data,
+}: {
+  data: SalesTrendType["salesTrends"];
+}) {
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={chartConfig} className="w-full md:h-[307px]">
+    <ChartContainer config={{}} className="w-full md:h-[307px]">
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <ChartTooltip

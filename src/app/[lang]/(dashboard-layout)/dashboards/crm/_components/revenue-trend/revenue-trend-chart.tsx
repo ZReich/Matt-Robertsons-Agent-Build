@@ -2,8 +2,6 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import type { RevenueTrendType } from "../../types";
 
 import {
@@ -22,10 +20,7 @@ export function RevenueTrendChart({
   const { settings } = useSettings();
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className="aspect-auto h-[93px] w-full"
-    >
+    <ChartContainer config={{}} className="aspect-auto h-[93px] w-full">
       <BarChart
         accessibilityLayer
         data={data}

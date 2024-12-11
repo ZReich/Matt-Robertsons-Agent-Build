@@ -8,8 +8,6 @@ import {
   RadialBarChart,
 } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import { ratingToPercentage, remToPx } from "@/lib/utils";
 
 import type { CustomerSatisfactionType } from "../../types";
@@ -28,7 +26,7 @@ export function CustomerSatisfactionChart({
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-square h-[200px]">
+    <ChartContainer config={{}} className="aspect-square h-[200px]">
       <RadialBarChart
         accessibilityLayer
         data={[data]}

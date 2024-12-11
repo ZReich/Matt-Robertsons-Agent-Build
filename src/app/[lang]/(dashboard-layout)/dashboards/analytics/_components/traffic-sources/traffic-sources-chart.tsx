@@ -3,8 +3,6 @@
 import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import { cn, formatPercent } from "@/lib/utils";
 
 import type { TrafficSourcesType } from "../../types";
@@ -26,7 +24,7 @@ export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
         "flex flex-col justify-center items-center pb-6 sm:flex-row sm:pb-0"
       )}
     >
-      <ChartContainer config={chartConfig} className="size-[272px]">
+      <ChartContainer config={{}} className="size-[272px]">
         <PieChart accessibilityLayer>
           <ChartTooltip
             cursor={false}

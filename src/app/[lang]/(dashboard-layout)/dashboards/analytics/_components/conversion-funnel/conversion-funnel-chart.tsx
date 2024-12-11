@@ -3,8 +3,6 @@
 import * as React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import { remToPx } from "@/lib/utils";
 
 import type { ConversionFunnelType } from "../../types";
@@ -45,7 +43,7 @@ export function ConversionFunnelChart({
       </ul>
 
       <ChartContainer
-        config={chartConfig}
+        config={{}}
         className="grow aspect-square w-full max-h-[250px]"
       >
         <BarChart accessibilityLayer data={data}>

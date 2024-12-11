@@ -3,8 +3,6 @@
 import * as React from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import type { PerformanceOverTimeType } from "../../types";
 
 import {
@@ -19,7 +17,7 @@ export function PerformanceOverTimeChart({
   data: PerformanceOverTimeType["performance"];
 }) {
   return (
-    <ChartContainer config={chartConfig} className="w-full md:h-[288px]">
+    <ChartContainer config={{}} className="w-full md:h-[288px]">
       <LineChart
         accessibilityLayer
         data={data}

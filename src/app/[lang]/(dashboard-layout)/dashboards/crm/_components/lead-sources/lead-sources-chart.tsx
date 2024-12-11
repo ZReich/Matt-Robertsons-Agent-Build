@@ -2,8 +2,6 @@
 
 import { PieChart, Pie, Cell } from "recharts";
 
-import { chartConfig } from "@/configs/chart-config";
-
 import type { LeadSourceType } from "../../types";
 
 import {
@@ -18,7 +16,7 @@ export function LeadSourcesChart({
   data: LeadSourceType["leadSources"];
 }) {
   return (
-    <ChartContainer config={chartConfig} className="w-full md:h-[245px]">
+    <ChartContainer config={{}} className="w-full md:h-[245px]">
       <PieChart accessibilityLayer>
         <Pie
           data={data}
