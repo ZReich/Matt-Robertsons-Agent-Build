@@ -1,6 +1,7 @@
 import type { CustomerSatisfactionType } from "../types";
 
 export const customerSatisfactionData: CustomerSatisfactionType = {
+  period: "Last week",
   summary: {
     name: "Total rating",
     value: 3.8,

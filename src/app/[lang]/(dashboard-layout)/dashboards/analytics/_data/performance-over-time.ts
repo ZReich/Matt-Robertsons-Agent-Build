@@ -5,7 +5,7 @@ export const performanceOverTimeData: PerformanceOverTimeType = {
     totalVisitors: 22100,
     totalConversions: 745,
   },
-  monthly: [
+  performance: [
     { month: "January", visitors: 1200, conversions: 30 },
     { month: "February", visitors: 1400, conversions: 40 },
     { month: "March", visitors: 1600, conversions: 50 },

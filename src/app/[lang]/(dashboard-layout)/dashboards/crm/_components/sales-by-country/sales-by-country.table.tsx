@@ -9,7 +9,11 @@ import type { SalesByCountryType } from "../../types";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-export function SalesByCountryTable({ data }: { data: SalesByCountryType[] }) {
+export function SalesByCountryTable({
+  data,
+}: {
+  data: SalesByCountryType["countries"];
+}) {
   return (
     <Table className="rounded-lg overflow-hidden">
       <TableBody>

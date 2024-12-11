@@ -18,7 +18,7 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 export function ConversionFunnelChart({
   data,
 }: {
-  data: ConversionFunnelType;
+  data: ConversionFunnelType['funnelSteps'];
 }) {
   const { settings } = useSettings();
 

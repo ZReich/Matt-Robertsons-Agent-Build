@@ -1,6 +1,7 @@
 export interface MetricType {
   value: number;
   percentageChange: number;
+  period: string;
 }
 
 export interface OverviewType {
@@ -11,39 +12,36 @@ export interface OverviewType {
 }
 
 export interface SalesTrendType {
+  period: string;
   summary: {
     lowestSales: { date: number; sales: number };
     highestSales: { date: number; sales: number };
     avgSales: number;
     totalSales: number;
   };
-  weekly: Array<{ date: number; sales: number }>;
+  salesTrends: Array<{ date: number; sales: number }>;
 }
 
 export interface TopProductType {
-  name: string;
-  sales: {
-    value: number;
-    percentageChange: number;
-  };
-  revenue: {
-    value: number;
-    percentageChange: number;
-  };
-  inventoryLeft: number;
-  image: string;
-  sku: string;
-}
-
-export interface RecentOrderType {
-  id: string;
-  customerName: string;
-  date: number;
-  totalAmount: { value: number; percentageChange: number };
-  status: string;
+  period: string;
+  products: Array<{
+    name: string;
+    sales: {
+      value: number;
+      percentageChange: number;
+    };
+    revenue: {
+      value: number;
+      percentageChange: number;
+    };
+    inventoryLeft: number;
+    image: string;
+    sku: string;
+  }>;
 }
 
 export interface CustomerInsightsType {
+  period: string;
   totalCustomers: number;
   newCustomers: number;
   returningCustomers: number;

@@ -12,7 +12,11 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-export function LeadSourcesChart({ data }: { data: LeadSourceType[] }) {
+export function LeadSourcesChart({
+  data,
+}: {
+  data: LeadSourceType["leadSources"];
+}) {
   return (
     <ChartContainer config={chartConfig} className="w-full md:h-[245px]">
       <PieChart accessibilityLayer>

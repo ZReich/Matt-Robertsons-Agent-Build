@@ -1,4 +1,5 @@
 export interface MetricType {
+  period: string;
   value: number;
   percentageChange: number;
 }
@@ -27,19 +28,26 @@ export interface SalesPipelineType {
 }
 
 export interface SalesRepresentativeType {
-  name: string;
-  avatar: string;
-  email: string;
-  sales: number;
+  period: string;
+  representatives: Array<{
+    name: string;
+    avatar: string;
+    email: string;
+    sales: number;
+  }>;
 }
 
 export interface LeadSourceType {
-  name: string;
-  percentage: number;
-  fill: string;
+  period: string;
+  leadSources: Array<{
+    name: string;
+    percentage: number;
+    fill: string;
+  }>;
 }
 
 export interface CustomerSatisfactionType {
+  period: string;
   summary: {
     name: string;
     value: number;
@@ -63,15 +71,19 @@ export interface ActiveProjectType {
 }
 
 export interface SalesByCountryType {
-  country: string;
-  countryCode: string;
-  sales: number;
+  period: string;
+  countries: Array<{
+    country: string;
+    countryCode: string;
+    sales: number;
+  }>;
 }
 
 export interface RevenueTrendType {
+  period: string;
   summary: {
     totalRevenue: number;
     totalPercentageChange: number;
   };
-  monthly: Array<{ month: string; revenue: number }>;
+  revenueTrends: Array<{ month: string; revenue: number }>;
 }

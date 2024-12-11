@@ -16,7 +16,7 @@ import {
 export function PerformanceOverTimeChart({
   data,
 }: {
-  data: PerformanceOverTimeType["monthly"];
+  data: PerformanceOverTimeType["performance"];
 }) {
   return (
     <ChartContainer config={chartConfig} className="w-full md:h-[288px]">

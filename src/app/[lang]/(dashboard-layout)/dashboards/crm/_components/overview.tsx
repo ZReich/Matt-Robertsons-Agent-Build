@@ -10,28 +10,28 @@ export function Overview() {
       <DashboardOverviewCard
         data={overviewData.totalSales}
         title="Total Sales"
-        period="Last month"
+        period={overviewData.totalSales.period}
         icon={BadgePercent}
         formatStyle="currency"
       />
       <DashboardOverviewCard
         data={overviewData.totalProfit}
         title="Total Profit"
-        period="Last month"
+        period={overviewData.totalProfit.period}
         icon={HandCoins}
         formatStyle="currency"
       />
       <DashboardOverviewCard
         data={overviewData.revenueGrowth}
         title="Revenue Growth"
-        period="Last month"
+        period={overviewData.revenueGrowth.period}
         icon={HandCoins}
         formatStyle="currency"
       />
       <DashboardOverviewCard
         data={overviewData.newCustomers}
         title="New Customers"
-        period="Last month"
+        period={overviewData.newCustomers.period}
         icon={Users}
       />
     </div>

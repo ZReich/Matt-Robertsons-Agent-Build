@@ -21,7 +21,7 @@ const medalCardColor = [
 export function TopSalesRepresentativesList({
   data,
 }: {
-  data: SalesRepresentativeType[];
+  data: SalesRepresentativeType["representatives"];
 }) {
   const top3 = data.slice(0, 3);
   const others = data.slice(3);

@@ -6,12 +6,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export async function TopPages() {
   return (
-    <DashboardCard title="Top Pages" period="Last month">
+    <DashboardCard title="Top Pages" period={topPagesData.period}>
       <ScrollArea
         orientation="horizontal"
         className="w-[calc(100vw-5rem)] md:w-auto"
       >
-        <TopPagesTable data={topPagesData} />
+        <TopPagesTable data={topPagesData.pages} />
       </ScrollArea>
     </DashboardCard>
   );

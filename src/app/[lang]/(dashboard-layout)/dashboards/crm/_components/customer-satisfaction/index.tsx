@@ -6,7 +6,10 @@ import { CustomerSatisfactionCarousel } from "./customer-satisfaction-carousel";
 
 export function CustomerSatisfaction() {
   return (
-    <DashboardCard title="Customer Satisfaction" period="Last week">
+    <DashboardCard
+      title="Customer Satisfaction"
+      period={customerSatisfactionData.period}
+    >
       <div className="flex flex-col justify-center items-center gap-6 md:flex-row">
         <CustomerSatisfactionChart data={customerSatisfactionData.summary} />
         <CustomerSatisfactionCarousel

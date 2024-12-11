@@ -17,7 +17,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-export function SalesTrendChart({ data }: { data: SalesTrendType["weekly"] }) {
+export function SalesTrendChart({ data }: { data: SalesTrendType["salesTrends"] }) {
   const { settings } = useSettings();
 
   return (

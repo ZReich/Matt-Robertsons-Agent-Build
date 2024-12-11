@@ -5,8 +5,8 @@ import { LeadSourcesChart } from "./lead-sources-chart";
 
 export function LeadSources() {
   return (
-    <DashboardCard title="Lead Sources" period="Last month">
-      <LeadSourcesChart data={leadSourcesData} />
+    <DashboardCard title="Lead Sources" period={leadSourcesData.period}>
+      <LeadSourcesChart data={leadSourcesData.leadSources} />
     </DashboardCard>
   );
 }

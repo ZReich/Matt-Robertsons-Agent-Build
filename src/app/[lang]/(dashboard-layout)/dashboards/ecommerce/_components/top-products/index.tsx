@@ -5,8 +5,8 @@ import { TopProductsCarousel } from "./top-products-carousel";
 
 export async function TopProducts() {
   return (
-    <DashboardCard title="Top Products" period="Last month">
-      <TopProductsCarousel data={topProductsData} />
+    <DashboardCard title="Top Products" period={topProductsData.period}>
+      <TopProductsCarousel data={topProductsData.products} />
     </DashboardCard>
   );
 }

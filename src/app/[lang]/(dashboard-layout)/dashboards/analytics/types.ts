@@ -8,6 +8,7 @@ export interface GeographicLocationType {
 }
 
 export interface MetricType {
+  period: string;
   value: number;
   percentageChange: number;
 }
@@ -24,6 +25,7 @@ export interface OverviewType {
 }
 
 export interface TrafficSourcesType {
+  period: string;
   summary: { totalVisitors: number; totalPercentageChange: number };
   sources: {
     name: string;
@@ -42,32 +44,34 @@ export interface EngagementByDeviceType {
   conversionRate: number;
 }
 
-export interface FunnelStageType {
-  name: string;
-  value: number;
-  fill: string;
-  iconName: DynamicIconNameType;
-}
-
-export type ConversionFunnelType = Array<FunnelStageType>;
-
-export interface MonthlyType {
-  month: string;
-  visitors: number;
-  conversions: number;
-}
+export type ConversionFunnelType = {
+  period: string;
+  funnelSteps: Array<{
+    name: string;
+    value: number;
+    fill: string;
+    iconName: DynamicIconNameType;
+  }>;
+};
 
 export interface PerformanceOverTimeType {
   summary: {
     totalVisitors: number;
     totalConversions: number;
   };
-  monthly: MonthlyType[];
+  performance: Array<{
+    month: string;
+    visitors: number;
+    conversions: number;
+  }>;
 }
 
 export interface TopPagesType {
-  page: string;
-  views: number;
-  avgTimeOnPage: number;
-  bounceRate: number;
+  period: string;
+  pages: Array<{
+    page: string;
+    views: number;
+    avgTimeOnPage: number;
+    bounceRate: number;
+  }>;
 }

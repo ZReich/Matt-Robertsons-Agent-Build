@@ -10,27 +10,27 @@ export async function Overview() {
       <DashboardOverviewCard
         data={overviewData.totalSales}
         title="Total Sales"
-        period="Last month"
+        period={overviewData.totalSales.period}
         icon={BadgePercent}
         formatStyle="currency"
       />
       <DashboardOverviewCard
         data={overviewData.revenueSummary}
         title="Revenue Summary"
-        period="Last month"
+        period={overviewData.revenueSummary.period}
         icon={HandCoins}
         formatStyle="currency"
       />
       <DashboardOverviewCard
         data={overviewData.numberOfOrders}
         title="Number of Orders"
-        period="Last month"
+        period={overviewData.numberOfOrders.period}
         icon={ShoppingBag}
       />
       <DashboardOverviewCard
         data={overviewData.averageOrderValue}
         title="Avg. Order Value"
-        period="Last month"
+        period={overviewData.averageOrderValue.period}
         icon={HandCoins}
         formatStyle="currency"
       />

@@ -1,11 +1,12 @@
 import type { RevenueTrendType } from "../types";
 
 export const revenueTrendData: RevenueTrendType = {
+  period: "2024",
   summary: {
     totalRevenue: 80000,
     totalPercentageChange: 0.25,
   },
-  monthly: [
+  revenueTrends: [
     { month: "January", revenue: 5000 },
     { month: "February", revenue: 5500 },
     { month: "March", revenue: 5000 },

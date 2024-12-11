@@ -7,7 +7,7 @@ export async function CustomerInsights() {
   return (
     <DashboardCard
       title="Top Products"
-      period="Last month"
+      period={customerInsightsData.period}
       className="col-span-full"
     >
       <CustomerInsightList data={customerInsightsData} />

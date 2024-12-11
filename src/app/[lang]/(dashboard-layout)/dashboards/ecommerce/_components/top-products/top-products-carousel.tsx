@@ -16,7 +16,11 @@ import {
 import { cn, formatCurrency, formatPercent, isNonNegative } from "@/lib/utils";
 import { useSettings } from "@/hooks/use-settings";
 
-export function TopProductsCarousel({ data }: { data: TopProductType[] }) {
+export function TopProductsCarousel({
+  data,
+}: {
+  data: TopProductType["products"];
+}) {
   const { settings } = useSettings();
 
   const layout = settings.layout;

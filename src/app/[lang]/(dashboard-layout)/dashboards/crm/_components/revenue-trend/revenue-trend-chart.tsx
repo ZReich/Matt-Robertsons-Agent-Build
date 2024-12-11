@@ -17,7 +17,7 @@ import { remToPx } from "@/lib/utils";
 export function RevenueTrendChart({
   data,
 }: {
-  data: RevenueTrendType["monthly"];
+  data: RevenueTrendType["revenueTrends"];
 }) {
   const { settings } = useSettings();
 

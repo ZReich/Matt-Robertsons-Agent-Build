@@ -5,7 +5,7 @@ import { TrafficSourcesChart } from "./traffic-sources-chart";
 
 export async function TrafficSources() {
   return (
-    <DashboardCard title="Traffic Sources" period="Last month">
+    <DashboardCard title="Traffic Sources" period={trafficSourcesData.period}>
       <TrafficSourcesChart data={trafficSourcesData} />
     </DashboardCard>
   );

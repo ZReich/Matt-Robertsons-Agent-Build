@@ -1,6 +1,7 @@
 import { TrafficSourcesType } from "../types";
 
 export const trafficSourcesData: TrafficSourcesType = {
+  period: "Last month",
   summary: { totalVisitors: 10000, totalPercentageChange: 0.7 },
   sources: [
     {

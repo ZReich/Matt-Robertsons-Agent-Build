@@ -17,7 +17,7 @@ function getBounceRateColor(rate: number) {
   return "bg-destructive text-destructive-foreground hover:bg-destructive/80";
 }
 
-export function TopPagesTable({ data }: { data: TopPagesType[] }) {
+export function TopPagesTable({ data }: { data: TopPagesType["pages"] }) {
   return (
     <Table className="rounded-lg overflow-hidden">
       <TableBody>
