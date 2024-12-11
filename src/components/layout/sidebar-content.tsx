@@ -14,7 +14,7 @@ import type { LocaleType } from "@/configs/i18n";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Nav } from "@/components/layout/nav";
 
-import Logo from "@/app/icon.svg";
+import Logo from "/public/images/icons/shadboard.svg";
 
 export function SidebarContent({
   setIsMobileSidebarNavOpen,

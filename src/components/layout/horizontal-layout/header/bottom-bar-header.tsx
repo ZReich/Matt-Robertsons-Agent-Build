@@ -17,7 +17,7 @@ import { UserDropdown } from "@/components/layout/user-dropdown";
 import { Notifications } from "@/components/layout/notifications";
 import { FullscreenToggle } from "@/components/full-screen-toggle";
 
-import Logo from "@/app/icon.svg";
+import Logo from "/public/images/icons/shadboard.svg";
 
 export function BottomBarHeader({
   dictionary,

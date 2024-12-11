@@ -10,7 +10,7 @@ import type { LocaleType } from "@/configs/i18n";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import Logo from "@/app/icon.svg";
+import Logo from "/public/images/icons/shadboard.svg";
 
 interface AuthProps extends React.HTMLAttributes<HTMLDivElement> {
   imgSrc?: string;
