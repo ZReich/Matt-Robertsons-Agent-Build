@@ -28,6 +28,10 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+const defaultValues = {
+  title: "",
+};
+
 type FormValues = z.infer<typeof KanbanColumnSchema>;
 
 export function KanbanAddColumnSidebar() {
@@ -39,6 +43,7 @@ export function KanbanAddColumnSidebar() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(KanbanColumnSchema),
+    defaultValues,
   });
 
   // Reset the form whenever `kanbanAddColumnSidebarIsOpen` changes
@@ -53,7 +58,7 @@ export function KanbanAddColumnSidebar() {
   }
 
   const handleSidebarClose = () => {
-    form.clearErrors(); // Reset the form to the initial values
+    form.reset(defaultValues); // Reset the form to the initial values
     setKanbanAddColumnSidebarIsOpen(false); // Close the sidebar
   };
 

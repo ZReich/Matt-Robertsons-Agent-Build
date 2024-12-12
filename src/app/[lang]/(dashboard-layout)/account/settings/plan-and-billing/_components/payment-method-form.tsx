@@ -40,6 +40,12 @@ export function PaymentMethodForm() {
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
       paymentType: "visa",
+      cardNumber: "",
+      cardName: "",
+      expiry: "",
+      cvc: "",
+      accountNumber: "",
+      routingNumber: "",
       saveCard: false,
     },
   });
@@ -243,7 +249,7 @@ export function PaymentMethodForm() {
                 />
               </>
             )}
-            
+
             <Button
               type="submit"
               className="mt-6"

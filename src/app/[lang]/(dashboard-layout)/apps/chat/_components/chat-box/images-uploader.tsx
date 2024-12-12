@@ -183,7 +183,7 @@ export function ImagesUploader() {
                   <ul className="grid grid-cols-5 gap-x-2">
                     {images.map((image, index) => (
                       <Tooltip key={crypto.randomUUID()} delayDuration={0}>
-                        <TooltipTrigger className="cursor-default">
+                        <TooltipTrigger className="cursor-default" asChild>
                           <li
                             className="relative aspect-square bg-accent text-accent-foreground rounded-md"
                             aria-label="Image"

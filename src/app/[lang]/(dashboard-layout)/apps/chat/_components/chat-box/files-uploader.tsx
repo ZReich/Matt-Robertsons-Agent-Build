@@ -182,7 +182,7 @@ export function FilesUploader() {
                   <ul className="grid grid-cols-5 gap-x-2">
                     {files.map((file, index) => (
                       <Tooltip key={crypto.randomUUID()} delayDuration={0}>
-                        <TooltipTrigger className="cursor-default">
+                        <TooltipTrigger className="cursor-default" asChild>
                           <li
                             className="relative aspect-square flex flex-col justify-center items-center bg-accent text-accent-foreground break-all rounded-md"
                             aria-label="File"

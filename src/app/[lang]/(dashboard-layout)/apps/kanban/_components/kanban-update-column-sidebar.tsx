@@ -28,6 +28,10 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+const defaultValues = {
+  title: "",
+};
+
 type FormValues = z.infer<typeof KanbanColumnSchema>;
 
 export function KanbanUpdateColumnSidebar() {
@@ -68,7 +72,7 @@ export function KanbanUpdateColumnSidebar() {
   }
 
   const handleSidebarClose = () => {
-    form.reset(); // Reset the form to the initial values
+    form.reset(defaultValues); // Reset the form to the initial values
     handleSelectColumn(undefined); // Unselect the current column
     setKanbanUpdateColumnSidebarIsOpen(false); // Close the sidebar
   };

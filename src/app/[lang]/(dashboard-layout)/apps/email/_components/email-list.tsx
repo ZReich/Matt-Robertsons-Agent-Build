@@ -328,7 +328,10 @@ export function EmailList({ emails = initialState }: { emails?: EmailState }) {
                     <TableCell className="w-44">
                       <div className="flex items-center gap-2">
                         <Avatar>
-                          <AvatarImage src={email.sender.avatar} alt="Avatar" />
+                          <AvatarImage
+                            src={email.sender?.avatar}
+                            alt="Avatar"
+                          />
                           <AvatarFallback>
                             {getInitials(email.sender.name)}
                           </AvatarFallback>

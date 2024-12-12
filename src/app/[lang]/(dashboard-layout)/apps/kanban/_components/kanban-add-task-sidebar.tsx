@@ -47,6 +47,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssignedFormField } from "./assigned-form-field";
 import { AttachmentsFormField } from "./attachments-form-field.";
 
+const defaultValues = {
+  title: "",
+  description: "",
+  label: "Development",
+  dueDate: new Date(),
+  assigned: [],
+  comments: [],
+  attachments: [],
+};
+
 type FormValues = z.infer<typeof KanbanTaskSchema>;
 
 export function KanbanAddTaskSidebar() {
@@ -60,13 +70,7 @@ export function KanbanAddTaskSidebar() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(KanbanTaskSchema),
-    defaultValues: {
-      label: "Development",
-      dueDate: new Date(),
-      assigned: [],
-      comments: [],
-      attachments: [],
-    },
+    defaultValues,
   });
 
   const selectedColumn = kanbanState.selectedColumn;
@@ -80,7 +84,7 @@ export function KanbanAddTaskSidebar() {
   }
 
   const handleSidebarClose = () => {
-    form.reset(); // Reset the form to the initial values
+    form.reset(defaultValues); // Reset the form to the initial values
     handleSelectTask(undefined); // Unselect the current task
     setKanbanAddTaskSidebarIsOpen(false); // Close the sidebar
   };

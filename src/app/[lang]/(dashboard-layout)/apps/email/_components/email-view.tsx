@@ -111,7 +111,7 @@ export function EmailView({ email }: { email: EmailType }) {
           >
             <CardHeader className="flex-row items-center gap-2 py-3">
               <Avatar>
-                <AvatarImage src="" alt="Avatar" />
+                <AvatarImage src={email.sender?.avatar} alt="Avatar" />
                 <AvatarFallback>SA</AvatarFallback>
               </Avatar>
               <div>

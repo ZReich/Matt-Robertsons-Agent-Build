@@ -5,7 +5,7 @@ import { categoriesData } from "../_data/categories";
 import type { CategoryType } from "../types";
 
 export const EventSidebarSchema = z.object({
-  url: z.string().url({ message: "Invalid url" }).optional().or(z.literal("")),
+  url: z.string().url({ message: "Invalid url" }).or(z.literal("")),
   title: z
     .string()
     .trim()
@@ -16,10 +16,9 @@ export const EventSidebarSchema = z.object({
     .string()
     .trim()
     .min(2, { message: "Description must be at least 2 characters." })
-    .max(250, { message: "Description must be at most 250 characters." })
-    .optional(),
-  start: z.date().nullable(),
-  end: z.date().nullable(),
+    .max(250, { message: "Description must be at most 250 characters." }),
+  start: z.date(),
+  end: z.date(),
   category: z.custom<CategoryType>(
     (value) => categoriesData.some((category) => category === value),
     { message: "Invalid label" }

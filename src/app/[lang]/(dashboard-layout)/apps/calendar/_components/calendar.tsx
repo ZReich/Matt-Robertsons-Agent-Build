@@ -55,8 +55,8 @@ export function Calendar() {
       ...(event.url && { url: event.url }), // Include URL property if it exists
       title: event.title,
       allDay: event.allDay,
-      start: event.start,
-      end: event.end,
+      start: event.start || new Date(),
+      end: event.end || new Date(),
       extendedProps: {
         category: event.extendedProps.category,
         ...(event.extendedProps.description && {

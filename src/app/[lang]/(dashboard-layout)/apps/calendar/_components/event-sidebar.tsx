@@ -9,7 +9,7 @@ import { CalendarCheck2, CalendarIcon, CalendarMinus } from "lucide-react";
 
 import { EventSidebarSchema } from "../_schemas/event-sidebar-schema";
 
-import { cn } from "@/lib/utils";
+import { cn, isBeforeToday } from "@/lib/utils";
 
 import { useCalendarContext } from "../hooks/calendar-context";
 
@@ -65,6 +65,15 @@ export function EventSidebar() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(EventSidebarSchema),
+    defaultValues: {
+      url: "",
+      title: "",
+      description: "",
+      allDay: true,
+      start: new Date(),
+      end: new Date(),
+      category: "Miscellaneous",
+    },
   });
 
   const { isSubmitting, isValid } = form.formState;
@@ -82,6 +91,9 @@ export function EventSidebar() {
       });
     } else {
       form.reset({
+        url: "",
+        title: "",
+        description: "",
         allDay: true,
         start: new Date(),
         end: new Date(),
@@ -90,7 +102,7 @@ export function EventSidebar() {
     }
   }, [eventSidebarIsOpen, selectedEvent, form]);
 
-  const handleSidebarClose = async () => {
+  const handleSidebarClose = () => {
     handleSelectEvent(undefined); // Unselect the current event
     setEventSidebarIsOpen(false); // Close the sidebar
   };
@@ -235,11 +247,9 @@ export function EventSidebar() {
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value || undefined}
+                          selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date(new Date().setHours(0, 0, 0, 0))
-                          }
+                          disabled={isBeforeToday}
                           initialFocus
                         />
                       </PopoverContent>
@@ -276,11 +286,9 @@ export function EventSidebar() {
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value || undefined}
+                          selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date(new Date().setHours(0, 0, 0, 0))
-                          }
+                          disabled={isBeforeToday}
                           initialFocus
                         />
                       </PopoverContent>

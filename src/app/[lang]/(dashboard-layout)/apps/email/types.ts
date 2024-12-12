@@ -3,7 +3,7 @@ import type { DynamicIconNameType } from "@/types";
 export interface UserType {
   id: string;
   name: string;
-  avatar: string;
+  avatar?: string;
   email: string;
   status: string;
 }
