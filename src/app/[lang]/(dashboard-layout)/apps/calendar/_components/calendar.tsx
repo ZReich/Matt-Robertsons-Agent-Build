@@ -56,7 +56,7 @@ export function Calendar() {
       title: event.title,
       allDay: event.allDay,
       start: event.start || new Date(),
-      end: event.end || new Date(),
+      end: event.end || event.start || new Date(),
       extendedProps: {
         category: event.extendedProps.category,
         ...(event.extendedProps.description && {

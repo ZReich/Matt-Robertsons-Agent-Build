@@ -66,8 +66,8 @@ export function EventSidebar() {
   const form = useForm<FormValues>({
     resolver: zodResolver(EventSidebarSchema),
     defaultValues: {
-      url: "",
       title: "",
+      url: "",
       description: "",
       allDay: true,
       start: new Date(),
@@ -76,8 +76,8 @@ export function EventSidebar() {
     },
   });
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
   const selectedEvent = calendarState.selectedEvent;
 
   // Reset the form with the current selected event's values if it exists; otherwise reset to the default state. This runs whenever `selectedEvent` or `eventSidebarIsOpen` changes
