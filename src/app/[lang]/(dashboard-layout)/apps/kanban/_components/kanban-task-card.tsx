@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { Draggable } from "react-beautiful-dnd";
 import { GripVertical, MessageCircleMore, Paperclip } from "lucide-react";
 
@@ -32,7 +33,7 @@ export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
     return task.assigned.map((member) => ({
       src: member.avatar,
       alt: member.name,
-      href: `/profile/${member.username}`, // Link to member's profile
+      href: "/", // Replace with the correct link to the member's profile, e.g., `/profile/${member.username}`
     }));
   }, [task.assigned]);
 
@@ -76,10 +77,12 @@ export function KanbanTaskCard({ task, index }: KanbanTaskCardProps) {
             <CardDescription>{task.description}</CardDescription>
             {/* Display image attachment if available */}
             {imageAttachment && (
-              <img
+              <Image
                 src={imageAttachment.url}
                 alt={imageAttachment.name || "Task attachment"}
                 className="w-full h-auto mt-2 rounded-md"
+                height={288}
+                width={288}
               />
             )}
           </CardContent>

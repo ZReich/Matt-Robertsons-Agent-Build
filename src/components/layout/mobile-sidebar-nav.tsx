@@ -3,7 +3,14 @@
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { SidebarContent } from "./sidebar-content";
 
 import HamburgerMenuIcon from "/public/images/icons/hamburger-menu.svg";
@@ -27,6 +34,12 @@ export function MobileSidebarNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="start">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Navigation</SheetTitle>
+          <SheetDescription>
+            Use the menu to navigate through the site.
+          </SheetDescription>
+        </SheetHeader>
         <SidebarContent setIsMobileSidebarNavOpen={setIsMobileSidebarNavOpen} />
       </SheetContent>
     </Sheet>

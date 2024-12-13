@@ -45,7 +45,7 @@ export function BottomBarHeader({
         <FullscreenToggle />
         <ModeDropdown dictionary={dictionary} />
         <LanguageDropdown dictionary={dictionary} />
-        <UserDropdown dictionary={dictionary} />
+        <UserDropdown dictionary={dictionary} locale={locale} />
       </div>
     </div>
   );

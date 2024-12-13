@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -45,9 +46,7 @@ export function PaymentMethodForm({
 
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
-  function onSubmit(data: z.infer<typeof PaymentMethodSchema>) {
-    console.log("Submitted data:", data);
-  }
+  function onSubmit(data: z.infer<typeof PaymentMethodSchema>) {}
 
   return (
     <Form {...form}>
@@ -61,7 +60,7 @@ export function PaymentMethodForm({
                 <FormLabel>Select From The Saved Cards</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    value={field.value === undefined ? "" : field.value}
+                    value={field.value ?? ""}
                     onValueChange={(e) => {
                       field.onChange(e);
                       form.setValue("paymentOption", undefined);
@@ -94,10 +93,12 @@ export function PaymentMethodForm({
                                   </span>{" "}
                                   <span>ending in {card.last4}</span>
                                 </div>
-                                <img
-                                  src={`/images/logos/${card.cardType}.svg`}
+                                <Image
+                                  src={`/images/logos/${card.cardType?.toLowerCase()}.svg`}
                                   alt={`${card.cardType} logo`}
-                                  className="h-6 ms-auto md:h-8"
+                                  className="ms-auto"
+                                  width={48}
+                                  height={48}
                                 />
                               </>
                             )}
@@ -111,9 +112,7 @@ export function PaymentMethodForm({
               </FormItem>
             )}
           />
-
           <SeparatorWithText>or</SeparatorWithText>
-
           <FormField
             control={form.control}
             name="paymentOption"
@@ -122,7 +121,7 @@ export function PaymentMethodForm({
                 <FormLabel>Select Payment Option</FormLabel>
                 <FormControl>
                   <RadioGroup
-                    value={field.value === undefined ? "" : field.value}
+                    value={field.value ?? ""}
                     onValueChange={(e) => {
                       field.onChange(e);
                       form.setValue("savedCard", undefined);

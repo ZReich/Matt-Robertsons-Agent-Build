@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { X, Paperclip } from "lucide-react";
@@ -101,10 +102,12 @@ export function AttachmentsFormField({
             {attachments.map((attachment, index) => (
               <div key={attachment.url} className="size-fit relative">
                 {attachment.type.includes("image") ? (
-                  <img
+                  <Image
                     src={attachment.url}
                     alt={attachment.name}
-                    className="size-20 mt-2 object-cover rounded-md"
+                    className="mt-2 object-cover rounded-md"
+                    width={80}
+                    height={80}
                   />
                 ) : (
                   <div className="size-20 flex flex-col justify-center items-center p-2">

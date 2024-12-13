@@ -14,7 +14,14 @@ import type { EmailSidebarLabel } from "../types";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { DynamicIcon } from "@/components/dynamic-icon";
 
 export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
@@ -88,7 +95,16 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
       >
         <Menu className="h-4 w-4" />
       </SheetTrigger>
-      <SheetContent side="start">{content}</SheetContent>
+      <SheetContent side="start">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Email Sidebar</SheetTitle>
+          <SheetDescription>
+            Navigate your emails with ease. Access your inbox, sent items, and
+            custom labels.
+          </SheetDescription>
+        </SheetHeader>
+        {content}
+      </SheetContent>
     </Sheet>
   );
 }

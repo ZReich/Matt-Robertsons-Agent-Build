@@ -44,6 +44,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -157,6 +158,11 @@ export function EventSidebar() {
             <SheetTitle>
               {selectedEvent ? "Update Event" : "Add New Event"}
             </SheetTitle>
+            <SheetDescription>
+              {selectedEvent
+                ? "Update the details of the selected event."
+                : "Add a new event to your calendar."}
+            </SheetDescription>
           </SheetHeader>
           <Form {...form}>
             <form

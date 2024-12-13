@@ -40,6 +40,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -98,6 +99,9 @@ export function KanbanAddTaskSidebar() {
         <ScrollArea className="h-full p-4">
           <SheetHeader>
             <SheetTitle>Add New Task</SheetTitle>
+            <SheetDescription>
+              Add a new task to the {selectedColumn?.title} column.
+            </SheetDescription>
           </SheetHeader>
           <Form {...form}>
             <form

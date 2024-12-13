@@ -58,7 +58,7 @@ export function FilesUploader() {
 
   const files = form.watch("files");
   const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
 
   const onSubmit = async (data: FormType) => {
     handleAddFilesMessage(data.files);

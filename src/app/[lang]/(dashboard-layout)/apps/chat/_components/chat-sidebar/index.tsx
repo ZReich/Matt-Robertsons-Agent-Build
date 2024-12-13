@@ -7,7 +7,14 @@ import { cn } from "@/lib/utils";
 
 import { useChatContext } from "../../hooks/use-chat-context";
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Card } from "@/components/ui/card";
 import { ChatSidebarHeader } from "./chat-sidebar-header";
 import { buttonVariants } from "@/components/ui/button";
@@ -46,7 +53,16 @@ export function ChatSidebar() {
       >
         <Menu className="h-4 w-4" />
       </SheetTrigger>
-      <SheetContent side="start">{content}</SheetContent>
+      <SheetContent side="start">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Chat Sidebar</SheetTitle>
+          <SheetDescription>
+            Access your recent chats and conversations here. Use this panel to
+            navigate or start a new chat.
+          </SheetDescription>
+        </SheetHeader>
+        {content}
+      </SheetContent>
     </Sheet>
   );
 }

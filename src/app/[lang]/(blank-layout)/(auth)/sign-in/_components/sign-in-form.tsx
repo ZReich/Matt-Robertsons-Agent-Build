@@ -140,22 +140,22 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
         <SeparatorWithText>Or continue with</SeparatorWithText>
         <div className="flex justify-center gap-2">
           <Button variant="outline" size="icon" asChild>
-            <Link href="/api/auth/facebook" aria-label="Facebook">
+            <Link href="/" aria-label="Facebook">
               <SiFacebook className="size-4" />
             </Link>
           </Button>
           <Button variant="outline" size="icon" asChild>
-            <Link href="/api/auth/github" aria-label="GitHub">
+            <Link href="/" aria-label="GitHub">
               <SiGithub className="size-4" />
             </Link>
           </Button>
           <Button variant="outline" size="icon" asChild>
-            <Link href="/api/auth/google" aria-label="Google">
+            <Link href="/" aria-label="Google">
               <SiGoogle className="size-4" />
             </Link>
           </Button>
           <Button variant="outline" size="icon" asChild>
-            <Link href="/api/auth/x" aria-label="X">
+            <Link href="/" aria-label="X">
               <SiX className="size-4" />
             </Link>
           </Button>

@@ -41,6 +41,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -120,6 +121,9 @@ export function KanbanUpdateTaskSidebar() {
         <ScrollArea className="h-full p-4">
           <SheetHeader>
             <SheetTitle>Update Task</SheetTitle>
+            <SheetDescription>
+              Modify the details of the {selectedTask?.title} task.
+            </SheetDescription>
           </SheetHeader>
           <Form {...form}>
             <form

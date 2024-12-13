@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { formatCurrency } from "@/lib/utils";
 
 import type { PaymentType } from "../../types";
@@ -43,21 +45,24 @@ export function PaymentSummary({ data }: { data: PaymentType["summary"] }) {
           </dd>
         </dl>
       </Card>
-      <div className="mt-6 flex items-center justify-center gap-8">
-        <img
+      <div className="mt-6 flex justify-center items-center gap-8">
+        <Image
           src="/images/logos/paypal.svg"
           alt="Paypal logo"
-          className="h-6 md:h-8"
+          width={96}
+          height={96}
         />
-        <img
+        <Image
           src="/images/logos/visa.svg"
           alt="Visa logo"
-          className="h-6 md:h-8"
+          width={72}
+          height={72}
         />
-        <img
+        <Image
           src="/images/logos/mastercard.svg"
           alt="Mastercard logo"
-          className="h-6 md:h-8"
+          width={48}
+          height={48}
         />
       </div>
     </div>

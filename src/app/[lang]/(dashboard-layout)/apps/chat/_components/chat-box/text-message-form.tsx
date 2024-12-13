@@ -33,7 +33,7 @@ export function TextMessageForm() {
 
   const text = form.watch("text");
   const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
 
   const onSubmit = async (data: FormType) => {
     handleAddTextMessage(data.text);

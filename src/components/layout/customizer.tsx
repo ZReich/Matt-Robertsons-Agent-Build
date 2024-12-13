@@ -25,9 +25,11 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
+  SheetHeader,
   SheetPortal,
+  SheetTitle,
   SheetTrigger,
-  sheetVariants,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -49,17 +51,15 @@ export function Customizer() {
         </Button>
       </SheetTrigger>
       <SheetPortal>
-        <SheetContent className={cn(sheetVariants({ side: "end" }), "p-0")}>
+        <SheetContent className="p-0" side="end">
           <ScrollArea className="h-full p-4">
             <div className="flex flex-1 flex-col space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-lg font-semibold leading-none tracking-tight">
-                  Customize
-                </h3>
-                <div className="text-xs text-muted-foreground">
+              <SheetHeader>
+                <SheetTitle>Customizer</SheetTitle>
+                <SheetDescription>
                   Pick a style and color for the dashboard.
-                </div>
-              </div>
+                </SheetDescription>
+              </SheetHeader>
               <div className="space-y-1.5">
                 <span className="text-xs">Color</span>
                 <div className="grid grid-cols-3 gap-2">
@@ -78,7 +78,7 @@ export function Customizer() {
                           });
                         }}
                         className={cn(
-                          "justify-start",
+                          "justify-start gap-x-2",
                           isActive && "border-2 border-primary"
                         )}
                         style={
@@ -93,7 +93,7 @@ export function Customizer() {
                       >
                         <span
                           className={cn(
-                            "me-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]"
+                            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[--theme-primary]"
                           )}
                         >
                           {isActive && (

@@ -5,8 +5,10 @@ import { LogOut, User, UserCog } from "lucide-react";
 import { userData } from "@/data/user";
 
 import { cn, getInitials } from "@/lib/utils";
+import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { DictionaryType } from "@/lib/getDictionary";
+import type { LocaleType } from "@/configs/i18n";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,7 +22,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserDropdown({ dictionary }: { dictionary: DictionaryType }) {
+export function UserDropdown({
+  dictionary,
+  locale,
+}: {
+  dictionary: DictionaryType;
+  locale: LocaleType;
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -65,7 +73,7 @@ export function UserDropdown({ dictionary }: { dictionary: DictionaryType }) {
         <DropdownMenuGroup className="max-w-48">
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href="/"
+              href={ensureLocalizedPathname("/account", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"
@@ -77,7 +85,7 @@ export function UserDropdown({ dictionary }: { dictionary: DictionaryType }) {
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href="/"
+              href={ensureLocalizedPathname("/account/settings", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"

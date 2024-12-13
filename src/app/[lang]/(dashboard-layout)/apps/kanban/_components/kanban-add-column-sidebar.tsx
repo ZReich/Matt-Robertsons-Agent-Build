@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -71,6 +72,7 @@ export function KanbanAddColumnSidebar() {
         <ScrollArea className="h-full p-4">
           <SheetHeader>
             <SheetTitle>Add New Column</SheetTitle>
+            <SheetDescription>Add a new column to the board.</SheetDescription>
           </SheetHeader>
           <Form {...form}>
             <form

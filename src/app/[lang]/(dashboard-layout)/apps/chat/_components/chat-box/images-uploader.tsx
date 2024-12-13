@@ -58,7 +58,7 @@ export function ImagesUploader() {
 
   const images = form.watch("images");
   const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid;
+  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
 
   const onSubmit = async (data: FormType) => {
     handleAddImagesMessage(data.images);
