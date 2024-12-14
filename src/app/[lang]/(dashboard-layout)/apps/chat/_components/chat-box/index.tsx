@@ -3,20 +3,22 @@
 import * as React from "react";
 import { useParams } from "next/navigation";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
-import { MessageCircleDashed } from "lucide-react";
+import { MessageCircleX } from "lucide-react";
 
-import { useChatContext } from "../../hooks/use-chat-context";
+import { cn } from "@/lib/utils";
 
 import type { UserType } from "../../types";
 
 import { useSettings } from "@/hooks/use-settings";
+import { useChatContext } from "../../hooks/use-chat-context";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { ChatBoxFooter } from "./chat-box-footer";
 import { ChatBoxHeader } from "./chat-box-header";
 import { MessageBubble } from "./message-bubble";
-import { cn } from "@/lib/utils";
+import { ChatBoxPlaceholder } from "./chat-box-placeholder";
+import { ChatBoxNotFound } from "./chat-box-not-found";
 
 export function ChatBox({ user }: { user: UserType }) {
   const params = useParams();
@@ -53,21 +55,10 @@ export function ChatBox({ user }: { user: UserType }) {
   );
 
   // If no chat is selected, show a placeholder UI
-  if (!chatIdParam) {
-    return (
-      <Card className="grow h-[calc(100vh-8.78rem)] md:h-auto">
-        <CardContent className="size-full flex flex-col justify-center items-center gap-2 p-0">
-          <MessageCircleDashed className="size-24 text-primary/50" />
-          <span className="text-muted-foreground">
-            Select a chat to start a conversation.
-          </span>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (!chatIdParam) return <ChatBoxPlaceholder />;
 
-  // If chat ID exists but no matching chat is found, throw an error
-  if (!chat) throw new Error("This chat does not exist");
+  // If chat ID exists but no matching chat is found, show a not found UI
+  if (!chat) return <ChatBoxNotFound />
 
   return (
     <Card className="grow grid">

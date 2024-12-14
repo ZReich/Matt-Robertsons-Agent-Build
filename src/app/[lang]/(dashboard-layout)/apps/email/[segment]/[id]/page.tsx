@@ -1,5 +1,6 @@
 import { getEmailData } from "../../_actions/get-email-data";
 
+import { EmailNotFound } from "../../_components/email-not-found";
 import { EmailView } from "../../_components/email-view";
 
 export default async function EmailViewPage({
@@ -9,8 +10,8 @@ export default async function EmailViewPage({
 }) {
   const emailData = await getEmailData(params.id);
 
-  // If the email data is not found, throw an error indicating that the email does not exist
-  if (!emailData) throw new Error("This Email does not exist.");
+  // If no matching email is found, show a not found UI
+  if (!emailData) return <EmailNotFound />;
 
   return <EmailView email={emailData} />;
 }
