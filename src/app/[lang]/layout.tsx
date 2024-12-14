@@ -44,10 +44,10 @@ const cairoFont = Cairo({
 export default async function RootLayout({
   children,
   params,
-}: Readonly<{
+}: {
   children: React.ReactNode;
   params: { lang: LocaleType };
-}>) {
+}) {
   const session = await getServerSession(authOptions);
   const direction = i18n.langDirection[params.lang];
 
@@ -56,7 +56,7 @@ export default async function RootLayout({
       <body
         className={cn(
           "[&:lang(en)]:font-lato [&:lang(ar)]:font-cario", // Set font styles based on the language
-          "bg-background antialiased", // Set background and anti-aliasing styles
+          "bg-background text-foreground antialiased", // Set background, text, and anti-aliasing styles
           latoFont.variable, // Include Lato font variable
           cairoFont.variable // Include Cairo font variable
         )}

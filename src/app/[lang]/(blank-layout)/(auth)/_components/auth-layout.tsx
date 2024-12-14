@@ -22,7 +22,7 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
     const locale = params.lang as LocaleType;
 
     return (
-      <div
+      <section
         ref={ref}
         className={cn(
           "container relative min-h-screen w-full flex px-0 ",
@@ -41,7 +41,7 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
           {children}
         </div>
         {imgSrc && <AuthImage imgSrc={imgSrc} />}
-      </div>
+      </section>
     );
   }
 );
