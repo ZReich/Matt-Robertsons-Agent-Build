@@ -68,7 +68,7 @@ export function PerformanceOverTimeSummary({
           <span>2024</span>
           <ChevronDown className="h-4 w-4 shrink-0 ms-2 transition-transform duration-200" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="min-w-fit">
+        <DropdownMenuContent className="min-w-[5.5rem]">
           <DropdownMenuRadioGroup value="2024">
             <DropdownMenuRadioItem value="2024">2024</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="2023">2023</DropdownMenuRadioItem>

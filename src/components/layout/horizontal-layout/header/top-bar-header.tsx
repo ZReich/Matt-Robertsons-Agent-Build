@@ -13,7 +13,7 @@ import { Nav } from "@/components/layout/nav";
 
 export function TopBarHeader() {
   return (
-    <div className="container hidden justify-between items-center py-1 md:flex">
+    <div className="container hidden justify-between items-center py-1 lg:flex">
       <Menubar className="shadow-none border-0">
         {groupNavs.map((group, index) => (
           <MenubarMenu key={index}>

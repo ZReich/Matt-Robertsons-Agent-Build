@@ -16,7 +16,7 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 export function ConversionFunnelChart({
   data,
 }: {
-  data: ConversionFunnelType['funnelSteps'];
+  data: ConversionFunnelType["funnelSteps"];
 }) {
   const { settings } = useSettings();
 
@@ -44,7 +44,7 @@ export function ConversionFunnelChart({
 
       <ChartContainer
         config={{}}
-        className="grow aspect-square w-full max-h-[250px]"
+        className="grow aspect-[9/16] w-full max-h-[250px]"
       >
         <BarChart accessibilityLayer data={data}>
           <CartesianGrid vertical={false} />

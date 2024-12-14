@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useMedia } from "react-use";
+import { Search } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-
-import type { DialogProps } from "@radix-ui/react-dialog";
+import type { ButtonProps } from "@/components/ui/button";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,10 +20,15 @@ import { Keyboard } from "@/components/ui/keyboard";
 import { groupNavs } from "@/data/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DynamicIcon } from "@/components/dynamic-icon";
+import { cn } from "@/lib/utils";
 
-export function CommandMenu({ ...props }: DialogProps) {
+interface CommandMenuProps extends ButtonProps {
+  className?: string;
+}
+export function CommandMenu({ className, ...props }: CommandMenuProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
+  const isLargeOrLarger = useMedia("(min-width: 1024px)");
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -53,19 +58,33 @@ export function CommandMenu({ ...props }: DialogProps) {
 
   return (
     <>
-      <Button
-        variant="outline"
-        className={cn(
-          "relative h-8 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pe-12 md:w-40 lg:w-64"
-        )}
-        onClick={() => setOpen(true)}
-        {...props}
-      >
-        <span className="inline-flex">Search...</span>
-        <Keyboard className="hidden absolute end-[0.3rem] top-[0.4.5rem] sm:flex">
-          K
-        </Keyboard>
-      </Button>
+      {isLargeOrLarger ? (
+        <Button
+          variant="outline"
+          className={cn(
+            "relative h-8 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pe-12 md:w-40 lg:w-64",
+            className
+          )}
+          onClick={() => setOpen(true)}
+          {...props}
+        >
+          <span className="inline-flex">Search...</span>
+          <Keyboard className="hidden absolute end-[0.3rem] top-[0.4.5rem] sm:flex">
+            K
+          </Keyboard>
+        </Button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          className={className}
+          onClick={() => setOpen(true)}
+          aria-label="Search"
+          {...props}
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+      )}
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search..." />
         <CommandList className="overflow-hidden">

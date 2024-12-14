@@ -22,8 +22,8 @@ export function Header({ dictionary }: { dictionary: DictionaryType }) {
     <header className="sticky top-0 z-50 w-full bg-background border-b-[1px] border-accent">
       <div className="container flex h-14 justify-between items-center gap-4">
         <MobileSidebarNav />
-        <CommandMenu />
-        <div className="flex gap-2">
+        <div className="grow flex justify-end gap-2">
+          <CommandMenu className="lg:me-auto" />
           <Notifications />
           <FullscreenToggle />
           <ModeDropdown dictionary={dictionary} />

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMedia } from "react-use";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
@@ -25,8 +24,6 @@ export function BottomBarHeader({
   dictionary: DictionaryType;
 }) {
   const params = useParams();
-  const isMediumOrSmaller = useMedia("(max-width: 767px)");
-
   const locale = params.lang as LocaleType;
 
   return (
@@ -34,13 +31,13 @@ export function BottomBarHeader({
       <MobileSidebarNav />
       <Link
         href={ensureLocalizedPathname("/", locale)}
-        className="hidden text-foreground font-black hover:text-primary/90 md:flex"
+        className="hidden text-foreground font-black hover:text-primary/90 lg:flex"
       >
         <Logo className="size-6" aira-hidden="true" />
         Shadboard
       </Link>
-      {isMediumOrSmaller && <CommandMenu />}
       <div className="flex gap-2">
+        <CommandMenu className="lg:hidden" />
         <Notifications />
         <FullscreenToggle />
         <ModeDropdown dictionary={dictionary} />

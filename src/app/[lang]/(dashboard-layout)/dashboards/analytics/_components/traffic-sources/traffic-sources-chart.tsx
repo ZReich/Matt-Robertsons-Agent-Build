@@ -24,7 +24,10 @@ export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
         "flex flex-col justify-center items-center pb-6 sm:flex-row sm:pb-0"
       )}
     >
-      <ChartContainer config={{}} className="size-[272px]">
+      <ChartContainer
+        config={{}}
+        className="size-[250px] md:size-[175px] lg:size-[250px]"
+      >
         <PieChart accessibilityLayer>
           <ChartTooltip
             cursor={false}
@@ -50,7 +53,7 @@ export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
                       <tspan
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        className="fill-foreground text-3xl font-bold"
+                        className="fill-foreground text-3xl font-semibold"
                       >
                         {data.summary.totalVisitors.toLocaleString()}
                       </tspan>
@@ -87,14 +90,14 @@ export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
           return (
             <li
               key={source.name}
-              className="flex justify-between items-center gap-x-4"
+              className="flex justify-between items-center gap-x-32 md:gap-x-4 lg:gap-x-8"
             >
               <div className="flex items-center gap-x-2">
                 <div
                   style={{ backgroundColor: source.fill }}
                   className="shrink-0 size-2 rounded-sm"
                 />
-                <p className="w-max text-foreground">{source.name}</p>
+                <p className="w-max text-foreground md:w-auto">{source.name}</p>
               </div>
               <Badge
                 variant="destructive"
