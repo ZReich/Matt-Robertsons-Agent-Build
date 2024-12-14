@@ -5,14 +5,13 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
-import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
 import { RegisterSchema } from "../_schemas/register-schema";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import { cn, ensureRedirectPathname } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
 
@@ -28,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
+import { OAuthLinks } from "../../_components/oauth-links";
 
 type FormType = z.infer<typeof RegisterSchema>;
 
@@ -41,10 +41,16 @@ export function RegisterForm({
   ...props
 }: RegisterFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const redirectPathname = searchParams.get("redirectTo");
+
   const form = useForm<FormType>({
     resolver: zodResolver(RegisterSchema),
   });
-  const isLoading = form.formState.isLoading;
+
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
   async function onSubmit(data: FormType) {
     const { firstName, lastName, username, email, password } = data;
@@ -82,7 +88,15 @@ export function RegisterForm({
         });
       } else {
         toast({ title: "Register Successful" });
-        router.push(ensureLocalizedPathname("/sign-in", locale));
+        router.push(
+          ensureLocalizedPathname(
+            // Include redirect pathname if available, otherwise default to "/sign-in"
+            redirectPathname
+              ? ensureRedirectPathname("/sign-in", redirectPathname)
+              : "/sign-in",
+            locale
+          )
+        );
       }
     } catch (error) {
       toast({
@@ -172,43 +186,33 @@ export function RegisterForm({
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <LoaderCircle className="me-2 size-4 animate-spin" />}
+          <Button type="submit" disabled={isDisabled} aria-live="assertive">
+            {isSubmitting && (
+              <LoaderCircle
+                className="me-2 size-4 animate-spin"
+                aria-label="Loading"
+              />
+            )}
             Sign In with Email
           </Button>
         </div>
         <div className="-mt-4 text-center text-sm">
           Already have an account?{" "}
           <Link
-            href={ensureLocalizedPathname("/sign-in", locale)}
+            href={ensureLocalizedPathname(
+              // Include redirect pathname if available, otherwise default to "/sign-in"
+              redirectPathname
+                ? ensureRedirectPathname("/sign-in", redirectPathname)
+                : "/sign-in",
+              locale
+            )}
             className="underline"
           >
             Sign in
           </Link>
         </div>
         <SeparatorWithText>Or continue with</SeparatorWithText>
-        <div className="flex justify-center gap-2">
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="Facebook">
-              <SiFacebook className="size-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="GitHub">
-              <SiGithub className="size-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="Google">
-              <SiGoogle className="size-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="X">
-              <SiX className="size-4" />
-            </Link>
-          </Button>
-        </div>
+        <OAuthLinks />
       </form>
     </Form>
   );

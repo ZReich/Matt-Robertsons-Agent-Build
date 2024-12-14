@@ -6,7 +6,7 @@ import { match } from "@formatjs/intl-localematcher";
 import { i18n } from "@/configs/i18n";
 
 import { isPathnameMissingLocale, ensureLocalizedPathname } from "@/lib/i18n";
-import { withoutSuffix } from "@/lib/utils";
+import { ensureRedirectPathname } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
 import type { NextRequest } from "next/server";
@@ -93,11 +93,7 @@ export default withAuth(
 
       // Maintain the original path for redirection
       if (!(pathname === "/" || pathname === `/${locale}`)) {
-        const searchParams = new URLSearchParams({
-          redirectTo: withoutSuffix(pathname, "/"),
-        });
-
-        redirectPathname += `?${searchParams}`;
+        redirectPathname = ensureRedirectPathname(redirectPathname, pathname);
       }
 
       return redirectTo(redirectPathname, request, locale);

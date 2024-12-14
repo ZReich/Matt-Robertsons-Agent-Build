@@ -8,14 +8,13 @@ import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
-import { SiFacebook, SiGithub, SiGoogle, SiX } from "react-icons/si";
 
 import { userData } from "@/data/user";
 
 import { SignInSchema } from "../_schemas/sign-in-schema";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import { cn, ensureRedirectPathname } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
 
@@ -31,6 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
+import { OAuthLinks } from "../../_components/oauth-links";
 
 type FormType = z.infer<typeof SignInSchema>;
 
@@ -42,7 +42,7 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const redirectPathname = searchParams.get("redirectTo") ?? "/";
+  const redirectPathname = searchParams.get("redirectTo");
 
   const form = useForm<FormType>({
     resolver: zodResolver(SignInSchema),
@@ -51,7 +51,9 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
       password: userData.password,
     },
   });
-  const isLoading = form.formState.isLoading;
+
+  const { isSubmitting, isValid } = form.formState;
+  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
 
   async function onSubmit(data: FormType) {
     const { email, password } = data;
@@ -67,7 +69,7 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
         throw new Error(result.error);
       }
 
-      router.push(redirectPathname);
+      router.push(redirectPathname ?? "/");
     } catch (error) {
       toast({
         variant: "destructive",
@@ -110,7 +112,16 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
                 <div className="flex items-center">
                   <FormLabel>Password</FormLabel>
                   <Link
-                    href={ensureLocalizedPathname("/forgot-password", locale)}
+                    href={ensureLocalizedPathname(
+                      // Include redirect pathname if available, otherwise default to "/forgot-password"
+                      redirectPathname
+                        ? ensureRedirectPathname(
+                            "/forgot-password",
+                            redirectPathname
+                          )
+                        : "/forgot-password",
+                      locale
+                    )}
                     className="ms-auto inline-block text-sm underline"
                   >
                     Forgot your password?
@@ -123,43 +134,33 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <LoaderCircle className="me-2 size-4 animate-spin" />}
+          <Button type="submit" disabled={isDisabled} aria-live="assertive">
+            {isSubmitting && (
+              <LoaderCircle
+                className="me-2 size-4 animate-spin"
+                aria-label="Loading"
+              />
+            )}
             Sign In with Email
           </Button>
         </div>
         <div className="-mt-4 text-center text-sm">
           Don&apos;t have an account?
           <Link
-            href={ensureLocalizedPathname("/register", locale)}
+            href={ensureLocalizedPathname(
+              // Include redirect pathname if available, otherwise default to "/register"
+              redirectPathname
+                ? ensureRedirectPathname("/register", redirectPathname)
+                : "/register",
+              locale
+            )}
             className="underline"
           >
             Sign up
           </Link>
         </div>
         <SeparatorWithText>Or continue with</SeparatorWithText>
-        <div className="flex justify-center gap-2">
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="Facebook">
-              <SiFacebook className="size-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="GitHub">
-              <SiGithub className="size-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="Google">
-              <SiGoogle className="size-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/" aria-label="X">
-              <SiX className="size-4" />
-            </Link>
-          </Button>
-        </div>
+        <OAuthLinks />
       </form>
     </Form>
   );

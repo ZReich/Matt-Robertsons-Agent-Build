@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -10,7 +11,7 @@ import { LoaderCircle } from "lucide-react";
 import { NewPasswordSchema } from "../_schemas/new-passward-schema";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import { cn, ensureRedirectPathname } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
 
@@ -37,6 +38,10 @@ export function NewPasswordForm({
   locale,
   ...props
 }: NewPasswordFormProps) {
+  const searchParams = useSearchParams();
+
+  const redirectPathname = searchParams.get("redirectTo");
+
   const form = useForm<FormType>({
     resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
@@ -45,7 +50,8 @@ export function NewPasswordForm({
     },
   });
 
-  const isLoading = form.formState.isLoading;
+  const { isSubmitting, isValid, isDirty } = form.formState;
+  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
   async function onSubmit(data: FormType) {
     try {
@@ -97,13 +103,24 @@ export function NewPasswordForm({
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <LoaderCircle className="me-2 size-4 animate-spin" />}
+          <Button type="submit" disabled={isDisabled} aria-live="assertive">
+            {isSubmitting && (
+              <LoaderCircle
+                className="me-2 size-4 animate-spin"
+                aria-label="Loading"
+              />
+            )}
             Set new password
           </Button>
         </div>
         <Link
-          href={ensureLocalizedPathname("/sign-in", locale)}
+          href={ensureLocalizedPathname(
+            // Include redirect pathname if available, otherwise default to "/sign-in"
+            redirectPathname
+              ? ensureRedirectPathname("/sign-in", redirectPathname)
+              : "/sign-in",
+            locale
+          )}
           className="-mt-4 text-center text-sm underline"
         >
           Back to Sign in

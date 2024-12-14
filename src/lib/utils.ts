@@ -162,6 +162,17 @@ export function withoutPrefix(value: string, prefix: string) {
   return value.startsWith(prefix) ? value.slice(prefix.length) : value;
 }
 
+export const ensureRedirectPathname = (
+  currentPathname: string,
+  redirectPathname: string
+): string => {
+  const searchParams = new URLSearchParams({
+    redirectTo: withoutSuffix(redirectPathname, "/"),
+  });
+
+  return ensureSuffix(currentPathname, "?" + searchParams);
+};
+
 export function isNonNegative(num: number) {
   return num >= 0;
 }
