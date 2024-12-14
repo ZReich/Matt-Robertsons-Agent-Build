@@ -44,7 +44,7 @@ export function ConversionFunnelChart({
 
       <ChartContainer
         config={{}}
-        className="grow aspect-[9/16] w-full max-h-[250px]"
+        className="grow w-full max-h-[250px] md:aspect-[9/16]"
       >
         <BarChart accessibilityLayer data={data}>
           <CartesianGrid vertical={false} />
