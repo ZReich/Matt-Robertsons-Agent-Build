@@ -25,6 +25,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+type FormType = z.infer<typeof ProfileInfoSchema>;
+
 interface ProfileInfoFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
   user: UserType;
@@ -36,7 +38,7 @@ export function ProfileInfoForm({
   user,
   ...props
 }: ProfileInfoFormProps) {
-  const form = useForm<z.infer<typeof ProfileInfoSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(ProfileInfoSchema),
     defaultValues: {
       ...user,
@@ -50,7 +52,7 @@ export function ProfileInfoForm({
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: z.infer<typeof ProfileInfoSchema>) {}
+  async function onSubmit(data: FormType) {}
 
   function handleResetForm() {
     form.reset(); // Reset the form to the initial state

@@ -24,8 +24,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type FormType = z.infer<typeof NotificationPreferencesSchema>;
+
 export function NotificationPreferencesForm() {
-  const form = useForm<z.infer<typeof NotificationPreferencesSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(NotificationPreferencesSchema),
     defaultValues: {
       security: {
@@ -49,7 +51,7 @@ export function NotificationPreferencesForm() {
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: z.infer<typeof NotificationPreferencesSchema>) {}
+  function onSubmit(data: FormType) {}
 
   return (
     <Form {...form}>

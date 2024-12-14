@@ -33,7 +33,7 @@ const defaultValues = {
   title: "",
 };
 
-type FormValues = z.infer<typeof KanbanColumnSchema>;
+type FormType = z.infer<typeof KanbanColumnSchema>;
 
 export function KanbanAddColumnSidebar() {
   const {
@@ -42,7 +42,7 @@ export function KanbanAddColumnSidebar() {
     handleAddColumn,
   } = useKanbanContext();
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormType>({
     resolver: zodResolver(KanbanColumnSchema),
     defaultValues,
   });
@@ -52,7 +52,7 @@ export function KanbanAddColumnSidebar() {
     form.reset();
   }, [kanbanAddColumnSidebarIsOpen, form]);
 
-  function onSubmit(data: FormValues) {
+  function onSubmit(data: FormType) {
     handleAddColumn(data);
 
     handleSidebarClose();

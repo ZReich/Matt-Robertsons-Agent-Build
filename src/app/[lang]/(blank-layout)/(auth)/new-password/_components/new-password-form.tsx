@@ -5,7 +5,6 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
 import { NewPasswordSchema } from "../_schemas/new-passward-schema";
@@ -27,6 +26,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
+type FormType = z.infer<typeof NewPasswordSchema>;
+
 interface NewPasswordFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
 }
@@ -36,8 +37,7 @@ export function NewPasswordForm({
   locale,
   ...props
 }: NewPasswordFormProps) {
-  const router = useRouter();
-  const form = useForm<z.infer<typeof NewPasswordSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
       password: "",
@@ -47,7 +47,7 @@ export function NewPasswordForm({
 
   const isLoading = form.formState.isLoading;
 
-  async function onSubmit(data: z.infer<typeof NewPasswordSchema>) {
+  async function onSubmit(data: FormType) {
     try {
       toast({
         title: "Check your email",

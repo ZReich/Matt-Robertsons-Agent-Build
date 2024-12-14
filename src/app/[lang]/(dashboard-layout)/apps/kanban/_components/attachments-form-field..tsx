@@ -19,12 +19,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-type FormValues = z.infer<typeof KanbanTaskSchema>;
+type FormType = z.infer<typeof KanbanTaskSchema>;
 
 export function AttachmentsFormField({
   form,
 }: {
-  form: UseFormReturn<FormValues>;
+  form: UseFormReturn<FormType>;
 }) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 

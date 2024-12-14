@@ -17,6 +17,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 
+type FormType = z.infer<typeof VerifyEmailSchema>;
+
 interface VerifyEmailFormProps extends React.HTMLAttributes<HTMLFormElement> {
   locale: LocaleType;
 }
@@ -26,14 +28,14 @@ export function VerifyEmailForm({
   locale,
   ...props
 }: VerifyEmailFormProps) {
-  const form = useForm<z.infer<typeof VerifyEmailSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(VerifyEmailSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  async function onSubmit(data: z.infer<typeof VerifyEmailSchema>) {
+  async function onSubmit(data: FormType) {
     try {
       const response = await fetch("/api/auth/verify-email", {
         method: "POST",

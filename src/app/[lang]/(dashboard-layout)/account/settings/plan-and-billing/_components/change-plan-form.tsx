@@ -30,6 +30,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+type FormType = z.infer<typeof ChangePlanSchema>;
+
 export function ChangePlanForm({
   plans,
   subscriptions,
@@ -41,7 +43,7 @@ export function ChangePlanForm({
     (p) => p.id === subscriptions[0].planId
   );
 
-  const form = useForm<z.infer<typeof ChangePlanSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(ChangePlanSchema),
     defaultValues: {
       plan: lastSubscribedPlan?.name,
@@ -53,7 +55,7 @@ export function ChangePlanForm({
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: z.infer<typeof ChangePlanSchema>) {}
+  function onSubmit(data: FormType) {}
 
   return (
     <Form {...form}>

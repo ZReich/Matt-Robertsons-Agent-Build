@@ -29,12 +29,14 @@ import {
 import { SeparatorWithText } from "@/components/ui/separator";
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 
+type FormType = z.infer<typeof PaymentMethodSchema>;
+
 export function PaymentMethodForm({
   data: savedCards,
 }: {
   data: PaymentType["savedCards"];
 }) {
-  const form = useForm<z.infer<typeof PaymentMethodSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
       saveCard: false,
@@ -46,7 +48,7 @@ export function PaymentMethodForm({
 
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
-  function onSubmit(data: z.infer<typeof PaymentMethodSchema>) {}
+  function onSubmit(data: FormType) {}
 
   return (
     <Form {...form}>

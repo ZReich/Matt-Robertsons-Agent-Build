@@ -33,10 +33,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+type FormType = z.infer<typeof PaymentMethodSchema>;
+
 export function PaymentMethodForm() {
   const [paymentMethod, setPaymentMethod] = useState("card");
 
-  const form = useForm<z.infer<typeof PaymentMethodSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
       paymentType: "visa",
@@ -55,7 +57,7 @@ export function PaymentMethodForm() {
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
-  function onSubmit(data: z.infer<typeof PaymentMethodSchema>) {}
+  function onSubmit(data: FormType) {}
 
   return (
     <Card>

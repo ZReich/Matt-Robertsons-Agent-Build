@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+type FormType = z.infer<typeof ChangePasswordSchema>;
+
 interface ChangePasswordFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -33,7 +35,7 @@ export function ChangePasswordForm({
   user,
   ...props
 }: ChangePasswordFormProps) {
-  const form = useForm<z.infer<typeof ChangePasswordSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(ChangePasswordSchema),
     defaultValues: {
       currentPassword: "",
@@ -45,7 +47,7 @@ export function ChangePasswordForm({
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
 
-  async function onSubmit(data: z.infer<typeof ChangePasswordSchema>) {}
+  async function onSubmit(data: FormType) {}
 
   return (
     <Form {...form}>

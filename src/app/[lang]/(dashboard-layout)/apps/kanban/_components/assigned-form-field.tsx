@@ -32,10 +32,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-type FormValues = z.infer<typeof KanbanTaskSchema>;
+type FormType = z.infer<typeof KanbanTaskSchema>;
 type TeamMemberType = z.infer<typeof UserSchema>;
 
-export function AssignedFormField({ form }: { form: UseFormReturn<FormValues> }) {
+export function AssignedFormField({ form }: { form: UseFormReturn<FormType> }) {
   const [searchTeamMembers, setSearchTeamMembers] = React.useState("");
   const [
     searchTeamMembersResults,

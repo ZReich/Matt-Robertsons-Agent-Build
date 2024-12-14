@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+type FormType = z.infer<typeof AccountRecoveryOptionsSchema>;
+
 interface AccountRecoveryOptionsFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -28,7 +30,7 @@ interface AccountRecoveryOptionsFormProps
 export function AccountRecoveryOptionsForm({
   user,
 }: AccountRecoveryOptionsFormProps) {
-  const form = useForm<z.infer<typeof AccountRecoveryOptionsSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(AccountRecoveryOptionsSchema),
     defaultValues: {
       option: user.accountReoveryOption,
@@ -38,7 +40,7 @@ export function AccountRecoveryOptionsForm({
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: z.infer<typeof AccountRecoveryOptionsSchema>) {}
+  function onSubmit(data: FormType) {}
 
   return (
     <Form {...form}>

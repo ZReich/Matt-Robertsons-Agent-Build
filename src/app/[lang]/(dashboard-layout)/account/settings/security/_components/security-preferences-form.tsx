@@ -20,6 +20,8 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 
+type FormType = z.infer<typeof SecurityPreferencesSchema>;
+
 interface SecurityPreferencesFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -28,7 +30,7 @@ interface SecurityPreferencesFormProps
 export function SecurityPreferencesForm({
   user,
 }: SecurityPreferencesFormProps) {
-  const form = useForm<z.infer<typeof SecurityPreferencesSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(SecurityPreferencesSchema),
     defaultValues: {
       twoFactorAuth: user.twoFactorAuth,
@@ -39,7 +41,7 @@ export function SecurityPreferencesForm({
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: z.infer<typeof SecurityPreferencesSchema>) {}
+  function onSubmit(data: FormType) {}
 
   return (
     <Form {...form}>

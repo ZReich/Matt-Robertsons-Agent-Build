@@ -33,7 +33,7 @@ const defaultValues = {
   title: "",
 };
 
-type FormValues = z.infer<typeof KanbanColumnSchema>;
+type FormType = z.infer<typeof KanbanColumnSchema>;
 
 export function KanbanUpdateColumnSidebar() {
   const {
@@ -44,7 +44,7 @@ export function KanbanUpdateColumnSidebar() {
     handleSelectColumn,
   } = useKanbanContext();
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormType>({
     resolver: zodResolver(KanbanColumnSchema),
   });
 
@@ -59,7 +59,7 @@ export function KanbanUpdateColumnSidebar() {
     }
   }, [selectedColumn, form]);
 
-  function onSubmit(data: FormValues) {
+  function onSubmit(data: FormType) {
     if (selectedColumn) {
       handleUpdateColumn({
         title: data.title,

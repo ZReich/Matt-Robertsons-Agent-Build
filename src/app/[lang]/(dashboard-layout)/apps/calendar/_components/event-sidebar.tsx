@@ -50,7 +50,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-type FormValues = z.infer<typeof EventSidebarSchema>;
+type FormType = z.infer<typeof EventSidebarSchema>;
 
 export function EventSidebar() {
   const {
@@ -64,7 +64,7 @@ export function EventSidebar() {
     setEventSidebarIsOpen,
   } = useCalendarContext();
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormType>({
     resolver: zodResolver(EventSidebarSchema),
     defaultValues: {
       title: "",
@@ -108,7 +108,7 @@ export function EventSidebar() {
     setEventSidebarIsOpen(false); // Close the sidebar
   };
 
-  function onSubmit(data: FormValues) {
+  function onSubmit(data: FormType) {
     if (!calendarApi) return; // Ensure the calendar API is available before proceeding
 
     const event: EventWithoutIdType = {

@@ -59,7 +59,7 @@ const defaultValues = {
   attachments: [],
 };
 
-type FormValues = z.infer<typeof KanbanTaskSchema>;
+type FormType = z.infer<typeof KanbanTaskSchema>;
 
 export function KanbanUpdateTaskSidebar() {
   const {
@@ -70,7 +70,7 @@ export function KanbanUpdateTaskSidebar() {
     handleSelectTask,
   } = useKanbanContext();
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormType>({
     resolver: zodResolver(KanbanTaskSchema),
     defaultValues,
   });
@@ -92,7 +92,7 @@ export function KanbanUpdateTaskSidebar() {
     }
   }, [selectedTask, form]);
 
-  function onSubmit(data: FormValues) {
+  function onSubmit(data: FormType) {
     if (selectedTask) {
       handleUpdateTask({
         ...data,

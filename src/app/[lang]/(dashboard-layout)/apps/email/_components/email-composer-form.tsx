@@ -28,11 +28,13 @@ import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
 import { EmailComposer } from "./email-composer";
 
+type FormType = z.infer<typeof EmailComposerSchema>;
+
 export function EmailComposerForm() {
   const [showCc, setShowCc] = React.useState(false);
   const [showBcc, setShowBcc] = React.useState(false);
 
-  const form = useForm<z.infer<typeof EmailComposerSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(EmailComposerSchema),
     defaultValues: {
       to: "",
@@ -43,7 +45,7 @@ export function EmailComposerForm() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof EmailComposerSchema>) {}
+  function onSubmit(data: FormType) {}
 
   return (
     <Card className="flex-1 w-full md:w-auto">

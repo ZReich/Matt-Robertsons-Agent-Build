@@ -12,6 +12,8 @@ import { getEmailsBySearchTermData } from "../_actions/get-emails-by-search-term
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
+type FormType = z.infer<typeof EmailListSearchSchema>;
+
 interface EmailListSearchFormProps {
   pageQuery: number;
   filterParam: string;
@@ -23,14 +25,14 @@ export function EmailListSearchForm({
   filterParam,
   setEmailState,
 }: EmailListSearchFormProps) {
-  const form = useForm<z.infer<typeof EmailListSearchSchema>>({
+  const form = useForm<FormType>({
     resolver: zodResolver(EmailListSearchSchema),
     defaultValues: {
       term: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof EmailListSearchSchema>) => {
+  const onSubmit = async (data: FormType) => {
     const newEmailsData = await getEmailsBySearchTermData(
       pageQuery,
       filterParam,
