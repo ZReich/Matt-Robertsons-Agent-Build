@@ -53,7 +53,7 @@ export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
             droppableId={column.id} // A unique identifier for this column, which helps the library track and move the item
           >
             {/* A render callback function that provides the necessary props
-        for the Droppable component to function properly */}
+            for the Droppable component to function properly */}
             {(provided) => (
               <>
                 <CardContent

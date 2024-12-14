@@ -145,7 +145,7 @@ export function SignInForm({ className, locale, ...props }: SignInFormProps) {
           </Button>
         </div>
         <div className="-mt-4 text-center text-sm">
-          Don&apos;t have an account?
+          Don&apos;t have an account?{" "}
           <Link
             href={ensureLocalizedPathname(
               // Include redirect pathname if available, otherwise default to "/register"

@@ -89,7 +89,7 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
       <SheetTrigger
         className={cn(
           buttonVariants({ size: "icon" }),
-          "fixed bottom-16 start-4 md:hidden"
+          "fixed bottom-16 start-4 z-50 md:hidden"
         )}
         aria-label="Open email sidebar"
       >

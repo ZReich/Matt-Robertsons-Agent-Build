@@ -62,12 +62,12 @@ export function Kanban() {
           <ScrollArea
             orientation="horizontal"
             dir={direction}
-            className="container p-4"
+            className="container p-0"
           >
             <div
               ref={provided.innerRef}
               {...provided.droppableProps} // Droppable props for drag-and-drop functionality
-              className="flex gap-x-4"
+              className="flex p-4 gap-x-4"
             >
               {kanbanState.columns.map((column, index) => (
                 <KanbanColumn key={column.id} column={column} index={index} />
