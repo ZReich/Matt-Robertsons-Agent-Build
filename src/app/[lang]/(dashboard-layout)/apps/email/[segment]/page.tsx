@@ -1,10 +1,9 @@
-import { notFound } from "next/navigation";
-
 import { getEmailsData } from "../_actions/get-emails-data";
 import { labelsData } from "../_data/labels";
 
 import { EmailComposerForm } from "../_components/email-composer-form";
 import { EmailList } from "../_components/email-list";
+import { EmailNotFound } from "../_components/email-not-found";
 
 export default async function EmailPage({
   params,
@@ -16,6 +15,9 @@ export default async function EmailPage({
   const segmentParam = params.segment;
   const pageQuery = searchParams.page || "1"; // Defaults to page 1 if not provided
 
+  // If the segment is 'compose', render the email composer form to create a new email
+  if (segmentParam === "compose") return <EmailComposerForm />;
+
   // Check if the current segment corresponds to one of the defined labels
   const isLabel = labelsData.some((label) => label === segmentParam);
 
@@ -26,9 +28,5 @@ export default async function EmailPage({
     return <EmailList emails={emailsData} />;
   }
 
-  // If the segment is 'compose', render the email composer form to create a new email
-  if (segmentParam === "compose") return <EmailComposerForm />;
-
-  // Otherwize display Not Found page
-  notFound();
+  return <EmailNotFound />;
 }
