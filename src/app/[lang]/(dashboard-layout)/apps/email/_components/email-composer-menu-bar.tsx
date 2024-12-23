@@ -8,9 +8,6 @@ import {
   UnderlineIcon,
   Strikethrough,
   AlignLeft,
-  AlignCenter,
-  AlignJustify,
-  AlignRight,
   ImageIcon,
   LinkIcon,
   Palette,
@@ -44,6 +41,38 @@ export const headings: HeadingType[] = [
   { label: "Heading 5", level: 5, textSize: "text-base" },
   { label: "Heading 6", level: 6, textSize: "text-sm" },
 ];
+
+function ColorPicker({ editor }: { editor: Editor }) {
+  const selectedColor = editor.getAttributes("textStyle").color;
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="relative overflow-hidden"
+      onClick={() => inputRef.current?.click()}
+      aria-label="Select text color"
+    >
+      <Palette style={{ color: selectedColor }} className="size-4" />
+      <Input
+        ref={inputRef}
+        type="color"
+        value={selectedColor}
+        onChange={(e) =>
+          editor
+            .chain()
+            .focus()
+            .setColor(e.target.value as string)
+            .run()
+        }
+        className="sr-only"
+        tabIndex={-1}
+      />
+    </Button>
+  );
+}
 
 interface EmailComposerMenuBarProps {
   editor: Editor | null;
@@ -187,37 +216,5 @@ export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
         <LinkIcon className="h-4 w-4" />
       </Button>
     </div>
-  );
-}
-
-function ColorPicker({ editor }: { editor: Editor }) {
-  const selectedColor = editor.getAttributes("textStyle").color;
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="relative overflow-hidden"
-      onClick={() => inputRef.current?.click()}
-      aria-label="Select text color"
-    >
-      <Palette style={{ color: selectedColor }} className="size-4" />
-      <Input
-        ref={inputRef}
-        type="color"
-        value={selectedColor}
-        onChange={(e) =>
-          editor
-            .chain()
-            .focus()
-            .setColor(e.target.value as string)
-            .run()
-        }
-        className="sr-only"
-        tabIndex={-1}
-      />
-    </Button>
   );
 }

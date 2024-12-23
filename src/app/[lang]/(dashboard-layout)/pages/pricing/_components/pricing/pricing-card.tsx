@@ -42,7 +42,7 @@ export function PricingCard({
     : price;
 
   return (
-    <article>
+    <li>
       <Card
         className={cn(
           "relative h-full flex flex-col",
@@ -80,6 +80,6 @@ export function PricingCard({
           </Button>
         </CardFooter>
       </Card>
-    </article>
+    </li>
   );
 }

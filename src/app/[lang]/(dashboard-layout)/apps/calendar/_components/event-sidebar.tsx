@@ -340,10 +340,12 @@ export function EventSidebar() {
                   </FormItem>
                 )}
               />
+              
               <Button type="submit" className="w-full" disabled={isDisabled}>
                 <CalendarCheck2 className="me-1 size-4" />
                 Save
               </Button>
+
               {/* Display the delete button only when an event is selected to avoid showing it during event creation */}
               {selectedEvent && (
                 <Button

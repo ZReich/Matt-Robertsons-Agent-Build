@@ -6,12 +6,10 @@ import { z } from "zod";
 import { X, Loader2 } from "lucide-react";
 
 import { getTeamMembersSearchData } from "../_actions/get-team-members-search-data";
-
 import { KanbanTaskSchema } from "../_schemas/kanban-task-schema";
 import { UserSchema } from "../_schemas/user-schema";
 
 import { cn } from "@/lib/utils";
-
 import { useActionState } from "@/hooks/use-action-state";
 
 import { Button } from "@/components/ui/button";
@@ -43,8 +41,72 @@ export function AssignedFormField({ form }: { form: UseFormReturn<FormType> }) {
     searchTeamMembersIsPending,
   ] = useActionState<string, TeamMemberType[]>(getTeamMembersSearchData, []);
 
+  // Debounce the search action to optimize API calls
+  const debouncedSearch = React.useMemo(() => {
+    let handler: NodeJS.Timeout;
+    return (value: string) => {
+      clearTimeout(handler);
+      handler = setTimeout(() => searchTeamMembersAction(value), 300);
+    };
+  }, [searchTeamMembersAction]);
+
+  // Memoize the assigned team member IDs
   const assigned = form.watch("assigned");
-  const assignedIds = new Set(assigned?.map((m) => m.id)); // Create a Set of assigned team member IDs for efficient lookups
+  const assignedIds = React.useMemo(
+    () => new Set(assigned?.map((m) => m.id)),
+    [assigned]
+  );
+
+  // Render the list of team members
+  const renderCommandItems = () => {
+    if (searchTeamMembersIsPending) {
+      return (
+        <div className="flex justify-center items-center py-6">
+          <Loader2 className="size-4 text-muted-foreground animate-spin" />
+        </div>
+      );
+    }
+
+    return searchTeamMembersResults
+      .filter((member) => !assignedIds.has(member.id))
+      .map((user) => (
+        <CommandItem
+          key={user.id}
+          onSelect={() => {
+            form.setValue("assigned", [...assigned, user]);
+            setSearchTeamMembers("");
+          }}
+        >
+          {user.name}
+        </CommandItem>
+      ));
+  };
+
+  // Render badges for the assigned team members
+  const renderBadges = () =>
+    assigned.map((user) => (
+      <Badge
+        key={user.id}
+        variant="secondary"
+        className="flex items-center gap-1"
+      >
+        {user.name}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-fit"
+          onClick={() =>
+            form.setValue(
+              "assigned",
+              assigned.filter((m) => m.id !== user.id)
+            )
+          }
+          aria-label="Remove"
+        >
+          <X className="size-3" />
+        </Button>
+      </Badge>
+    ));
 
   return (
     <FormField
@@ -62,67 +124,23 @@ export function AssignedFormField({ form }: { form: UseFormReturn<FormType> }) {
                   value={searchTeamMembers}
                   onValueChange={(value) => {
                     setSearchTeamMembers(value);
-                    searchTeamMembersAction(value);
+                    debouncedSearch(value);
                   }}
+                  aria-live="polite"
                 />
                 <CommandList
                   aria-hidden={!!searchTeamMembers}
                   className={cn(!!searchTeamMembers ? "block" : "hidden")}
                 >
-                  {searchTeamMembersIsPending ? (
-                    <div className="flex justify-center items-center py-6">
-                      <Loader2 className="size-4 text-muted-foreground animate-spin" />
-                    </div>
-                  ) : (
-                    <CommandEmpty>No team members found.</CommandEmpty>
-                  )}
-                  <CommandGroup>
-                    {!searchTeamMembersIsPending &&
-                      searchTeamMembersResults
-                        .filter((member) => !assignedIds.has(member.id))
-                        .map((user) => (
-                          <CommandItem
-                            key={user.id}
-                            onSelect={() => {
-                              field.onChange([...field.value, user]);
-                              setSearchTeamMembers("");
-                            }}
-                          >
-                            {user.name}
-                          </CommandItem>
-                        ))}
-                  </CommandGroup>
+                  {searchTeamMembersResults.length === 0 &&
+                    !searchTeamMembersIsPending && (
+                      <CommandEmpty>No team members found.</CommandEmpty>
+                    )}
+                  <CommandGroup>{renderCommandItems()}</CommandGroup>
                 </CommandList>
               </Command>
 
-              <div className="flex flex-wrap gap-2 mt-2">
-                {field.value.map((user) => {
-                  return (
-                    user && (
-                      <Badge
-                        key={user.id}
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        {user.name}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-fit"
-                          onClick={() =>
-                            field.onChange(
-                              field.value.filter((m) => m.id !== user.id)
-                            )
-                          }
-                          aria-label="Remove"
-                        >
-                          <X className="size-3" />
-                        </Button>
-                      </Badge>
-                    )
-                  );
-                })}
-              </div>
+              <div className="flex flex-wrap gap-2 mt-2">{renderBadges()}</div>
             </div>
           </FormControl>
           <FormMessage />

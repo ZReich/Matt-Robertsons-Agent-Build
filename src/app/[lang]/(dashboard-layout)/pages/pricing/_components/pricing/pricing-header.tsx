@@ -5,12 +5,13 @@ import * as React from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-interface PricingHeaderProps {
+export function PricingHeader({
+  isAnnual,
+  setIsAnnual,
+}: {
   isAnnual: boolean;
   setIsAnnual: (isAnnual: boolean) => void;
-}
-
-export function PricingHeader({ isAnnual, setIsAnnual }: PricingHeaderProps) {
+}) {
   return (
     <div className="mx-auto max-w-screen-md text-center mb-8 md:mb-12">
       <h2 className="mb-4 text-2xl tracking-tight font-bold text-foreground">

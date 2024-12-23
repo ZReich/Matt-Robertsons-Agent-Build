@@ -58,7 +58,7 @@ export function ChatBox({ user }: { user: UserType }) {
   if (!chatIdParam) return <ChatBoxPlaceholder />;
 
   // If chat ID exists but no matching chat is found, show a not found UI
-  if (!chat) return <ChatBoxNotFound />
+  if (!chat) return <ChatBoxNotFound />;
 
   return (
     <Card className="grow grid">

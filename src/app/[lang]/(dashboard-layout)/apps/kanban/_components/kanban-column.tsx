@@ -18,7 +18,7 @@ interface KanbanColumnProps {
   index: number;
 }
 
-export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
+export function KanbanColumn({ column, index }: KanbanColumnProps) {
   const { handleSelectColumn, setKanbanAddTaskSidebarIsOpen } =
     useKanbanContext();
 
@@ -85,4 +85,4 @@ export const KanbanColumn = ({ column, index }: KanbanColumnProps) => {
       )}
     </Draggable>
   );
-};
+}

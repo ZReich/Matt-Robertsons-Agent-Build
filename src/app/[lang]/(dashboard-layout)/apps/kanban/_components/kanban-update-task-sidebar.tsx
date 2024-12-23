@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssignedFormField } from "./assigned-form-field";
-import { AttachmentsFormField } from "./attachments-form-field.";
+import { AttachmentsFormField } from "./attachments-form-field";
 
 const defaultValues = {
   title: "",

@@ -1,10 +1,9 @@
-import { getEventsData } from "./actions/get-calendar-events-data";
+import { eventsData } from "./_data/events";
 
 import type { Metadata } from "next";
 
-import { CalendarProvider } from "./contexts/calendar-context";
 import { Calendar } from "./_components/calendar";
-import { EventSidebar } from "./_components/event-sidebar";
+import { CalendarWrapper } from "./_components/calendar-wrapper";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -13,14 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function CalendarPage() {
-  const eventsData = await getEventsData();
-
   return (
-    <CalendarProvider events={eventsData}>
-      <div className="container p-4">
-        <Calendar />
-        <EventSidebar />
-      </div>
-    </CalendarProvider>
+    <CalendarWrapper events={eventsData}>
+      <Calendar />
+    </CalendarWrapper>
   );
 }

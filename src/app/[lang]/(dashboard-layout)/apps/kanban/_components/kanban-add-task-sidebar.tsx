@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -46,7 +47,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssignedFormField } from "./assigned-form-field";
-import { AttachmentsFormField } from "./attachments-form-field.";
+import { AttachmentsFormField } from "./attachments-form-field";
 
 const defaultValues = {
   title: "",
@@ -89,6 +90,16 @@ export function KanbanAddTaskSidebar() {
     handleSelectTask(undefined); // Unselect the current task
     setKanbanAddTaskSidebarIsOpen(false); // Close the sidebar
   };
+
+  const labelOptions = React.useMemo(
+    () =>
+      labelsData.map((label) => (
+        <SelectItem key={label.id} value={label.name}>
+          {label.name}
+        </SelectItem>
+      )),
+    []
+  );
 
   return (
     <Sheet
@@ -136,13 +147,7 @@ export function KanbanAddTaskSidebar() {
                           <SelectValue placeholder="Select a label" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        {labelsData.map((label) => (
-                          <SelectItem key={label.id} value={label.name}>
-                            {label.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                      <SelectContent>{labelOptions}</SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
