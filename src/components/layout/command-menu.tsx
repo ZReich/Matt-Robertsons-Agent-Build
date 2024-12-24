@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { useMedia } from "react-use";
 import { Search } from "lucide-react";
 
+import { navigations } from "@/data/navigations";
+
+import { cn } from "@/lib/utils";
+
 import type { ButtonProps } from "@/components/ui/button";
 
 import { Button } from "@/components/ui/button";
@@ -17,10 +21,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Keyboard } from "@/components/ui/keyboard";
-import { groupNavs } from "@/data/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DynamicIcon } from "@/components/dynamic-icon";
-import { cn } from "@/lib/utils";
 
 interface CommandMenuProps extends ButtonProps {
   className?: string;
@@ -90,47 +92,21 @@ export function CommandMenu({ className, ...props }: CommandMenuProps) {
         <CommandList className="overflow-hidden">
           <ScrollArea className="h-[300px] max-h-[300px]">
             <CommandEmpty>No results found.</CommandEmpty>
-            {groupNavs.map((groupNav) => (
-              <CommandGroup key={groupNav.name} heading={groupNav.name}>
-                {groupNav.navs.map((navItem) => {
-                  if (navItem.children) {
-                    return navItem.children.map((nestedNavItem) => (
-                      <CommandItem
-                        key={nestedNavItem.href}
-                        value={nestedNavItem.name}
-                        onSelect={() => {
-                          runCommand(() =>
-                            router.push(nestedNavItem.href as string)
-                          );
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <DynamicIcon
-                          name={navItem.iconName}
-                          className="me-2 size-4"
-                        />
-                        {navItem.name + " - " + nestedNavItem.name}
-                      </CommandItem>
-                    ));
-                  } else {
-                    return (
-                      <CommandItem
-                        key={navItem.href}
-                        value={navItem.name}
-                        onSelect={() => {
-                          runCommand(() => router.push(navItem.href as string));
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <DynamicIcon
-                          name={navItem.iconName}
-                          className="me-2 size-4"
-                        />
-                        {navItem.name}
-                      </CommandItem>
-                    );
-                  }
-                })}
+            {navigations.map((nav) => (
+              <CommandGroup key={nav.title} heading={nav.title}>
+                {nav.items.map((item) => (
+                  <CommandItem
+                    key={item.href}
+                    value={item.title}
+                    onSelect={() => {
+                      runCommand(() => router.push(item.href));
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <DynamicIcon name={item.iconName} className="me-2 size-4" />
+                    {item.title}
+                  </CommandItem>
+                ))}
               </CommandGroup>
             ))}
           </ScrollArea>

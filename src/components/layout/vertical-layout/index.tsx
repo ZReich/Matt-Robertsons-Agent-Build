@@ -1,8 +1,8 @@
 import type { DictionaryType } from "@/lib/getDictionary";
 
-import { Sidebar } from "./sidebar";
+import { Sidebar } from "../sidebar";
 import { Footer } from "../footer";
-import { Header } from "./header";
+import { VerticalLayoutHeader } from "./vertical-layout-header";
 
 export default function VerticalLayout({
   children,
@@ -12,15 +12,17 @@ export default function VerticalLayout({
   dictionary: DictionaryType;
 }) {
   return (
-    <div className="min-h-screen w-full grid md:grid-cols-[auto,_1fr]">
+    <>
       <Sidebar />
-      <div className="w-full grid md:grid-rows-[auto,_1fr,_auto]">
-        <Header dictionary={dictionary} />
-        <main className="min-h-[calc(100vh-6.771rem)] bg-muted/40 overflow-x-hidden">
-          {children}
-        </main>
-        <Footer />
+      <div className="min-h-screen w-full grid">
+        <div className="w-full grid md:grid-rows-[auto,_1fr,_auto]">
+          <VerticalLayoutHeader dictionary={dictionary} />
+          <main className="min-h-[calc(100vh-6.771rem)] bg-muted/40 overflow-x-hidden">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

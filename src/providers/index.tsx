@@ -7,6 +7,7 @@ import { ModeProvider } from "./mode-provider";
 import { ThemeProvider } from "./theme-provider";
 import { NextAuthProvider } from "./next-auth-provider";
 import { DirectionProvider } from "./direction-provider";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function Providers({
   session,
@@ -24,7 +25,9 @@ export default function Providers({
       <ModeProvider>
         <ThemeProvider>
           <DirectionProvider direction={direction}>
-            <NextAuthProvider session={session}>{children}</NextAuthProvider>
+            <NextAuthProvider session={session}>
+              <SidebarProvider>{children}</SidebarProvider>
+            </NextAuthProvider>
           </DirectionProvider>
         </ThemeProvider>
       </ModeProvider>

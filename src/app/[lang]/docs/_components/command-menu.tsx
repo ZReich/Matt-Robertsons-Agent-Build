@@ -17,7 +17,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Keyboard } from "@/components/ui/keyboard";
-import { groupNavs } from "@/data/navigation";
+import { groupNavs } from "@/data/navigations";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { cn } from "@/lib/utils";

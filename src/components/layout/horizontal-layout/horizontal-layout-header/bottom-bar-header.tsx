@@ -8,7 +8,7 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 import type { LocaleType } from "@/configs/i18n";
 import type { DictionaryType } from "@/lib/getDictionary";
 
-import { MobileSidebarNav } from "@/components/layout/mobile-sidebar-nav";
+import { ToggleMobileSidebar } from "../../toggle-moble-sidebar";
 import { CommandMenu } from "@/components/layout/command-menu";
 import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
@@ -28,7 +28,7 @@ export function BottomBarHeader({
 
   return (
     <div className="container flex h-14 justify-between items-center gap-4">
-      <MobileSidebarNav />
+      <ToggleMobileSidebar />
       <Link
         href={ensureLocalizedPathname("/", locale)}
         className="hidden text-foreground font-black hover:text-primary/90 lg:flex"

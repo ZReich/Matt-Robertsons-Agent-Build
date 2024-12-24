@@ -42,3 +42,15 @@ export interface NotificationType {
 }
 
 export type FormatStyleType = "percent" | "duration" | "currency" | "regular";
+
+export interface NavigationGroupType {
+  title: string;
+  items: NavigationType[];
+}
+
+export interface NavigationType {
+  title: string;
+  href: string;
+  label?: string;
+  iconName: DynamicIconNameType;
+}
