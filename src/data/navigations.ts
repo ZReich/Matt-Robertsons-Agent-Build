@@ -1,6 +1,6 @@
 import type { NavigationGroupType } from "@/types";
 
-export const navigations: NavigationGroupType[] = [
+export const navigationsData: NavigationGroupType[] = [
   {
     title: "Dashboards",
     items: [
@@ -45,6 +45,37 @@ export const navigations: NavigationGroupType[] = [
         href: "#",
         label: "Soon",
         iconName: "Headset",
+      },
+      {
+        title: "Not Found 404",
+        href: "/pages/not-found-404",
+        iconName: "Frown",
+      },
+      {
+        title: "Unauthorized 401",
+        href: "/pages/unauthorized-401",
+        iconName: "Lock",
+      },
+      {
+        title: "Maintenance",
+        href: "/pages/maintenance",
+        iconName: "Wrench",
+      },
+      {
+        title: "Coming Soon",
+        href: "/pages/coming-soon",
+        iconName: "Clock",
+      },
+      {
+        title: "Settings",
+        href: "/pages/account/settings",
+        iconName: "UserRoundCog",
+      },
+      {
+        title: "Profile",
+        href: "/pages/account/profile",
+        label: "Soon",
+        iconName: "User",
       },
     ],
   },

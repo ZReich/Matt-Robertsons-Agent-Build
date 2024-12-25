@@ -21,7 +21,7 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { navigations } from "@/data/navigations";
+import { navigationsData } from "@/data/navigations";
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -53,8 +53,7 @@ export function Sidebar() {
       </SidebarHeader>
       <ScrollArea>
         <SidebarContent className="gap-0">
-          {/* Render sidebar navigations. */}
-          {navigations.map((nav) => (
+          {navigationsData.map((nav) => (
             <SidebarGroup key={nav.title}>
               <SidebarGroupLabel>{nav.title}</SidebarGroupLabel>
               <SidebarGroupContent>

@@ -9,7 +9,7 @@ export function Maintenance() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center text-foreground bg-gradient-to-b from-primary/15 to-background p-4">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center text-center text-foreground bg-gradient-to-b from-primary/15 to-background p-4">
       <Wrench size={120} className="text-primary mb-8 animate-rotate-slight" />
       <h1 className="text-6xl font-bold mb-4">Under Maintenance</h1>
       <h2 className="text-3xl font-semibold mb-6">We&apos;ll be back soon!</h2>

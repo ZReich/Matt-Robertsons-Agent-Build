@@ -73,7 +73,7 @@ export function UserDropdown({
         <DropdownMenuGroup className="max-w-48">
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href={ensureLocalizedPathname("/account", locale)}
+              href={ensureLocalizedPathname("/pages/account/profile", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"
@@ -85,7 +85,7 @@ export function UserDropdown({
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
             <Link
-              href={ensureLocalizedPathname("/account/settings", locale)}
+              href={ensureLocalizedPathname("/pages/account/settings", locale)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "w-full justify-start gap-2 focus-visible:ring-0"

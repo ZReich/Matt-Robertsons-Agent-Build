@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
-import { navigations } from "@/data/navigations";
+import { navigationsData } from "@/data/navigations";
 
 import { cn } from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
@@ -28,8 +28,7 @@ export function TopBarHeaderMenubar() {
 
   return (
     <Menubar className="shadow-none border-0">
-      {/* Render menubar navigations. */}
-      {navigations.map((nav) => (
+      {navigationsData.map((nav) => (
         <MenubarMenu key={nav.title}>
           <MenubarTrigger>{nav.title}</MenubarTrigger>
           <MenubarContent>

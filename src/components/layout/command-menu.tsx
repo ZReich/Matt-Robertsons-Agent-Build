@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMedia } from "react-use";
 import { Search } from "lucide-react";
 
-import { navigations } from "@/data/navigations";
+import { navigationsData } from "@/data/navigations";
 
 import { cn } from "@/lib/utils";
 
@@ -92,7 +92,7 @@ export function CommandMenu({ className, ...props }: CommandMenuProps) {
         <CommandList className="overflow-hidden">
           <ScrollArea className="h-[300px] max-h-[300px]">
             <CommandEmpty>No results found.</CommandEmpty>
-            {navigations.map((nav) => (
+            {navigationsData.map((nav) => (
               <CommandGroup key={nav.title} heading={nav.title}>
                 {nav.items.map((item) => (
                   <CommandItem

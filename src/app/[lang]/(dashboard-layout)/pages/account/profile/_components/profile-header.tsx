@@ -3,7 +3,7 @@ import Link from "next/link";
 import { UserPen } from "lucide-react";
 
 import type { LocaleType } from "@/configs/i18n";
-import type { UserType } from "../types";
+import type { UserType } from "../../types";
 
 import { cn, getInitials } from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
@@ -42,7 +42,7 @@ export function ProfileHeader({
           </div>
         </div>
         <Link
-          href={ensureLocalizedPathname("/account/settings", locale)}
+          href={ensureLocalizedPathname("/pages/account/settings", locale)}
           className={cn(buttonVariants({ variant: "default" }))}
         >
           <UserPen className="me-2 size-4 stroke-[1.5]" />
