@@ -5,6 +5,8 @@ import { cn, ensureSuffix, formatDate, getInitials } from "@/lib/utils";
 
 import type { EmailType } from "../../../types";
 
+import { useEmailContext } from "../../../hooks/use-email-context";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,26 +20,27 @@ import { TableRow, TableCell } from "@/components/ui/table";
 
 interface EmailListContentRowDesktopProps {
   email: EmailType;
-  selectedEmails: Set<string>;
-  starredEmails: Set<string>;
-  toggleSelectEmail: (emailId: string) => void;
-  toggleStarEmail: (emailId: string) => void;
-  navigateToEmailOnKeyPress: (e: React.KeyboardEvent, emailId: string) => void;
+  isSelected: boolean;
 }
 
 export function EmailListContentRowDesktop({
   email,
-  selectedEmails,
-  starredEmails,
-  toggleSelectEmail,
-  toggleStarEmail,
-  navigateToEmailOnKeyPress,
+  isSelected,
 }: EmailListContentRowDesktopProps) {
+  const { handleToggleSelectEmail, handleToggleStarEmail } = useEmailContext();
   const router = useRouter();
   const pathname = usePathname();
 
-  const isStarted = starredEmails.has(email.id);
-  const isSelected = selectedEmails.has(email.id);
+  const isStarred = email.starred;
+
+  function handleNavigateToEmailOnKeyPress(
+    e: React.KeyboardEvent,
+    emailId: string
+  ) {
+    if (e.key === "Enter" || e.key === " ") {
+      router.push(ensureSuffix(pathname, "/") + emailId);
+    }
+  }
 
   return (
     <TableRow
@@ -45,12 +48,12 @@ export function EmailListContentRowDesktop({
       className={cn("cursor-pointer", email.read && "bg-muted")}
       onClick={() => router.push(ensureSuffix(pathname, "/") + email.id)}
       tabIndex={0}
-      onKeyDown={(e) => navigateToEmailOnKeyPress(e, email.id)}
+      onKeyDown={(e) => handleNavigateToEmailOnKeyPress(e, email.id)}
     >
       <TableCell className="w-10 text-center">
         <Checkbox
           checked={isSelected}
-          onCheckedChange={() => toggleSelectEmail(email.id)}
+          onCheckedChange={() => handleToggleSelectEmail(email)}
           onClick={(e) => e.stopPropagation()}
           aria-label="Select email"
         />
@@ -62,14 +65,14 @@ export function EmailListContentRowDesktop({
           className="h-4 w-4"
           onClick={(e) => {
             e.stopPropagation();
-            toggleStarEmail(email.id);
+            handleToggleStarEmail(email);
           }}
-          aria-label={isStarted ? " email email" : "Star email"}
+          aria-label={isStarred ? " email email" : "Star email"}
           aria-live="polite"
         >
           <Star
             className={`h-4 w-4 ${
-              isStarted
+              isStarred
                 ? "fill-yellow-400 text-yellow-400"
                 : "text-muted-foreground"
             }`}

@@ -1,9 +1,6 @@
 "use client";
 
 import { useMedia } from "react-use";
-import { Menu } from "lucide-react";
-
-import { cn } from "@/lib/utils";
 
 import { useChatContext } from "../../hooks/use-chat-context";
 
@@ -13,11 +10,9 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Card } from "@/components/ui/card";
 import { ChatSidebarHeader } from "./chat-sidebar-header";
-import { buttonVariants } from "@/components/ui/button";
 import { ChatList } from "./chat-list";
 
 export function ChatSidebar() {
@@ -44,15 +39,6 @@ export function ChatSidebar() {
   // Render a sheet sidebar for smaller screens
   return (
     <Sheet open={isChatSidebarOpen} onOpenChange={setIsChatSidebarOpen}>
-      <SheetTrigger
-        className={cn(
-          buttonVariants({ size: "icon" }),
-          "fixed bottom-16 start-4 md:hidden"
-        )}
-        aria-label="Open chat sidebar"
-      >
-        <Menu className="h-4 w-4" />
-      </SheetTrigger>
       <SheetContent side="start">
         <SheetHeader className="sr-only">
           <SheetTitle>Chat Sidebar</SheetTitle>

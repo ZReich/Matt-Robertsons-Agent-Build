@@ -23,9 +23,11 @@ export interface EmailType {
 }
 
 export interface EmailState {
+  initalEmails: EmailType[];
   emails: EmailType[];
-  totalPages: number;
+  selectedEmails: EmailType[];
   currentPage: number;
+  totalPages: number;
   totalEmails: number;
 }
 
@@ -35,3 +37,42 @@ export interface EmailSidebarLabel {
   param: string;
   unreadCount: number;
 }
+
+export interface EmailContextType {
+  emailState: EmailState;
+  isEmailSidebarOpen: boolean;
+  setIsEmailSidebarOpen: (val: boolean) => void;
+  handleGetFilteredEmails: (filter: string, currentPage: number) => void;
+  handleGetFilteredEmailsBySearchTerm: (
+    term: string,
+    filter: string,
+    currentPage: number
+  ) => void;
+  handleToggleSelectEmail: (email: EmailType) => void;
+  handleToggleSelectAllEmails: () => void;
+  handleToggleStarEmail: (email: EmailType) => void;
+}
+
+export type EmailAction =
+  | {
+      type: "getFilteredEmails";
+      currentPage: number;
+      filter: string;
+    }
+  | {
+      type: "getFilteredEmailsBySearchTerm";
+      currentPage: number;
+      term: string;
+      filter: string;
+    }
+  | {
+      type: "toggleSelectEmail";
+      email: EmailType;
+    }
+  | {
+      type: "toggleStarEmail";
+      email: EmailType;
+    }
+  | {
+      type: "toggleSelectAllEmail";
+    };

@@ -19,14 +19,17 @@ import type { LocaleType } from "@/configs/i18n";
 
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmailComposerMenuBar } from "./email-composer-menu-bar";
+import { EmailComposerTextareaMenuBar } from "./email-composer-textarea-menu-bar";
 
 interface TiptapEditorProps {
   content: string;
   onChange: (content: string) => void;
 }
 
-export function EmailComposer({ content, onChange }: TiptapEditorProps) {
+export function EmailComposerTextarea({
+  content,
+  onChange,
+}: TiptapEditorProps) {
   const params = useParams();
 
   const locale = params.lang as LocaleType;
@@ -65,13 +68,13 @@ export function EmailComposer({ content, onChange }: TiptapEditorProps) {
 
   return (
     <Card>
-      <EmailComposerMenuBar editor={editor} />
+      <EmailComposerTextareaMenuBar editor={editor} />
       <ScrollArea className="h-[7.5rem]">
         <EditorContent
           editor={editor}
           className={cn(
             "max-w-none p-px prose prose-sm prose-img:rounded-md prose-p:leading-normal prose-headings:leading-normal dark:prose-invert",
-            "[&_>_.ProseMirror_>_*]:m-0",
+            "[&_>_.ProseMirror_>_*]:m-0 [&_>_.ProseMirror]:h-[7.25rem]",
             "[&_>_.ProseMirror]:p-3 focus-visible:[&_>_.ProseMirror-focused]:outline-none focus-visible:[&_>_.ProseMirror-focused]:ring-1 focus-visible:[&_>_.ProseMirror-focused]:ring-ring",
             "[&_>_.ProseMirror_.is-editor-empty]:first:before:content-[attr(data-placeholder)] [&_>_.ProseMirror_.is-editor-empty]:first:before:text-muted-foreground [&_>_.ProseMirror_.is-editor-empty]:first:before:pointer-events-none [&_>_.ProseMirror_.is-editor-empty]:first:before:h-0 [&_>_.ProseMirror_.is-editor-empty]:first:before:px-3",
             "[&_>_.ProseMirror]:relative [&_>_.ProseMirror_.is-editor-empty]:first:before:absolute",

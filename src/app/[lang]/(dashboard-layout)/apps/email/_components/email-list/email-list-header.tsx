@@ -1,7 +1,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
 
-import type { EmailState, EmailType } from "../../types";
+import { useEmailContext } from "../../hooks/use-email-context";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,30 +11,25 @@ import {
 } from "@/components/ui/pagination";
 import { CardHeader } from "@/components/ui/card";
 import { EmailListSearchForm } from "./email-list-search-form";
+import { EmailMenuButton } from "../email-menu-button";
 
 interface EmailListHeaderProps {
   pageQuery: number;
   filterParam: string;
-  emailState: EmailState;
-  setEmailState: (val: EmailState) => void;
 }
 
 export function EmailListHeader({
   pageQuery,
   filterParam,
-  emailState,
-  setEmailState,
 }: EmailListHeaderProps) {
+  const { emailState } = useEmailContext();
   const router = useRouter();
   const pathname = usePathname();
 
   return (
-    <CardHeader className="flex-row items-center gap-1.5 pb-0">
-      <EmailListSearchForm
-        pageQuery={pageQuery}
-        filterParam={filterParam}
-        setEmailState={setEmailState}
-      />
+    <CardHeader className="flex-row items-center space-x-1.5 space-y-0 pb-0">
+      <EmailMenuButton isIcon />
+      <EmailListSearchForm pageQuery={pageQuery} filterParam={filterParam} />
       <Button
         variant="ghost"
         size="icon"

@@ -5,6 +5,8 @@ import { cn, ensureSuffix, formatDate } from "@/lib/utils";
 
 import type { EmailType } from "../../../types";
 
+import { useEmailContext } from "../../../hooks/use-email-context";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,26 +18,27 @@ import {
 
 interface EmailListContentItemMoblieProps {
   email: EmailType;
-  selectedEmails: Set<string>;
-  starredEmails: Set<string>;
-  toggleSelectEmail: (emailId: string) => void;
-  toggleStarEmail: (emailId: string) => void;
-  navigateToEmailOnKeyPress: (e: React.KeyboardEvent, emailId: string) => void;
+  isSelected: boolean;
 }
 
 export function EmailListContentItemMoblie({
   email,
-  selectedEmails,
-  starredEmails,
-  toggleSelectEmail,
-  toggleStarEmail,
-  navigateToEmailOnKeyPress,
+  isSelected,
 }: EmailListContentItemMoblieProps) {
+  const { handleToggleSelectEmail, handleToggleStarEmail } = useEmailContext();
   const router = useRouter();
   const pathname = usePathname();
 
-  const isStarted = starredEmails.has(email.id);
-  const isSelected = selectedEmails.has(email.id);
+  const isStarred = email.starred;
+
+  function handleNavigateToEmailOnKeyPress(
+    e: React.KeyboardEvent,
+    emailId: string
+  ) {
+    if (e.key === "Enter" || e.key === " ") {
+      router.push(ensureSuffix(pathname, "/") + emailId);
+    }
+  }
 
   return (
     <li
@@ -45,12 +48,12 @@ export function EmailListContentItemMoblie({
         email.read && "bg-muted"
       )}
       onClick={() => router.push(ensureSuffix(pathname, "/") + email.id)}
-      onKeyDown={(e) => navigateToEmailOnKeyPress(e, email.id)}
+      onKeyDown={(e) => handleNavigateToEmailOnKeyPress(e, email.id)}
       tabIndex={0}
     >
       <Checkbox
         checked={isSelected}
-        onCheckedChange={() => toggleSelectEmail(email.id)}
+        onCheckedChange={() => handleToggleSelectEmail(email)}
         onClick={(e) => e.stopPropagation()}
         aria-label="Select email"
       />
@@ -72,14 +75,14 @@ export function EmailListContentItemMoblie({
         className="h-4 w-4"
         onClick={(e) => {
           e.stopPropagation();
-          toggleStarEmail(email.id);
+          handleToggleStarEmail(email);
         }}
-        aria-label={isStarted ? `Unstar email` : `Star email`}
+        aria-label={isStarred ? `Unstar email` : `Star email`}
         aria-live="polite"
       >
         <Star
           className={`h-4 w-4 ${
-            isStarted
+            isStarred
               ? "fill-yellow-400 text-yellow-400"
               : "text-muted-foreground"
           }`}

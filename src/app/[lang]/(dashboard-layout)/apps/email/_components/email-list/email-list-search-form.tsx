@@ -7,7 +7,7 @@ import { Search } from "lucide-react";
 
 import { EmailListSearchSchema } from "../../_schemas/email-list-search-schema";
 
-import { getEmailsBySearchTermData } from "../../_actions/get-emails-by-search-term-data";
+import { useEmailContext } from "../../hooks/use-email-context";
 
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -17,14 +17,13 @@ type FormType = z.infer<typeof EmailListSearchSchema>;
 interface EmailListSearchFormProps {
   pageQuery: number;
   filterParam: string;
-  setEmailState: (data: any) => void;
 }
 
 export function EmailListSearchForm({
   pageQuery,
   filterParam,
-  setEmailState,
 }: EmailListSearchFormProps) {
+  const { handleGetFilteredEmailsBySearchTerm } = useEmailContext();
   const form = useForm<FormType>({
     resolver: zodResolver(EmailListSearchSchema),
     defaultValues: {
@@ -33,13 +32,7 @@ export function EmailListSearchForm({
   });
 
   const onSubmit = async (data: FormType) => {
-    const newEmailsData = await getEmailsBySearchTermData(
-      pageQuery,
-      filterParam,
-      data.term
-    );
-
-    if (newEmailsData) setEmailState(newEmailsData);
+    handleGetFilteredEmailsBySearchTerm(data.term, filterParam, pageQuery);
   };
 
   return (

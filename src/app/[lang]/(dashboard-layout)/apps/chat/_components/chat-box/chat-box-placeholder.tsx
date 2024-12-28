@@ -1,6 +1,9 @@
+"use client";
+
 import { MessageCircleDashed } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { ChatMenuButton } from "../chat-menu-button";
 
 export function ChatBoxPlaceholder() {
   return (
@@ -10,6 +13,7 @@ export function ChatBoxPlaceholder() {
         <p className="text-muted-foreground">
           Select a chat to start a conversation.
         </p>
+        <ChatMenuButton />
       </CardContent>
     </Card>
   );

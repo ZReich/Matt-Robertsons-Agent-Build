@@ -77,7 +77,7 @@ function ColorPicker({ editor }: { editor: Editor }) {
 interface EmailComposerMenuBarProps {
   editor: Editor | null;
 }
-export function EmailComposerMenuBar({ editor }: EmailComposerMenuBarProps) {
+export function EmailComposerTextareaMenuBar({ editor }: EmailComposerMenuBarProps) {
   // Return null if the editor hasn't initialized yet
   if (!editor) {
     return null;

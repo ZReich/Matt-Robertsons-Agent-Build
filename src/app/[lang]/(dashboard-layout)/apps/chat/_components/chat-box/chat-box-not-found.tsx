@@ -1,6 +1,7 @@
 import { MessageCircleX } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { ChatMenuButton } from "../chat-menu-button";
 
 export function ChatBoxNotFound() {
   return (
@@ -11,6 +12,7 @@ export function ChatBoxNotFound() {
           No chat found. Please select an existing chat or start a new
           conversation.
         </p>
+        <ChatMenuButton />
       </CardContent>
     </Card>
   );
