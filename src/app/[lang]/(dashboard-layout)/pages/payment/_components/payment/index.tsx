@@ -1,20 +1,15 @@
 import type { PaymentType } from "../../types";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaymentMethodForm } from "./payment-method-form";
-import { PaymentSummary } from "./payment-summary";
+import { Card } from "@/components/ui/card";
+import { PaymentContent } from "./payment-contnet";
+import { PaymentHeader } from "./payment-header";
 
 export function Payment({ data }: { data: PaymentType }) {
   return (
     <section className="container p-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Payment</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-8 lg:flex-row">
-          <PaymentMethodForm data={data.savedCards} />
-          <PaymentSummary data={data.summary} />
-        </CardContent>
+        <PaymentHeader />
+        <PaymentContent data={data} />
       </Card>
     </section>
   );

@@ -1,15 +1,9 @@
 "use client";
 
 import { useMedia } from "react-use";
-import { Menu } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-
-import type { EmailSidebarLabel } from "../../types";
 
 import { useEmailContext } from "../../hooks/use-email-context";
 
-import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Sheet,
@@ -17,12 +11,11 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { EmailSidebarHeader } from "./email-sidebar-header";
 import { EmailSidebarList } from "./email-sidebar-list";
 
-export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
+export function EmailSidebar() {
   const { isEmailSidebarOpen, setIsEmailSidebarOpen } = useEmailContext();
   const isMediumOrSmaller = useMedia("(max-width: 767px)");
 
@@ -30,7 +23,7 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
   const content = (
     <>
       <EmailSidebarHeader />
-      <EmailSidebarList data={data} />
+      <EmailSidebarList />
     </>
   );
 
@@ -38,7 +31,7 @@ export function EmailSidebar({ data }: { data: EmailSidebarLabel[] }) {
   if (!isMediumOrSmaller) {
     return (
       <aside>
-        <Card className="h-full w-72 border border-border">{content}</Card>
+        <Card className="w-72 border border-border">{content}</Card>
       </aside>
     );
   }

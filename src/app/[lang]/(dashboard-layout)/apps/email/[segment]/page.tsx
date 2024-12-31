@@ -1,4 +1,6 @@
-import { labelsData } from "../_data/labels";
+import { sidebarItemsData } from "../_data/emails-sidebar-items";
+
+import type { EmailSidebarItem } from "../types";
 
 import { EmailComposer } from "../_components/email-composer";
 import { EmailList } from "../_components/email-list";
@@ -14,11 +16,13 @@ export default async function EmailPage({
   // If the segment is 'compose', render the email composer form to create a new email
   if (segmentParam === "compose") return <EmailComposer />;
 
-  // Check if the current segment corresponds to one of the defined labels
-  const isLabel = labelsData.some((label) => label === segmentParam);
+  // Check if the current segment corresponds to one of the defined sidebar items
+  const isSidebarItem = Object.entries(sidebarItemsData).some(([_, items]) => {
+    return items.some((item: EmailSidebarItem) => item.name === segmentParam);
+  });
 
-  // If the segment matches a label, display emails filtered by that label
-  if (isLabel) {
+  // If the segment matches a sidebar item, display emails filtered by that item
+  if (isSidebarItem) {
     return <EmailList />;
   }
 

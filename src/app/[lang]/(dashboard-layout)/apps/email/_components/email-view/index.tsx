@@ -1,35 +1,38 @@
 "use client";
 
-import type { EmailType } from "../../types";
+import * as React from "react";
+import { useParams } from "next/navigation";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmailActions } from "./email-actions";
-import { EmailViewHeader } from "./email-view-header";
+import { useEmailContext } from "../../hooks/use-email-context";
+
+import { Card } from "@/components/ui/card";
+import { EmailNotFound } from "../email-not-found";
 import { EmailViewContent } from "./email-view-content";
-import { EmailViewFooter } from "./email-view-footer";
-import { EmailMenuButton } from "../email-menu-button";
+import { EmailViewHeader } from "./email-view-header";
 
-interface EmailViewProps {
-  email: EmailType;
-}
+export function EmailView() {
+  const { emailState } = useEmailContext();
+  const params = useParams();
 
-export function EmailView({ email }: EmailViewProps) {
+  const emailIdParam = params.id; // Get the email ID from route params
+
+  const email = React.useMemo(() => {
+    if (emailIdParam) {
+      // Find the email by ID
+      return emailState.emails.find((email) => email.id === emailIdParam);
+    }
+
+    // Return null if not found
+    return null;
+  }, [emailState.emails, emailIdParam]);
+
+  // If no matching email is found, show a not found UI
+  if (!email) return <EmailNotFound />;
+
   return (
     <Card className="flex-1 w-full md:w-auto">
-      <CardHeader className="flex-row items-center space-x-1.5 space-y-0 border-b">
-        <div className="flex items-center gap-1.5">
-          <EmailMenuButton isIcon />
-          <CardTitle className="line-clamp-2 break-all">
-            {email.subject}
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="p-3 space-y-3">
-        <EmailActions />
-        <EmailViewHeader email={email} />
-        <EmailViewContent email={email} />
-        <EmailViewFooter />
-      </CardContent>
+      <EmailViewHeader email={email} />
+      <EmailViewContent email={email} />
     </Card>
   );
 }

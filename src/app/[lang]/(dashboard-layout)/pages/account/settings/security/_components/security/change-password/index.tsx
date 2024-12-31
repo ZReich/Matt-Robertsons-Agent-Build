@@ -1,27 +1,14 @@
 import type { UserType } from "../../../../../types";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ChangePasswordForm } from "./chnage-password-form";
+import { Card } from "@/components/ui/card";
+import { ChangePasswordHeader } from "./change-password-header";
+import { ChangePasswordContent } from "./change-password-content";
 
 export function ChangePassword({ user }: { user: UserType }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Change Password</CardTitle>
-        <CardDescription>
-          Update your password to keep your account secure. Choose a strong,
-          unique password.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChangePasswordForm user={user} />
-      </CardContent>
+      <ChangePasswordHeader />
+      <ChangePasswordContent user={user} />
     </Card>
   );
 }

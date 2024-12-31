@@ -1,26 +1,14 @@
 import { savedCardsData } from "../../../../../_data/saved-cards";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { SavedCardsList } from "./saved-cards-list";
+import { Card } from "@/components/ui/card";
+import { SavedCardsHeader } from "./saved-cards-header";
+import { SavedCardsContent } from "./saved-cards-content";
 
 export function SavedCards() {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Saved Cards</CardTitle>
-        <CardDescription>
-          View and manage your stored payment cards for easy checkout.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <SavedCardsList savedCards={savedCardsData} />
-      </CardContent>
+      <SavedCardsHeader />
+      <SavedCardsContent savedCards={savedCardsData} />
     </Card>
   );
 }

@@ -1,28 +1,20 @@
-import { kanbanData } from "../_data/kanban";
-
 import { KanbanProvider } from "../contexts/kanban-context";
 
 import type { ColumnType } from "../types";
 
-import { KanbanAddTaskSidebar } from "./kanban-add-task-sidebar";
-import { KanbanUpdateTaskSidebar } from "./kanban-update-task-sidebar";
-import { KanbanAddColumnSidebar } from "./kanban-add-column-sidebar";
-import { KanbanUpdateColumnSidebar } from "./kanban-update-column-sidebar";
+import { KanbanSidebar } from "./kanban-sidebar";
 
 export function KanbanWrapper({
-  kanban,
+  kanbanData,
   children,
 }: {
-  kanban: ColumnType[];
+  kanbanData: ColumnType[];
   children: React.ReactNode;
 }) {
   return (
-    <KanbanProvider kanban={kanban}>
+    <KanbanProvider kanbanData={kanbanData}>
+      <KanbanSidebar />
       {children}
-      <KanbanAddTaskSidebar />
-      <KanbanUpdateTaskSidebar />
-      <KanbanAddColumnSidebar />
-      <KanbanUpdateColumnSidebar />
     </KanbanProvider>
   );
 }

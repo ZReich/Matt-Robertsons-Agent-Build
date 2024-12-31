@@ -16,14 +16,17 @@ export interface EmailType {
   read: boolean;
   starred: boolean;
   createdAt: Date;
-  folder: "Inbox" | "Sent" | "Draft";
+  label?: "personal" | "important" | "work";
+  isDraft: boolean;
+  isSent: boolean;
   isStarred: boolean;
   isSpam: boolean;
   isDeleted: boolean;
 }
 
 export interface EmailState {
-  initalEmails: EmailType[];
+  initialEmails: EmailType[];
+  sidebarItems: EmailSidebarItems;
   emails: EmailType[];
   selectedEmails: EmailType[];
   currentPage: number;
@@ -31,11 +34,15 @@ export interface EmailState {
   totalEmails: number;
 }
 
-export interface EmailSidebarLabel {
+export interface EmailSidebarItem {
   iconName: DynamicIconNameType;
-  label: string;
-  param: string;
+  name: string;
   unreadCount: number;
+}
+
+export interface EmailSidebarItems {
+  folders: Array<EmailSidebarItem>;
+  labels: Array<EmailSidebarItem>;
 }
 
 export interface EmailContextType {
@@ -51,6 +58,7 @@ export interface EmailContextType {
   handleToggleSelectEmail: (email: EmailType) => void;
   handleToggleSelectAllEmails: () => void;
   handleToggleStarEmail: (email: EmailType) => void;
+  handleSetRead: (email: EmailType) => void;
 }
 
 export type EmailAction =
@@ -75,4 +83,8 @@ export type EmailAction =
     }
   | {
       type: "toggleSelectAllEmail";
+    }
+  | {
+      type: "setRead";
+      email: EmailType;
     };

@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
+import { i18n } from "@/configs/i18n";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import type { LocaleType } from "@/configs/i18n";
+import { type LocaleType } from "@/configs/i18n";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -35,12 +37,14 @@ export function Sidebar() {
   const { settings } = useSettings();
 
   const locale = params.lang as LocaleType;
+  const direction = i18n.langDirection[locale];
+  const isRTL = direction === "rtl";
   const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile;
 
   if (isHoizontalAndDesktop) return;
 
   return (
-    <SidebarWrapper>
+    <SidebarWrapper side={isRTL ? "right" : "left"}>
       <SidebarHeader>
         <Link
           href={ensureLocalizedPathname("/", locale)}

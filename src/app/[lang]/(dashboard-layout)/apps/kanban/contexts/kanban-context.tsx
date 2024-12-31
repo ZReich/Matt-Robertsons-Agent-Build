@@ -18,14 +18,14 @@ export const KanbanContext = React.createContext<KanbanContextType | undefined>(
 );
 
 interface KanbanProviderProps {
-  kanban: ColumnType[];
+  kanbanData: ColumnType[];
   children: React.ReactNode;
 }
 
-export function KanbanProvider({ kanban, children }: KanbanProviderProps) {
+export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   // Reducer to manage Kanban state
   const [kanbanState, dispatch] = React.useReducer(KanbanReducer, {
-    columns: kanban,
+    columns: kanbanData,
     selectedColumn: undefined,
     selectedTask: undefined,
   });

@@ -1,11 +1,13 @@
-import { chatsData } from "../_data/chats";
+import type { ChatType } from "../types";
 
 import { ChatProvider } from "../contexts/chat-context";
 import { ChatSidebar } from "./chat-sidebar";
 
 export function ChatWrapper({
+  chatsData,
   children,
 }: {
+  chatsData: ChatType[];
   children: React.ReactNode;
 }) {
   return (

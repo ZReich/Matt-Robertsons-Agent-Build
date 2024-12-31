@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { EmailReducer } from "../reducers/email-reducer";
 
-import type { EmailContextType, EmailType } from "../types";
+import type { EmailContextType, EmailSidebarItems, EmailType } from "../types";
 
 // Create Email context
 export const EmailContext = React.createContext<EmailContextType | undefined>(
@@ -13,14 +13,17 @@ export const EmailContext = React.createContext<EmailContextType | undefined>(
 
 export function EmailProvider({
   emailsData,
+  sidebarItemsData,
   children,
 }: {
   emailsData: EmailType[];
+  sidebarItemsData: EmailSidebarItems;
   children: React.ReactNode;
 }) {
   // Reducer to manage Email state
   const [emailState, dispatch] = React.useReducer(EmailReducer, {
-    initalEmails: emailsData,
+    initialEmails: emailsData,
+    sidebarItems: sidebarItemsData,
     emails: [],
     selectedEmails: [],
     currentPage: 1,
@@ -32,12 +35,9 @@ export function EmailProvider({
   const [isEmailSidebarOpen, setIsEmailSidebarOpen] = React.useState(false);
 
   // Handlers for email actions
-  const handleGetFilteredEmails = React.useCallback(
-    (filter: string, currentPage: number) => {
-      dispatch({ type: "getFilteredEmails", filter, currentPage });
-    },
-    []
-  );
+  function handleGetFilteredEmails(filter: string, currentPage: number) {
+    dispatch({ type: "getFilteredEmails", filter, currentPage });
+  }
 
   function handleGetFilteredEmailsBySearchTerm(
     term: string,
@@ -72,6 +72,13 @@ export function EmailProvider({
     });
   }
 
+  function handleSetRead(email: EmailType) {
+    dispatch({
+      type: "setRead",
+      email,
+    });
+  }
+
   return (
     <EmailContext.Provider
       value={{
@@ -83,6 +90,7 @@ export function EmailProvider({
         handleToggleStarEmail,
         isEmailSidebarOpen,
         setIsEmailSidebarOpen,
+        handleSetRead,
       }}
     >
       {children}

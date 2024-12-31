@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function KanbanPage() {
   return (
-    <KanbanWrapper kanban={kanbanData}>
+    <KanbanWrapper kanbanData={kanbanData}>
       <Kanban />
     </KanbanWrapper>
   );

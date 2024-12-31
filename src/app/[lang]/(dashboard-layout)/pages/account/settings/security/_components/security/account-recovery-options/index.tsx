@@ -1,27 +1,14 @@
 import type { UserType } from "../../../../../types";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { AccountRecoveryOptionsForm } from "./account-recovery-options-form";
+import { Card } from "@/components/ui/card";
+import { AccountRecoveryOptionsHeader } from "./account-recovery-options-header";
+import { AccountRecoveryOptionsContent } from "./account-recovery-options-content";
 
 export function AccountRecoveryOptions({ user }: { user: UserType }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Account Recovery Options</CardTitle>
-        <CardDescription>
-          Set up and manage recovery options to easily regain access to your
-          account if you forget your password.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <AccountRecoveryOptionsForm user={user} />
-      </CardContent>
+      <AccountRecoveryOptionsHeader />
+      <AccountRecoveryOptionsContent user={user} />
     </Card>
   );
 }

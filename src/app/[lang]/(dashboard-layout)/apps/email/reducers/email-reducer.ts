@@ -1,6 +1,36 @@
+import { PAGE_SIZE } from "../constants";
+
 import type { EmailState, EmailAction, EmailType } from "../types";
 
-const PAGE_SIZE = 10;
+function getEmailFolderNames(email: EmailType) {
+  const names = new Set();
+
+  if (email.isDeleted) {
+    names.add("trash");
+  }
+
+  if (email.isSent) {
+    names.add("sent");
+  }
+
+  if (email.isDraft) {
+    names.add("draft");
+  }
+
+  if (email.isStarred) {
+    names.add("starred");
+  }
+
+  if (email.isSpam) {
+    names.add("spam");
+  }
+
+  if (!email.isSpam && !email.isDeleted && !email.isSent && !email.isDraft) {
+    names.add("inbox");
+  }
+
+  return names;
+}
 
 export const EmailReducer = (
   state: EmailState,
@@ -8,41 +38,13 @@ export const EmailReducer = (
 ): EmailState => {
   switch (action.type) {
     case "getFilteredEmails": {
-      let filteredEmails = state.initalEmails;
+      let filteredEmails = state.initialEmails;
 
-      switch (action.filter) {
-        case "inbox":
-          filteredEmails = filteredEmails.filter(
-            (email) =>
-              email.folder === "Inbox" && !email.isSpam && !email.isDeleted
-          );
-          break;
-        case "sent":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.folder === "Sent" && !email.isDeleted
-          );
-          break;
-        case "draft":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.folder === "Draft" && !email.isDeleted
-          );
-          break;
-        case "starred":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.isStarred && !email.isDeleted
-          );
-          break;
-        case "spam":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.isSpam && !email.isDeleted
-          );
-          break;
-        case "trash":
-          filteredEmails = filteredEmails.filter((email) => email.isDeleted);
-          break;
-        default:
-          break;
-      }
+      filteredEmails = filteredEmails.filter(
+        (email) =>
+          getEmailFolderNames(email).has(action.filter) ||
+          email.label === action.filter
+      );
 
       // Paginate the filtered emails
       const startIndex = (action.currentPage - 1) * PAGE_SIZE;
@@ -62,42 +64,13 @@ export const EmailReducer = (
     }
 
     case "getFilteredEmailsBySearchTerm": {
-      let filteredEmails = state.initalEmails;
+      let filteredEmails = state.initialEmails;
 
-      // Apply folder-based filtering
-      switch (action.filter) {
-        case "inbox":
-          filteredEmails = filteredEmails.filter(
-            (email) =>
-              email.folder === "Inbox" && !email.isSpam && !email.isDeleted
-          );
-          break;
-        case "sent":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.folder === "Sent" && !email.isDeleted
-          );
-          break;
-        case "draft":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.folder === "Draft" && !email.isDeleted
-          );
-          break;
-        case "starred":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.isStarred && !email.isDeleted
-          );
-          break;
-        case "spam":
-          filteredEmails = filteredEmails.filter(
-            (email) => email.isSpam && !email.isDeleted
-          );
-          break;
-        case "trash":
-          filteredEmails = filteredEmails.filter((email) => email.isDeleted);
-          break;
-        default:
-          break;
-      }
+      filteredEmails = filteredEmails.filter(
+        (email) =>
+          getEmailFolderNames(email).has(action.filter) ||
+          email.label === action.filter
+      );
 
       // Apply term-based search if 'term' is provided
       if (action.term) {
@@ -165,7 +138,7 @@ export const EmailReducer = (
     }
 
     case "toggleStarEmail": {
-      const updatedInitalEmails = state.initalEmails.map((email) =>
+      const updatedInitalEmails = state.initialEmails.map((email) =>
         email.id === action.email.id
           ? { ...email, starred: !email.starred }
           : email
@@ -176,10 +149,77 @@ export const EmailReducer = (
           : email
       );
 
+      let updatedSidebarItems = state.sidebarItems;
+      if (!action.email.read) {
+        const updatedSidebarFolders = state.sidebarItems.folders.map(
+          (folder) => {
+            if (folder.name == "starred") {
+              return {
+                ...folder,
+                unreadCount: action.email.starred
+                  ? folder.unreadCount - 1
+                  : folder.unreadCount + 1,
+              };
+            } else {
+              return folder;
+            }
+          }
+        );
+        updatedSidebarItems = {
+          ...state.sidebarItems,
+          folders: updatedSidebarFolders,
+        };
+      }
+
       return {
         ...state,
-        initalEmails: updatedInitalEmails,
+        initialEmails: updatedInitalEmails,
         emails: updatedEmails,
+        sidebarItems: updatedSidebarItems,
+      };
+    }
+
+    case "setRead": {
+      const updatedEmails = state.emails.map((email) =>
+        email.id === action.email.id ? { ...email, read: true } : email
+      );
+      const updatedInitalEmails = state.initialEmails.map((email) =>
+        email.id === action.email.id ? { ...email, read: true } : email
+      );
+
+      const folderName = getEmailFolderNames(action.email);
+      const updatedSidebarFolders = state.sidebarItems.folders.map((folder) => {
+        if (folderName.has(folder.name)) {
+          return {
+            ...folder,
+            unreadCount: folder.unreadCount > 0 ? folder.unreadCount - 1 : 0,
+          };
+        } else {
+          return folder;
+        }
+      });
+
+      const updatedSidebarFLabels = state.sidebarItems.labels.map((label) => {
+        if (label.name === action.email.label) {
+          return {
+            ...label,
+            unreadCount: label.unreadCount > 0 ? label.unreadCount - 1 : 0,
+          };
+        } else {
+          return label;
+        }
+      });
+
+      const updatedSidebarItems = {
+        folders: updatedSidebarFolders,
+        labels: updatedSidebarFLabels,
+      };
+
+      return {
+        ...state,
+        emails: updatedEmails,
+        initialEmails: updatedInitalEmails,
+        sidebarItems: updatedSidebarItems,
       };
     }
 

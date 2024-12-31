@@ -1,4 +1,9 @@
-import { useRouter, usePathname } from "next/navigation";
+import {
+  useRouter,
+  usePathname,
+  useParams,
+  useSearchParams,
+} from "next/navigation";
 import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
 
 import { useEmailContext } from "../../hooks/use-email-context";
@@ -13,18 +18,17 @@ import { CardHeader } from "@/components/ui/card";
 import { EmailListSearchForm } from "./email-list-search-form";
 import { EmailMenuButton } from "../email-menu-button";
 
-interface EmailListHeaderProps {
-  pageQuery: number;
-  filterParam: string;
-}
-
-export function EmailListHeader({
-  pageQuery,
-  filterParam,
-}: EmailListHeaderProps) {
+export function EmailListHeader() {
   const { emailState } = useEmailContext();
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
+  const searchParams = useSearchParams();
+
+  const pageQuery = searchParams.get("page")
+    ? parseInt(searchParams.get("page") as string)
+    : 1; // Get the current page from the search params, default to page 1
+  const filterParam = params.segment as string;
 
   return (
     <CardHeader className="flex-row items-center space-x-1.5 space-y-0 pb-0">

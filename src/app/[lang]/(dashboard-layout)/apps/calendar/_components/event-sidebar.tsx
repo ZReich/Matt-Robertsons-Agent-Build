@@ -340,7 +340,7 @@ export function EventSidebar() {
                   </FormItem>
                 )}
               />
-              
+
               <Button type="submit" className="w-full" disabled={isDisabled}>
                 <CalendarCheck2 className="me-1 size-4" />
                 Save
