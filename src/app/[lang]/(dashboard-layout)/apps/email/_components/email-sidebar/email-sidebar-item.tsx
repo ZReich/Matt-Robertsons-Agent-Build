@@ -6,14 +6,14 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn, formatUnreadCount } from "@/lib/utils";
 
 import type { LocaleType } from "@/configs/i18n";
-import type { EmailSidebarItem } from "../../types";
+import type { EmailSidebarItemType } from "../../types";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DynamicIcon } from "@/components/dynamic-icon";
 
 interface EmailSidebarItemProps {
-  item: EmailSidebarItem;
+  item: EmailSidebarItemType;
   segmentParam: string | string[];
   locale: LocaleType;
 }

@@ -1,6 +1,6 @@
 import { PAGE_SIZE } from "../constants";
 
-import type { EmailState, EmailAction, EmailType } from "../types";
+import type { EmailStateType, EmailActionType, EmailType } from "../types";
 
 function getEmailFolderNames(email: EmailType) {
   const names = new Set();
@@ -33,9 +33,9 @@ function getEmailFolderNames(email: EmailType) {
 }
 
 export const EmailReducer = (
-  state: EmailState,
-  action: EmailAction
-): EmailState => {
+  state: EmailStateType,
+  action: EmailActionType
+): EmailStateType => {
   switch (action.type) {
     case "getFilteredEmails": {
       let filteredEmails = state.initialEmails;

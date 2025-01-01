@@ -1,6 +1,6 @@
 import { sidebarItemsData } from "../_data/emails-sidebar-items";
 
-import type { EmailSidebarItem } from "../types";
+import type { EmailSidebarItemType } from "../types";
 
 import { EmailComposer } from "../_components/email-composer";
 import { EmailList } from "../_components/email-list";
@@ -18,7 +18,7 @@ export default async function EmailPage({
 
   // Check if the current segment corresponds to one of the defined sidebar items
   const isSidebarItem = Object.entries(sidebarItemsData).some(([_, items]) => {
-    return items.some((item: EmailSidebarItem) => item.name === segmentParam);
+    return items.some((item: EmailSidebarItemType) => item.name === segmentParam);
   });
 
   // If the segment matches a sidebar item, display emails filtered by that item

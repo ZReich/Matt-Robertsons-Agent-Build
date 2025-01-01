@@ -1,5 +1,5 @@
 export interface ChatContextType {
-  chatState: ChatState;
+  chatState: ChatStateType;
   isChatSidebarOpen: boolean;
   setIsChatSidebarOpen: (val: boolean) => void;
   handleSelectChat: (chat: ChatType) => void;
@@ -63,12 +63,12 @@ export interface ChatType {
   unreadCount?: number;
 }
 
-export interface ChatState {
+export interface ChatStateType {
   chats: ChatType[];
   selectedChat?: ChatType | null;
 }
 
-export type ChatAction =
+export type ChatActionType =
   | {
       type: "addTextMessage";
       text: string;

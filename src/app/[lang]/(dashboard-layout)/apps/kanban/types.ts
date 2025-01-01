@@ -49,18 +49,18 @@ export type TaskWithoutIdAndOrderAndColumnIdType = Omit<
   "id" | "order" | "columnId"
 >;
 
-export interface KanbanState {
+export interface KanbanStateType {
   columns: ColumnType[];
   selectedColumn?: ColumnType;
   selectedTask?: TaskType;
 }
 
-export interface Label {
+export interface LabelType {
   id: string;
   name: string;
 }
 
-export type KanbanAction =
+export type KanbanActionType =
   | { type: "addColumn"; column: ColumnWithoutIdAndOrderAndTasksType }
   | { type: "updateColumn"; column: ColumnType }
   | { type: "deleteColumn"; columnId: string }
@@ -81,7 +81,7 @@ export type KanbanAction =
   | { type: "selectTask"; task?: TaskType };
 
 export interface KanbanContextType {
-  kanbanState: KanbanState;
+  kanbanState: KanbanStateType;
   kanbanAddTaskSidebarIsOpen: boolean;
   setKanbanAddTaskSidebarIsOpen: (value: boolean) => void;
   kanbanUpdateTaskSidebarIsOpen: boolean;

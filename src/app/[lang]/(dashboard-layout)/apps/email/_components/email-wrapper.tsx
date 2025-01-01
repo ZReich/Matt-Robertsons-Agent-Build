@@ -1,4 +1,4 @@
-import type { EmailSidebarItems, EmailType } from "../types";
+import type { EmailSidebarItemsType, EmailType } from "../types";
 
 import { EmailProvider } from "../contexts/email-context";
 
@@ -10,7 +10,7 @@ export function EmailWrapper({
   children,
 }: {
   emailsData: EmailType[];
-  sidebarItemsData: EmailSidebarItems;
+  sidebarItemsData: EmailSidebarItemsType;
   children: React.ReactNode;
 }) {
   return (

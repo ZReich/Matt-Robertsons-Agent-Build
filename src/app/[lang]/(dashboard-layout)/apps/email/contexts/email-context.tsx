@@ -4,7 +4,11 @@ import * as React from "react";
 
 import { EmailReducer } from "../reducers/email-reducer";
 
-import type { EmailContextType, EmailSidebarItems, EmailType } from "../types";
+import type {
+  EmailContextType,
+  EmailSidebarItemsType,
+  EmailType,
+} from "../types";
 
 // Create Email context
 export const EmailContext = React.createContext<EmailContextType | undefined>(
@@ -17,7 +21,7 @@ export function EmailProvider({
   children,
 }: {
   emailsData: EmailType[];
-  sidebarItemsData: EmailSidebarItems;
+  sidebarItemsData: EmailSidebarItemsType;
   children: React.ReactNode;
 }) {
   // Reducer to manage Email state

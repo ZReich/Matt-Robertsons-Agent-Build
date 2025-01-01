@@ -24,9 +24,9 @@ export interface EmailType {
   isDeleted: boolean;
 }
 
-export interface EmailState {
+export interface EmailStateType {
   initialEmails: EmailType[];
-  sidebarItems: EmailSidebarItems;
+  sidebarItems: EmailSidebarItemsType;
   emails: EmailType[];
   selectedEmails: EmailType[];
   currentPage: number;
@@ -34,19 +34,19 @@ export interface EmailState {
   totalEmails: number;
 }
 
-export interface EmailSidebarItem {
+export interface EmailSidebarItemType {
   iconName: DynamicIconNameType;
   name: string;
   unreadCount: number;
 }
 
-export interface EmailSidebarItems {
-  folders: Array<EmailSidebarItem>;
-  labels: Array<EmailSidebarItem>;
+export interface EmailSidebarItemsType {
+  folders: Array<EmailSidebarItemType>;
+  labels: Array<EmailSidebarItemType>;
 }
 
 export interface EmailContextType {
-  emailState: EmailState;
+  emailState: EmailStateType;
   isEmailSidebarOpen: boolean;
   setIsEmailSidebarOpen: (val: boolean) => void;
   handleGetFilteredEmails: (filter: string, currentPage: number) => void;
@@ -61,7 +61,7 @@ export interface EmailContextType {
   handleSetRead: (email: EmailType) => void;
 }
 
-export type EmailAction =
+export type EmailActionType =
   | {
       type: "getFilteredEmails";
       currentPage: number;

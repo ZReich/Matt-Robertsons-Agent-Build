@@ -1,6 +1,6 @@
-import type { EmailSidebarItems } from "../types";
+import type { EmailSidebarItemsType } from "../types";
 
-export const sidebarItemsData: EmailSidebarItems = {
+export const sidebarItemsData: EmailSidebarItemsType = {
   folders: [
     { iconName: "Archive", name: "inbox", unreadCount: 8 },
     { iconName: "Send", name: "sent", unreadCount: 3 },

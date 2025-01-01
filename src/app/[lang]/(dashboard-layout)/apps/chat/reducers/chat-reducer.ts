@@ -1,9 +1,9 @@
-import type { ChatState, MessageType, ChatAction } from "../types";
+import type { ChatStateType, MessageType, ChatActionType } from "../types";
 
 export const ChatReducer = (
-  state: ChatState,
-  action: ChatAction
-): ChatState => {
+  state: ChatStateType,
+  action: ChatActionType
+): ChatStateType => {
   switch (action.type) {
     case "addTextMessage": {
       if (!state.selectedChat) {

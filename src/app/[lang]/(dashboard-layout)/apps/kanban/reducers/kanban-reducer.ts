@@ -1,9 +1,14 @@
-import type { KanbanState, ColumnType, KanbanAction, TaskType } from "../types";
+import type {
+  KanbanStateType,
+  ColumnType,
+  KanbanActionType,
+  TaskType,
+} from "../types";
 
 export const KanbanReducer = (
-  state: KanbanState,
-  action: KanbanAction
-): KanbanState => {
+  state: KanbanStateType,
+  action: KanbanActionType
+): KanbanStateType => {
   switch (action.type) {
     case "addColumn": {
       const newColumn: ColumnType = {

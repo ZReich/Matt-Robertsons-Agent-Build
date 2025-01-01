@@ -1,6 +1,6 @@
-import { Label } from "../types";
+import { LabelType } from "../types";
 
-export const labelsData: Label[] = [
+export const labelsData: LabelType[] = [
   { id: "research", name: "Research" },
   { id: "design", name: "Design" },
   { id: "development", name: "Development" },
