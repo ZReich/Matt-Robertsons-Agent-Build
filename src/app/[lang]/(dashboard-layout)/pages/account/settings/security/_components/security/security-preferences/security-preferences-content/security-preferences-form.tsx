@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
-import { SecurityPreferencesSchema } from "../../../../_schemas/security-preferences-form";
+import { SecurityPreferencesSchema } from "../../../../../_schemas/security-preferences-form";
 
-import type { UserType } from "../../../../../types";
+import type { UserType } from "../../../../../../types";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

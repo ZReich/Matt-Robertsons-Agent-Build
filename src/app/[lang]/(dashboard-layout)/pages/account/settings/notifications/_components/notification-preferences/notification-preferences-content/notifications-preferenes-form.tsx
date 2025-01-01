@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn, FieldPath } from "react-hook-form";
 import { z } from "zod";
 
-import { NotificationPreferencesSchema } from "../../_schemas/notifications-preferenes-schema";
+import { NotificationPreferencesSchema } from "../../../_schemas/notifications-preferenes-schema";
 
 import {
   Form,

@@ -85,8 +85,8 @@ export function RegisterForm() {
           ensureLocalizedPathname(
             // Include redirect pathname if available, otherwise default to "/sign-in"
             redirectPathname
-              ? ensureRedirectPathname("/sign-in", redirectPathname)
-              : "/sign-in",
+              ? ensureRedirectPathname("/auth/sign-in", redirectPathname)
+              : "/auth/sign-in",
             locale
           )
         );
@@ -191,8 +191,8 @@ export function RegisterForm() {
             href={ensureLocalizedPathname(
               // Include redirect pathname if available, otherwise default to "/sign-in"
               redirectPathname
-                ? ensureRedirectPathname("/sign-in", redirectPathname)
-                : "/sign-in",
+                ? ensureRedirectPathname("/auth/sign-in", redirectPathname)
+                : "/auth/sign-in",
               locale
             )}
             className="underline"

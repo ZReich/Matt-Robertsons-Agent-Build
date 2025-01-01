@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { Register } from "./_components/register";
+import { Register } from "../auth/register/_components/register";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata

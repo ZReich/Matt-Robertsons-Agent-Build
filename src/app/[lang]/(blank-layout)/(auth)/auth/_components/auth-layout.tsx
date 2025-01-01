@@ -25,7 +25,7 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
       <section
         ref={ref}
         className={cn(
-          "container relative min-h-screen w-full flex px-0 ",
+          "container relative min-h-screen w-full flex px-0",
           className
         )}
         {...props}
@@ -37,7 +37,7 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
           <Logo className="size-6" aira-hidden />
           Shadboard
         </Link>
-        <div className="w-full max-w-[28rem] m-auto p-8 space-y-6">
+        <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6">
           {children}
         </div>
         {imgSrc && <AuthImage imgSrc={imgSrc} />}

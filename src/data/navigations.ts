@@ -110,4 +110,34 @@ export const navigationsData: NavigationGroupType[] = [
       },
     ],
   },
+  {
+    title: "Authentication",
+    items: [
+      {
+        title: "Forgot Password",
+        href: "/auth/forgot-password",
+        iconName: "RotateCw",
+      },
+      {
+        title: "New Password",
+        href: "/auth/new-password",
+        iconName: "RefreshCw",
+      },
+      {
+        title: "Verify Email",
+        href: "/auth/verify-email",
+        iconName: "MailCheck",
+      },
+      {
+        title: "Register",
+        href: "/auth/register",
+        iconName: "FilePen",
+      },
+      {
+        title: "Sign In",
+        href: "/auth/sign-in",
+        iconName: "LogIn",
+      },
+    ],
+  },
 ];

@@ -96,8 +96,8 @@ export function ForgotPasswordForm() {
           href={ensureLocalizedPathname(
             // Include redirect pathname if available, otherwise default to "/sign-in"
             redirectPathname
-              ? ensureRedirectPathname("/sign-in", redirectPathname)
-              : "/sign-in",
+              ? ensureRedirectPathname("/auth/sign-in", redirectPathname)
+              : "/auth/sign-in",
             locale
           )}
           className="-mt-4 text-center text-sm underline"

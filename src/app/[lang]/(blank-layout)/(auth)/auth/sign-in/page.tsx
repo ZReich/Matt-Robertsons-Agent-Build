@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { SignIn } from "../auth/sign-in/_components/sign-in";
+import { SignIn } from "./_components/sign-in";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
