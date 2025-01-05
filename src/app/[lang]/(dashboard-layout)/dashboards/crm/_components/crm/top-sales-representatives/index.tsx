@@ -5,7 +5,10 @@ import { DashboardCard } from "@/components/dashboard-card";
 
 export function TopSalesRepresentatives() {
   return (
-    <DashboardCard title="Lead Sources" period={salesRepresentativeData.period}>
+    <DashboardCard
+      title="Top Sales Representatives"
+      period={salesRepresentativeData.period}
+    >
       <TopSalesRepresentativesList
         data={salesRepresentativeData.representatives}
       />

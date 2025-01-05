@@ -12,6 +12,7 @@ export interface OverviewType {
 }
 
 export interface SalesPipelineType {
+  period: string;
   summary: {
     totalLead: number;
     totalProposal: number;

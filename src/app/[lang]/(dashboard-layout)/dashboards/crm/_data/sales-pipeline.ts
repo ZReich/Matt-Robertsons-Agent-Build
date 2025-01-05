@@ -1,6 +1,7 @@
 import type { SalesPipelineType } from "../types";
 
 export const salesPipelineData: SalesPipelineType = {
+  period: "2024",
   summary: {
     totalLead: 127,
     totalProposal: 83,

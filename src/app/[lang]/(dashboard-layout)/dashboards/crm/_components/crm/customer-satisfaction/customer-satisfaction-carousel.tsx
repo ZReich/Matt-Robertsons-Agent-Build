@@ -15,8 +15,11 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Ratings } from "@/components/ui/ratings";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CustomerSatisfactionCarousel({
   data,
@@ -36,12 +39,11 @@ export function CustomerSatisfactionCarousel({
         align: "center",
         loop: true,
       }}
-      orientation="vertical"
-      className="w-full select-none"
+      className="w-[calc(100vw-190px)] mx-14 select-none md:w-3/5"
     >
-      <CarouselContent className="h-[260px]">
+      <CarouselContent>
         {data.map((feedback) => (
-          <CarouselItem key={feedback.name} className="basis-1/2">
+          <CarouselItem key={feedback.name}>
             <Card className="flex flex-col">
               <CardHeader className="flex-row items-center gap-4 p-3">
                 <Avatar className="h-12 w-12">
@@ -72,16 +74,20 @@ export function CustomerSatisfactionCarousel({
                     {formatDate(feedback.createdAt)}
                   </p>
                 </div>
-                <ShowMoreText
-                  text={feedback.feedbackMessage}
-                  className="text-sm break-all"
-                  maxLength={50}
-                />
+                <ScrollArea className="h-20">
+                  <ShowMoreText
+                    text={feedback.feedbackMessage}
+                    className="text-sm break-all"
+                    maxLength={130}
+                  />
+                </ScrollArea>
               </CardContent>
             </Card>
           </CarouselItem>
         ))}
       </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
     </Carousel>
   );
 }

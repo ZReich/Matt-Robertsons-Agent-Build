@@ -1,125 +1,58 @@
 "use client";
 
 import * as React from "react";
-import { Label, Pie, PieChart } from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
-import { cn, formatPercent } from "@/lib/utils";
+import { remToPx } from "@/lib/utils";
 
 import type { TrafficSourcesType } from "../../../types";
+import type { ChartConfig } from "@/components/ui/chart";
+
+import { useSettings } from "@/hooks/use-settings";
 
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { TrendingDown, TrendingUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
+const chartConfig = {
+  visitors: {
+    label: "Visitors",
+  },
+} satisfies ChartConfig;
 
 export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
-  const isPositiveTotalChange = data.summary.totalPercentageChange >= 0;
+  const { settings } = useSettings();
 
   return (
-    <div
-      className={cn(
-        "flex flex-col justify-center items-center pb-6 sm:flex-row sm:pb-0"
-      )}
+    <ChartContainer
+      config={chartConfig}
+      className="h-72 w-[calc(100vw-90px)] md:w-1/2"
     >
-      <ChartContainer
-        config={{}}
-        className="size-[250px] md:size-[175px] lg:size-[250px]"
+      <BarChart
+        accessibilityLayer
+        data={data.sources}
+        layout="vertical"
+        margin={{
+          left: 0,
+        }}
       >
-        <PieChart accessibilityLayer>
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
-          <Pie
-            data={data.sources}
-            dataKey="visitors"
-            nameKey="name"
-            innerRadius={60}
-            strokeWidth={5}
-          >
-            <Label
-              content={({ viewBox }) => {
-                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                  return (
-                    <text
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                    >
-                      <tspan
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        className="fill-foreground text-3xl font-semibold"
-                      >
-                        {data.summary.totalVisitors.toLocaleString()}
-                      </tspan>
-                      <tspan
-                        x={viewBox.cx}
-                        y={(viewBox.cy || 0) + 24}
-                        className="fill-muted-foreground"
-                      >
-                        Visitors
-                      </tspan>
-                      <tspan
-                        x={viewBox.cx}
-                        y={(viewBox.cy || 0) + 40}
-                        className={
-                          isPositiveTotalChange
-                            ? "fill-success"
-                            : "fill-destructive"
-                        }
-                      >
-                        {formatPercent(data.summary.totalPercentageChange)}
-                      </tspan>
-                    </text>
-                  );
-                }
-              }}
-            />
-          </Pie>
-        </PieChart>
-      </ChartContainer>
-      <ul className="space-y-2 sm:me-6">
-        {data.sources.map((source) => {
-          const isPositiveChange = source.percentageChange >= 0;
-
-          return (
-            <li
-              key={source.name}
-              className="flex justify-between items-center gap-x-32 md:gap-x-4 lg:gap-x-8"
-            >
-              <div className="flex items-center gap-x-2">
-                <div
-                  style={{ backgroundColor: source.fill }}
-                  className="shrink-0 size-2 rounded-sm"
-                />
-                <p className="w-max text-foreground md:w-auto">{source.name}</p>
-              </div>
-              <Badge
-                variant="destructive"
-                className={cn(
-                  "w-max justify-center",
-                  isPositiveChange && "bg-success hover:bg-success/90"
-                )}
-              >
-                {isPositiveChange && <span>+</span>}
-                <span>{formatPercent(source.percentageChange)}</span>
-                <span className="ms-1" aria-hidden>
-                  {isPositiveChange ? (
-                    <TrendingUp className="size-4" />
-                  ) : (
-                    <TrendingDown className="size-4" />
-                  )}
-                </span>
-              </Badge>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+        <YAxis
+          dataKey="name"
+          type="category"
+          tickLine={false}
+          tickMargin={10}
+          axisLine={false}
+        />
+        <XAxis dataKey="visitors" type="number" />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+        <Bar
+          dataKey="visitors"
+          layout="vertical"
+          radius={remToPx(settings.radius) - 2}
+        />
+      </BarChart>
+    </ChartContainer>
   );
 }

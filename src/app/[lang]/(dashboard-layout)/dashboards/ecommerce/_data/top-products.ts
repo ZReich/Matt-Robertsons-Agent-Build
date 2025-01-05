@@ -8,7 +8,7 @@ export const topProductsData: TopProductType = {
       sku: "WH-001",
       sales: { value: 85, percentageChange: 0.15 },
       revenue: { value: 340000, percentageChange: 0.1 },
-      inventoryLeft: 30,
+      order: 1,
       image: "/images/wireless-headphones.jpeg",
     },
     {
@@ -16,7 +16,7 @@ export const topProductsData: TopProductType = {
       sku: "SW-002",
       sales: { value: 72, percentageChange: 0.2 },
       revenue: { value: 576000, percentageChange: 0.12 },
-      inventoryLeft: 25,
+      order: 2,
       image: "/images/smart-watch.jpeg",
     },
     {
@@ -24,7 +24,7 @@ export const topProductsData: TopProductType = {
       sku: "BS-003",
       sales: { value: 54, percentageChange: -0.05 },
       revenue: { value: 162000, percentageChange: 0.08 },
-      inventoryLeft: 50,
+      order: 3,
       image: "/images/bluetooth-speaker.jpeg",
     },
     {
@@ -32,7 +32,7 @@ export const topProductsData: TopProductType = {
       sku: "LS-004",
       sales: { value: 67, percentageChange: 0.1 },
       revenue: { value: 134000, percentageChange: 0.07 },
-      inventoryLeft: 60,
+      order: 4,
       image: "/images/laptop-sleeve.jpeg",
     },
     {
@@ -40,7 +40,7 @@ export const topProductsData: TopProductType = {
       sku: "PC-005",
       sales: { value: 49, percentageChange: 0.18 },
       revenue: { value: 98000, percentageChange: 0.09 },
-      inventoryLeft: 40,
+      order: 5,
       image: "/images/portable-charger.jpeg",
     },
   ],

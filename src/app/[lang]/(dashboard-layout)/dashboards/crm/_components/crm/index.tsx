@@ -12,12 +12,12 @@ export function CRM() {
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
       <SalesPipeline />
-      <TopSalesRepresentatives />
+      <SalesByCountry />
       <LeadSources />
+      <RevenueTrend />
       <CustomerSatisfaction />
       <ActiveProjects />
-      <RevenueTrend />
-      <SalesByCountry />
+      <TopSalesRepresentatives />
     </section>
   );
 }

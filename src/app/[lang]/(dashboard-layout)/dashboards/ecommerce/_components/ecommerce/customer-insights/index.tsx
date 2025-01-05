@@ -6,7 +6,7 @@ import { CustomerInsightList } from "./customer-insight-list";
 export async function CustomerInsights() {
   return (
     <DashboardCard
-      title="Top Products"
+      title="Customer Insights"
       period={customerInsightsData.period}
       className="col-span-full"
     >

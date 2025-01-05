@@ -35,8 +35,8 @@ export function ConversionFunnelChart({
               <DynamicIcon name={stage.iconName} className="size-full" />
             </Badge>
             <div>
-              <p className="text-2xl">{stage.value.toLocaleString()}</p>
               <h4 className="text-xs">{stage.name}</h4>
+              <p className="text-2xl">{stage.value.toLocaleString()}</p>
             </div>
           </li>
         ))}
@@ -44,7 +44,7 @@ export function ConversionFunnelChart({
 
       <ChartContainer
         config={{}}
-        className="grow w-full max-h-[250px] md:aspect-[9/16]"
+        className="grow w-full max-h-72 md:aspect-[9/16]"
       >
         <BarChart accessibilityLayer data={data}>
           <CartesianGrid vertical={false} />

@@ -1,13 +1,12 @@
-import { DashboardCardWithoutPeriod } from "@/components/dashboard-card";
 import { activeProjectsData } from "../../../_data/active-projects";
-import { ActiveProjectsCarousel } from "./active-projects-carousel";
+
+import { DashboardCardWithoutPeriod } from "@/components/dashboard-card";
+import { ActiveProjectsList } from "./active-projects-list";
 
 export function ActiveProjects() {
   return (
     <DashboardCardWithoutPeriod title="Active Projects">
-      <div className="px-12">
-        <ActiveProjectsCarousel data={activeProjectsData} />
-      </div>
+      <ActiveProjectsList data={activeProjectsData} />
     </DashboardCardWithoutPeriod>
   );
 }

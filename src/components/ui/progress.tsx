@@ -25,4 +25,52 @@ const Progress = React.forwardRef<
 ));
 Progress.displayName = ProgressPrimitive.Root.displayName;
 
-export { Progress };
+type ProgressSegment = {
+  value: number;
+  color?: string;
+};
+
+type ProgressSegmentsProps = React.ComponentPropsWithoutRef<
+  typeof ProgressPrimitive.Root
+> & {
+  segments: ProgressSegment[];
+  containerClassName?: string;
+};
+
+const ProgressSegments = React.forwardRef<
+  React.ElementRef<typeof ProgressPrimitive.Root>,
+  ProgressSegmentsProps
+>(({ containerClassName, segments, ...props }, ref) => {
+  return (
+    <div
+      className={cn(
+        "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
+        containerClassName
+      )}
+    >
+      {segments.map((segment, index) => (
+        <ProgressPrimitive.Root
+          key={segment.value + index}
+          ref={ref}
+          value={segment.value}
+          {...props}
+        >
+          <ProgressPrimitive.Indicator
+            style={{
+              width: `${segment.value}%`,
+              zIndex: segments.length - index,
+              left: `${segments
+                .slice(0, index)
+                .reduce((acc, segment) => acc + segment.value, 0)}%`,
+              backgroundColor: segment.color ?? "hsl(var(--primary))",
+            }}
+            className="absolute h-full transition-all"
+          />
+        </ProgressPrimitive.Root>
+      ))}
+    </div>
+  );
+});
+ProgressSegments.displayName = "ProgressSegments";
+
+export { Progress, ProgressSegments };

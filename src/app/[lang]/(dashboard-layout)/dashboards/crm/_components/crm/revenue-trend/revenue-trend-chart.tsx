@@ -20,7 +20,7 @@ export function RevenueTrendChart({
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={{}} className="aspect-auto h-[93px] w-full">
+    <ChartContainer config={{}} className="aspect-auto h-40 w-full">
       <BarChart
         accessibilityLayer
         data={data}

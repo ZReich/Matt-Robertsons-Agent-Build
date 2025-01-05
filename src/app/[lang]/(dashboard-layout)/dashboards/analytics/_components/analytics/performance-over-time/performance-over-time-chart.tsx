@@ -17,7 +17,7 @@ export function PerformanceOverTimeChart({
   data: PerformanceOverTimeType["performance"];
 }) {
   return (
-    <ChartContainer config={{}} className="w-full md:h-[288px]">
+    <ChartContainer config={{}} className="w-full md:h-48">
       <LineChart
         accessibilityLayer
         data={data}

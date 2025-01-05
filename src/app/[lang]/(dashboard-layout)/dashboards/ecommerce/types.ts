@@ -34,7 +34,7 @@ export interface TopProductType {
       value: number;
       percentageChange: number;
     };
-    inventoryLeft: number;
+    order: number;
     image: string;
     sku: string;
   }>;

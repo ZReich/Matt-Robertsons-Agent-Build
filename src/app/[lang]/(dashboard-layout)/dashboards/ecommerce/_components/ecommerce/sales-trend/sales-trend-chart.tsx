@@ -23,7 +23,7 @@ export function SalesTrendChart({
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={{}} className="w-full md:h-[307px]">
+    <ChartContainer config={{}} className="w-full md:h-[200px]">
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <ChartTooltip

@@ -7,12 +7,7 @@ import { DashboardCard } from "@/components/dashboard-card";
 export function SalesByCountry() {
   return (
     <DashboardCard title="Sales by Country" period={salesByCountryData.period}>
-      <ScrollArea
-        orientation="horizontal"
-        className="w-[calc(100vw-5rem)] md:w-auto"
-      >
-        <SalesByCountryTable data={salesByCountryData.countries} />
-      </ScrollArea>
+      <SalesByCountryTable data={salesByCountryData.countries} />
     </DashboardCard>
   );
 }

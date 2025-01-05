@@ -27,12 +27,12 @@ export interface OverviewType {
 export interface TrafficSourcesType {
   period: string;
   summary: { totalVisitors: number; totalPercentageChange: number };
-  sources: {
+  sources: Array<{
     name: string;
     visitors: number;
     fill: string;
     percentageChange: number;
-  }[];
+  }>;
 }
 
 export interface EngagementByDeviceType {
@@ -74,4 +74,32 @@ export interface TopPagesType {
     avgTimeOnPage: number;
     bounceRate: number;
   }>;
+}
+
+export interface NewVsReturningVisitorsType {
+  period: string;
+  visitors: {
+    new: {
+      value: number;
+      percentageChange: number;
+      fill: string;
+    };
+    returning: {
+      value: number;
+      percentageChange: number;
+      fill: string;
+    };
+  };
+}
+
+export interface GenderDistributionType {
+  name: string;
+  value: number;
+  percentage: number;
+  fill: string;
+}
+
+export interface RetentionVsChurnType {
+  period: string;
+  summary: { retention: number; churn: number; total: number };
 }

@@ -26,12 +26,12 @@ export function CustomerSatisfactionChart({
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={{}} className="aspect-square h-[200px]">
+    <ChartContainer config={{}} className="aspect-square h-[200px] md:w-2/5">
       <RadialBarChart
         accessibilityLayer
         data={[data]}
-        startAngle={0}
-        endAngle={360}
+        startAngle={450}
+        endAngle={90}
         innerRadius={80}
         outerRadius={150}
       >
@@ -61,7 +61,7 @@ export function CustomerSatisfactionChart({
                     <tspan
                       x={viewBox.cx}
                       y={viewBox.cy}
-                      className="fill-foreground text-4xl font-bold"
+                      className="fill-foreground text-4xl font-semibold"
                     >
                       {data.value} / 5
                     </tspan>
