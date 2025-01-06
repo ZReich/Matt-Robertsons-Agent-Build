@@ -1,0 +1,68 @@
+---
+title: "Prerequisites"
+description: "Requirements to set up and run the application."
+---
+
+# Prerequisites
+
+Before setting up the application, ensure your system meets the following requirements:
+
+## System Requirements
+
+- **Operating System**: macOS, Linux, or Windows 10/11
+- **Processor**: x64 architecture
+- **Memory**: Minimum 4GB RAM (8GB recommended)
+- **Storage**: At least 500MB free space for installation
+
+## Software Requirements
+
+1. **Node.js**
+
+   - Version: 16.x or higher
+   - Installation:
+     - Download from [Node.js official site](https://nodejs.org/).
+     - Verify installation:
+       ```bash
+       node -v
+       npm -v
+       ```
+
+2. **Package Manager**
+
+   - Either **npm** (bundled with Node.js) or **yarn**.
+   - To install yarn:
+     ```bash
+     npm install --global yarn
+     ```
+
+3. **Git**
+   - For version control and repository cloning.
+   - Installation:
+     - [Git Downloads](https://git-scm.com/downloads)
+   - Verify installation:
+     ```bash
+     git --version
+     ```
+
+Optional:
+
+- **Docker** (for containerized deployment)
+  - Installation: [Docker Desktop](https://www.docker.com/products/docker-desktop)
+  - Verify installation:
+    ```bash
+    docker --version
+    ```
+
+## Access Requirements
+
+- **Repository Access**:
+  Ensure you have access to the project repository. If private, request permissions from the administrator.
+- **API Keys**:
+  Obtain necessary keys for third-party services and configure them in the `.env` file.
+
+## Recommended Tools
+
+- **Code Editor**: Visual Studio Code ([Download VS Code](https://code.visualstudio.com/))
+- **Browser**: Google Chrome or Firefox for testing and debugging.
+
+Once you have these prerequisites in place, proceed to the [Installation Guide](../installation/page.mdx).

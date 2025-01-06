@@ -6,9 +6,7 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 import type { LocaleType } from "@/configs/i18n";
 
 import Logo from "/public/images/icons/shadboard.svg";
-import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { ToggleMobileSidebar } from "./toggle-moble-sidebar";
-import { CommandMenu } from "./command-menu";
 
 export function Header({ locale }: { locale: LocaleType }) {
   return (
@@ -21,7 +19,7 @@ export function Header({ locale }: { locale: LocaleType }) {
         Shadboard
       </Link>
       <div className="flex">
-        <CommandMenu />
+        {/* <CommandMenu /> */}
         <ToggleMobileSidebar />
       </div>
       {/* <ModeDropdown /> */}

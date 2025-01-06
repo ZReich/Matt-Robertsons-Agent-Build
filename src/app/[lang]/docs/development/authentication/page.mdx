@@ -1,0 +1,84 @@
+---
+title: "Authentication Guide"
+description: "Comprehensive guide to implementing authentication in the application."
+---
+
+# Authentication Guide
+
+This guide provides a detailed explanation of how to implement and manage user authentication in the application.
+
+## Features
+
+- Secure login and signup functionality
+- Support for OAuth providers (Google, Facebook, etc.)
+- Password recovery and reset mechanisms
+- Role-based access control (RBAC) for managing permissions
+
+## Setting Up Authentication
+
+1. **Configure Environment Variables**:
+   Ensure the following variables are set in your `.env` file:
+
+   ```env
+   AUTH_SECRET=your_secret_key
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   ```
+
+2. **Enable Authentication Middleware**:
+   Import and configure authentication middleware in your application:
+
+   ```javascript
+   import { AuthProvider } from "./context/AuthContext";
+
+   function MyApp({ Component, pageProps }) {
+     return (
+       <AuthProvider>
+         <Component {...pageProps} />
+       </AuthProvider>
+     );
+   }
+   export default MyApp;
+   ```
+
+3. **Integrate Login and Signup**:
+   Use pre-built authentication components:
+
+   ```javascript
+   import Login from "../components/Login";
+   import Signup from "../components/Signup";
+
+   function AuthPage() {
+     return (
+       <div>
+         <Login />
+         <Signup />
+       </div>
+     );
+   }
+   export default AuthPage;
+   ```
+
+## OAuth Configuration
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project and enable the "Google+ API."
+3. Generate OAuth credentials and copy the Client ID and Secret.
+4. Add these values to your `.env` file.
+
+## Role-Based Access Control
+
+- Define user roles in your database (e.g., `Admin`, `Editor`, `Viewer`).
+- Assign roles during user registration or through an admin panel.
+- Use middleware to restrict access to certain routes based on roles.
+
+## Testing Authentication
+
+1. Start your application:
+   ```bash
+   npm run dev
+   ```
+2. Test the login, signup, and password reset flows.
+3. Verify role-based access control by creating test users with different roles.
+
+For further information, explore the [Settings Guide](../settings/page.mdx).

@@ -1,0 +1,115 @@
+---
+title: "Internationalization (i18n)"
+description: "Guidelines for adding and managing multiple languages in the application."
+---
+
+# Internationalization (i18n)
+
+This guide explains how to add and manage multi-language support in the application.
+
+## Features
+
+- Dynamic language switching
+- Support for right-to-left (RTL) languages
+- Integration with JSON-based translation files
+
+## Setting Up i18n
+
+1. **Install Dependencies**:
+   Use the `next-i18next` library for i18n support:
+
+   ```bash
+   npm install next-i18next
+   ```
+
+2. **Configure i18n**:
+   Create a configuration file (`next-i18next.config.js`) in the root directory:
+
+   ```javascript
+   module.exports = {
+     i18n: {
+       defaultLocale: "en",
+       locales: ["en", "fr", "es", "ar"],
+     },
+   };
+   ```
+
+3. **Add Translation Files**:
+
+   - Create a `public/locales` folder.
+   - Inside `locales`, add a folder for each language (`en`, `fr`, etc.).
+   - Create a `common.json` file inside each language folder for shared translations.
+
+   Example structure:
+
+   ```
+   public/
+       locales/
+           en/
+               common.json
+           fr/
+               common.json
+   ```
+
+4. **Load Translations**:
+   Wrap your application with the `appWithTranslation` HOC:
+
+   ```javascript
+   import { appWithTranslation } from "next-i18next";
+   import "../styles/globals.css";
+
+   function MyApp({ Component, pageProps }) {
+     return <Component {...pageProps} />;
+   }
+
+   export default appWithTranslation(MyApp);
+   ```
+
+5. **Use Translations in Components**:
+   Import the `useTranslation` hook:
+
+   ```javascript
+   import { useTranslation } from "next-i18next";
+
+   function Welcome() {
+     const { t } = useTranslation("common");
+     return <h1>{t("welcome")}</h1>;
+   }
+   export default Welcome;
+   ```
+
+## Adding New Languages
+
+1. Add the new language code to `next-i18next.config.js`.
+2. Create a new folder under `public/locales` for the language.
+3. Add the necessary translation keys and values to the `common.json` file.
+
+## Right-to-Left (RTL) Support
+
+1. Detect RTL languages in your app:
+
+   ```javascript
+   import { useRouter } from "next/router";
+
+   const { locale } = useRouter();
+   const isRtl = locale === "ar";
+   ```
+
+2. Apply the appropriate `dir` attribute to the HTML element:
+
+   ```html
+   <html lang="ar" dir="rtl"></html>
+   ```
+
+3. Adjust styles to support RTL as needed.
+
+## Testing Translations
+
+1. Start your application:
+   ```bash
+   npm run dev
+   ```
+2. Verify language switching and content rendering.
+3. Test RTL languages for proper alignment and layout.
+
+For additional details, check the [Theme Guide](../theme-color/page.mdx).
