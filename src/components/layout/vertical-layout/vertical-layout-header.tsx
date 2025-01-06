@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 
 import type { DictionaryType } from "@/lib/getDictionary";
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { CommandMenu } from "@/components/layout/command-menu";
 import { ModeDropdown } from "@/components/layout/mode-dropdown";
@@ -13,7 +13,11 @@ import { Notifications } from "@/components/layout/notifications";
 import { FullscreenToggle } from "@/components/full-screen-toggle";
 import { ToggleMobileSidebar } from "../toggle-moble-sidebar";
 
-export function VerticalLayoutHeader({ dictionary }: { dictionary: DictionaryType }) {
+export function VerticalLayoutHeader({
+  dictionary,
+}: {
+  dictionary: DictionaryType;
+}) {
   const params = useParams();
 
   const locale = params.lang as LocaleType;

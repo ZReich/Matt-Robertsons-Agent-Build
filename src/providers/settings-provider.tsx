@@ -6,7 +6,7 @@ import { useCookie } from "react-use";
 import { defaultSettings, SettingsContext } from "@/contexts/settings-context";
 
 import type { SettingsType } from "@/types";
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 export function SettingsProvider({
   locale,

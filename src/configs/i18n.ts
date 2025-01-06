@@ -6,5 +6,3 @@ export const i18n = {
     ar: "rtl",
   },
 } as const;
-
-export type LocaleType = (typeof i18n)["locales"][number];

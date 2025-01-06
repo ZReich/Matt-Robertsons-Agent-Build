@@ -12,7 +12,7 @@ import { VerifyEmailSchema } from "../../_schemas/verify-email-schema";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";

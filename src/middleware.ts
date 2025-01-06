@@ -8,7 +8,7 @@ import { i18n } from "@/configs/i18n";
 import { isPathnameMissingLocale, ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 import type { NextRequest } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
 

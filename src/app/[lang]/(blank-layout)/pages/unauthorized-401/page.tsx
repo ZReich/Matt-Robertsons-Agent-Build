@@ -1,4 +1,4 @@
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { Unauthorized401 } from "./_components/unauthorized-401";
 

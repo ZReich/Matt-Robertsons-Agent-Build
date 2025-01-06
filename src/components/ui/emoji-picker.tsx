@@ -9,7 +9,7 @@ import { Smile } from "lucide-react";
 import { useSettings } from "@/hooks/use-settings";
 
 import type { PickerProps } from "emoji-mart";
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import {
   Popover,

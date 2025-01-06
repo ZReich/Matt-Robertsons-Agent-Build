@@ -1,6 +1,6 @@
 import { getDictionary } from "@/lib/getDictionary";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { Layout } from "@/components/layout";
 

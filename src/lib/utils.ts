@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 import { z } from "zod";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

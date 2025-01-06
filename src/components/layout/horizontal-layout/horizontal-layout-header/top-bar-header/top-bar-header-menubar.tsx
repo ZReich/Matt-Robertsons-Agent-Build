@@ -8,7 +8,7 @@ import { navigationsData } from "@/data/navigations";
 import { cn } from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { Badge } from "@/components/ui/badge";

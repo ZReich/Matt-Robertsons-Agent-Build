@@ -8,7 +8,7 @@ import { cn, getInitials } from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { DictionaryType } from "@/lib/getDictionary";
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

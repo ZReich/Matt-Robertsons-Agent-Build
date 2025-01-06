@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { Metadata } from "next";
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata

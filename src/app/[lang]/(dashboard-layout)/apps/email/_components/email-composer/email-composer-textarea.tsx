@@ -15,7 +15,7 @@ import Typography from "@tiptap/extension-typography";
 
 import { cn } from "@/lib/utils";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";

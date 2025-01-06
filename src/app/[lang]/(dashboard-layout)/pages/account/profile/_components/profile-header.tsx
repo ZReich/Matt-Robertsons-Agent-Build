@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { UserPen } from "lucide-react";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 import type { UserType } from "../../types";
 
 import { cn, getInitials } from "@/lib/utils";

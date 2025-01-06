@@ -5,7 +5,7 @@ import { cn, getInitials, formatDistance } from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { ChatType } from "../../types";
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { useChatContext } from "../../hooks/use-chat-context";
 

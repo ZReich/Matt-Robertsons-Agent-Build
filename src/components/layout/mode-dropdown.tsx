@@ -6,7 +6,7 @@ import { MoonStar, Sun, SunMoon } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 import type { DictionaryType } from "@/lib/getDictionary";
 import type { ModeType } from "@/types";
 

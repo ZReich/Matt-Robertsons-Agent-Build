@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import type { LocaleType } from "@/configs/i18n";
 import type { DictionaryType } from "@/lib/getDictionary";
+import type { LocaleType } from "@/types";
 
 import { ToggleMobileSidebar } from "../../toggle-moble-sidebar";
 import { CommandMenu } from "@/components/layout/command-menu";

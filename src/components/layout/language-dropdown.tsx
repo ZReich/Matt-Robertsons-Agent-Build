@@ -7,7 +7,7 @@ import { Earth } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 import type { DictionaryType } from "@/lib/getDictionary";
 
 import { useSettings } from "@/hooks/use-settings";

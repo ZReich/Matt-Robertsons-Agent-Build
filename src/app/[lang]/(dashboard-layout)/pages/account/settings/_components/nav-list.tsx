@@ -8,7 +8,7 @@ import { linksData } from "../../_data/nav-list-links";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 export function NavList() {
   const params = useParams();

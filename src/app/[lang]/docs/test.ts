@@ -1,8 +1,11 @@
 import "server-only";
+
 import fs from "fs";
 import path from "path";
-import { LocaleType } from "@/configs/i18n";
+
 import { ensureLocalizedPathname } from "@/lib/i18n";
+
+import { LocaleType } from "@/types";
 
 // interface DocItem {
 //   title: string;

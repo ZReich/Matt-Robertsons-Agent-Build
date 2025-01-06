@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import "../globals.css";
 
 import type { Metadata } from "next";
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import Providers from "@/providers";
 

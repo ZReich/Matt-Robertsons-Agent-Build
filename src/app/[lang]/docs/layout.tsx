@@ -1,4 +1,4 @@
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { DocsBreadcrumb } from "./_components/docs-breadcrumb";
 import { Toc } from "./_components/toc";

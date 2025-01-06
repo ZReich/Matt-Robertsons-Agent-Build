@@ -7,7 +7,7 @@ import { i18n } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import { type LocaleType } from "@/configs/i18n";
+import { type LocaleType } from "@/types";
 
 import { useSettings } from "@/hooks/use-settings";
 

@@ -1,6 +1,5 @@
-import { LocaleType } from "@/configs/i18n";
 import type { Session } from "next-auth";
-import type { DirectionType } from "@/types";
+import type { DirectionType, LocaleType } from "@/types";
 
 import { SettingsProvider } from "./settings-provider";
 import { ModeProvider } from "./mode-provider";

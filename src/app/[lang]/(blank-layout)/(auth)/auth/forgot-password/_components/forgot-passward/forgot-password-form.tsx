@@ -13,7 +13,7 @@ import { ForgotPasswordSchema } from "../../_schemas/forgot-passward-schema";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {

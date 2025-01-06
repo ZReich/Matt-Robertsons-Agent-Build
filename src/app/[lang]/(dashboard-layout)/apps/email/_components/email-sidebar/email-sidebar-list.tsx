@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import { useEmailContext } from "../../hooks/use-email-context";
 

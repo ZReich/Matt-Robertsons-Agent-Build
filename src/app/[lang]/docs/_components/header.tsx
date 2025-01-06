@@ -3,7 +3,7 @@ import React from "react";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import type { LocaleType } from "@/configs/i18n";
+import type { LocaleType } from "@/types";
 
 import Logo from "/public/images/icons/shadboard.svg";
 import { ToggleMobileSidebar } from "./toggle-moble-sidebar";
