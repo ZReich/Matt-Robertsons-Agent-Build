@@ -1,59 +1,96 @@
+# Kits
+
+This guide compares the **Starter Kit** and **Full Kit**, helping you determine which option is best for your Next.js project. Whether you're building a simple application or a fully-featured dashboard, these kits provide different levels of functionality to suit your needs.
+
 ---
-title: "Kits Overview"
-description: "An overview of the available kits and their functionalities."
+
+## Starter Kit
+
+The **Starter Kit** is a lightweight, efficient solution designed for developers who prefer a minimalistic approach to building a Next.js application. It includes only the essentials to get you started, giving you the flexibility to customize as you go.
+
+### Features:
+
+- **No Bloat or Extra Code**: Includes only the core features required to run a Next.js app, ensuring a fast and clean setup.
+- **No Internationalization (I18n)**: The Starter Kit is designed for single-language projects, and does not include I18n features by default.
+- **No Authentication**: There is no built-in authentication, allowing you to integrate your own user management solution.
+- **No Customizer**: The Starter Kit does not include additional UI customization tools or settings.
+- **Two Pages**:
+  - **Home Page**: The basic landing page of your application.
+  - **Not Found Page**: A default 404 error page to handle invalid routes.
+
+### Folder Structure:
+
+```plaintext
+.
+├── components/          # Reusable UI components (e.g., buttons, layouts)
+│   └── Layout.js        # Layout component for common structure
+├── pages/               # Application pages
+│   ├── index.js         # Home page
+│   └── 404.js           # Not Found page
+├── public/              # Public assets (images, fonts, etc.)
+├── styles/              # Global styles
+│   └── globals.css      # Global CSS file
+├── .gitignore           # Git ignore file
+├── next.config.js       # Next.js configuration
+└── package.json         # Project dependencies and scripts
+```
+
+### Why Choose the Starter Kit?
+
+The **Starter Kit** is perfect for developers who need a **clean, streamlined** starting point. It’s designed for **easy customization** and allows you to add libraries or features as your project grows. Its minimal setup means you can focus on building your unique application without unnecessary distractions or dependencies.
+
 ---
 
-# Kits Overview
+## **Full Kit**
 
-Our application includes various pre-built kits designed to accelerate your development process. These kits are modular, customizable, and ready to integrate into your projects.
+The **Full Kit** is a complete, feature-packed solution that provides everything you need to develop a sophisticated, scalable Next.js application right out of the box. It's designed for projects that require a broad set of tools and pre-built components.
 
-## Available Kits
+### Features:
 
-### 1. **Authentication Kit**
+- **Packed with Demo Functionalities**: The Full Kit includes all the features demonstrated in the demo, giving you a complete working solution.
+  - **Internationalization (I18n)**: Built-in support for multiple languages, making it easy to expand your app globally.
+  - **Authentication**: Integrated user authentication and session management.
+  - **Customizer**: A sidebar tool that allows you to dynamically change the style and colors of the dashboard. This tool is perfect for showcasing how the dashboard will look with different styling options, allowing clients to preview and select their preferred theme.
+  - **Full Set of Pages and Components**: Includes pre-built pages like Settings, CRM, Analytics, and reusable components such as DashboardCard, SocialMedia, and others.
 
-Provides a complete user authentication solution, including:
+### Folder Structure:
 
-- Login and signup forms
-- Password reset functionality
-- Role-based access control (RBAC)
-- Integration with OAuth providers (e.g., Google, Facebook)
+```plaintext
+.
+├── components/                # Reusable UI components (e.g., Navbar, Sidebar, Modal)
+│   ├── Auth/                  # Authentication-related components (e.g., Login, Register)
+│   ├── Dashboard/             # Dashboard-specific components (e.g., Widgets, Stats)
+│   └── Layout.js              # Common layout structure (includes Navbar, Sidebar, etc.)
+├── pages/                     # Application pages
+│   ├── index.js               # Home page
+│   ├── dashboard.js           # Dashboard page
+│   ├── login.js               # Login page
+│   ├── profile.js             # User profile page
+│   └── 404.js                 # Not Found page
+├── public/                    # Public assets (images, fonts, etc.)
+├── styles/                    # Styling files
+│   ├── globals.css            # Global styles
+│   └── tailwind.config.js     # Tailwind CSS configuration (if using Tailwind)
+├── store/                     # State management (e.g., Redux or Context)
+│   ├── actions/               # Redux actions or context functions
+│   ├── reducers/              # Redux reducers or context providers
+│   └── store.js               # Central store setup
+├── i18n/                      # Internationalization (I18n) files
+│   ├── en.js                  # English language settings
+│   ├── fr.js                  # French language settings
+│   └── i18n.js                # I18n configuration file
+├── .gitignore                 # Git ignore file
+├── next.config.js             # Next.js configuration
+└── package.json               # Project dependencies and scripts
+```
 
-### 2. **Navigation Kit**
+### Why Choose the Full Kit:
 
-Pre-built components for creating dynamic navigation menus:
+The **Full Kit** is ideal for projects that need a comprehensive solution right from the start. It includes all necessary tools for building a feature-rich application, including customizable UI elements, authentication, multi-language support, and much more. The Full Kit is designed for developers who need everything pre-configured to hit the ground running, with the flexibility to customize as needed.
 
-- Sidebar and top navigation bars
-- Breadcrumbs for page hierarchy
-- Dropdown and collapsible menus
+---
 
-### 3. **Settings Kit**
+## Conclusion
 
-Facilitates user or application settings management:
-
-- Profile settings forms
-- Theme and appearance configurations
-- Localization (language preferences)
-
-### 4. **Dashboard Kit**
-
-A comprehensive dashboard setup:
-
-- Analytics and charts (e.g., line, bar, pie charts)
-- User activity summaries
-- Notifications and alerts
-
-### 5. **Theme Kit**
-
-Streamlines theming across the application:
-
-- Light and dark mode support
-- Customizable primary and secondary colors
-- CSS variables for consistent styling
-
-## Benefits
-
-- **Time-Saving**: Reduce development time with ready-to-use components.
-- **Consistency**: Maintain a uniform design across all features.
-- **Flexibility**: Easily extend or modify kits to meet specific requirements.
-
-Explore the documentation for individual kits to learn how to integrate and customize them in your project.
+- **Starter Kit**: Perfect for **lean, simple projects** where you want to build from the ground up with minimal overhead. It’s ideal for **customization** and scaling your project as needed.
+- **Full Kit**: The go-to choice for those who need a **comprehensive, ready-to-go solution** with everything pre-configured, including a **customizable dashboard**, authentication, and multi-language support.

@@ -1,32 +1,28 @@
-import type { DocNav } from "../types";
+import { NavigationGroupType } from "@/types";
 
-export const sidebarNavigation: DocNav[] = [
+export const sidebarNavigationData: NavigationGroupType[] = [
   {
     title: "Overview",
     items: [
       {
         title: "Introduction",
         href: "/docs/overview/introduction",
-      },
-      {
-        title: "Folder Structure",
-        href: "/docs/overview/folder-structure",
-      },
-      {
-        title: "Installation",
-        href: "/docs/overview/installation",
-      },
-      {
-        title: "Prerequisites",
-        href: "/docs/overview/prerequisites",
+        iconName: "User",
       },
       {
         title: "Kits",
         href: "/docs/overview/kits",
+        iconName: "User",
+      },
+      {
+        title: "Installation",
+        href: "/docs/overview/installation",
+        iconName: "User",
       },
       {
         title: "Deployment",
         href: "/docs/overview/deployment",
+        iconName: "User",
       },
     ],
   },
@@ -34,28 +30,25 @@ export const sidebarNavigation: DocNav[] = [
     title: "Development",
     items: [
       {
+        title: "Authentication",
+        href: "/docs/development/authentication",
+        iconName: "User",
+      },
+      {
         title: "I18n",
         href: "/docs/development/i18n",
+        iconName: "User",
       },
       {
         title: "Navigation",
         href: "/docs/development/navigation",
+        iconName: "User",
       },
-      {
-        title: "Authentication",
-        href: "/docs/development/authentication",
-      },
-      {
-        title: "Layout",
-        href: "/docs/development/layout",
-      },
-      {
-        title: "Settings",
-        href: "/docs/development/settings",
-      },
+
       {
         title: "Theme Color",
         href: "/docs/development/theme-color",
+        iconName: "User",
       },
     ],
   },

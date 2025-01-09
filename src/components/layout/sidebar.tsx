@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
+import { navigationsData } from "@/data/navigations";
+
 import { i18n } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import { type LocaleType } from "@/types";
+import type { LocaleType } from "@/types";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -23,7 +25,6 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { navigationsData } from "@/data/navigations";
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,7 +38,7 @@ export function Sidebar() {
   const { settings } = useSettings();
 
   const locale = params.lang as LocaleType;
-  const direction = i18n.langDirection[locale];
+  const direction = i18n.localeDirection[locale];
   const isRTL = direction === "rtl";
   const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile;
 

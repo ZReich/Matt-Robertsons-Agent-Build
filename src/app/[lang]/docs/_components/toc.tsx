@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -66,6 +67,7 @@ export function generateToc(content: HTMLElement, selector: string): TocItem[] {
     }
 
     if (stack.length > 0) {
+      // @ts-ignore
       stack[stack.length - 1].children.push(item);
     } else {
       toc.push(item);
@@ -101,7 +103,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
           }
         });
       },
-      { rootMargin: "0px 0px -80% 0px" }
+      { rootMargin: "0px 0px -60% 0px" }
     );
 
     const headers = document.querySelectorAll(
@@ -143,9 +145,11 @@ export function TableOfContents({ items }: TableOfContentsProps) {
 
   return (
     <aside className="hidden w-64 bg-background md:block">
-      <nav className="fixed top-16 bottom-0 p-4 border-s-[1px] border-sidebar-border">
-        <h2 className="text-sm font-medium mb-4">On this page</h2>
-        {renderItems(items)}
+      <nav className="fixed top-0 bottom-0 p-4 border-s-[1px] border-sidebar-border">
+        <ScrollArea className="h-full">
+          <h2 className="text-sm font-medium mb-4 mt-16">On this page</h2>
+          {renderItems(items)}
+        </ScrollArea>
       </nav>
     </aside>
   );

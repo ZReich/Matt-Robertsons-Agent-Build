@@ -1,115 +1,257 @@
+# Internationalization (I18n)
+
+This guide provides step-by-step instructions to **add** or **remove** multi-language support (I18n) in your application. The I18n system supports **Right-to-Left (RTL)** and **Left-to-Right (LTR)** layouts based on the selected language.
+
 ---
-title: "Internationalization (i18n)"
-description: "Guidelines for adding and managing multiple languages in the application."
+
+## Adding I18n
+
+### Install I18n Dependencies
+
+Install the required packages for locale matching and negotiation:
+
+```bash
+npm install @formatjs/intl-localematcher negotiator
+```
+
+```bash
+npm install --save-dev @types/negotiator
+```
+
 ---
 
-# Internationalization (i18n)
+### Restructure the Application
 
-This guide explains how to add and manage multi-language support in the application.
+1. In the `src/app` directory, create a folder named `[lang]`.
+2. Move all content from `src/app` into `src/app/[lang]`, **excluding**:
+   - `src/app/api`
+   - `favicon`
+   - `global.css`
+3. Update all path references in the moved files to reflect the new structure.
 
-## Features
+---
 
-- Dynamic language switching
-- Support for right-to-left (RTL) languages
-- Integration with JSON-based translation files
+### Add Required Files
 
-## Setting Up i18n
+Add these files from the **full-kit**:
 
-1. **Install Dependencies**:
-   Use the `next-i18next` library for i18n support:
+- `src/configs/i18n.ts`
+- `src/lib/i18n.ts`
+- `src/lib/getDictionary.ts`
 
-   ```bash
-   npm install next-i18next
-   ```
+---
 
-2. **Configure i18n**:
-   Create a configuration file (`next-i18next.config.js`) in the root directory:
+### Add Language Dictionaries
 
-   ```javascript
-   module.exports = {
-     i18n: {
-       defaultLocale: "en",
-       locales: ["en", "fr", "es", "ar"],
-     },
-   };
-   ```
+1. In `src/data`, create a `dictionaries` folder.
+2. Inside `dictionaries`, create a JSON file for each supported language (e.g., `en.json`, `ar.json`).
 
-3. **Add Translation Files**:
+**Example**: `src/data/dictionaries/en.json`:
 
-   - Create a `public/locales` folder.
-   - Inside `locales`, add a folder for each language (`en`, `fr`, etc.).
-   - Create a `common.json` file inside each language folder for shared translations.
+```json
+{
+  "user-nav": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "sign-out": "Sign out"
+  }
+}
+```
 
-   Example structure:
+Add similar dictionaries for other languages as required.
 
-   ```
-   public/
-       locales/
-           en/
-               common.json
-           fr/
-               common.json
-   ```
+---
 
-4. **Load Translations**:
-   Wrap your application with the `appWithTranslation` HOC:
+### Update the `DashboardLayout` Component
 
-   ```javascript
-   import { appWithTranslation } from "next-i18next";
-   import "../styles/globals.css";
+Update the `DashboardLayout` component in `src/app/[lang]/(dashboard-layout)/layout.tsx` as follows:
 
-   function MyApp({ Component, pageProps }) {
-     return <Component {...pageProps} />;
-   }
+```typescript
+import { getDictionary } from "@/lib/getDictionary";
 
-   export default appWithTranslation(MyApp);
-   ```
+import type { LocaleType } from "@/types";
 
-5. **Use Translations in Components**:
-   Import the `useTranslation` hook:
+import { Layout } from "@/components/layout";
 
-   ```javascript
-   import { useTranslation } from "next-i18next";
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { lang: LocaleType };
+}) {
+  const dictionary = await getDictionary(params.lang);
 
-   function Welcome() {
-     const { t } = useTranslation("common");
-     return <h1>{t("welcome")}</h1>;
-   }
-   export default Welcome;
-   ```
+  return <Layout dictionary={dictionary}>{children}</Layout>;
+}
+```
 
-## Adding New Languages
+---
 
-1. Add the new language code to `next-i18next.config.js`.
-2. Create a new folder under `public/locales` for the language.
-3. Add the necessary translation keys and values to the `common.json` file.
+### Update the `Layout` Component
 
-## Right-to-Left (RTL) Support
+Update the `Layout` component in `src/components/layout/index.tsx` as follows:
 
-1. Detect RTL languages in your app:
+```typescript
+"use client";
 
-   ```javascript
-   import { useRouter } from "next/router";
+import * as React from "react";
 
-   const { locale } = useRouter();
-   const isRtl = locale === "ar";
-   ```
+import { useSettings } from "@/hooks/use-settings";
 
-2. Apply the appropriate `dir` attribute to the HTML element:
+import type { DictionaryType } from "@/lib/getDictionary";
 
-   ```html
-   <html lang="ar" dir="rtl"></html>
-   ```
+import VerticalLayout from "./vertical-layout";
+import HorizontalLayout from "./horizontal-layout";
+import { Customizer } from "./customizer";
 
-3. Adjust styles to support RTL as needed.
+export function Layout({
+  children,
+  dictionary,
+}: {
+  children: React.ReactNode;
+  dictionary: DictionaryType;
+}) {
+  const { settings } = useSettings();
+  const isVertical = settings.layout === "vertical";
 
-## Testing Translations
+  return (
+    <>
+      <Customizer />
+      {isVertical ? (
+        <VerticalLayout dictionary={dictionary}>{children}</VerticalLayout>
+      ) : (
+        <HorizontalLayout dictionary={dictionary}>{children}</HorizontalLayout>
+      )}
+    </>
+  );
+}
+```
 
-1. Start your application:
-   ```bash
-   npm run dev
-   ```
-2. Verify language switching and content rendering.
-3. Test RTL languages for proper alignment and layout.
+---
 
-For additional details, check the [Theme Guide](../theme-color/page.mdx).
+### Update Layout Components
+
+Use the implementations of `VerticalLayout` and `HorizontalLayout` from the **full-kit**, ensuring:
+
+1. They accept the `dictionary` prop of type `DictionaryType`.
+2. All nested components within these layouts utilize the `dictionary` prop as needed.
+
+---
+
+### 8. Update Headers and Components
+
+Ensure that all components requiring localization (e.g., dropdowns, navs) are updated to accept and use the `dictionary` prop.
+
+#### Example: Updating `DropdownMenuLabel`
+
+Replace static text with dictionary-based content.
+
+**Before**:
+
+```tsx
+<DropdownMenuLabel>language</DropdownMenuLabel>
+```
+
+**After**:
+
+```tsx
+<DropdownMenuLabel>
+  {dictionary.navigation.language["language"]}
+</DropdownMenuLabel>
+```
+
+---
+
+## Removing I18n
+
+Follow these steps to remove I18n from the project and revert to a single-language setup.
+
+---
+
+### Uninstall Dependencies
+
+Remove I18n-related packages:
+
+```bash
+npm uninstall @formatjs/intl-localematcher @types/negotiator negotiator
+```
+
+---
+
+### Restructure the Application
+
+1. Move all content from `src/app/[lang]` back to `src/app`.
+2. Delete the `[lang]` folder entirely.
+3. Remove `params` and `lang` references in `layout.tsx` files.
+
+---
+
+### Remove Language Dictionaries
+
+1. Delete the `src/data/dictionaries` folder.
+2. Remove any references to `getDictionary` and dictionary props throughout the project.
+
+---
+
+### Update Components
+
+Remove dictionary-related code from layout components and headers:
+
+#### Example: `DropdownMenuLabel`
+
+**Before**:
+
+```tsx
+<DropdownMenuLabel>
+  {dictionary.navigation.language["language"]}
+</DropdownMenuLabel>
+```
+
+**After**:
+
+```tsx
+<DropdownMenuLabel>language</DropdownMenuLabel>
+```
+
+---
+
+### Clean Up Layout Files
+
+Revert `DashboardLayout` to a single-language implementation:
+
+```typescript
+import { Layout } from "@/components/layout";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <Layout>{children}</Layout>;
+}
+```
+
+---
+
+### Remove I18n Configurations and Utilities
+
+Delete the following files:
+
+- `src/configs/i18n.ts`
+- `src/lib/i18n.ts`
+- `src/lib/getDictionary.ts`
+
+---
+
+## Additional Resources
+
+For more information on Internationalization (I18n) in Next.js, refer to the official documentation:
+
+[Next.js I18n Documentation](https://nextjs.org/docs/app/building-your-application/routing/internationalization)
+
+---
+
+## Conclusion
+
+With this guide, you can now **add** or **remove** Internationalization (I18n) from your project as needed. 🎉

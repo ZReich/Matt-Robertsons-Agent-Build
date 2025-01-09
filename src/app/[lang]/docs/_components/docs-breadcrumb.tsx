@@ -16,7 +16,7 @@ import {
 export function DocsBreadcrumb() {
   const pathname = usePathname();
   const paths = pathname.split("/").filter(Boolean);
-  const pathsOfDocs = paths.slice(2);
+  const pathsOfDocs = paths.slice(3);
 
   return (
     <Breadcrumb>
@@ -25,6 +25,10 @@ export function DocsBreadcrumb() {
           <BreadcrumbLink href={ensureLocalizedPathname("/docs", paths[0])}>
             Home
           </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          {paths[2].replace("-", " ").toLowerCase()}
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         {pathsOfDocs.map((segment, index) => {

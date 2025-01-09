@@ -34,7 +34,7 @@ export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
   const params = useParams();
 
   const locale = params.lang as LocaleType;
-  const direction = i18n.langDirection[locale];
+  const direction = i18n.localeDirection[locale];
   const mode = settings.mode;
   const ModeIcon = modeIcons[mode];
 

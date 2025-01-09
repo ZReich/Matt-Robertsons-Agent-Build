@@ -1,7 +1,7 @@
 import { icons } from "lucide-react";
 
-import { BaseColor } from "@/configs/base-colors";
-import { i18n } from "./configs/i18n";
+import { i18n } from "@/configs/i18n";
+import { baseColors } from "@/configs/base-colors";
 
 import type { LucideIcon } from "lucide-react";
 
@@ -14,6 +14,8 @@ export type OrientationType = "vertical" | "horizontal";
 export type DirectionType = "ltr" | "rtl";
 
 export type LocaleType = (typeof i18n)["locales"][number];
+
+export type BaseColor = (typeof baseColors)[number];
 
 export type SettingsType = {
   theme: BaseColor["name"];

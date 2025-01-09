@@ -1,16 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useParams, usePathname } from "next/navigation";
+
+import { sidebarNavigationData } from "../_data/sidebar-navigation";
+
+import { i18n } from "@/configs/i18n";
+
+import { ensureLocalizedPathname } from "@/lib/i18n";
+
+import type { LocaleType } from "@/types";
+
+import { useSettings } from "@/hooks/use-settings";
+
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Sidebar,
+  Sidebar as SidebarWrapper,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
@@ -18,89 +22,74 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface DocSection {
-  title: string;
-  items?: DocSection[]; // Optional for sections with nested items
-  href?: string; // Optional for sections with a page.mdx
-}
+import Logo from "/public/images/icons/shadboard.svg";
 
-interface DocsSidebarProps {
-  items: Array<DocSection>;
-}
-
-export function DocsSidebar({ items }: DocsSidebarProps) {
+export function DocsSidebar() {
   const pathname = usePathname();
+  const params = useParams();
+  const { openMobile, setOpenMobile, isMobile } = useSidebar();
+  const { settings } = useSettings();
+
+  const locale = params.lang as LocaleType;
+  const direction = i18n.localeDirection[locale];
+  const isRTL = direction === "rtl";
+  const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile;
+
+  if (isHoizontalAndDesktop) return;
 
   return (
-    <Sidebar className="top-16">
-      <SidebarContent className="bg-background">
-        {items.map((sectionOrItem, index) => {
-          // Check if the currentitem is a DocSection
-          if ("items" in sectionOrItem && sectionOrItem.items) {
-            return (
-              <SidebarGroup key={index}>
-                <Collapsible defaultOpen className="group/collapsible">
-                  <CollapsibleTrigger asChild>
-                    {"href" in sectionOrItem ? (
-                      <SidebarGroupLabel className="flex items-center justify-between">
-                        <Link
-                          href={sectionOrItem.href as string}
-                          className={cn(
-                            "flex-1 underline-offset-4 hover:underline",
-                            pathname === sectionOrItem.href && "font-semibold"
-                          )}
-                        >
-                          {sectionOrItem.title}
-                        </Link>
-                        <ChevronDown className="h-4 w-4" />
-                      </SidebarGroupLabel>
-                    ) : (
-                      <SidebarGroupLabel className="flex items-center justify-between">
-                        {sectionOrItem.title}
-                        <ChevronDown className="h-4 w-4" />
-                      </SidebarGroupLabel>
-                    )}
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarGroupContent>
-                      <SidebarMenu>
-                        {sectionOrItem.items.map((item) => (
-                          <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton
-                              asChild
-                              isActive={pathname === item.href}
-                            >
-                              <Link href={item.href as string}>
-                                {item.title}
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        ))}
-                      </SidebarMenu>
-                    </SidebarGroupContent>
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarGroup>
-            );
-          }
+    <SidebarWrapper side={isRTL ? "right" : "left"}>
+      <SidebarHeader className="md:hidden">
+        <Link
+          href={ensureLocalizedPathname("/", locale)}
+          className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
+          onClick={() => isMobile && setOpenMobile(!openMobile)}
+        >
+          <Logo className="size-6" aria-hidden />
+          <span>Shadboard</span>
+        </Link>
+      </SidebarHeader>
+      <ScrollArea>
+        <SidebarContent className="gap-0 md:mt-16">
+          {sidebarNavigationData.map((nav) => (
+            <SidebarGroup key={nav.title}>
+              <SidebarGroupLabel>{nav.title}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {nav.items.map((item) => {
+                    const localizedPathname = ensureLocalizedPathname(
+                      item.href,
+                      locale
+                    );
 
-          // If it's a DocSection
-          return (
-            <SidebarMenuItem key={sectionOrItem.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === sectionOrItem.href}
-              >
-                <Link href={sectionOrItem.href as string}>
-                  {sectionOrItem.title}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          );
-        })}
-      </SidebarContent>
-    </Sidebar>
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          isActive={pathname.includes(localizedPathname)}
+                          asChild
+                        >
+                          <Link href={localizedPathname}>
+                            <span>{item.title}</span>
+                            {"label" in item && (
+                              <Badge variant="secondary">{item.label}</Badge>
+                            )}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </SidebarContent>
+      </ScrollArea>
+    </SidebarWrapper>
   );
 }

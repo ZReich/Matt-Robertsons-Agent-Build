@@ -1,1 +1,210 @@
 # Navigation
+
+---
+
+## Customizing the Navigation Data
+
+The `src/data/navigation.ts` file contains the navigation structure for the application. This file defines groups of navigation items, such as dashboards, pages, apps, and authentication links.
+
+To customize the navigation, you can add new navigation items or modify existing ones according to your project's requirements.
+
+### File Structure
+
+The `navigationsData` constant holds an array of navigation groups. Each group contains an array of items with the following properties:
+
+- **title**: The name of the navigation group (e.g., "Dashboards", "Pages").
+- **items**: A list of navigation items within that group.
+  - **title**: The name of the navigation item.
+  - **href**: The URL path for the navigation item.
+  - **iconName**: The name of the icon associated with the navigation item (e.g., "ChartPie", "User").
+  - **label**: Optional label for items (e.g., "Soon" or "New").
+
+### Example: Default Navigation Structure
+
+```typescript
+import type { NavigationGroupType } from "@/types";
+
+export const navigationsData: NavigationGroupType[] = [
+  {
+    title: "Dashboards",
+    items: [
+      {
+        title: "Analytics",
+        href: "/dashboards/analytics",
+        iconName: "ChartPie",
+      },
+      {
+        title: "CRM",
+        href: "/dashboards/crm",
+        iconName: "ChartBar",
+      },
+      {
+        title: "eCommerce",
+        href: "/dashboards/ecommerce",
+        iconName: "ShoppingCart",
+      },
+    ],
+  },
+  {
+    title: "Pages",
+    items: [
+      {
+        title: "Landing",
+        href: "#",
+        label: "Soon",
+        iconName: "LayoutTemplate",
+      },
+      {
+        title: "Pricing",
+        href: "/pages/pricing",
+        iconName: "CircleDollarSign",
+      },
+      {
+        title: "Payment",
+        href: "/pages/payment",
+        iconName: "CreditCard",
+      },
+      {
+        title: "Help Center",
+        href: "#",
+        label: "Soon",
+        iconName: "Headset",
+      },
+      {
+        title: "Not Found 404",
+        href: "/pages/not-found-404",
+        iconName: "Frown",
+      },
+      {
+        title: "Unauthorized 401",
+        href: "/pages/unauthorized-401",
+        iconName: "Lock",
+      },
+      {
+        title: "Maintenance",
+        href: "/pages/maintenance",
+        iconName: "Wrench",
+      },
+      {
+        title: "Coming Soon",
+        href: "/pages/coming-soon",
+        iconName: "Clock",
+      },
+      {
+        title: "Settings",
+        href: "/pages/account/settings",
+        iconName: "UserRoundCog",
+      },
+      {
+        title: "Profile",
+        href: "/pages/account/profile",
+        label: "Soon",
+        iconName: "User",
+      },
+    ],
+  },
+  {
+    title: "Apps",
+    items: [
+      {
+        title: "Email",
+        href: "/apps/email",
+        iconName: "AtSign",
+      },
+      {
+        title: "Chat",
+        href: "/apps/chat",
+        iconName: "MessageCircle",
+      },
+      {
+        title: "Calendar",
+        href: "/apps/calendar",
+        iconName: "Calendar",
+      },
+      {
+        title: "Kanban",
+        href: "/apps/kanban",
+        iconName: "Grid2x2",
+      },
+      {
+        title: "Todo",
+        href: "#",
+        label: "Soon",
+        iconName: "ListTodo",
+      },
+    ],
+  },
+  {
+    title: "Authentication",
+    items: [
+      {
+        title: "Forgot Password",
+        href: "/auth/forgot-password",
+        iconName: "RotateCw",
+      },
+      {
+        title: "New Password",
+        href: "/auth/new-password",
+        iconName: "RefreshCw",
+      },
+      {
+        title: "Verify Email",
+        href: "/auth/verify-email",
+        iconName: "MailCheck",
+      },
+      {
+        title: "Register",
+        href: "/auth/register",
+        iconName: "FilePen",
+      },
+      {
+        title: "Sign In",
+        href: "/auth/sign-in",
+        iconName: "LogIn",
+      },
+    ],
+  },
+];
+```
+
+### How to Modify the Navigation
+
+#### **Add a New Navigation Item**
+
+To add a new item to any navigation group, simply insert a new object into the `items` array of the corresponding group.
+
+Example: Add a "Dashboard" item under the "Dashboards" group:
+
+```typescript
+{
+  title: "Dashboard",
+  href: "/dashboards/dashboard",
+  iconName: "Home",
+}
+```
+
+#### **Add a New Navigation Group**
+
+To create a new navigation group, simply add a new object to the `navigationsData` array. This object should have a `title` property for the group name, and an `items` array that contains the group's navigation items.
+
+Example: Add a "Support" group with related items:
+
+```typescript
+{
+  title: "Support",
+  items: [
+    {
+      title: "Help Center",
+      href: "/support/help-center",
+      iconName: "Headset",
+    },
+    {
+      title: "Contact Us",
+      href: "/support/contact",
+      iconName: "Mail",
+    },
+  ],
+}
+```
+
+This will create a new "Support" section in the navigation with the listed items.

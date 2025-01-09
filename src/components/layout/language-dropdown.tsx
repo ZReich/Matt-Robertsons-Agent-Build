@@ -60,7 +60,7 @@ export function LanguageDropdown({
   const { settings, updateSettings } = useSettings();
 
   const locale = params.lang as LocaleType;
-  const direction = i18n.langDirection[locale];
+  const direction = i18n.localeDirection[locale];
 
   const setLocale = React.useCallback(
     (localeName: LocaleType) => {

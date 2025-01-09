@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
-import { sidebarNavigation } from "../_data/sidebar-navigation";
+import { sidebarNavigationData } from "../_data/sidebar-navigation";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn, withoutPrefix } from "@/lib/utils";
@@ -38,45 +38,45 @@ export function DocsPagination() {
   const params = useParams();
   const locale = params.lang as LocaleType;
   const pathnameWithoutLocale = withoutPrefix(pathname, `/${locale}`);
-  const navs = flattenSidebarNavigation(sidebarNavigation);
+  const navs = flattenSidebarNavigation(sidebarNavigationData);
   const { previous, next } = getPreviousNext(pathnameWithoutLocale, navs);
 
   return (
-    <article className="grid grid-cols-2 gap-4 mt-10">
+    <article className="grid grid-cols-2 gap-4 mt-20">
       {previous && (
         <Link
           className={cn(
             buttonVariants({ variant: "outline" }),
-            "w-full flex flex-col items-start gap-1 px-4 py-8 no-underline"
+            "w-full flex flex-col items-start gap-1 px-4 py-12 no-underline"
           )}
           href={ensureLocalizedPathname(previous.href as string, locale)}
         >
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 text-muted-foreground">
             <ChevronLeftIcon
               className="h-3.5 w-3.5 rtl:-scale-x-100"
               aria-hidden
             />
-            Previous
-          </span>
-          <span className="ms-1">{previous.title}</span>
+            <span className="me-px">Previous</span>
+          </div>
+          <span className="text-xl font-semibold ms-1">{previous.title}</span>
         </Link>
       )}
       {next && (
         <Link
           className={cn(
             buttonVariants({ variant: "outline" }),
-            "col-start-2 w-full flex flex-col items-end gap-1 px-4 py-8 no-underline"
+            "col-start-2 w-full flex flex-col items-end gap-1 px-4 py-12 no-underline"
           )}
           href={ensureLocalizedPathname(next.href as string, locale)}
         >
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            Next
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <span className="me-px">Next</span>
             <ChevronRightIcon
               className="h-3.5 w-3.5 rtl:-scale-x-100"
               aria-hidden
             />
-          </span>
-          <span className="me-1">{next.title}</span>
+          </div>
+          <span className="text-xl font-semibold me-1">{next.title}</span>
         </Link>
       )}
     </article>

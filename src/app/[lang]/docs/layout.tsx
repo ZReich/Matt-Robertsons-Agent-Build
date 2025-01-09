@@ -5,7 +5,6 @@ import { Toc } from "./_components/toc";
 import { DocsSidebar } from "./_components/docs-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DocsPagination } from "./_components/docs-pagination";
-import { sidebarNavigation } from "./_data/sidebar-navigation";
 import { Header } from "./_components/header";
 
 export default async function DashboardLayout({
@@ -19,7 +18,7 @@ export default async function DashboardLayout({
     <SidebarProvider>
       <div className="min-h-screen w-full flex justify-between">
         <Header locale={params.lang} />
-        <DocsSidebar items={sidebarNavigation} />
+        <DocsSidebar />
         <main className="mt-16 p-4">
           <DocsBreadcrumb />
           <div

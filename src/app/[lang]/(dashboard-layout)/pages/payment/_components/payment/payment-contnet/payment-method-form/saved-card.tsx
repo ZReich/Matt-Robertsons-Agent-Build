@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Landmark } from "lucide-react";
 
-import type { PaymentType } from "../../../types";
+import type { PaymentType } from "../../../../types";
 import type { FormType } from ".";
 
 import { Card } from "@/components/ui/card";

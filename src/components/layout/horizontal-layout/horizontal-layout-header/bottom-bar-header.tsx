@@ -14,7 +14,7 @@ import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
 import { UserDropdown } from "@/components/layout/user-dropdown";
 import { Notifications } from "@/components/layout/notifications";
-import { FullscreenToggle } from "@/components/full-screen-toggle";
+import { FullscreenToggle } from "@/components/layout/full-screen-toggle";
 
 import Logo from "/public/images/icons/shadboard.svg";
 

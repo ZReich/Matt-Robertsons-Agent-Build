@@ -49,7 +49,7 @@ export default async function RootLayout({
   params: { lang: LocaleType };
 }) {
   const session = await getServerSession(authOptions);
-  const direction = i18n.langDirection[params.lang];
+  const direction = i18n.localeDirection[params.lang];
 
   return (
     <html lang={params.lang} dir={direction} suppressHydrationWarning>
