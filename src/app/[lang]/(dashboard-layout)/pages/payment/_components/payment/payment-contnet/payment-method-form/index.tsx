@@ -5,10 +5,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CreditCard, Landmark } from "lucide-react";
 
-import { PaymentMethodSchema } from "../../../_schemas/payment-method-schema";
+import { PaymentMethodSchema } from "../../../../_schemas/payment-method-schema";
 import { getCreditCardBrandName } from "@/lib/utils";
 
-import type { PaymentType } from "../../../types";
+import type { PaymentType } from "../../../../types";
 
 import { Card } from "@/components/ui/card";
 import { RadioGroup } from "@/components/ui/radio-group";

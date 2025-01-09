@@ -1,4 +1,4 @@
-import type { PaymentType } from "../../../types";
+import type { PaymentType } from "../../../../types";
 
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
