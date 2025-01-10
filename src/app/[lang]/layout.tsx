@@ -11,7 +11,7 @@ import "../globals.css";
 import type { Metadata } from "next";
 import type { LocaleType } from "@/types";
 
-import Providers from "@/providers";
+import { Providers } from "@/providers";
 
 import { Toaster } from "@/components/ui/toaster";
 

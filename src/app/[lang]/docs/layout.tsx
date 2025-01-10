@@ -1,4 +1,5 @@
 import type { LocaleType } from "@/types";
+import type { Metadata } from "next";
 
 import { DocsBreadcrumb } from "./_components/docs-breadcrumb";
 import { Toc } from "./_components/toc";
@@ -7,7 +8,13 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { DocsPagination } from "./_components/docs-pagination";
 import { Header } from "./_components/header";
 
-export default async function DashboardLayout({
+// Define metadata for the page
+// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
+export const metadata: Metadata = {
+  title: "Documentation",
+};
+
+export default async function DocsLayout({
   children,
   params,
 }: {

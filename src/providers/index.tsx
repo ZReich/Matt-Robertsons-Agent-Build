@@ -8,7 +8,7 @@ import { NextAuthProvider } from "./next-auth-provider";
 import { DirectionProvider } from "./direction-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
-export default function Providers({
+export function Providers({
   session,
   locale,
   direction,
