@@ -1,6 +1,6 @@
 import { salesTrendData } from "../../../_data/sales-trend";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { SalesTrendChart } from "./sales-trend-chart";
 import { SalesTrendSummary } from "./sales-trend-summary";
 

@@ -1,6 +1,6 @@
 import { performanceOverTimeData } from "../../../_data/performance-over-time";
 
-import { DashboardCardWithoutPeriod } from "@/components/dashboard-card";
+import { DashboardCardWithoutPeriod } from "@/components/dashboards/dashboard-card";
 import { PerformanceOverTimeSummary } from "./performance-over-time-summary";
 import { PerformanceOverTimeChart } from "./performance-over-time-chart";
 

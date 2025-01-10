@@ -11,7 +11,7 @@ import { LoaderCircle } from "lucide-react";
 
 import { userData } from "@/data/user";
 
-import { SignInSchema } from "../../_schemas/sign-in-schema";
+import { SignInSchema } from "@/schemas/sign-in-schema";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
-import { OAuthLinks } from "../../../_components/oauth-links";
+import { OAuthLinks } from "../oauth-links";
 
 type FormType = z.infer<typeof SignInSchema>;
 

@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
-import { NewPasswordSchema } from "../../_schemas/new-passward-schema";
+import { ForgotPasswordSchema } from "@/schemas/forgot-passward-schema";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
@@ -27,17 +27,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
-type FormType = z.infer<typeof NewPasswordSchema>;
+type FormType = z.infer<typeof ForgotPasswordSchema>;
 
-export function NewPasswordForm() {
+export function ForgotPasswordForm() {
   const params = useParams();
   const searchParams = useSearchParams();
 
   const form = useForm<FormType>({
-    resolver: zodResolver(NewPasswordSchema),
+    resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
-      password: "",
-      confirmPassword: "",
+      email: "",
     },
   });
 
@@ -68,25 +67,16 @@ export function NewPasswordForm() {
         <div className="grid gap-2">
           <FormField
             control={form.control}
-            name="password"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <Input type="password" {...field} />
+                  <Input
+                    type="email"
+                    placeholder="name@example.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -99,7 +89,7 @@ export function NewPasswordForm() {
                 aria-label="Loading"
               />
             )}
-            Set new password
+            Send instructions
           </Button>
         </div>
         <Link

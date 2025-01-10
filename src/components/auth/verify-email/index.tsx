@@ -5,9 +5,9 @@ import {
   AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../../../_components/auth-layout";
+} from "../auth-layout";
 
-export default function VerifyEmail() {
+export function VerifyEmail() {
   return (
     <Auth>
       <AuthHeader>

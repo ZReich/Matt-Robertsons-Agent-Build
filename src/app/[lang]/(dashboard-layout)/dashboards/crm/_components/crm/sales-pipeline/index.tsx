@@ -1,6 +1,6 @@
 import { salesPipelineData } from "../../../_data/sales-pipeline";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { SalesPipelineChart } from "./sales-pipeline-chart";
 
 export function SalesPipeline() {

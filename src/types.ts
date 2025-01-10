@@ -58,3 +58,9 @@ export interface NavigationType {
   label?: string;
   iconName: DynamicIconNameType;
 }
+
+export interface OAuthLinkType {
+  href: string;
+  label: string;
+  icon: IconType;
+}

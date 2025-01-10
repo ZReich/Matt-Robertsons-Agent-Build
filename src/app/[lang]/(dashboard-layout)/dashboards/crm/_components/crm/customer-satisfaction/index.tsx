@@ -1,6 +1,6 @@
 import { customerSatisfactionData } from "../../../_data/customer-satisfaction";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { CustomerSatisfactionChart } from "./customer-satisfaction-chart";
 import { CustomerSatisfactionCarousel } from "./customer-satisfaction-carousel";
 

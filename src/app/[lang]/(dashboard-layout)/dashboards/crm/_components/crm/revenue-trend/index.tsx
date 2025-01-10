@@ -1,6 +1,6 @@
 import { revenueTrendData } from "../../../_data/revenue-trend";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { RevenueTrendChart } from "./revenue-trend-chart";
 import { RevenueTrendTotal } from "./revenue-trend-total";
 

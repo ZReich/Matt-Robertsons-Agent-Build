@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
-import { ComingSoonSchema } from "../_schemas/coming-soon-schema";
+import { ComingSoonSchema } from "@/schemas/coming-soon-schema";
 
 import { Button } from "@/components/ui/button";
 import {

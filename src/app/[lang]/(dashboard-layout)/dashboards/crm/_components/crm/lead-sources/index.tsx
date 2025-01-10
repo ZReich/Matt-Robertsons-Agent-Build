@@ -1,6 +1,6 @@
 import { leadSourcesData } from "../../../_data/lead-sources";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { LeadSourcesChart } from "./lead-sources-chart";
 
 export function LeadSources() {

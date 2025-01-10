@@ -1,23 +1,23 @@
-import { RegisterForm } from "./register-form";
+import { SignInForm } from "./sign-in-form";
 import {
   Auth,
   AuthHeader,
   AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../../../_components/auth-layout";
+} from "../auth-layout";
 
-export function Register() {
+export function SignIn() {
   return (
     <Auth imgSrc="/images/placeholder.svg">
       <AuthHeader>
-        <AuthTitle>Sign Up</AuthTitle>
+        <AuthTitle>Sign In</AuthTitle>
         <AuthDescription>
-          Enter your information to create an account
+          Enter your email below to sign in to your account
         </AuthDescription>
       </AuthHeader>
       <AuthForm>
-        <RegisterForm />
+        <SignInForm />
       </AuthForm>
     </Auth>
   );

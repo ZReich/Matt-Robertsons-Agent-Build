@@ -1,6 +1,6 @@
 import { trafficSourcesData } from "../../../_data/traffic-sources";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { TrafficSourcesChart } from "./traffic-sources-chart";
 import { TrafficSourcesSummary } from "./traffic-sources-summary";
 

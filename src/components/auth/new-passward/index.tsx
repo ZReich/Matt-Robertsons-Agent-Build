@@ -5,7 +5,7 @@ import {
   AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../../../_components/auth-layout";
+} from "../auth-layout";
 
 export function NewPassword() {
   return (

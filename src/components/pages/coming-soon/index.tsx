@@ -1,5 +1,5 @@
-import { ComingSoonForm } from "./coming-soon-form";
 import { SocialMediaLinks } from "@/components/social-media-links";
+import { ComingSoonForm } from "./coming-soon-form";
 import { CountdownTimer } from "./countdown-timer";
 
 export function ComingSoon({ targetDate }: { targetDate: Date }) {

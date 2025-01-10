@@ -1,4 +1,4 @@
-import { ComingSoon } from "./_components/coming-soon";
+import { ComingSoon } from "@/components/pages/coming-soon";
 
 export default function ComingSoonPgae() {
   // Get the current date and add two days

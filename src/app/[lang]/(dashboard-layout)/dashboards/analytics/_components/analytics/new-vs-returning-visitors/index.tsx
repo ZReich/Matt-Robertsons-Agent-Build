@@ -1,8 +1,7 @@
 import { newVsReturningVisitors } from "../../../_data/new-vs-returning-visitors";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { NewVsReturningVisitorsChart } from "./new-vs-returning-visitors-chart";
-import { Card, CardContent } from "@/components/ui/card";
 
 export async function NewVsReturningVisitors() {
   return (

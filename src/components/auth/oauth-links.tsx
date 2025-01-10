@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { oauthLinksData } from "../_data/oauth-links";
+import { oauthLinksData } from "@/data/oauth-links";
 
 import { buttonVariants } from "@/components/ui/button";
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { NewPassword } from "./_components/new-passward";
+import { NewPassword } from "@/components/auth/new-passward";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata

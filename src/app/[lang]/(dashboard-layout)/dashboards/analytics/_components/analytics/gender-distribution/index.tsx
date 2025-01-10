@@ -1,7 +1,7 @@
 import { genderDistributionData } from "../../../_data/gender-distribution";
 
 import { GenderDistributionChart } from "./gender-distribution-chart";
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 
 export async function GenderDistribution() {
   return (

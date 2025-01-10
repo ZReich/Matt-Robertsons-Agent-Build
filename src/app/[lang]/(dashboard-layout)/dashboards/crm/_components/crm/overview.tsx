@@ -2,7 +2,7 @@ import { BadgePercent, HandCoins, Users } from "lucide-react";
 
 import { overviewData } from "../../_data/overview";
 
-import { DashboardOverviewCard } from "@/components/dashboard-card";
+import { DashboardOverviewCard } from "@/components/dashboards/dashboard-card";
 
 export function Overview() {
   return (

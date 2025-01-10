@@ -1,6 +1,6 @@
 import { activeProjectsData } from "../../../_data/active-projects";
 
-import { DashboardCardWithoutPeriod } from "@/components/dashboard-card";
+import { DashboardCardWithoutPeriod } from "@/components/dashboards/dashboard-card";
 import { ActiveProjectsList } from "./active-projects-list";
 
 export function ActiveProjects() {

@@ -1,6 +1,6 @@
 import { topProductsData } from "../../../_data/top-products";
 
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { TopProductsList } from "./top-products-list";
 
 export async function TopProducts() {

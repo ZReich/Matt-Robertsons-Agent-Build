@@ -1,7 +1,7 @@
 import { topPagesData } from "../../../_data/top-pages";
 
 import { TopPagesTable } from "./top-pages-table";
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export async function TopPages() {

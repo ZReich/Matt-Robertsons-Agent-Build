@@ -1,6 +1,6 @@
 import type { LocaleType } from "@/types";
 
-import { Unauthorized401 } from "./_components/unauthorized-401";
+import { Unauthorized401 } from "@/components/pages/unauthorized-401";
 
 export default function Unauthorized401Pgae({
   params,

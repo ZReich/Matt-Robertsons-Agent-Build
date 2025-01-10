@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { VerifyEmailSchema } from "../../_schemas/verify-email-schema";
+import { VerifyEmailSchema } from "@/schemas/verify-email-schema";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";

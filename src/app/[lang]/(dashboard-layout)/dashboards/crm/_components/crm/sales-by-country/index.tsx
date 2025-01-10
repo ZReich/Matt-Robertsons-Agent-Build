@@ -1,8 +1,7 @@
 import { salesByCountryData } from "../../../_data/sales-by-country";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { SalesByCountryTable } from "./sales-by-country.table";
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 
 export function SalesByCountry() {
   return (

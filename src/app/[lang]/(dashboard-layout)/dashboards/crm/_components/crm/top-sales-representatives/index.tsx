@@ -1,7 +1,7 @@
 import { salesRepresentativeData } from "../../../_data/top-sales-representatives";
 
 import { TopSalesRepresentativesList } from "./top-sales-representatives-list";
-import { DashboardCard } from "@/components/dashboard-card";
+import { DashboardCard } from "@/components/dashboards/dashboard-card";
 
 export function TopSalesRepresentatives() {
   return (
