@@ -48,18 +48,12 @@ export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
   return (
     <DropdownMenu dir={direction}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={dictionary.navigation.mode["select-mode"]}
-        >
+        <Button variant="ghost" size="icon" aria-label="Mode">
           <ModeIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuLabel>
-          {dictionary.navigation.mode["mode"]}
-        </DropdownMenuLabel>
+        <DropdownMenuLabel>{dictionary.navigation.mode.mode}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={mode}>
           <DropdownMenuRadioItem

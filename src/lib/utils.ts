@@ -139,11 +139,19 @@ export function formatDistance(value: string | number | Date) {
 }
 
 export function camelCaseToTitleCase(camelCaseStr: string) {
-  let titleCaseStr = camelCaseStr
+  const titleCaseStr = camelCaseStr
     .replace(/([A-Z])/g, " $1") // Insert space before uppercase letters
     .replace(/^./, (char) => char.toUpperCase()); // Capitalize the first letter
 
   return titleCaseStr;
+}
+
+export function titleCaseToCamelCase(titleCaseStr: string) {
+  const camelCaseStr = titleCaseStr
+    .toLowerCase() // Convert the entire string to lowercase first
+    .replace(/\s+(.)/g, (_, char) => char.toUpperCase()); // Remove spaces and capitalize the following character
+
+  return camelCaseStr;
 }
 
 export function ensurePrefix(value: string, prefix: string) {

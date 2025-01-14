@@ -32,12 +32,14 @@ export function UserDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full">
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full"
+          aria-label="User"
+        >
           <Avatar className="size-9">
-            <AvatarImage
-              src={userData?.avatar as string | undefined}
-              alt="Avatar"
-            />
+            <AvatarImage src={userData?.avatar as string | undefined} alt="" />
             <AvatarFallback className="bg-transparent">
               {userData?.name && getInitials(userData.name)}
             </AvatarFallback>
@@ -80,7 +82,7 @@ export function UserDropdown({
               )}
             >
               <User className="size-4 text-muted-foreground" />
-              {dictionary.navigation["user-nav"].profile}
+              {dictionary.navigation.userNav.profile}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem className="hover:cursor-pointer" asChild>
@@ -92,7 +94,7 @@ export function UserDropdown({
               )}
             >
               <UserCog className="size-4 text-muted-foreground" />
-              {dictionary.navigation["user-nav"].settings}
+              {dictionary.navigation.userNav.settings}
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -104,7 +106,7 @@ export function UserDropdown({
             onClick={() => signOut()}
           >
             <LogOut className="size-4 text-muted-foreground" />
-            {dictionary.navigation["user-nav"]["sign-out"]}
+            {dictionary.navigation.userNav.signOut}
           </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>

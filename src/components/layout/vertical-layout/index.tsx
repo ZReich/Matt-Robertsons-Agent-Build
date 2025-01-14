@@ -13,7 +13,7 @@ export default function VerticalLayout({
 }) {
   return (
     <>
-      <Sidebar />
+      <Sidebar dictionary={dictionary} />
       <div className="min-h-screen w-full grid">
         <div className="w-full grid md:grid-rows-[auto,_1fr,_auto]">
           <VerticalLayoutHeader dictionary={dictionary} />

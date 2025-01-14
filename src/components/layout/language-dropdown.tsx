@@ -72,17 +72,13 @@ export function LanguageDropdown({
   return (
     <DropdownMenu dir={direction}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={dictionary.navigation.language["select-language"]}
-        >
+        <Button variant="ghost" size="icon" aria-label="Language">
           <Earth className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>
-          {dictionary.navigation.language["language"]}
+          {dictionary.navigation.language.language}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={locale}>

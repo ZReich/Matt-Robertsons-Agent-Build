@@ -5,6 +5,8 @@ import { notificationData } from "@/data/notifications";
 
 import { cn, formatDistance, formatUnreadCount } from "@/lib/utils";
 
+import type { DictionaryType } from "@/lib/getDictionary";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
 import {
@@ -15,7 +17,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { DynamicIcon } from "@/components/dynamic-icon";
 
-export function Notifications() {
+export function NotificationDropdown({
+  dictionary,
+}: {
+  dictionary: DictionaryType;
+}) {
   const unreadCount = formatUnreadCount(notificationData.unreadCount);
 
   return (
@@ -23,13 +29,14 @@ export function Notifications() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="size-4" />
+          <span className="sr-only">Notification</span>
           {!!unreadCount && (
             <Badge
               className="absolute -top-1 -end-1 h-4 max-w-8 flex justify-center"
               aria-live="polite"
               aria-atomic="true"
               role="status"
-              aria-label={`Notifications: ${unreadCount} unread`}
+              aria-label={`${unreadCount} unread`}
             >
               {unreadCount}
             </Badge>
@@ -39,9 +46,11 @@ export function Notifications() {
       <PopoverContent className="w-[380px] p-0">
         <Card className="border-0">
           <div className="flex items-center justify-between border-b border-border p-3">
-            <h3 className="text-sm font-semibold">Notifications</h3>
+            <h3 className="text-sm font-semibold">
+              {dictionary.navigation.notifications.notifications}
+            </h3>
             <Button variant="link" className="text-primary h-auto p-0">
-              Dismiss All
+              {dictionary.navigation.notifications.dismissAll}
             </Button>
           </div>
           <ul>
@@ -80,7 +89,7 @@ export function Notifications() {
                 "text-primary text-center"
               )}
             >
-              See All Notifications
+              {dictionary.navigation.notifications.seeAllNotifications}
             </Link>
           </CardFooter>
         </Card>

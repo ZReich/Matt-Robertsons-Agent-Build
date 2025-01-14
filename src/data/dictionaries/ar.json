@@ -1,25 +1,55 @@
 {
   "navigation": {
-    "home": "الصفحة الرئيسية",
-    "about-us": "من نحن",
-    "contact": "تواصل معنا",
+    "dashboards": "لوحات القيادة",
+    "analytics": "تحليلات",
+    "crm": "إدارة علاقات العملاء",
+    "ecommerce": "التجارة الإلكترونية",
+    "pages": "الصفحات",
+    "landing": "الصفحة الرئيسية",
+    "pricing": "التسعير",
+    "payment": "الدفع",
+    "helpCenter": "مركز المساعدة",
+    "notFound404": "الصفحة غير موجودة 404",
+    "unauthorized401": "غير مصرح 401",
+    "maintenance": "الصيانة",
+    "comingSoon": "قريبًا",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "apps": "التطبيقات",
+    "email": "البريد الإلكتروني",
+    "chat": "الدردشة",
+    "calendar": "التقويم",
+    "kanban": "كانبان",
+    "todo": "قائمة المهام",
+    "authentication": "المصادقة",
+    "forgotPassword": "نسيت كلمة المرور",
+    "newPassword": "كلمة مرور جديدة",
+    "verifyEmail": "تأكيد البريد الإلكتروني",
+    "register": "التسجيل",
+    "signIn": "تسجيل الدخول",
+    "label": {
+      "soon": "قريبًا"
+    },
     "language": {
       "language": "اللغة",
-      "select-language": "اختر اللغة",
       "english": "الأنجليزية",
       "arabic": "العربية"
     },
     "mode": {
       "mode": "النمط",
-      "select-mode": "اختر النمط",
       "dark": "غامق",
       "light": "فاتح",
       "system": "النظام"
     },
-    "user-nav": {
+    "notifications": {
+      "notifications": "الإشعارات",
+      "dismissAll": "تجاهل الكل",
+      "seeAllNotifications": "عرض جميع الإشعارات"
+    },
+    "userNav": {
       "profile": "الملف الشخصي",
       "settings": "الاعدادات",
-      "sign-out": "تسجيل الخروج"
+      "signOut": "تسجيل الخروج"
     }
   }
 }

@@ -9,7 +9,7 @@ import { CommandMenu } from "@/components/layout/command-menu";
 import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { UserDropdown } from "@/components/layout/user-dropdown";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
-import { Notifications } from "@/components/layout/notifications";
+import { NotificationDropdown } from "@/components/layout/notification-dropdown";
 import { FullscreenToggle } from "@/components/layout/full-screen-toggle";
 import { ToggleMobileSidebar } from "../toggle-moble-sidebar";
 
@@ -28,7 +28,7 @@ export function VerticalLayoutHeader({
         <ToggleMobileSidebar />
         <div className="grow flex justify-end gap-2">
           <CommandMenu className="lg:me-auto" />
-          <Notifications />
+          <NotificationDropdown dictionary={dictionary} />
           <FullscreenToggle />
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />

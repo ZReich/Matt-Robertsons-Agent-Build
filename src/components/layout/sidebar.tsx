@@ -8,8 +8,10 @@ import { navigationsData } from "@/data/navigations";
 import { i18n } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
+import { titleCaseToCamelCase } from "@/lib/utils";
 
 import type { LocaleType } from "@/types";
+import type { DictionaryType } from "@/lib/getDictionary";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -31,7 +33,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 import Logo from "/public/images/icons/shadboard.svg";
 
-export function Sidebar() {
+export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   const pathname = usePathname();
   const params = useParams();
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -68,6 +70,10 @@ export function Sidebar() {
                       item.href,
                       locale
                     );
+                    const formattedTitle = titleCaseToCamelCase(item.title);
+                    const formattedLabel = titleCaseToCamelCase(
+                      item.label ?? ""
+                    );
 
                     return (
                       <SidebarMenuItem key={item.title}>
@@ -77,9 +83,19 @@ export function Sidebar() {
                         >
                           <Link href={localizedPathname}>
                             <DynamicIcon name={item.iconName} />
-                            <span>{item.title}</span>
+                            <span>
+                              {
+                                // @ts-ignore
+                                dictionary.navigation[formattedTitle]
+                              }
+                            </span>
                             {"label" in item && (
-                              <Badge variant="secondary">{item.label}</Badge>
+                              <Badge variant="secondary">
+                                {
+                                  // @ts-ignore
+                                  dictionary.navigation.label[formattedLabel]
+                                }
+                              </Badge>
                             )}
                           </Link>
                         </SidebarMenuButton>

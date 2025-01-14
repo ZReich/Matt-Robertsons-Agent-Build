@@ -86,7 +86,12 @@ export function FullscreenToggle() {
   }, []);
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleFullscreen}
+      aria-label="Toggle Fullscreen"
+    >
       <DynamicIcon
         name={isFullscreen ? "Shrink" : "Expand"}
         className="size-4"

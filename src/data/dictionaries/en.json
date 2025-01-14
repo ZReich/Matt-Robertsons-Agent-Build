@@ -1,25 +1,55 @@
 {
   "navigation": {
-    "home": "Home",
-    "about-us": "About Us",
-    "contact": "Contact",
+    "dashboards": "Dashboards",
+    "analytics": "Analytics",
+    "crm": "CRM",
+    "ecommerce": "eCommerce",
+    "pages": "Pages",
+    "landing": "Landing",
+    "pricing": "Pricing",
+    "payment": "Payment",
+    "helpCenter": "Help Center",
+    "notFound404": "Not Found 404",
+    "unauthorized401": "Unauthorized 401",
+    "maintenance": "Maintenance",
+    "comingSoon": "Coming Soon",
+    "settings": "Settings",
+    "profile": "Profile",
+    "apps": "Apps",
+    "email": "Email",
+    "chat": "Chat",
+    "calendar": "Calendar",
+    "kanban": "Kanban",
+    "todo": "Todo",
+    "authentication": "Authentication",
+    "forgotPassword": "Forgot Password",
+    "newPassword": "New Password",
+    "verifyEmail": "Verify Email",
+    "register": "Register",
+    "signIn": "Sign In",
+    "label": {
+      "soon": "Soon"
+    },
     "language": {
       "language": "Language",
-      "select-language": "Select Language",
       "english": "English",
       "arabic": "Arabic"
     },
     "mode": {
       "mode": "Mode",
-      "select-mode": "Select Mode",
       "dark": "Dark",
       "light": "Light",
       "system": "System"
     },
-    "user-nav": {
+    "notifications": {
+      "notifications": "Notifications",
+      "dismissAll": "Dismiss All",
+      "seeAllNotifications": "See All Notifications"
+    },
+    "userNav": {
       "profile": "Profile",
       "settings": "Settings",
-      "sign-out": "Sign out"
+      "signOut": "Sign out"
     }
   }
 }

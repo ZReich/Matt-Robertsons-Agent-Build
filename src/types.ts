@@ -15,10 +15,10 @@ export type DirectionType = "ltr" | "rtl";
 
 export type LocaleType = (typeof i18n)["locales"][number];
 
-export type BaseColor = (typeof baseColors)[number];
+export type BaseColorType = (typeof baseColors)[number];
 
 export type SettingsType = {
-  theme: BaseColor["name"];
+  theme: BaseColorType["name"];
   mode: ModeType;
   radius: number;
   layout: LayoutType;
