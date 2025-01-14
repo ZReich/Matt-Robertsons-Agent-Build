@@ -6,7 +6,7 @@ import {
   SiDiscover,
 } from "react-icons/si";
 
-export const CreditCardBrandIcon = ({ brandName }: { brandName: string }) => {
+export function CreditCardBrandIcon({ brandName }: { brandName: string }) {
   switch (brandName) {
     case "visa":
       return <SiVisa size={28} className="text-foreground" />;
@@ -21,4 +21,4 @@ export const CreditCardBrandIcon = ({ brandName }: { brandName: string }) => {
     default:
       return <CreditCard className="size-7 stroke-[1.5] text-foreground" />;
   }
-};
+}
