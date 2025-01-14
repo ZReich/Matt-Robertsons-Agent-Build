@@ -22,10 +22,15 @@ export function EmailListContentHeader() {
   const hasSelectedEmails = !emailState.selectedEmails.length;
   let isCheckboxChecked: CheckedState;
 
+  // If the number of selected emails equals the total number of emails
   if (emailState.selectedEmails.length === emailState.emails.length) {
     isCheckboxChecked = true;
+
+    // If there are any selected emails but not all of them
   } else if (emailState.selectedEmails.length > 0) {
     isCheckboxChecked = "indeterminate";
+    
+    // No emails are selected
   } else {
     isCheckboxChecked = false;
   }
