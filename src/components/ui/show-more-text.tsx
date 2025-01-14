@@ -3,8 +3,9 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 
-import { Button } from "./button";
 import { cn } from "@/lib/utils";
+
+import { Button } from "./button";
 
 export interface ShowMoreTextnProps
   extends React.HTMLAttributes<HTMLParagraphElement> {
