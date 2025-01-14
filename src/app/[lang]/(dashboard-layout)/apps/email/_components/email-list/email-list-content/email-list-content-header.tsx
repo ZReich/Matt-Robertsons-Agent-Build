@@ -5,6 +5,8 @@ import { EllipsisVertical } from "lucide-react";
 
 import { useEmailContext } from "../../../hooks/use-email-context";
 
+import type { CheckedState } from "@radix-ui/react-checkbox";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -17,14 +19,21 @@ import {
 export function EmailListContentHeader() {
   const { emailState, handleToggleSelectAllEmails } = useEmailContext();
 
-  const areAllEmailsSelected =
-    emailState.selectedEmails.length === emailState.emails.length;
   const hasSelectedEmails = !emailState.selectedEmails.length;
+  let isCheckboxChecked: CheckedState;
+
+  if (emailState.selectedEmails.length === emailState.emails.length) {
+    isCheckboxChecked = true;
+  } else if (emailState.selectedEmails.length > 0) {
+    isCheckboxChecked = "indeterminate";
+  } else {
+    isCheckboxChecked = false;
+  }
 
   return (
     <div className="flex items-center justify-between p-1 ps-3 border-b border-border md:p-2 md:ps-4">
       <Checkbox
-        checked={areAllEmailsSelected}
+        checked={isCheckboxChecked}
         onCheckedChange={handleToggleSelectAllEmails}
         aria-label="Select all emails"
       />
