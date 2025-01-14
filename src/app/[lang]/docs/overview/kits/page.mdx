@@ -22,17 +22,40 @@ The **Starter Kit** is a lightweight, efficient solution designed for developers
 
 ```plaintext
 .
-├── components/          # Reusable UI components (e.g., buttons, layouts)
-│   └── Layout.js        # Layout component for common structure
-├── pages/               # Application pages
-│   ├── index.js         # Home page
-│   └── 404.js           # Not Found page
-├── public/              # Public assets (images, fonts, etc.)
-├── styles/              # Global styles
-│   └── globals.css      # Global CSS file
-├── .gitignore           # Git ignore file
-├── next.config.js       # Next.js configuration
-└── package.json         # Project dependencies and scripts
+├── public/
+│   └── images/
+├── src/
+│   ├── app/
+│   │   ├── (dashboard-layout)/
+│   │   ├── [...not-found]/
+│   │   ├── global-error.tsx
+│   │   ├── globals.css
+│   │   └── layout.tsx
+│   ├── components/
+│   │   ├── dynamic-icon.tsx
+│   │   ├── layout/
+│   │   ├── pages/
+│   │   └── ui/
+│   ├── configs/
+│   ├── contexts/
+│   ├── data/
+│   ├── hooks/
+│   ├── lib/
+│   ├── providers/
+│   └── types.ts
+├── README.md
+├── .env
+├── .env.example
+├── .eslintrc.json
+├── .gitignore
+├── components.json
+├── next-env.d.ts
+├── next.config.mjs
+├── package.json
+├── postcss.config.mjs
+├── svgr.d.ts
+├── tailwind.config.ts
+└── tsconfig.json
 ```
 
 ### Why Choose the Starter Kit?
@@ -57,31 +80,47 @@ The **Full Kit** is a complete, feature-packed solution that provides everything
 
 ```plaintext
 .
-├── components/                # Reusable UI components (e.g., Navbar, Sidebar, Modal)
-│   ├── Auth/                  # Authentication-related components (e.g., Login, Register)
-│   ├── Dashboard/             # Dashboard-specific components (e.g., Widgets, Stats)
-│   └── Layout.js              # Common layout structure (includes Navbar, Sidebar, etc.)
-├── pages/                     # Application pages
-│   ├── index.js               # Home page
-│   ├── dashboard.js           # Dashboard page
-│   ├── login.js               # Login page
-│   ├── profile.js             # User profile page
-│   └── 404.js                 # Not Found page
-├── public/                    # Public assets (images, fonts, etc.)
-├── styles/                    # Styling files
-│   ├── globals.css            # Global styles
-│   └── tailwind.config.js     # Tailwind CSS configuration (if using Tailwind)
-├── store/                     # State management (e.g., Redux or Context)
-│   ├── actions/               # Redux actions or context functions
-│   ├── reducers/              # Redux reducers or context providers
-│   └── store.js               # Central store setup
-├── i18n/                      # Internationalization (I18n) files
-│   ├── en.js                  # English language settings
-│   ├── fr.js                  # French language settings
-│   └── i18n.js                # I18n configuration file
-├── .gitignore                 # Git ignore file
-├── next.config.js             # Next.js configuration
-└── package.json               # Project dependencies and scripts
+├── prisma/
+│   ├── migrations/
+│   └── schema.prisma
+├── public/
+│   └── images/
+├── src/
+│   ├── app/
+│   │   ├── [lang]/
+│   │   │   ├── (dashboard-layout)/
+│   │   │   ├── (blank-layout)/
+│   │   │   └── globals.css
+│   │   └── pages/
+│   ├── components/
+│   │   ├── dynamic-icon.tsx
+│   │   ├── auth/
+│   │   ├── layout/
+│   │   ├── pages/
+│   │   └── ui/
+│   ├── configs/
+│   ├── contexts/
+│   ├── data/
+│   ├── hooks/
+│   ├── lib/
+│   ├── providers/
+│   ├── schemas/
+│   ├── middleware.ts
+│   └── types.ts
+├── README.md
+├── .env
+├── .env.example
+├── .eslintrc.json
+├── .gitignore
+├── components.json
+├── emoji-mart.d.ts
+├── next-env.d.ts
+├── next.config.mjs
+├── package.json
+├── postcss.config.mjs
+├── svgr.d.ts
+├── tailwind.config.ts
+└── tsconfig.json
 ```
 
 ### Why Choose the Full Kit:
