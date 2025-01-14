@@ -1,7 +1,7 @@
 import * as React from "react";
-import { EllipsisVertical, TrendingUp, TrendingDown } from "lucide-react";
+import { EllipsisVertical } from "lucide-react";
 
-import { cn, formatPercent, isNonNegative } from "@/lib/utils";
+import { formatOverviewCardValue } from "./format-overview-card-value";
 
 import type { FormatStyleType, IconType } from "@/types";
 
@@ -16,8 +16,7 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { formatOverviewCardValue } from "./format-overview-card-value";
+import { PercentageChangeBadge } from "../percentage-change-badge";
 
 interface DashboardCardProps extends React.HTMLAttributes<HTMLElement> {
   title: string;
@@ -85,7 +84,6 @@ const DashboardOverviewCard = React.forwardRef<
     { data, title, period, icon: Icon, formatStyle = "regular", ...props },
     ref
   ) => {
-    const isNonNegativeChange = isNonNegative(data.percentageChange);
     const value = formatOverviewCardValue(data.value, formatStyle);
 
     return (
@@ -107,30 +105,7 @@ const DashboardOverviewCard = React.forwardRef<
           </CardHeader>
           <CardContent className="space-y-1">
             <p className="text-2xl font-bold break-all">{value}</p>
-            <div
-              className={cn(
-                "flex items-center gap-1",
-                isNonNegativeChange && "text-success"
-              )}
-            >
-              <Badge
-                variant="destructive"
-                className={cn(
-                  "justify-center",
-                  isNonNegativeChange && "bg-success hover:bg-success/90"
-                )}
-              >
-                {isNonNegativeChange && <span>+</span>}
-                <span>{formatPercent(data.percentageChange)}</span>
-                <span className="ms-1" aria-hidden>
-                  {isNonNegativeChange ? (
-                    <TrendingUp className="size-4" />
-                  ) : (
-                    <TrendingDown className="size-4" />
-                  )}
-                </span>
-              </Badge>
-            </div>
+            <PercentageChangeBadge value={data.percentageChange} />
           </CardContent>
         </Card>
       </article>

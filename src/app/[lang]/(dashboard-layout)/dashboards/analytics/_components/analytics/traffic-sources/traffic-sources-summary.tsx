@@ -8,6 +8,7 @@ import type { TrafficSourcesType } from "../../../types";
 
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge";
 
 export function TrafficSourcesSummary({ data }: { data: TrafficSourcesType }) {
   const isPositiveTotalChange = data.summary.totalPercentageChange >= 0;
@@ -36,41 +37,21 @@ export function TrafficSourcesSummary({ data }: { data: TrafficSourcesType }) {
         </p>
       </div>
       <ul className="flex flex-wrap justify-center items-center gap-6">
-        {data.sources.map((source) => {
-          const isPositiveChange = source.percentageChange >= 0;
-
-          return (
-            <li
-              key={source.name}
-              className="flex justify-between items-center gap-x-4"
-            >
-              <div className="flex items-center gap-x-2">
-                <div
-                  style={{ backgroundColor: source.fill }}
-                  className="shrink-0 size-2 rounded-sm"
-                />
-                <p className="w-max text-foreground">{source.name}</p>
-              </div>
-              <Badge
-                variant="destructive"
-                className={cn(
-                  "w-max justify-center",
-                  isPositiveChange && "bg-success hover:bg-success/90"
-                )}
-              >
-                {isPositiveChange && <span>+</span>}
-                <span>{formatPercent(source.percentageChange)}</span>
-                <span className="ms-1" aria-hidden>
-                  {isPositiveChange ? (
-                    <TrendingUp className="size-4" />
-                  ) : (
-                    <TrendingDown className="size-4" />
-                  )}
-                </span>
-              </Badge>
-            </li>
-          );
-        })}
+        {data.sources.map((source) => (
+          <li
+            key={source.name}
+            className="flex justify-between items-center gap-x-4"
+          >
+            <div className="flex items-center gap-x-2">
+              <div
+                style={{ backgroundColor: source.fill }}
+                className="shrink-0 size-2 rounded-sm"
+              />
+              <p className="w-max text-foreground">{source.name}</p>
+            </div>
+            <PercentageChangeBadge value={source.percentageChange} />
+          </li>
+        ))}
       </ul>
     </div>
   );
