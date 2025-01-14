@@ -22,15 +22,9 @@ export function EmailListContent() {
     : 1; // Get the current page from the search params, default to page 1
   const filterParam = params.segment as string;
 
-  const getFilteredEmails = React.useCallback(
-    (filter: string, currentPage: number) =>
-      handleGetFilteredEmails(filter, currentPage),
-    [pageQuery, filterParam]
-  );
-
   React.useEffect(() => {
-    getFilteredEmails(filterParam, pageQuery);
-  }, [pageQuery, filterParam]);
+    handleGetFilteredEmails(filterParam, pageQuery);
+  }, [pageQuery, filterParam, handleGetFilteredEmails]);
 
   return (
     <CardContent className="p-0">

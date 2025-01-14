@@ -39,22 +39,24 @@ export function EmailProvider({
   const [isEmailSidebarOpen, setIsEmailSidebarOpen] = React.useState(false);
 
   // Handlers for email actions
-  function handleGetFilteredEmails(filter: string, currentPage: number) {
-    dispatch({ type: "getFilteredEmails", filter, currentPage });
-  }
+  const handleGetFilteredEmails = React.useCallback(
+    (filter: string, currentPage: number) => {
+      dispatch({ type: "getFilteredEmails", filter, currentPage });
+    },
+    []
+  );
 
-  function handleGetFilteredEmailsBySearchTerm(
-    term: string,
-    filter: string,
-    currentPage: number
-  ) {
-    dispatch({
-      type: "getFilteredEmailsBySearchTerm",
-      term,
-      filter,
-      currentPage,
-    });
-  }
+  const handleGetFilteredEmailsBySearchTerm = React.useCallback(
+    (term: string, filter: string, currentPage: number) => {
+      dispatch({
+        type: "getFilteredEmailsBySearchTerm",
+        term,
+        filter,
+        currentPage,
+      });
+    },
+    []
+  );
 
   function handleToggleSelectEmail(email: EmailType) {
     dispatch({
