@@ -18,6 +18,8 @@ export function DocsBreadcrumb() {
   const paths = pathname.split("/").filter(Boolean);
   const pathsOfDocs = paths.slice(3);
 
+  if (!paths[2]) return;
+
   return (
     <Breadcrumb>
       <BreadcrumbList>

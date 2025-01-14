@@ -5,8 +5,9 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { LocaleType } from "@/types";
 
-import Logo from "/public/images/icons/shadboard.svg";
 import { ToggleMobileSidebar } from "./toggle-moble-sidebar";
+
+import Logo from "/public/images/icons/shadboard.svg";
 
 export function Header({ locale }: { locale: LocaleType }) {
   return (
@@ -18,11 +19,7 @@ export function Header({ locale }: { locale: LocaleType }) {
         <Logo className="size-6" aira-hidden />
         Shadboard
       </Link>
-      <div className="flex">
-        {/* <CommandMenu /> */}
-        <ToggleMobileSidebar />
-      </div>
-      {/* <ModeDropdown /> */}
+      <ToggleMobileSidebar />
     </header>
   );
 }

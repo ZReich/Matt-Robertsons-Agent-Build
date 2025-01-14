@@ -39,9 +39,6 @@ export function DocsSidebar() {
   const locale = params.lang as LocaleType;
   const direction = i18n.localeDirection[locale];
   const isRTL = direction === "rtl";
-  const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile;
-
-  if (isHoizontalAndDesktop) return;
 
   return (
     <SidebarWrapper side={isRTL ? "right" : "left"}>
