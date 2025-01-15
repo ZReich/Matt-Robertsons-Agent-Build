@@ -51,8 +51,10 @@ export type TaskWithoutIdAndOrderAndColumnIdType = Omit<
 
 export interface KanbanStateType {
   columns: ColumnType[];
+  initialTeamMembers: UserType[];
   selectedColumn?: ColumnType;
   selectedTask?: TaskType;
+  selectedTeamMembers: UserType[];
 }
 
 export interface LabelType {
@@ -78,7 +80,8 @@ export type KanbanActionType =
       destination: { columnId: string; index: number };
     }
   | { type: "selectColumn"; column?: ColumnType }
-  | { type: "selectTask"; task?: TaskType };
+  | { type: "selectTask"; task?: TaskType }
+  | { type: "getTeamMembersBySearchTerm"; term: string };
 
 export interface KanbanContextType {
   kanbanState: KanbanStateType;
@@ -108,4 +111,5 @@ export interface KanbanContextType {
   ) => void;
   handleSelectColumn: (column: ColumnType | undefined) => void;
   handleSelectTask: (task: TaskType | undefined) => void;
+  handleGetTeamMembersBySearchTerm: (term: string) => void;
 }

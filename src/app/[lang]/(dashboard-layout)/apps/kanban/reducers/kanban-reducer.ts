@@ -181,6 +181,23 @@ export const KanbanReducer = (
       return { ...state, selectedTask: action.task }; // Update the selected task
     }
 
+    case "getTeamMembersBySearchTerm": {
+      // Return all team members if the search term is empty
+      if (action.term === "") {
+        return { ...state, selectedTeamMembers: state.initialTeamMembers };
+      }
+
+      // Create a case-insensitive regular expression based on the term
+      const regex = new RegExp(action.term, "i");
+
+      // Filter the team members whose names match the term
+      const matchedResults = state.initialTeamMembers.filter((member) =>
+        regex.test(member.name)
+      );
+
+      return { ...state, selectedTeamMembers: matchedResults }; // Update the selected team members
+    }
+
     default:
       return state; // Return the current state for unknown actions
   }
