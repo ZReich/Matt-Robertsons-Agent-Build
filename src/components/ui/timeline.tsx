@@ -1,22 +1,25 @@
 import * as React from "react";
-
+import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
-import { Check, Circle, X } from "lucide-react";
+import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
 import { cn } from "@/lib/utils";
 
 import type { VariantProps } from "class-variance-authority";
+import { DynamicIconNameType } from "@/types";
+import { DynamicIcon } from "../dynamic-icon";
+import { Separator } from "./separator";
 
 const timelineVariants = cva("grid", {
   variants: {
-    positions: {
+    align: {
       left: "[&>li]:grid-cols-[0_min-content_1fr]",
       right: "[&>li]:grid-cols-[1fr_min-content]",
       center: "[&>li]:grid-cols-[1fr_min-content_1fr]",
     },
   },
   defaultVariants: {
-    positions: "left",
+    align: "left",
   },
 });
 
@@ -25,10 +28,10 @@ interface TimelineProps
     VariantProps<typeof timelineVariants> {}
 
 const Timeline = React.forwardRef<HTMLUListElement, TimelineProps>(
-  ({ children, className, positions, ...props }, ref) => {
+  ({ children, className, align, ...props }, ref) => {
     return (
       <ul
-        className={cn(timelineVariants({ positions }), className)}
+        className={cn(timelineVariants({ align }), className)}
         ref={ref}
         {...props}
       >
@@ -66,58 +69,89 @@ const TimelineItem = React.forwardRef<HTMLLIElement, TimelineItemProps>(
 );
 TimelineItem.displayName = "TimelineItem";
 
-const timelineDotVariants = cva(
-  "col-start-2 col-end-3 row-start-1 row-end-1 flex size-4 items-center justify-center rounded-full border border-current",
-  {
-    variants: {
-      status: {
-        default: "[&>*]:hidden",
-        current:
-          "[&>*:not(.lucide-circle)]:hidden [&>.lucide-circle]:fill-current [&>.lucide-circle]:text-current",
-        done: "bg-foreground [&>*:not(.lucide-check)]:hidden [&>.lucide-check]:text-background",
-        error:
-          "border-destructive bg-destructive [&>*:not(.lucide-x)]:hidden [&>.lucide-x]:text-background",
-        custom: "[&>*:not(:nth-child(4))]:hidden [&>*:nth-child(4)]:block",
-      },
-    },
-    defaultVariants: {
-      status: "default",
-    },
-  }
-);
+type TimelineDotStatus = "current" | "done" | "error";
 
-interface TimelineDotProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof timelineDotVariants> {
-  customIcon?: React.ReactNode;
+interface TimelineDotPropsBase extends React.HTMLAttributes<HTMLDivElement> {
+  status?: TimelineDotStatus;
+  iconClassName?: string;
 }
 
+interface TimelineDotPropsWithCustom
+  extends React.HTMLAttributes<HTMLDivElement> {
+  customIconName: DynamicIconNameType;
+  customStatusName: string;
+  iconClassName?: string;
+}
+
+type TimelineDotProps = TimelineDotPropsBase | TimelineDotPropsWithCustom;
+
+type StatusIconNamesType = Record<
+  TimelineDotStatus,
+  { iconName: DynamicIconNameType; className: string }
+>;
+const statusIconNames: StatusIconNamesType = {
+  current: {
+    iconName: "Circle",
+    className: "fill-foreground text-foreground",
+  },
+  done: {
+    iconName: "Check",
+    className: "bg-primary text-primary-foreground",
+  },
+  error: {
+    iconName: "X",
+    className: "bg-destructive text-destructive-foreground",
+  },
+};
+
 const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
-  ({ className, status, customIcon, ...props }, ref) => (
-    <div
-      role="status"
-      className={cn("timeline-dot", timelineDotVariants({ status }), className)}
-      ref={ref}
-      {...props}
-    >
-      <Circle className="size-3" />
-      <Check className="size-3" />
-      <X className="size-3" />
-      {customIcon}
-    </div>
-  )
+  ({ className, iconClassName, ...props }, ref) => {
+    let statusIconName;
+    let statusLabel;
+    let statusClassName;
+    if ("status" in props) {
+      statusIconName = statusIconNames[props.status || "current"].iconName;
+      statusClassName = statusIconNames[props.status || "current"].className;
+      statusLabel = props.status;
+    } else if ("customIconName" in props) {
+      statusIconName = props.customIconName;
+      statusLabel = props.customStatusName;
+    }
+
+    return (
+      <div
+        ref={ref}
+        role="status"
+        className={cn(
+          "col-start-2 col-end-3 row-start-1 row-end-1 flex size-4 items-center justify-center rounded-full",
+          className
+        )}
+        aria-label={statusLabel}
+        {...props}
+      >
+        <DynamicIcon
+          name={statusIconName || "Circle"}
+          className={cn(
+            "size-4 p-px text-muted-foreground rounded-full",
+            statusClassName,
+            iconClassName
+          )}
+        />
+      </div>
+    );
+  }
 );
 TimelineDot.displayName = "TimelineDot";
 
 const timelineContentVariants = cva("row-start-2 row-end-2 pb-8", {
   variants: {
     side: {
-      right: "col-start-3 col-end-4 me-auto text-start",
-      left: "col-start-1 col-end-2 ms-auto text-end",
+      start: "col-start-3 col-end-4 me-auto text-start",
+      end: "col-start-1 col-end-2 ms-auto text-end",
     },
   },
   defaultVariants: {
-    side: "right",
+    side: "start",
   },
 });
 
@@ -141,8 +175,8 @@ const timelineHeadingVariants = cva(
   {
     variants: {
       side: {
-        right: "col-start-3 col-end-4 me-auto text-start",
-        left: "col-start-1 col-end-2 ms-auto text-end",
+        start: "col-start-3 col-end-4 me-auto text-start",
+        end: "col-start-1 col-end-2 ms-auto text-end",
       },
       variant: {
         primary: "text-base font-medium text-foreground",
@@ -150,7 +184,7 @@ const timelineHeadingVariants = cva(
       },
     },
     defaultVariants: {
-      side: "right",
+      side: "start",
       variant: "primary",
     },
   }
@@ -158,41 +192,46 @@ const timelineHeadingVariants = cva(
 
 interface TimelineHeadingProps
   extends React.HTMLAttributes<HTMLHeadingElement>,
-    VariantProps<typeof timelineHeadingVariants> {}
+    VariantProps<typeof timelineHeadingVariants> {
+  asChild?: boolean;
+}
 
 const TimelineHeading = React.forwardRef<
   HTMLHeadingElement,
   TimelineHeadingProps
->(({ className, side, variant, ...props }, ref) => (
-  <h3
-    className={cn(timelineHeadingVariants({ side, variant }), className)}
-    ref={ref}
-    {...props}
-  />
-));
+>(({ className, side, variant, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "h3";
+  return (
+    <Comp
+      ref={ref}
+      className={cn(timelineHeadingVariants({ side, variant }), className)}
+      {...props}
+    />
+  );
+});
 TimelineHeading.displayName = "TimelineHeading";
 
-interface TimelineLineProps extends React.HTMLAttributes<HTMLHRElement> {
+interface TimelineLineProps
+  extends React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
   done?: boolean;
 }
-
-const TimelineLine = React.forwardRef<HTMLHRElement, TimelineLineProps>(
-  ({ className, done = false, ...props }, ref) => {
-    return (
-      <hr
-        role="separator"
-        aria-orientation="vertical"
-        className={cn(
-          "col-start-2 col-end-3 row-start-2 row-end-2 mx-auto flex h-full min-h-16 w-0.5 justify-center rounded-full",
-          done ? "bg-foreground" : "bg-muted",
-          className
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
+const TimelineLine = React.forwardRef<
+  React.ElementRef<typeof SeparatorPrimitive.Root>,
+  TimelineLineProps
+>(({ className, done = false, ...props }, ref) => {
+  return (
+    <Separator
+      ref={ref}
+      orientation="vertical"
+      className={cn(
+        "col-start-2 col-end-3 row-start-2 row-end-2 bg-muted-foreground mx-auto w-[0.094rem]",
+        done && "bg-foreground",
+        className
+      )}
+      {...props}
+    />
+  );
+});
 TimelineLine.displayName = "TimelineLine";
 
 export {

@@ -7,7 +7,7 @@ export const userData = {
   username: "john.doe",
   role: "Next.js Developer",
   avatar: "/images/avatars/04.png",
-  background: "/images/background.jpeg",
+  background: "/images/placeholder.svg",
   status: "ONLINE",
   phoneNumber: "+1 (555) 123-4567",
   email: "john.doe@example.com",

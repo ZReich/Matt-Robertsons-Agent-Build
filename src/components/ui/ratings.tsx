@@ -1,135 +1,124 @@
 "use client";
 
 import * as React from "react";
+import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
+import { cva } from "class-variance-authority";
 import { Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const ratingVariants = {
-  default: {
-    star: "text-foreground",
-    emptyStar: "text-muted-foreground",
-  },
-  destructive: {
-    star: "text-destructive",
-    emptyStar: "text-destructive",
-  },
-  yellow: {
-    star: "text-yellow-400 dark:text-yellow-500",
-    emptyStar: "text-yellow-400 dark:text-yellow-500",
-  },
-};
+import type { VariantProps } from "class-variance-authority";
 
-interface RatingsProps extends React.HTMLAttributes<HTMLDivElement> {
-  totalStars?: number;
-  size?: number;
-  fill?: boolean;
-  Icon?: React.ReactElement;
-  variant?: keyof typeof ratingVariants;
-  asInput?: boolean;
-  value: number;
-  onValueChange?: (value: number) => void;
+const starVariants = cva(
+  "transition-all duration-100 ease-in-out hover:scale-110",
+  {
+    variants: {
+      size: {
+        sm: "w-4 h-4",
+        default: "w-6 h-6",
+        lg: "w-8 h-8",
+      },
+      variant: {
+        default: "text-yellow-400",
+        primary: "text-primary",
+        secondary: "text-secondary",
+      },
+      filled: {
+        true: "",
+        false: "text-gray-200",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      variant: "default",
+      filled: false,
+    },
+  }
+);
+
+interface RatingsProps
+  extends React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>,
+    VariantProps<typeof starVariants> {
+  length?: number;
 }
 
-const Ratings = ({ ...props }: RatingsProps) => {
-  const {
-    totalStars = 5,
-    size = 20,
-    fill = true,
-    Icon = <Star />,
-    variant = "default",
-    asInput = false,
-    onValueChange,
-    value,
-  } = props;
+export const Ratings = React.forwardRef<
+  React.ElementRef<typeof RadioGroupPrimitive.Root>,
+  RatingsProps
+>(
+  (
+    {
+      className,
+      length = 5,
+      size,
+      variant = "default",
+      orientation = "horizontal",
+      ...props
+    },
+    ref
+  ) => {
+    const currentValue = props.value || "0";
+    const [hoverValue, onHoverValue] = React.useState(currentValue);
 
-  const ratings = value;
-
-  const fullStars = Math.floor(ratings);
-  const partialStar =
-    ratings % 1 > 0 ? (
-      <PartialStar
-        fillPercentage={ratings % 1}
-        size={size}
-        className={cn(ratingVariants[variant].star)}
-        Icon={Icon}
-        asInput={asInput}
-        onValueChange={() => onValueChange && onValueChange(fullStars + 1)}
-      />
-    ) : null;
-
-  return (
-    <div className={cn("flex items-center gap-1")} {...props}>
-      {[...Array(fullStars)].map((_, i) =>
-        React.cloneElement(Icon, {
-          key: i,
-          size,
-          className: cn(
-            fill ? "fill-current" : "fill-transparent",
-            ratingVariants[variant].star,
-            asInput ? "cursor-pointer" : ""
-          ),
-          role: props.asInput && "input",
-          onClick: () => onValueChange && onValueChange(i + 1),
-        })
-      )}
-      {partialStar}
-      {[...Array(totalStars - fullStars - (partialStar ? 1 : 0))].map((_, i) =>
-        React.cloneElement(Icon, {
-          key: i + fullStars + 1,
-          size,
-          className: cn(
-            ratingVariants[variant].emptyStar,
-            asInput ? "cursor-pointer" : ""
-          ),
-          role: props.asInput && "input",
-          onClick: () =>
-            onValueChange &&
-            onValueChange(fullStars + i + 1 + (partialStar ? 1 : 0)),
-        })
-      )}
-    </div>
-  );
-};
-
-interface PartialStarProps {
-  fillPercentage: number;
-  size: number;
-  className?: string;
-  Icon: React.ReactElement;
-  asInput?: boolean;
-  onValueChange?: () => void;
-}
-
-const PartialStar = ({ ...props }: PartialStarProps) => {
-  const { fillPercentage, size, className, Icon, asInput, onValueChange } =
-    props;
-
-  return (
-    <div
-      role={asInput ? "input" : undefined}
-      onClick={() => onValueChange && onValueChange()}
-      className={cn("relative inline-block", asInput && "cursor-pointer")}
-    >
-      {React.cloneElement(Icon, {
-        size,
-        className: cn("fill-transparent", className),
-      })}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          overflow: "hidden",
-          width: `${fillPercentage * 100}%`,
-        }}
+    return (
+      <RadioGroupPrimitive.Root
+        ref={ref}
+        className={cn(
+          "flex",
+          orientation === "horizontal" ? "space-x-1.5" : "flex-col space-y-1.5",
+          className
+        )}
+        orientation={orientation}
+        onMouseLeave={() => onHoverValue("0")}
+        aria-label="Rating"
+        {...props}
       >
-        {React.cloneElement(Icon, {
-          size,
-          className: cn("fill-current", className),
-        })}
-      </div>
-    </div>
-  );
-};
+        {Array.from({ length }).map((_, index) => {
+          const itemValue = (index + 1).toString();
+          const filled =
+            Number(itemValue) <= (Number(hoverValue) || Number(currentValue));
 
-export { Ratings };
+          return (
+            <RatingsStar
+              key={index}
+              variant={variant}
+              size={size}
+              filled={filled}
+              value={itemValue}
+              onHoverValue={onHoverValue}
+            />
+          );
+        })}
+      </RadioGroupPrimitive.Root>
+    );
+  }
+);
+Ratings.displayName = "Ratings";
+
+interface RatingsStarProps
+  extends RadioGroupPrimitive.RadioGroupItemProps,
+    VariantProps<typeof starVariants> {
+  onHoverValue: (rating: string) => void;
+}
+
+const RatingsStar = React.forwardRef<
+  React.ElementRef<typeof RadioGroupPrimitive.Item>,
+  RatingsStarProps
+>(({ value, size, variant, filled, onHoverValue, ...props }, ref) => {
+  return (
+    <RadioGroupPrimitive.Item
+      ref={ref}
+      value={value}
+      className={cn(
+        starVariants({ size, variant, filled }),
+        "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      )}
+      onMouseEnter={() => onHoverValue(value)}
+      aria-label={`Rate ${value} star${value === "1" ? "" : "s"}`}
+      {...props}
+    >
+      <Star className="h-full w-full fill-current" />
+    </RadioGroupPrimitive.Item>
+  );
+});
+RatingsStar.displayName = "RatingsStar";

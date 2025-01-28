@@ -29,7 +29,7 @@ export function DocsBreadcrumb() {
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
-        <BreadcrumbItem>
+        <BreadcrumbItem className="capitalize">
           {paths[2].replace("-", " ").toLowerCase()}
         </BreadcrumbItem>
         <BreadcrumbSeparator />

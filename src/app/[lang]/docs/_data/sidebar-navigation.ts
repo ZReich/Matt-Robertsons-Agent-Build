@@ -52,4 +52,14 @@ export const sidebarNavigationData: NavigationGroupType[] = [
       },
     ],
   },
+  {
+    title: "Others",
+    items: [
+      {
+        title: "Credits",
+        href: "/docs/others/credits",
+        iconName: "User",
+      },
+    ],
+  },
 ];

@@ -16,14 +16,17 @@ const FileThumbnail = React.forwardRef<HTMLDivElement, FileThumbnailProps>(
       .toUpperCase();
 
     return (
-      <div ref={ref} className={cn("relative size-8", className)}>
+      <div
+        ref={ref}
+        className={cn("relative size-8 text-[6px] font-black", className)}
+      >
         <FileIcon className="size-full stroke-1" aria-labelledby="file-name" />
         <div
-          className="absolute inset-0 flex justify-center items-center text-[6px] font-black"
+          className="absolute inset-0 flex justify-center items-center"
           id="file-name"
           aria-hidden
         >
-          <span>{fileExtension}</span>
+          <span className="select-none">{fileExtension}</span>
           <span className="sr-only">File</span>
         </div>
       </div>

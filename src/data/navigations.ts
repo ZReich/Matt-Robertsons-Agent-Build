@@ -140,4 +140,19 @@ export const navigationsData: NavigationGroupType[] = [
       },
     ],
   },
+  {
+    title: "Components",
+    items: [
+      {
+        title: "Forms",
+        href: "/forms",
+        iconName: "TextCursorInput",
+      },
+      {
+        title: "Tables",
+        href: "/tables",
+        iconName: "Table",
+      },
+    ],
+  },
 ];

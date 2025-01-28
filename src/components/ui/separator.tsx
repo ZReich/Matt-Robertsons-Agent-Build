@@ -40,7 +40,7 @@ const SeparatorWithText = React.forwardRef<
       ref={ref}
       className={cn(
         "flex justify-between items-center",
-        orientation === "horizontal" ? "h-full" : "flex-col h-full",
+        orientation === "horizontal" ? "w-full" : "flex-col h-full",
         className
       )}
     >

@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, Check } from "lucide-react";
 import * as RPNInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
+import { ChevronsUpDown, Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+
 import type { InputProps } from "@/components/ui/input";
+
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -37,7 +39,7 @@ const InputPhone: React.ForwardRefExoticComponent<InputPhoneProps> =
     ({ className, onChange, ...props }, ref) => (
       <RPNInput.default
         ref={ref}
-        className={cn("flex", className)}
+        className={cn("w-full flex", className)}
         flagComponent={FlagComponent}
         countrySelectComponent={CountrySelect}
         inputComponent={InputComponent}
@@ -110,7 +112,7 @@ function CountrySelect({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="w-[300px] p-0" align="start">
         <Command>
           <CommandInput placeholder="Search country..." />
           <CommandList>
