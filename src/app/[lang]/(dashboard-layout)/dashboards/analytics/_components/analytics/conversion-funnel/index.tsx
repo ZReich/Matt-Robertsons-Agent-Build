@@ -5,7 +5,10 @@ import { ConversionFunnelChart } from "./conversion-funnel-chart";
 
 export async function ConversionFunnel() {
   return (
-    <DashboardCard title="Conversion Funnel" period={conversionFunnelData.period}>
+    <DashboardCard
+      title="Conversion Funnel"
+      period={conversionFunnelData.period}
+    >
       <ConversionFunnelChart data={conversionFunnelData.funnelSteps} />
     </DashboardCard>
   );

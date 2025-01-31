@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 import { z } from "zod";
 
-import type { LocaleType } from "@/types";
+import type { LocaleType, FormatStyleType } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -138,6 +138,19 @@ export function formatDistance(value: string | number | Date) {
     .replace(/\b(over|almost|about)\b/g, "");
 }
 
+export function timeToDate(timeString: string, baseDate = new Date()) {
+  if (!/^\d{2}:\d{2}$/.test(timeString)) {
+    throw new Error("Invalid time format. Use 'HH:mm'.");
+  }
+
+  const [hours, minutes] = timeString.split(":").map(Number);
+  const date = new Date(baseDate); // Clone base date
+
+  date.setHours(hours, minutes, 0, 0); // Set hours and minutes, reset seconds & milliseconds
+
+  return date;
+}
+
 export function camelCaseToTitleCase(camelCaseStr: string) {
   const titleCaseStr = camelCaseStr
     .replace(/([A-Z])/g, " $1") // Insert space before uppercase letters
@@ -220,4 +233,20 @@ export function formatUnreadCount(unreadCount: number) {
 
 export function wait(ms: number = 250) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function formatOverviewCardValue(
+  value: number,
+  formatStyle: FormatStyleType
+): string | number {
+  switch (formatStyle) {
+    case "percent":
+      return formatPercent(value);
+    case "duration":
+      return formatDuration(value);
+    case "currency":
+      return formatCurrency(value);
+    default:
+      return value.toLocaleString();
+  }
 }
