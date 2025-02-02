@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 
 import { Overview } from "../../../dashboards/crm/_components/crm/overview";
 import { Overview as OverviewV2 } from "../../../dashboards/ecommerce/_components/ecommerce/overview";
-import StatsCards from "./stats-card";
+import { Overview as OverviewV3 } from "../../../dashboards/analytics/_components/analytics/overview";
+import { NewVsReturningVisitors } from "../../../dashboards/analytics/_components/analytics/new-vs-returning-visitors";
+import { GenderDistribution } from "../../../dashboards/analytics/_components/analytics/gender-distribution";
+import { CustomerInsights } from "../../../dashboards/ecommerce/_components/ecommerce/customer-insights";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -15,7 +18,10 @@ export default function StatisticsCardsPage() {
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
       <OverviewV2 />
-      {/* <StatsCards /> */}
+      <OverviewV3 />
+      <NewVsReturningVisitors />
+      <GenderDistribution />
+      <CustomerInsights />
     </section>
   );
 }

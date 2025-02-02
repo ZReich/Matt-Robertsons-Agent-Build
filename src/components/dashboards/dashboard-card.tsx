@@ -105,7 +105,7 @@ const DashboardOverviewCard = React.forwardRef<
             </DropdownMenu>
           </CardHeader>
           <CardContent className="space-y-1">
-            <p className="text-2xl font-bold break-all">{value}</p>
+            <p className="text-2xl font-semibold break-all">{value}</p>
             <PercentageChangeBadge value={data.percentageChange} />
           </CardContent>
         </Card>
@@ -150,7 +150,7 @@ const DashboardOverviewCardV2 = React.forwardRef<
       <article ref={ref} {...props}>
         <Card className="flex flex-col justify-between">
           <CardHeader className="flex-row justify-between items-start pb-3">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               <Badge
                 style={{
                   backgroundColor: iconColor,
@@ -176,8 +176,10 @@ const DashboardOverviewCardV2 = React.forwardRef<
             </DropdownMenu>
           </CardHeader>
           <CardContent className="space-y-1">
-            <CardTitle className="font-normal">{title}</CardTitle>
-            <p className="text-2xl font-bold break-all">{value}</p>
+            <CardTitle className="text-muted-foreground font-normal">
+              {title}
+            </CardTitle>
+            <p className="text-2xl font-semibold break-all">{value}</p>
           </CardContent>
         </Card>
       </article>
@@ -186,9 +188,59 @@ const DashboardOverviewCardV2 = React.forwardRef<
 );
 DashboardOverviewCardV2.displayName = "DashboardOverviewCardV2";
 
+interface DashboardOverviewCardV3Props
+  extends React.HTMLAttributes<HTMLElement> {
+  data: {
+    value: number;
+    percentageChange: number;
+  };
+  title: string;
+  chart: React.ReactNode;
+  formatStyle?: FormatStyleType;
+}
+
+const DashboardOverviewCardV3 = React.forwardRef<
+  HTMLElement,
+  DashboardOverviewCardV3Props
+>(({ data, title, chart, formatStyle = "regular", ...props }, ref) => {
+  const value = formatOverviewCardValue(data.value, formatStyle);
+
+  return (
+    <article ref={ref} {...props}>
+      <Card className="flex flex-col justify-between">
+        <CardHeader className="flex-row justify-between items-start pb-3">
+          <div>
+            <CardTitle className="text-muted-foreground font-normal">
+              {title}
+            </CardTitle>
+            <div className="inline-flex items-baseline space-x-1">
+              <p className="text-2xl font-semibold break-all">{value}</p>
+              <PercentageChangeBadge
+                variant="ghost"
+                value={data.percentageChange}
+                className="p-0"
+              />
+            </div>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger aria-label="More actions">
+              <EllipsisVertical className="h-4 w-4" />
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center p-0">
+          {chart}
+        </CardContent>
+      </Card>
+    </article>
+  );
+});
+DashboardOverviewCardV3.displayName = "DashboardOverviewCardV3";
+
 export {
   DashboardCard,
   DashboardCardWithoutPeriod,
   DashboardOverviewCard,
   DashboardOverviewCardV2,
+  DashboardOverviewCardV3,
 };

@@ -8,9 +8,9 @@ export function Ecommerce() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
+      <CustomerInsights />
       <SalesTrend />
       <TopProducts />
-      <CustomerInsights />
       <Invoices />
     </section>
   );

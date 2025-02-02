@@ -42,6 +42,7 @@ export function PercentageChangeBadge({
       className={cn(percentageChangeBadgeVariants({ variant }), className)}
       data-non-negative-change={isNonNegativeChange}
       {...props}
+      variant="destructive"
     >
       {isNonNegativeChange && <span>+</span>}
       <span>{formatPercent(value)}</span>

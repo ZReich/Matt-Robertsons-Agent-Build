@@ -8,20 +8,16 @@ export interface GeographicLocationType {
 }
 
 export interface MetricType {
-  period: string;
-  value: number;
+  averageValue: number;
   percentageChange: number;
+  perMonth: Array<{ month: string; value: number; fill?: string }>;
 }
 
 export interface OverviewType {
-  totalVisitors: MetricType;
   uniqueVisitors: MetricType;
-  totalPageViews: MetricType;
   averageSessionDuration: MetricType;
   bounceRate: MetricType;
-  totalConversions: MetricType;
   conversionRate: MetricType;
-  totalRevenue: MetricType;
 }
 
 export interface TrafficSourcesType {
