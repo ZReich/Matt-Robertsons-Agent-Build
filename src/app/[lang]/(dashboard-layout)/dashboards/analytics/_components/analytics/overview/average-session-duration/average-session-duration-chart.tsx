@@ -4,13 +4,13 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { formatDuration, remToPx } from "@/lib/utils";
 
-import { useSettings } from "@/hooks/use-settings";
-
 import type { OverviewType } from "../../../../types";
 import type {
   ChartConfig,
   ChartTooltipContentProps,
 } from "@/components/ui/chart";
+
+import { useSettings } from "@/hooks/use-settings";
 
 import {
   ChartContainer,
@@ -18,7 +18,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-function FormattedChartTooltipContent(props: ChartTooltipContentProps) {
+function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
   if (!props.payload || props.payload.length === 0) return null;
 
   return (
@@ -54,7 +54,7 @@ export function AverageSessionDurationChart({
         <CartesianGrid vertical={false} />
         <ChartTooltip
           cursor={false}
-          content={<FormattedChartTooltipContent />}
+          content={<ModifiedChartTooltipContent />}
         />
         <XAxis dataKey="month" hide />
         <Bar dataKey="value" radius={remToPx(settings.radius) - 2} />

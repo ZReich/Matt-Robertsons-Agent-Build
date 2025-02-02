@@ -16,7 +16,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-function FormattedChartTooltipContent(props: ChartTooltipContentProps) {
+function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
   if (!props.payload || props.payload.length === 0) return null;
 
   return (
@@ -58,7 +58,7 @@ export function ConversionRateChart({
         <XAxis dataKey="month" hide />
         <ChartTooltip
           cursor={false}
-          content={<FormattedChartTooltipContent />}
+          content={<ModifiedChartTooltipContent />}
         />
         <Line
           dataKey="value"

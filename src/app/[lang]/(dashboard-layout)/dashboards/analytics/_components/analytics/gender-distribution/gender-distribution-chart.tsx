@@ -6,6 +6,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { formatPercent, remToPx } from "@/lib/utils";
 
 import type { GenderDistributionType } from "../../../types";
+import type { ChartTooltipContentProps } from "@/components/ui/chart";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -15,33 +16,17 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-function FormattedChartTooltipContent({
-  payload,
-}: {
-  payload: GenderDistributionType;
-}) {
-  const indicatorColor = payload.fill;
+function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+  if (!props.payload || props.payload.length === 0) return null;
 
   return (
-    <div className="flex w-full flex-wrap items-center gap-2">
-      <div
-        className="h-2.5 w-2.5 shrink-0 rounded-sm border-[--color-border] bg-[--color-bg]"
-        style={
-          {
-            "--color-bg": indicatorColor,
-            "--color-border": indicatorColor,
-          } as React.CSSProperties
-        }
-      />
-      <div className="flex flex-1 justify-between items-center leading-none">
-        <div className="grid gap-1.5">
-          <span className="text-muted-foreground">{payload.name}</span>
-        </div>
-        <span className="font-medium tabular-nums text-foreground">
-          {payload.value.toLocaleString()}
-        </span>
-      </div>
-    </div>
+    <ChartTooltipContent
+      {...props}
+      payload={props.payload.map((item) => ({
+        ...item,
+        name: item.payload.name,
+      }))}
+    />
   );
 }
 
@@ -85,14 +70,7 @@ export function GenderDistributionChart({
           />
           <ChartTooltip
             cursor={false}
-            content={
-              <ChartTooltipContent
-                hideLabel
-                formatter={(_value, _name, { payload }) => (
-                  <FormattedChartTooltipContent payload={payload} />
-                )}
-              />
-            }
+            content={<ModifiedChartTooltipContent hideLabel />}
           />
           <Bar dataKey="value" radius={remToPx(settings.radius) - 2} />
         </BarChart>
