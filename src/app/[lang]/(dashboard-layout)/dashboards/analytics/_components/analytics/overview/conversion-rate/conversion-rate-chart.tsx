@@ -1,6 +1,6 @@
 "use client";
 
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { CartesianGrid, Area, AreaChart, XAxis } from "recharts";
 
 import { formatPercent } from "@/lib/utils";
 
@@ -46,7 +46,7 @@ export function ConversionRateChart({
       config={chartConfig}
       className="aspect-video w-full rounded-md overflow-hidden"
     >
-      <LineChart
+      <AreaChart
         accessibilityLayer
         data={data}
         margin={{
@@ -60,14 +60,15 @@ export function ConversionRateChart({
           cursor={false}
           content={<ModifiedChartTooltipContent />}
         />
-        <Line
+        <Area
           dataKey="value"
           type="step"
+          fill="hsl(var(--chart-4))"
           stroke="hsl(var(--chart-4))"
           strokeWidth={2}
           dot={false}
         />
-      </LineChart>
+      </AreaChart>
     </ChartContainer>
   );
 }
