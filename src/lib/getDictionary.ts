@@ -10,7 +10,8 @@ const dictionaries = {
     import("@/data/dictionaries/ar.json").then((module) => module.default),
 };
 
-export const getDictionary = async (locale: LocaleType) =>
-  dictionaries[locale]();
+export async function getDictionary(locale: LocaleType) {
+  return dictionaries[locale]();
+}
 
 export type DictionaryType = Awaited<ReturnType<typeof getDictionary>>;

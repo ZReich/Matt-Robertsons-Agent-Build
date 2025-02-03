@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 import { navigationsData } from "@/data/navigations";
 
 import { i18n } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
-import { titleCaseToCamelCase } from "@/lib/utils";
+import { getDictionaryValue, titleCaseToCamelCase } from "@/lib/utils";
 
-import type { LocaleType } from "@/types";
+import type {
+  LocaleType,
+  NavigationRootItem,
+  NavigationNestedItem,
+} from "@/types";
 import type { DictionaryType } from "@/lib/getDictionary";
 
 import { useSettings } from "@/hooks/use-settings";
@@ -25,11 +30,17 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarHeader,
+  SidebarMenuSub,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import Logo from "/public/images/icons/shadboard.svg";
 
@@ -44,7 +55,71 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   const isRTL = direction === "rtl";
   const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile;
 
-  if (isHoizontalAndDesktop) return;
+  // If the layout is horizontal and not on mobile, don't render the sidebar. (We use a menubar for horizontal layout navigation.)
+  if (isHoizontalAndDesktop) return null;
+
+  const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
+    const localizedPathname = ensureLocalizedPathname(item.href || "/", locale);
+    const title = getDictionaryValue(
+      titleCaseToCamelCase(item.title),
+      dictionary.navigation
+    );
+    const label =
+      item.label &&
+      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label);
+
+    // If the item has nested items, render it with a collapsible dropdown.
+    if (item.items) {
+      return (
+        <Collapsible className="group/collapsible">
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton className="w-full justify-between [&[data-state=open]>svg]:rotate-180">
+              <span className="flex items-center">
+                {"iconName" in item && (
+                  <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
+                )}
+                <span>{title}</span>
+              </span>
+              <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+            <SidebarMenuSub>
+              {item.items.map((subItem: NavigationNestedItem) => (
+                <SidebarMenuItem key={subItem.title}>
+                  {renderMenuItem(subItem)}
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </Collapsible>
+      );
+    }
+
+    // If the item has an icon (in our sidebar, icons are used only for root items), render it with the icon.
+    if ("iconName" in item) {
+      return (
+        <SidebarMenuButton isActive={pathname.includes(localizedPathname)}>
+          <DynamicIcon name={item.iconName} className="h-4 w-4" />
+          <span>{title}</span>
+          {"label" in item && <Badge variant="secondary">{label}</Badge>}
+        </SidebarMenuButton>
+      );
+    }
+
+    // Otherwise, render the root item with a link.
+    return (
+      <SidebarMenuButton
+        isActive={pathname.includes(localizedPathname)}
+        asChild
+      >
+        <Link href={localizedPathname}>
+          <span>{title}</span>
+          {"label" in item && <Badge variant="secondary">{label}</Badge>}
+        </Link>
+      </SidebarMenuButton>
+    );
+  };
 
   return (
     <SidebarWrapper side={isRTL ? "right" : "left"}>
@@ -60,52 +135,27 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
       </SidebarHeader>
       <ScrollArea>
         <SidebarContent className="gap-0">
-          {navigationsData.map((nav) => (
-            <SidebarGroup key={nav.title}>
-              <SidebarGroupLabel>{nav.title}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {nav.items.map((item) => {
-                    const localizedPathname = ensureLocalizedPathname(
-                      item.href,
-                      locale
-                    );
-                    const formattedTitle = titleCaseToCamelCase(item.title);
-                    const formattedLabel = titleCaseToCamelCase(
-                      item.label ?? ""
-                    );
+          {navigationsData.map((nav) => {
+            const title = getDictionaryValue(
+              titleCaseToCamelCase(nav.title),
+              dictionary.navigation
+            );
 
-                    return (
+            return (
+              <SidebarGroup key={nav.title}>
+                <SidebarGroupLabel>{title}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {nav.items.map((item) => (
                       <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          isActive={pathname.includes(localizedPathname)}
-                          asChild
-                        >
-                          <Link href={localizedPathname}>
-                            <DynamicIcon name={item.iconName} />
-                            <span>
-                              {
-                                // @ts-ignore
-                                dictionary.navigation[formattedTitle]
-                              }
-                            </span>
-                            {"label" in item && (
-                              <Badge variant="secondary">
-                                {
-                                  // @ts-ignore
-                                  dictionary.navigation.label[formattedLabel]
-                                }
-                              </Badge>
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
+                        {renderMenuItem(item)}
                       </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })}
         </SidebarContent>
       </ScrollArea>
     </SidebarWrapper>

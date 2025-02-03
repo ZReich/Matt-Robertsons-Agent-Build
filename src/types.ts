@@ -47,18 +47,59 @@ export interface NotificationType {
 
 export type FormatStyleType = "percent" | "duration" | "currency" | "regular";
 
-export interface NavigationGroupType {
-  title: string;
-  items: NavigationType[];
-}
-
 export interface NavigationType {
   title: string;
-  href: string;
+  items: NavigationRootItem[];
+}
+
+export type NavigationRootItem =
+  | NavigationRootItemWithHrefType
+  | NavigationRootItemWithItemsType;
+
+export interface NavigationRootItemBasicType {
+  title: string;
   label?: string;
   iconName: DynamicIconNameType;
-  items?: NavigationType[];
 }
+
+export interface NavigationRootItemWithHrefType
+  extends NavigationRootItemBasicType {
+  href: string;
+  items?: never;
+}
+
+export interface NavigationRootItemWithItemsType
+  extends NavigationRootItemBasicType {
+  items: (
+    | NavigationNestedItemWithHrefType
+    | NavigationNestedItemWithItemsType
+  )[];
+  href?: never;
+}
+
+export interface NavigationNestedItemBasicType {
+  title: string;
+  label?: string;
+}
+
+export interface NavigationNestedItemWithHrefType
+  extends NavigationNestedItemBasicType {
+  href: string;
+  items?: never;
+}
+
+export interface NavigationNestedItemWithItemsType
+  extends NavigationNestedItemBasicType {
+  items: (
+    | NavigationNestedItemWithHrefType
+    | NavigationNestedItemWithItemsType
+  )[];
+  href?: never;
+}
+
+export type NavigationNestedItem =
+  | NavigationNestedItemWithHrefType
+  | NavigationNestedItemWithItemsType;
 
 export interface OAuthLinkType {
   href: string;

@@ -250,3 +250,17 @@ export function formatOverviewCardValue(
       return value.toLocaleString();
   }
 }
+
+// Retrieve the dictionary value safely
+export const getDictionaryValue = (
+  key: string,
+  section: Record<string, unknown>
+) => {
+  const value = section[key];
+
+  if (typeof value !== "string") {
+    throw new Error(`Invalid dictionary value for key: ${key}`);
+  }
+
+  return value;
+};
