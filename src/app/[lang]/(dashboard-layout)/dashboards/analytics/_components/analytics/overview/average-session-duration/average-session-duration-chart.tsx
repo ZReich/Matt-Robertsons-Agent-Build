@@ -48,7 +48,7 @@ export function AverageSessionDurationChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className="aspect-video w-full rounded-md overflow-hidden"
+      className="h-32 w-full rounded-md overflow-hidden"
     >
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />

@@ -13,7 +13,7 @@ export function HorizontalLayoutHeader({
 }) {
   return (
     <header className="sticky top-0 z-50 w-full bg-background border-b border-border">
-      <TopBarHeader />
+      <TopBarHeader dictionary={dictionary} />
       <Separator className="hidden bg-border h-[0.5px] md:block" />
       <BottomBarHeader dictionary={dictionary} />
     </header>

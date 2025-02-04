@@ -25,7 +25,7 @@ export function UniqueVisitorsChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className="aspect-video w-full rounded-md overflow-hidden"
+      className="h-32 w-full rounded-md overflow-hidden"
     >
       <AreaChart
         accessibilityLayer

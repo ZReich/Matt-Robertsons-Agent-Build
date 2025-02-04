@@ -59,7 +59,6 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   if (isHoizontalAndDesktop) return null;
 
   const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
-    const localizedPathname = ensureLocalizedPathname(item.href || "/", locale);
     const title = getDictionaryValue(
       titleCaseToCamelCase(item.title),
       dictionary.navigation
@@ -79,6 +78,11 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
                   <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
                 )}
                 <span>{title}</span>
+                {"label" in item && (
+                  <Badge variant="secondary" className="me-2">
+                    {label}
+                  </Badge>
+                )}
               </span>
               <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
             </SidebarMenuButton>
@@ -96,29 +100,33 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
       );
     }
 
-    // If the item has an icon (in our sidebar, icons are used only for root items), render it with the icon.
-    if ("iconName" in item) {
+    // Otherwise, render the item with a link.
+    if ("href" in item) {
+      const localizedPathname = ensureLocalizedPathname(item.href, locale);
+      const isActive = pathname.includes(item.href);
+
+      // If the item has an icon (in our sidebar, icons are used only for root items), render it with the icon.
+      if ("iconName" in item) {
+        return (
+          <SidebarMenuButton isActive={isActive} asChild>
+            <Link href={localizedPathname}>
+              <DynamicIcon name={item.iconName} className="h-4 w-4" />
+              <span>{title}</span>
+              {"label" in item && <Badge variant="secondary">{label}</Badge>}
+            </Link>
+          </SidebarMenuButton>
+        );
+      }
+
       return (
-        <SidebarMenuButton isActive={pathname.includes(localizedPathname)}>
-          <DynamicIcon name={item.iconName} className="h-4 w-4" />
-          <span>{title}</span>
-          {"label" in item && <Badge variant="secondary">{label}</Badge>}
+        <SidebarMenuButton isActive={isActive} asChild>
+          <Link href={localizedPathname}>
+            <span>{title}</span>
+            {"label" in item && <Badge variant="secondary">{label}</Badge>}
+          </Link>
         </SidebarMenuButton>
       );
     }
-
-    // Otherwise, render the root item with a link.
-    return (
-      <SidebarMenuButton
-        isActive={pathname.includes(localizedPathname)}
-        asChild
-      >
-        <Link href={localizedPathname}>
-          <span>{title}</span>
-          {"label" in item && <Badge variant="secondary">{label}</Badge>}
-        </Link>
-      </SidebarMenuButton>
-    );
   };
 
   return (
