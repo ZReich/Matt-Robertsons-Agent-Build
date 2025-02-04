@@ -105,22 +105,12 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
       const localizedPathname = ensureLocalizedPathname(item.href, locale);
       const isActive = pathname.includes(item.href);
 
-      // If the item has an icon (in our sidebar, icons are used only for root items), render it with the icon.
-      if ("iconName" in item) {
-        return (
-          <SidebarMenuButton isActive={isActive} asChild>
-            <Link href={localizedPathname}>
-              <DynamicIcon name={item.iconName} className="h-4 w-4" />
-              <span>{title}</span>
-              {"label" in item && <Badge variant="secondary">{label}</Badge>}
-            </Link>
-          </SidebarMenuButton>
-        );
-      }
-
       return (
         <SidebarMenuButton isActive={isActive} asChild>
           <Link href={localizedPathname}>
+            {"iconName" in item && (
+              <DynamicIcon name={item.iconName} className="h-4 w-4" />
+            )}
             <span>{title}</span>
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
           </Link>

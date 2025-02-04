@@ -47,18 +47,21 @@ export function TopBarHeaderMenubar({
       item.label &&
       getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label);
 
-    // If the item has nested items, render it with a collapsible dropdown.
+    // If the item has nested items, render it with a MenubarSub.
     if (item.items) {
       return (
         <MenubarSub>
           <MenubarSubTrigger className="gap-2">
             {"iconName" in item && (
-              <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
+              <DynamicIcon
+                name={item.iconName}
+                className="me-2 h-4 w-4"
+              />
             )}
             <span>{title}</span>
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
           </MenubarSubTrigger>
-          <MenubarSubContent className="max-h-[90vh] flex flex-col flex-wrap">
+          <MenubarSubContent className="max-h-[90vh] flex flex-col flex-wrap gap-1">
             {item.items.map((subItem: NavigationNestedItem) => {
               return (
                 <MenubarItem key={subItem.title} className="p-0">
@@ -76,29 +79,17 @@ export function TopBarHeaderMenubar({
       const localizedPathname = ensureLocalizedPathname(item.href, locale);
       const isActive = pathname.includes(item.href);
 
-      // If the item has an icon (in our sidebar, icons are used only for root items), render it with the icon.
-      if ("iconName" in item) {
-        return (
-          <MenubarItem asChild>
-            <Link
-              href={localizedPathname}
-              className={cn("w-full gap-2", isActive && "bg-accent")}
-            >
-              <DynamicIcon name={item.iconName} className="h-4 w-4" />
-              <span>{title}</span>
-              {"label" in item && <Badge variant="secondary">{label}</Badge>}
-            </Link>
-          </MenubarItem>
-        );
-      }
-
       return (
         <MenubarItem asChild>
           <Link
             href={localizedPathname}
             className={cn("w-full gap-2", isActive && "bg-accent")}
           >
-            <DynamicIcon name="Circle" className="h-2 w-2" />
+            {"iconName" in item ? (
+              <DynamicIcon name={item.iconName} className="h-4 w-4" />
+            ) : (
+              <DynamicIcon name="Circle" className="h-2 w-2" />
+            )}
             <span>{title}</span>
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
           </Link>
@@ -117,7 +108,7 @@ export function TopBarHeaderMenubar({
         return (
           <MenubarMenu key={nav.title}>
             <MenubarTrigger>{title}</MenubarTrigger>
-            <MenubarContent>
+            <MenubarContent className="space-y-1">
               {nav.items.map((item) => renderMenuItem(item))}
             </MenubarContent>
           </MenubarMenu>

@@ -37,7 +37,7 @@ export function BottomBarHeader({
         Shadboard
       </Link>
       <div className="flex gap-2">
-        <CommandMenu className="lg:hidden" />
+        <CommandMenu dictionary={dictionary} buttonClassName="lg:hidden" />
         <NotificationDropdown dictionary={dictionary} />
         <FullscreenToggle />
         <ModeDropdown dictionary={dictionary} />

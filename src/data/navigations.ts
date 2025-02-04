@@ -49,7 +49,7 @@ export const navigationsData: NavigationType[] = [
       {
         title: "Settings",
         href: "/pages/account/settings",
-        iconName: "UserRoundCog",
+        iconName: "UserCog",
       },
       {
         title: "Profile",

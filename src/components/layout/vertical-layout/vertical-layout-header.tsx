@@ -27,7 +27,7 @@ export function VerticalLayoutHeader({
       <div className="container flex h-14 justify-between items-center gap-4">
         <ToggleMobileSidebar />
         <div className="grow flex justify-end gap-2">
-          <CommandMenu className="lg:me-auto" />
+          <CommandMenu dictionary={dictionary} buttonClassName="lg:me-auto" />
           <NotificationDropdown dictionary={dictionary} />
           <FullscreenToggle />
           <ModeDropdown dictionary={dictionary} />
