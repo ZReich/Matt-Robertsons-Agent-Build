@@ -41,12 +41,11 @@ export function SavedCardsList({ savedCards }: { savedCards: CardType[] }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem
-                  className="cursor-pointer"
                   disabled={card.default}
                 >
                   Set Default
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>

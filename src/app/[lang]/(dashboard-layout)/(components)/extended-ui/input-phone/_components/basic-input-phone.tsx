@@ -12,7 +12,7 @@ export function BasicInputPhone() {
         <CardTitle>Basic Input Phone</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <InputPhone />
+        <InputPhone className="max-w-72" />
       </CardContent>
     </Card>
   );

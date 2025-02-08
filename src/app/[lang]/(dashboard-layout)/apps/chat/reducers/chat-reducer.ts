@@ -1,3 +1,5 @@
+"use client";
+
 import type { ChatStateType, MessageType, ChatActionType } from "../types";
 
 export const ChatReducer = (
@@ -41,18 +43,10 @@ export const ChatReducer = (
         return state; // No selected chat, return the current state
       }
 
-      const images = action.images.map((image) => ({
-        id: crypto.randomUUID(), // Unique ID for each image
-        name: image.name, // File name
-        type: image.type, // File type
-        size: image.size, // File size
-        url: URL.createObjectURL(image), // Create a URL for the image
-      }));
-
       const newMessage: MessageType = {
         id: crypto.randomUUID(),
         senderId: "1",
-        images: images, // Attach the images to the message
+        images: action.images, // Attach the images to the message
         status: "DELIVERED",
         createdAt: new Date(),
       };
@@ -80,18 +74,10 @@ export const ChatReducer = (
         return state; // No selected chat, return the current state
       }
 
-      const files = action.files.map((file) => ({
-        id: crypto.randomUUID(), // Unique ID for each file
-        name: file.name, // File name
-        type: file.type, // File type
-        size: file.size, // File size
-        url: URL.createObjectURL(file), // Create a URL for the file
-      }));
-
       const newMessage: MessageType = {
         id: crypto.randomUUID(),
         senderId: "1",
-        files: files, // Attach the files to the message
+        files: action.files, // Attach the files to the message
         status: "DELIVERED",
         createdAt: new Date(),
       };

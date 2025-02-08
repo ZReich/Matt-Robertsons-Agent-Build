@@ -13,9 +13,11 @@ export const metadata: Metadata = {
 export default function ResizablePage() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
-      <BasicResizable />
+      <div className="grid gap-4">
+        <BasicResizable />
+        <ResizableHandleComponent />
+      </div>
       <ResizableVertical />
-      <ResizableHandleComponent />
     </section>
   );
 }

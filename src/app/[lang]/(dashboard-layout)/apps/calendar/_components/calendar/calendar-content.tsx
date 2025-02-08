@@ -6,6 +6,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import listPlugin from "@fullcalendar/list";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { INITIAL_VIEW } from "../../constants";
 
@@ -14,6 +15,7 @@ import type { EventImpl } from "@fullcalendar/core/internal";
 import type { CategoryType, EventType } from "../../types";
 
 import { useCalendarContext } from "../../hooks/calendar-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Map of category types to specific event colors for visual differentiation
 const eventColors: Record<CategoryType, string> = {
@@ -26,6 +28,8 @@ const eventColors: Record<CategoryType, string> = {
 };
 
 export function CalendarContent() {
+  const isMobile = useIsMobile();
+  const direction = useDirection();
   // Destructure context values related to the calendar state and actions
   const {
     calendarState,
@@ -114,6 +118,7 @@ export function CalendarContent() {
   return (
     <FullCalendar
       ref={calendarRef} // Reference for accessing the FullCalendar instance
+      direction={direction}
       initialView={INITIAL_VIEW} // Initial calendar view on load
       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]} // List of FullCalendar plugins for functionality
       eventDisplay="block" // Display events as block elements
@@ -124,6 +129,7 @@ export function CalendarContent() {
       eventResizableFromStart // Allow resizing events from the start
       dragScroll // Enable scrolling while dragging events
       dayMaxEvents={2} // Limit the number of events displayed per day
+      height={isMobile ? "calc(100svh - 20rem)" : "calc(100vh - 17rem)"}
       navLinks // Allow navigation links for days and weeks
       navLinkDayClick={handleDateClick} // Callback for day navigation link click
       eventDrop={handleEventDrop} // Event handler for drag-and-drop

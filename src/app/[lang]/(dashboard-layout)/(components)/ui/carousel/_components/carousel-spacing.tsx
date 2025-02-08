@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,13 +13,21 @@ import {
 } from "@/components/ui/carousel";
 
 export function CarouselSpacing() {
+  const direction = useDirection();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Carousel Spacing</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <Carousel className="w-full max-w-sm">
+        <Carousel
+          opts={{
+            align: "start",
+            direction,
+          }}
+          className="w-full max-w-sm"
+        >
           <CarouselContent className="-ml-1">
             {Array.from({ length: 5 }).map((_, index) => (
               <CarouselItem

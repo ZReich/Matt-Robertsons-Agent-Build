@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { DefaultAvatarStack } from "./_components/default-avatar-stack";
+import { BasicAvatarStack } from "./_components/basic-avatar-stack";
 import { AvatarStackLimit } from "./_components/avatar-stack-limit";
 import { AvatarStackSize } from "./_components/avatar-stack-size";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function AvatarStackPage() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
-      <DefaultAvatarStack />
+      <BasicAvatarStack />
       <AvatarStackLimit />
       <AvatarStackSize />
     </section>

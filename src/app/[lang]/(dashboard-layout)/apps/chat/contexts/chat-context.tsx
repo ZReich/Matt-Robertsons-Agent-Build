@@ -5,6 +5,7 @@ import * as React from "react";
 import { ChatReducer } from "../reducers/chat-reducer";
 
 import type { ChatContextType, ChatType } from "../types";
+import type { FileType } from "@/types";
 
 // Create Kanban context
 export const ChatContext = React.createContext<ChatContextType | undefined>(
@@ -32,11 +33,11 @@ export function ChatProvider({
     dispatch({ type: "addTextMessage", text });
   };
 
-  const handleAddImagesMessage = (images: File[]) => {
+  const handleAddImagesMessage = (images: FileType[]) => {
     dispatch({ type: "addImagesMessage", images });
   };
 
-  const handleAddFilesMessage = (files: File[]) => {
+  const handleAddFilesMessage = (files: FileType[]) => {
     dispatch({ type: "addFilesMessage", files });
   };
 

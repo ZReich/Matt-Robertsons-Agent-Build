@@ -9,7 +9,7 @@ export const userData = {
   avatar: "/images/avatars/04.png",
   background: "/images/placeholder.svg",
   status: "ONLINE",
-  phoneNumber: "+1 (555) 123-4567",
+  phoneNumber: "+15558675309",
   email: "john.doe@example.com",
   state: "California",
   country: "United States",

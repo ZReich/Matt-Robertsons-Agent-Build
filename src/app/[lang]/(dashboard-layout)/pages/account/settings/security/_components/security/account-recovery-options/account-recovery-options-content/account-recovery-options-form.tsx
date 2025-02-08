@@ -2,12 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
 import { AccountRecoveryOptionsSchema } from "../../../../../_schemas/account-recovery-options-schema";
 
-import type { UserType } from "../../../../../../types";
+import type {
+  UserType,
+  AccountRecoveryOptionsFormType,
+} from "../../../../../../types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,8 +22,6 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-type FormType = z.infer<typeof AccountRecoveryOptionsSchema>;
-
 interface AccountRecoveryOptionsFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -30,7 +30,7 @@ interface AccountRecoveryOptionsFormProps
 export function AccountRecoveryOptionsForm({
   user,
 }: AccountRecoveryOptionsFormProps) {
-  const form = useForm<FormType>({
+  const form = useForm<AccountRecoveryOptionsFormType>({
     resolver: zodResolver(AccountRecoveryOptionsSchema),
     defaultValues: {
       option: user.accountReoveryOption,
@@ -40,7 +40,7 @@ export function AccountRecoveryOptionsForm({
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: FormType) {}
+  function onSubmit(data: AccountRecoveryOptionsFormType) {}
 
   return (
     <Form {...form}>

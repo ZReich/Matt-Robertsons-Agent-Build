@@ -20,7 +20,14 @@ export function BasicNavigationMenu() {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Item One</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <NavigationMenuLink>Link</NavigationMenuLink>
+                <ul className="w-40 grid gap-2 p-3">
+                  <li>
+                    <NavigationMenuLink>Link 1</NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink>Link 2</NavigationMenuLink>
+                  </li>
+                </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
           </NavigationMenuList>

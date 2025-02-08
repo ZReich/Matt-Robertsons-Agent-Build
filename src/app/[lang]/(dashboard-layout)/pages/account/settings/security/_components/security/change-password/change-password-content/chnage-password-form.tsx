@@ -3,14 +3,13 @@
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
 import { ChangePasswordSchema } from "../../../../../_schemas/chnage-password-schema";
 
 import { cn } from "@/lib/utils";
 
-import type { UserType } from "../../../../../../types";
+import type { UserType, ChangePasswordFormType } from "../../../../../../types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,8 +22,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-type FormType = z.infer<typeof ChangePasswordSchema>;
-
 interface ChangePasswordFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -35,7 +32,7 @@ export function ChangePasswordForm({
   user,
   ...props
 }: ChangePasswordFormProps) {
-  const form = useForm<FormType>({
+  const form = useForm<ChangePasswordFormType>({
     resolver: zodResolver(ChangePasswordSchema),
     defaultValues: {
       currentPassword: "",
@@ -47,7 +44,7 @@ export function ChangePasswordForm({
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
 
-  async function onSubmit(data: FormType) {}
+  async function onSubmit(data: ChangePasswordFormType) {}
 
   return (
     <Form {...form}>

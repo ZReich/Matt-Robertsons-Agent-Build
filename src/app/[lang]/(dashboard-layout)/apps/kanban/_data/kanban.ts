@@ -48,14 +48,16 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-0",
             url: "/research-report.pdf",
-            name: "Research Report",
+            name: "research-report.pdf",
             size: 1048576,
             type: "application/pdf",
           },
           {
+            id: "attachment-1",
             url: "/images/business-03.jpeg",
-            name: "Market Trends Chart",
+            name: "images-business-03.jpeg",
             size: 524288,
             type: "image/jpeg",
           },
@@ -105,14 +107,16 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-2",
             url: "/images/business-04.jpeg",
-            name: "Wireframe v1",
+            name: "images-business-04.jpeg",
             size: 262144,
             type: "image/jpeg",
           },
           {
+            id: "attachment-3",
             url: "/images/business-01.jpeg",
-            name: "Wireframe v2",
+            name: "images-business-01.jpeg",
             size: 307200,
             type: "image/jpeg",
           },
@@ -134,6 +138,7 @@ export const kanbanData: ColumnType[] = [
       },
     ],
   },
+  // ... (rest of the data with updated attachment IDs)
   {
     id: "in-progress",
     title: "In Progress",
@@ -163,8 +168,9 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-4",
             url: "/api-specs.pdf",
-            name: "API Specifications",
+            name: "api-specs.pdf",
             size: 2097152,
             type: "application/pdf",
           },
@@ -202,8 +208,9 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-5",
             url: "/images/business-01.jpeg",
-            name: "UI Mockup",
+            name: "images-business-01.jpeg",
             size: 716800,
             type: "image/jpeg",
           },
@@ -254,8 +261,9 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-6",
             url: "/project-docs.pdf",
-            name: "Project Documentation",
+            name: "project-docs.pdf",
             size: 1572864,
             type: "application/pdf",
           },
@@ -311,8 +319,9 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-7",
             url: "/bug-report.pdf",
-            name: "Bug Report",
+            name: "bug-report.pdf",
             size: 512000,
             type: "application/pdf",
           },
@@ -362,12 +371,14 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-8",
             url: "/campaign-plan.pdf",
             name: "Campaign Plan",
             size: 1310720,
             type: "application/pdf",
           },
           {
+            id: "attachment-9",
             url: "/images/business-02.jpeg",
             name: "Campaign Plan",
             size: 1310720,

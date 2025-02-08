@@ -18,7 +18,7 @@ export function BasicAlertDialog() {
       <CardHeader>
         <CardTitle>Basic Alert Dialog</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex justify-center items-center">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="outline">Show Dialog</Button>

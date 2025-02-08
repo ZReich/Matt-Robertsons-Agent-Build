@@ -90,7 +90,6 @@ export function LanguageDropdown({
             >
               <DropdownMenuRadioItem
                 value={locale.langCode}
-                className="hover:cursor-pointer"
               >
                 {dictionary.navigation.language[locale.langName]}
               </DropdownMenuRadioItem>

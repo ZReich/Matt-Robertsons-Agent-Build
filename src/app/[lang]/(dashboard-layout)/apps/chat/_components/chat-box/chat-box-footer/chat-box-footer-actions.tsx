@@ -15,8 +15,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ImagesUploader } from "../images-uploader";
-import { FilesUploader } from "../files-uploader";
+import { ImagesUploader } from "./images-uploader";
+import { FilesUploader } from "./files-uploader";
 
 export function ChatBoxFooterActions() {
   const isMobile = useMedia("(max-width: 480px)");
@@ -63,7 +63,7 @@ export function ChatBoxFooterActions() {
         asChild
       >
         <Button variant="ghost" size="icon" aria-label="More actions">
-          <ChevronRight className="size-4 transition-transform duration-200" />
+          <ChevronRight className="size-4 transition-transform duration-200 rtl:-scale-100" />
         </Button>
       </CollapsibleTrigger>
       <CollapsibleContent className="data-[state=closed]:animate-collapsible-left data-[state=open]:animate-collapsible-right duration-1000">

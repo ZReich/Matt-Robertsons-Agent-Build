@@ -9,7 +9,7 @@ export function ButtonSizes() {
       <CardHeader>
         <CardTitle>Button Sizes</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-wrap justify-center items-center gap-2">
+      <CardContent className="flex flex-wrap justify-center items-center gap-2 text-center">
         <div className="space-y-1.5">
           <h4>Default</h4>
           <Button variant="outline">Default</Button>

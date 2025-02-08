@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { EllipsisVertical } from "lucide-react";
 
 import { useKanbanContext } from "../../../../hooks/use-kanban-context";
@@ -21,6 +22,7 @@ interface KanbanColumnActionsProps {
 }
 
 export function KanbanColumnActions({ column }: KanbanColumnActionsProps) {
+  const [open, onOpenChange] = React.useState(false);
   const {
     setKanbanUpdateColumnSidebarIsOpen,
     handleSelectColumn,
@@ -28,7 +30,7 @@ export function KanbanColumnActions({ column }: KanbanColumnActionsProps) {
   } = useKanbanContext();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -42,6 +44,7 @@ export function KanbanColumnActions({ column }: KanbanColumnActionsProps) {
         <DropdownMenuItem
           onClick={() => {
             handleSelectColumn(column);
+            onOpenChange(false);
             setKanbanUpdateColumnSidebarIsOpen(true);
           }}
         >

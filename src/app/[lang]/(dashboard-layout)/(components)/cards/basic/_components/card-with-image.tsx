@@ -35,7 +35,7 @@ export function CardWithImage() {
           Experience immersive audio with this compact and stylish Bluetooth
           speaker.
         </p>
-        <div className="flex space-x-2">
+        <div className="flex gap-x-2">
           <Button>Buy Now</Button>
           <Button variant="secondary">Learn More</Button>
         </div>

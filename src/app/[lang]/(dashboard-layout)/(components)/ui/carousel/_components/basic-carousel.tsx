@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,13 +13,15 @@ import {
 } from "@/components/ui/carousel";
 
 export function BasicCarousel() {
+  const direction = useDirection();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Basic Carousel</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <Carousel className="w-full max-w-xs">
+        <Carousel opts={{ direction }} className="w-full max-w-xs">
           <CarouselContent>
             {Array.from({ length: 5 }).map((_, index) => (
               <CarouselItem key={index}>

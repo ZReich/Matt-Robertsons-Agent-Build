@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { remToPx } from "@/lib/utils";
 
@@ -24,9 +25,13 @@ const chartConfig = {
 
 export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
   const { settings } = useSettings();
+  const direction = useDirection();
+
+  const isRtl = direction === "rtl";
 
   return (
     <ChartContainer
+      dir="ltr"
       config={chartConfig}
       className="h-72 w-[calc(100vw-90px)] md:w-1/2"
     >
@@ -39,13 +44,21 @@ export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
         }}
       >
         <YAxis
+          orientation={isRtl ? "right" : "left"}
           dataKey="name"
           type="category"
           tickLine={false}
           tickMargin={10}
           axisLine={false}
+          reversed
         />
-        <XAxis dataKey="visitors" type="number" />
+        <XAxis
+          reversed={isRtl}
+          dataKey="visitors"
+          type="number"
+          tickLine={false}
+          axisLine={false}
+        />
         <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
         <Bar
           dataKey="visitors"

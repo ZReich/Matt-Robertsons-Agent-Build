@@ -14,6 +14,7 @@ import type { LocaleType } from "@/types";
 import { Providers } from "@/providers";
 
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 
 // Define metadata for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -64,6 +65,7 @@ export default async function RootLayout({
         <Providers locale={params.lang} direction={direction} session={session}>
           {children}
           <Toaster />
+          <Sonner />
         </Providers>
       </body>
     </html>

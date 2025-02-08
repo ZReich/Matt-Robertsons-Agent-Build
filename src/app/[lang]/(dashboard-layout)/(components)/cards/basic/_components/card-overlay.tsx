@@ -28,7 +28,7 @@ export function CardOverlay() {
           </CardDescription>
         </CardHeader>
         <CardFooter className="flex-col items-start space-y-3">
-          <div className="flex space-x-2">
+          <div className="flex gap-x-2">
             <Button>Buy Now</Button>
             <Button variant="secondary">Learn More</Button>
           </div>

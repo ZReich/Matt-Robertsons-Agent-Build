@@ -1,4 +1,9 @@
+import { z } from "zod";
+
+import { EmailComposerSchema } from "./_schemas/email-composer-schema";
+
 import type { DynamicIconNameType } from "@/types";
+import type { EmailListSearchSchema } from "./_schemas/email-list-search-schema";
 
 export interface UserType {
   id: string;
@@ -88,3 +93,7 @@ export type EmailActionType =
       type: "setRead";
       email: EmailType;
     };
+
+export type EmailComposerFormType = z.infer<typeof EmailComposerSchema>;
+
+export type EmailListSearchFormType = z.infer<typeof EmailListSearchSchema>;

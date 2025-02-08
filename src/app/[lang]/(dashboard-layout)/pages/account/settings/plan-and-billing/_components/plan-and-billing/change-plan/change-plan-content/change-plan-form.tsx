@@ -2,14 +2,17 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
 import { ChangePlanSchema } from "../../../../_schemas/change-plan-schema";
 
 import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils";
 
-import type { PlanType, SubscriptionType } from "../../../../../../types";
+import type {
+  PlanType,
+  SubscriptionType,
+  ChangePlanFormType,
+} from "../../../../../../types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,8 +33,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-type FormType = z.infer<typeof ChangePlanSchema>;
-
 export function ChangePlanForm({
   plans,
   subscriptions,
@@ -43,7 +44,7 @@ export function ChangePlanForm({
     (p) => p.id === subscriptions[0].planId
   );
 
-  const form = useForm<FormType>({
+  const form = useForm<ChangePlanFormType>({
     resolver: zodResolver(ChangePlanSchema),
     defaultValues: {
       plan: lastSubscribedPlan?.name,
@@ -55,7 +56,7 @@ export function ChangePlanForm({
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: FormType) {}
+  function onSubmit(data: ChangePlanFormType) {}
 
   return (
     <Form {...form}>

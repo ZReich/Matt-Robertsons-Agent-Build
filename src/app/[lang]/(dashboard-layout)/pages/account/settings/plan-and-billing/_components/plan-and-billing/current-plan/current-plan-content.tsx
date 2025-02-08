@@ -67,7 +67,7 @@ export function CurrentPlanContent() {
             <div key={index} className="flex items-center">
               <DynamicIcon
                 name={item.iconName}
-                className="h-5 w-5 mr-2 text-primary"
+                className="h-5 w-5 me-2 text-primary"
               />
               <div>
                 <p className="text-sm font-medium">{item.count}</p>

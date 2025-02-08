@@ -14,14 +14,14 @@ export function RadioGroupDisabled() {
       </CardHeader>
       <CardContent className="grid gap-2">
         <RadioGroup defaultValue="option-one-disabled" disabled>
-          <div className="flex items-center space-x-2">
+          <div className="flex justify-center items-center gap-x-2">
             <RadioGroupItem
               value="option-one-disabled"
               id="option-one-disabled"
             />
             <Label htmlFor="option-one-disabled">Option One</Label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex justify-center items-center gap-x-2">
             <RadioGroupItem
               value="option-two-disabled"
               id="option-two-disabled"

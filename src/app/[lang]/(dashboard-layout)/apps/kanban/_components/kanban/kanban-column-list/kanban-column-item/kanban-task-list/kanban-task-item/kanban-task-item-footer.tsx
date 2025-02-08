@@ -3,11 +3,11 @@
 import * as React from "react";
 import { MessageCircleMore, Paperclip } from "lucide-react";
 
-import type { TaskType } from "../../../../../../../types";
+import type { TaskType } from "../../../../../../types";
 
 import { Button } from "@/components/ui/button";
 import { CardFooter } from "@/components/ui/card";
-import { KanbanAvatarStack } from "./kanban-avatar-stack";
+import { AvatarStack } from "@/components/ui/avatar";
 
 interface KanbanTaskItemFooterProps {
   task: TaskType;
@@ -24,7 +24,7 @@ export function KanbanTaskItemFooter({ task }: KanbanTaskItemFooterProps) {
 
   return (
     <CardFooter className="justify-between gap-2 pe-3 ps-5">
-      <KanbanAvatarStack avatars={avatars} size={8} limit={4} />
+      <AvatarStack avatars={avatars} size="sm" />
       <div className="flex items-center">
         <Button variant="ghost" size="sm">
           <MessageCircleMore className="me-1.5 size-3.5 text-muted-foreground" />

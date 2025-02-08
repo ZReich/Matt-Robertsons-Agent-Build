@@ -1,5 +1,8 @@
+"use client";
+
 import * as React from "react";
 import Autoplay from "embla-carousel-autoplay";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,9 +14,8 @@ import {
 } from "@/components/ui/carousel";
 
 export function CarouselAutoplay() {
-  const plugin = React.useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: true })
-  );
+  const direction = useDirection();
+
   return (
     <Card>
       <CardHeader>
@@ -21,10 +23,18 @@ export function CarouselAutoplay() {
       </CardHeader>
       <CardContent className="flex justify-center items-center">
         <Carousel
-          plugins={[plugin.current]}
+          plugins={[
+            Autoplay({
+              delay: 2000,
+              stopOnInteraction: true,
+            }),
+          ]}
+          opts={{
+            align: "start",
+            loop: true,
+            direction,
+          }}
           className="w-full max-w-xs"
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
         >
           <CarouselContent>
             {Array.from({ length: 5 }).map((_, index) => (

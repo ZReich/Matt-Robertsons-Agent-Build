@@ -13,7 +13,7 @@ import { ForgotPasswordSchema } from "@/schemas/forgot-passward-schema";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
 
-import type { LocaleType } from "@/types";
+import type { LocaleType, ForgotPasswordFormType } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,13 +27,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
-type FormType = z.infer<typeof ForgotPasswordSchema>;
-
 export function ForgotPasswordForm() {
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const form = useForm<FormType>({
+  const form = useForm<ForgotPasswordFormType>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
       email: "",
@@ -45,7 +43,7 @@ export function ForgotPasswordForm() {
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: FormType) {
+  async function onSubmit(data: ForgotPasswordFormType) {
     try {
       toast({
         title: "Check your email",

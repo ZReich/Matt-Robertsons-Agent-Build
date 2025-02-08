@@ -2,13 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { CreditCard, Landmark } from "lucide-react";
 
 import { PaymentMethodSchema } from "../../../../_schemas/payment-method-schema";
 import { getCreditCardBrandName } from "@/lib/utils";
 
-import type { PaymentType } from "../../../../types";
+import type { PaymentType, PaymentMethodFormType } from "../../../../types";
 
 import { Card } from "@/components/ui/card";
 import { RadioGroup } from "@/components/ui/radio-group";
@@ -29,8 +28,6 @@ import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
 import { SavedCard } from "./saved-card";
 import { PaymentOption } from "./payment-option";
 
-export type FormType = z.infer<typeof PaymentMethodSchema>;
-
 interface PaymentMethodFormProps {
   data: PaymentType["savedCards"];
 }
@@ -38,7 +35,7 @@ interface PaymentMethodFormProps {
 export function PaymentMethodForm({
   data: savedCards,
 }: PaymentMethodFormProps) {
-  const form = useForm<FormType>({
+  const form = useForm<PaymentMethodFormType>({
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
       saveCard: false,
@@ -50,17 +47,19 @@ export function PaymentMethodForm({
 
   const creditCardBrandName = getCreditCardBrandName(cardNumber);
 
-  const handleSavedCardSelect = (id: FormType["savedCard"]) => {
+  const handleSavedCardSelect = (id: PaymentMethodFormType["savedCard"]) => {
     form.setValue("savedCard", id);
     form.setValue("paymentOption", undefined);
   };
 
-  const handlePaymentOptionSelect = (id: FormType["paymentOption"]) => {
+  const handlePaymentOptionSelect = (
+    id: PaymentMethodFormType["paymentOption"]
+  ) => {
     form.setValue("paymentOption", id);
     form.setValue("savedCard", undefined);
   };
 
-  function onSubmit(data: FormType) {}
+  function onSubmit(data: PaymentMethodFormType) {}
 
   return (
     <Form {...form}>

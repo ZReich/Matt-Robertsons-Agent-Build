@@ -7,7 +7,7 @@ export function BasicBadge() {
       <CardHeader>
         <CardTitle>Basic Badge</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2">
+      <CardContent className="flex justify-center items-center gap-2">
         <Badge>Badge</Badge>
         <Badge variant="destructive">Destructive</Badge>
         <Badge variant="outline">Outline</Badge>

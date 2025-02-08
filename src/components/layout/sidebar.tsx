@@ -103,7 +103,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
     // Otherwise, render the item with a link.
     if ("href" in item) {
       const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = pathname.includes(item.href);
+      const isActive = pathname.endsWith(item.href);
 
       return (
         <SidebarMenuButton isActive={isActive} asChild>

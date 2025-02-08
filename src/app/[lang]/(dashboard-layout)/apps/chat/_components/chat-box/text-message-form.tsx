@@ -1,11 +1,12 @@
 "use client";
 
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, Send } from "lucide-react";
 
 import { TextMessageSchema } from "../../_schemas/text-message-schema";
+
+import type { TextMessageFormType } from "../../types";
 
 import { useChatContext } from "../../hooks/use-chat-context";
 
@@ -20,11 +21,9 @@ import {
 } from "@/components/ui/form";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 
-type FormType = z.infer<typeof TextMessageSchema>;
-
 export function TextMessageForm() {
   const { handleAddTextMessage } = useChatContext();
-  const form = useForm<FormType>({
+  const form = useForm<TextMessageFormType>({
     resolver: zodResolver(TextMessageSchema),
     defaultValues: {
       text: "",
@@ -35,7 +34,7 @@ export function TextMessageForm() {
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
 
-  const onSubmit = async (data: FormType) => {
+  const onSubmit = async (data: TextMessageFormType) => {
     handleAddTextMessage(data.text);
 
     form.reset(); // Reset the form to the initial state

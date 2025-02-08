@@ -95,14 +95,14 @@ const AvatarStack = React.memo(
     const remainingCount = avatars.length - limitedAvatars.length;
 
     return (
-      <div className={cn("flex -space-x-2.5", className)} {...props}>
+      <div className={cn("flex", className)} {...props}>
         {limitedAvatars.slice(0, limit).map((avatar) => (
           <TooltipProvider
             key={`${avatar.alt}-${avatar.src}`}
             delayDuration={200}
           >
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger className="-ms-1 -me-1">
                 {avatar.href ? (
                   <Link href={avatar.href}>
                     <Avatar className={avatarStackVariants({ size })}>
@@ -126,13 +126,13 @@ const AvatarStack = React.memo(
 
         {/* Show "+N" if avatars exceed the limit */}
         {remainingCount > 0 && moreHref ? (
-          <Link href={moreHref}>
+          <Link href={moreHref} className="-ms-1 -me-1">
             <Avatar className={avatarStackVariants({ size })}>
               <AvatarFallback>+{remainingCount}</AvatarFallback>
             </Avatar>
           </Link>
         ) : (
-          <Avatar className={avatarStackVariants({ size })}>
+          <Avatar className={cn("-ms-1 -me-1", avatarStackVariants({ size }))}>
             <AvatarFallback>+{remainingCount}</AvatarFallback>
           </Avatar>
         )}

@@ -15,7 +15,7 @@ export function ResizableVertical() {
       <CardHeader>
         <CardTitle>Resizable Vertical</CardTitle>
       </CardHeader>
-      <CardContent className="flex justify-center items-center">
+      <CardContent className="h-48 flex justify-center items-center">
         <ResizablePanelGroup direction="vertical">
           <ResizablePanel>One</ResizablePanel>
           <ResizableHandle />

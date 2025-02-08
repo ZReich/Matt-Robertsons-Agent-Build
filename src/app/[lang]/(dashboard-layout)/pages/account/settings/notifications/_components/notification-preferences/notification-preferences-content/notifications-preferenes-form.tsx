@@ -4,9 +4,10 @@ import * as React from "react";
 import { LoaderCircle } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, UseFormReturn, FieldPath } from "react-hook-form";
-import { z } from "zod";
 
 import { NotificationPreferencesSchema } from "../../../_schemas/notifications-preferenes-schema";
+
+import type { NotificationPreferencesFormType } from "../../../../../types";
 
 import {
   Form,
@@ -24,10 +25,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type FormType = z.infer<typeof NotificationPreferencesSchema>;
-
 export function NotificationPreferencesForm() {
-  const form = useForm<FormType>({
+  const form = useForm<NotificationPreferencesFormType>({
     resolver: zodResolver(NotificationPreferencesSchema),
     defaultValues: {
       security: {
@@ -51,7 +50,7 @@ export function NotificationPreferencesForm() {
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: FormType) {}
+  function onSubmit(data: NotificationPreferencesFormType) {}
 
   return (
     <Form {...form}>
@@ -125,9 +124,9 @@ export function NotificationPreferencesForm() {
 }
 
 interface ChangeButtonProps {
-  form: UseFormReturn<z.infer<typeof NotificationPreferencesSchema>>;
+  form: UseFormReturn<NotificationPreferencesFormType>;
   field: {
-    name: FieldPath<z.infer<typeof NotificationPreferencesSchema>>;
+    name: FieldPath<NotificationPreferencesFormType>;
     value: { email: boolean; browser: boolean; sms: boolean };
   };
 }
@@ -151,7 +150,6 @@ function ChangeButton({ form, field }: ChangeButtonProps) {
               { shouldDirty: true }
             )
           }
-          className="cursor-pointer"
         >
           Email
         </DropdownMenuCheckboxItem>
@@ -167,7 +165,6 @@ function ChangeButton({ form, field }: ChangeButtonProps) {
               { shouldDirty: true }
             )
           }
-          className="cursor-pointer"
         >
           Browser
         </DropdownMenuCheckboxItem>
@@ -183,7 +180,6 @@ function ChangeButton({ form, field }: ChangeButtonProps) {
               { shouldDirty: true }
             )
           }
-          className="cursor-pointer"
         >
           SMS
         </DropdownMenuCheckboxItem>

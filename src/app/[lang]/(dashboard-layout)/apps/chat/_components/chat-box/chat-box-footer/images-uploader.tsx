@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
+import * as React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Image, LoaderCircle, Send } from "lucide-react";
 
-import { MAX_IMAGE_SIZE, MAX_IMAGES, MIN_IMAGES } from "../../../constants";
+import { MAX_IMAGE_SIZE, MAX_IMAGES } from "../../../constants";
 
 import { ImagesUploaderSchema } from "../../../_schemas/images-uploader-schema";
+
+import type { ImagesUploaderFormType } from "../../../types";
 
 import { useChatContext } from "../../../hooks/use-chat-context";
 
@@ -29,75 +30,28 @@ import {
   FormDescription,
   FormMessage,
 } from "@/components/ui/form";
-
-import { ImageDropzone } from "./image-dropzone";
-import { ImagePreviewList } from "./image-preview-list";
+import { FileDropzone } from "@/components/ui/file-dropzone";
 
 const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE);
-
-type FormType = z.infer<typeof ImagesUploaderSchema>;
 
 export function ImagesUploader() {
   const { handleAddImagesMessage } = useChatContext();
   const [isOpen, setIsOpen] = React.useState(false);
-  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
 
-  const form = useForm<FormType>({
+  const form = useForm<ImagesUploaderFormType>({
     resolver: zodResolver(ImagesUploaderSchema),
     defaultValues: { images: [] },
   });
 
-  const images = form.watch("images");
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
 
-  const onSubmit = async (data: FormType) => {
+  const onSubmit = async (data: ImagesUploaderFormType) => {
     handleAddImagesMessage(data.images);
 
-    // Revoke temporary URLs after submission
-    imageUrls.forEach((url) => URL.revokeObjectURL(url));
-
     // Reset to default
-    setImageUrls([]);
     form.reset();
     setIsOpen(false);
-  };
-
-  const handleImageChange = React.useCallback(
-    (acceptedImages: FileList | File[] | null) => {
-      if (!acceptedImages) return;
-
-      // Convert accepted images to an array and merge with current images while respecting the max limit
-      const newImagesArray = [...images, ...Array.from(acceptedImages)].slice(
-        0,
-        MAX_IMAGES
-      );
-
-      form.setValue("images", newImagesArray);
-
-      // Create object URLs for new image
-      const newImageUrls = Array.from(acceptedImages).map((file) =>
-        URL.createObjectURL(file)
-      );
-      setImageUrls((prevUrls) => [...prevUrls, ...newImageUrls]);
-
-      form.trigger("images"); // Trigger form validation
-    },
-    [form, images]
-  );
-
-  const handleImageRemove = (index: number) => {
-    // Revoke the object URL for the removed image
-    const urlToRevoke = imageUrls[index];
-    URL.revokeObjectURL(urlToRevoke);
-
-    // Remove image at specified index
-    const updatedImages = images.filter((_, i) => i !== index);
-    const updatedUrls = imageUrls.filter((_, i) => i !== index);
-
-    form.setValue("images", updatedImages);
-    setImageUrls(updatedUrls);
-    form.trigger("images"); // Trigger form validation
   };
 
   return (
@@ -118,24 +72,22 @@ export function ImagesUploader() {
               name="images"
               render={({ field }) => (
                 <FormItem>
-                  <ImageDropzone field={field} onChange={handleImageChange} />
+                  <FileDropzone
+                    onFilesChange={field.onChange}
+                    multiple
+                    accept={{ "image/*": [] }}
+                    maxSize={MAX_IMAGE_SIZE}
+                    maxFiles={MAX_IMAGES}
+                    {...field}
+                  />
                   <FormDescription>
-                    Select between {MIN_IMAGES} and {MAX_IMAGES} images, with a
-                    maximum file size of {formattedImageSize} per image.
+                    Select up to {MAX_IMAGES} images, with a maximum image size
+                    of {formattedImageSize} per image.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* Display selected images if they are available */}
-            {images && images.length > 0 && (
-              <ImagePreviewList
-                images={images}
-                imageUrls={imageUrls}
-                onRemove={handleImageRemove}
-              />
-            )}
 
             <Button
               type="submit"

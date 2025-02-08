@@ -15,7 +15,7 @@ export function BasicCard() {
       <CardHeader>
         <CardTitle>Basic Card</CardTitle>
       </CardHeader>
-      <CardContent className="flex justify-center items-center">
+      <CardContent className="grid">
         <Card>
           <CardHeader>
             <CardTitle>Card Title</CardTitle>

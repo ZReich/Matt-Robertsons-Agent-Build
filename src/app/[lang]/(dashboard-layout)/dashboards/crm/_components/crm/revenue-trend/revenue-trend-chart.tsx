@@ -1,8 +1,12 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { useDirection } from "@radix-ui/react-direction";
+
+import { remToPx } from "@/lib/utils";
 
 import type { RevenueTrendType } from "../../../types";
+
 
 import {
   ChartContainer,
@@ -10,14 +14,16 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useSettings } from "@/hooks/use-settings";
-import { remToPx } from "@/lib/utils";
 
 export function RevenueTrendChart({
   data,
 }: {
   data: RevenueTrendType["revenueTrends"];
 }) {
+  const direction = useDirection();
   const { settings } = useSettings();
+
+  const isRtl = direction === "rtl";
 
   return (
     <ChartContainer config={{}} className="aspect-auto h-40 w-full">
@@ -31,6 +37,7 @@ export function RevenueTrendChart({
       >
         <CartesianGrid vertical={false} />
         <XAxis
+          reversed={isRtl}
           dataKey="month"
           tickLine={false}
           axisLine={false}

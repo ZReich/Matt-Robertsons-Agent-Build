@@ -29,7 +29,7 @@ export function DataTablePagination<TData>({
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
       <div className="flex items-center gap-x-6">
-        <div className="hidden items-center space-x-2 md:flex">
+        <div className="hidden items-center gap-x-2 md:flex">
           <p className="text-sm font-medium">Rows per page</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
@@ -58,7 +58,7 @@ export function DataTablePagination<TData>({
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-x-2 [&>button>svg]:rtl:-scale-100">
           <Button
             variant="outline"
             className="h-8 w-8 p-0"

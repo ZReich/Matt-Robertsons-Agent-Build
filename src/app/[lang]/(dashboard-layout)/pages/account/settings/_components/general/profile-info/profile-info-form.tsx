@@ -3,14 +3,13 @@
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
 import { ProfileInfoSchema } from "../../../_schemas/profile-info-form";
 
 import { cn, getInitials } from "@/lib/utils";
 
-import type { UserType } from "../../../../types";
+import type { UserType, ProfileInfoFormType } from "../../../../types";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -22,16 +21,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-type FormType = z.infer<typeof ProfileInfoSchema>;
 
 export function ProfileInfoForm({ user }: { user: UserType }) {
   const [photoPreview, setPhotoPreview] = React.useState<string | undefined>(
     user?.avatar
   );
 
-  const form = useForm<FormType>({
+  const form = useForm<ProfileInfoFormType>({
     resolver: zodResolver(ProfileInfoSchema),
     defaultValues: {
       ...user,
@@ -42,7 +40,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: FormType) {}
+  async function onSubmit(data: ProfileInfoFormType) {}
 
   function handleResetForm() {
     form.reset(); // Reset the form to the initial state
@@ -175,7 +173,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="+1234567890" {...field} />
+                  <InputPhone placeholder="+12133734253" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

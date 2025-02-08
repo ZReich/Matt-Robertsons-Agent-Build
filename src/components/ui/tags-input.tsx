@@ -75,7 +75,7 @@ export function TagsInput({
           <Button
             variant="ghost"
             onClick={(e) => {
-              e.stopPropagation();
+              e.preventDefault();
               removeTag(index);
             }}
             className="size-auto p-0.5 ms-0.5 -me-1 rounded-full hover:bg-secondary-foreground/20"
@@ -158,7 +158,7 @@ export function TagsInputWithSuggestions({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover modal open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div
           ref={containerRef}
@@ -176,7 +176,7 @@ export function TagsInputWithSuggestions({
               <Button
                 variant="ghost"
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e.preventDefault();
                   removeTag(index);
                 }}
                 className="size-auto p-0.5 ms-0.5 -me-1 rounded-full hover:bg-secondary-foreground/20"

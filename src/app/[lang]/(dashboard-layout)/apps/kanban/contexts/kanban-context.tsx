@@ -28,10 +28,9 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   // Reducer to manage Kanban state
   const [kanbanState, dispatch] = React.useReducer(KanbanReducer, {
     columns: kanbanData,
-    initialTeamMembers: teamMembersData,
+    teamMembers: teamMembersData,
     selectedColumn: undefined,
     selectedTask: undefined,
-    selectedTeamMembers: teamMembersData,
   });
 
   // Sidebar state management
@@ -115,10 +114,6 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     dispatch({ type: "selectTask", task });
   };
 
-  const handleGetTeamMembersBySearchTerm = (term: string) => {
-    dispatch({ type: "getTeamMembersBySearchTerm", term });
-  };
-
   return (
     <KanbanContext.Provider
       value={{
@@ -141,7 +136,6 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
         handleReorderTasks,
         handleSelectColumn,
         handleSelectTask,
-        handleGetTeamMembersBySearchTerm,
       }}
     >
       {children}

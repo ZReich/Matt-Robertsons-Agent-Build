@@ -12,23 +12,23 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { cn } from "@/lib/utils";
 
-import type { DirectionType } from "@/types";
 import type { UseEditorOptions } from "@tiptap/react";
+
 
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EditorMenuBar } from "./editor-menu-bar";
 
 interface EditorProps extends UseEditorOptions {
-  value: string;
-  onValueChange: (value: string) => void;
+  value?: string;
+  onValueChange?: (value: string) => void;
   bubbleMenu?: boolean;
   placeholder?: string;
   className?: string;
-  dir?: DirectionType;
 }
 
 export function Editor({
@@ -37,9 +37,12 @@ export function Editor({
   bubbleMenu = false,
   placeholder,
   className,
-  dir = "ltr",
   ...props
 }: EditorProps) {
+  const direction = useDirection();
+
+  const isRtl = direction === "rtl";
+
   const editor = useEditor({
     editorProps: {
       attributes: {
@@ -54,7 +57,7 @@ export function Editor({
       Underline,
       TextAlign.configure({
         types: ["heading", "paragraph"],
-        defaultAlignment: dir === "rtl" ? "right" : "left",
+        defaultAlignment: isRtl ? "right" : "left",
       }),
       Color,
       TextStyle,
@@ -75,7 +78,7 @@ export function Editor({
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      onValueChange(editor.getHTML());
+      onValueChange?.(editor.getHTML());
     },
     ...props,
   });
@@ -111,7 +114,7 @@ export function Editor({
       >
         <EditorContent
           editor={editor}
-          dir={dir}
+          dir={direction}
           className={cn(
             editor.isActive({ textAlign: "left" }) &&
               "[&_.is-editor-empty]:before:left-3",

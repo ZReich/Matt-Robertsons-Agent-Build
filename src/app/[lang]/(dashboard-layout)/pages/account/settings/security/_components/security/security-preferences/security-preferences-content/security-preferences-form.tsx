@@ -7,7 +7,10 @@ import { LoaderCircle } from "lucide-react";
 
 import { SecurityPreferencesSchema } from "../../../../../_schemas/security-preferences-form";
 
-import type { UserType } from "../../../../../../types";
+import type {
+  UserType,
+  SecurityPreferencesFormType,
+} from "../../../../../../types";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,8 +23,6 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 
-type FormType = z.infer<typeof SecurityPreferencesSchema>;
-
 interface SecurityPreferencesFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   user: UserType;
@@ -30,7 +31,7 @@ interface SecurityPreferencesFormProps
 export function SecurityPreferencesForm({
   user,
 }: SecurityPreferencesFormProps) {
-  const form = useForm<FormType>({
+  const form = useForm<SecurityPreferencesFormType>({
     resolver: zodResolver(SecurityPreferencesSchema),
     defaultValues: {
       twoFactorAuth: user.twoFactorAuth,
@@ -41,7 +42,7 @@ export function SecurityPreferencesForm({
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: FormType) {}
+  function onSubmit(data: SecurityPreferencesFormType) {}
 
   return (
     <Form {...form}>
@@ -51,7 +52,7 @@ export function SecurityPreferencesForm({
             control={form.control}
             name="twoFactorAuth"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4 shadow">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -72,7 +73,7 @@ export function SecurityPreferencesForm({
             control={form.control}
             name="loginAlerts"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4 shadow">
                 <FormControl>
                   <Checkbox
                     checked={field.value}

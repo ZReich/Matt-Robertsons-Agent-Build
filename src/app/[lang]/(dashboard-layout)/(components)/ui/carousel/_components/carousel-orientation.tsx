@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,15 +13,18 @@ import {
 } from "@/components/ui/carousel";
 
 export function CarouselOrientation() {
+  const direction = useDirection();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Carousel Orientation</CardTitle>
       </CardHeader>
-      <CardContent className="flex justify-center items-center">
+      <CardContent className="flex justify-center items-center py-16">
         <Carousel
           opts={{
             align: "start",
+            direction,
           }}
           orientation="vertical"
           className="w-full max-w-xs"

@@ -2,18 +2,16 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { DeleteAccountSchema } from "../../../../_schemas/delete-account-schema";
 
-import type { UserType } from "../../../../../types";
+import type { DeleteAccountFormType, UserType } from "../../../../../types";
 
 import { Button } from "@/components/ui/button";
 
-type FormType = z.infer<typeof DeleteAccountSchema>;
 
 export function DeleteAccountForm({ user }: { user: UserType }) {
-  const form = useForm<FormType>({
+  const form = useForm<DeleteAccountFormType>({
     resolver: zodResolver(DeleteAccountSchema),
     defaultValues: {
       ...user,
@@ -23,7 +21,7 @@ export function DeleteAccountForm({ user }: { user: UserType }) {
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
 
-  async function onSubmit(data: FormType) {}
+  async function onSubmit(data: DeleteAccountFormType) {}
 
   return (
     <div className="flex gap-2">

@@ -3,10 +3,11 @@
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
 import { ComingSoonSchema } from "@/schemas/coming-soon-schema";
+
+import type { ComingSoonFormType } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,10 +23,8 @@ import { toast } from "@/hooks/use-toast";
 
 const defaultValues = { email: "" };
 
-type FormType = z.infer<typeof ComingSoonSchema>;
-
 export function ComingSoonForm() {
-  const form = useForm<FormType>({
+  const form = useForm<ComingSoonFormType>({
     resolver: zodResolver(ComingSoonSchema),
     defaultValues,
   });
@@ -33,7 +32,7 @@ export function ComingSoonForm() {
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
 
-  async function onSubmit(data: FormType) {
+  async function onSubmit(data: ComingSoonFormType) {
     form.reset(defaultValues); // Reset the form to the initial state
 
     toast({

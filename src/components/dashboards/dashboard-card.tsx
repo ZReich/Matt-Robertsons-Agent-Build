@@ -150,7 +150,7 @@ const DashboardOverviewCardV2 = React.forwardRef<
       <article ref={ref} {...props}>
         <Card className="flex flex-col justify-between">
           <CardHeader className="flex-row justify-between items-start pb-3">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-x-2">
               <Badge
                 style={{
                   backgroundColor: iconColor,
@@ -213,7 +213,7 @@ const DashboardOverviewCardV3 = React.forwardRef<
             <CardTitle className="text-muted-foreground font-normal">
               {title}
             </CardTitle>
-            <div className="inline-flex items-baseline space-x-1">
+            <div className="inline-flex items-baseline gap-x-1">
               <p className="text-2xl font-semibold break-all">{value}</p>
               <PercentageChangeBadge
                 variant="ghost"

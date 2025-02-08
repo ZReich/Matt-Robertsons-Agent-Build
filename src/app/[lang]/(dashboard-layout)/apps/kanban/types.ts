@@ -1,15 +1,15 @@
+import { z } from "zod";
+
+import { KanbanColumnSchema } from "./_schemas/kanban-column-schema";
+import { KanbanTaskSchema } from "./_schemas/kanban-task-schema";
+
+import type { FileType } from "@/types";
+
 export interface UserType {
   id: string;
   username: string;
   name: string;
   avatar?: string;
-}
-
-export interface FileType {
-  url: string;
-  name: string;
-  size: number;
-  type: string;
 }
 
 export interface CommentType {
@@ -51,10 +51,9 @@ export type TaskWithoutIdAndOrderAndColumnIdType = Omit<
 
 export interface KanbanStateType {
   columns: ColumnType[];
-  initialTeamMembers: UserType[];
+  teamMembers: UserType[];
   selectedColumn?: ColumnType;
   selectedTask?: TaskType;
-  selectedTeamMembers: UserType[];
 }
 
 export interface LabelType {
@@ -80,8 +79,7 @@ export type KanbanActionType =
       destination: { columnId: string; index: number };
     }
   | { type: "selectColumn"; column?: ColumnType }
-  | { type: "selectTask"; task?: TaskType }
-  | { type: "getTeamMembersBySearchTerm"; term: string };
+  | { type: "selectTask"; task?: TaskType };
 
 export interface KanbanContextType {
   kanbanState: KanbanStateType;
@@ -111,5 +109,8 @@ export interface KanbanContextType {
   ) => void;
   handleSelectColumn: (column: ColumnType | undefined) => void;
   handleSelectTask: (task: TaskType | undefined) => void;
-  handleGetTeamMembersBySearchTerm: (term: string) => void;
 }
+
+export type KanbanColumnFormType = z.infer<typeof KanbanColumnSchema>;
+
+export type KanbanTaskFormType = z.infer<typeof KanbanTaskSchema>;

@@ -12,7 +12,7 @@ export function BasicTabs() {
         <CardTitle>Basic Tabs</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <Tabs defaultValue="account" className="w-[400px]">
+        <Tabs defaultValue="account" className="w-[400px] grid">
           <TabsList>
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="password">Password</TabsTrigger>

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function MenubarPage() {
   return (
-    <section className="container grid gap-4 p-4 md:grid-cols-2">
+    <section className="container grid gap-4 p-4">
       <BasicMenubar />
     </section>
   );

@@ -16,7 +16,7 @@ import { SignInSchema } from "@/schemas/sign-in-schema";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
 
-import type { LocaleType } from "@/types";
+import type { LocaleType, SignInFormType } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +32,6 @@ import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
 import { OAuthLinks } from "../oauth-links";
 
-type FormType = z.infer<typeof SignInSchema>;
-
 export function SignInForm() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -41,7 +39,7 @@ export function SignInForm() {
 
   const redirectPathname = searchParams.get("redirectTo");
 
-  const form = useForm<FormType>({
+  const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
       email: userData.email,
@@ -53,7 +51,7 @@ export function SignInForm() {
   const { isSubmitting, isValid } = form.formState;
   const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
 
-  async function onSubmit(data: FormType) {
+  async function onSubmit(data: SignInFormType) {
     const { email, password } = data;
 
     try {

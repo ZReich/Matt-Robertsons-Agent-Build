@@ -26,7 +26,7 @@ export function KanbanColumnList() {
           <div
             ref={provided.innerRef}
             {...provided.droppableProps} // Droppable props for drag-and-drop functionality
-            className="flex p-4 space-x-4"
+            className="flex gap-x-4 p-4"
           >
             {kanbanState.columns.map((column, index) => (
               <KanbanColumnItem key={column.id} column={column} index={index} />

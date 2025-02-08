@@ -13,7 +13,7 @@ import { NewPasswordSchema } from "@/schemas/new-passward-schema";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
 
-import type { LocaleType } from "@/types";
+import type { LocaleType, NewPasswordFormType } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,13 +27,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
-type FormType = z.infer<typeof NewPasswordSchema>;
-
 export function NewPasswordForm() {
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const form = useForm<FormType>({
+  const form = useForm<NewPasswordFormType>({
     resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
       password: "",
@@ -46,7 +44,7 @@ export function NewPasswordForm() {
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: FormType) {
+  async function onSubmit(data: NewPasswordFormType) {
     try {
       toast({
         title: "Check your email",

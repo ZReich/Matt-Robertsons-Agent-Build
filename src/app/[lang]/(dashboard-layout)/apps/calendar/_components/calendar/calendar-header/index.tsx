@@ -81,7 +81,7 @@ export function CalendarHeader() {
   return (
     <CardHeader className="justify-between items-center gap-4 space-y-0 md:flex-row">
       <div className="flex flex-wrap-reverse justify-center items-center gap-4">
-        <div className="space-x-2">
+        <div className="flex gap-x-2">
           <Button
             variant="outline"
             size="sm"
@@ -97,7 +97,7 @@ export function CalendarHeader() {
             onClick={handlePrev}
             aria-label="Previous month"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 rtl:-scale-100" />
           </Button>
           <Button
             variant="outline"
@@ -105,14 +105,14 @@ export function CalendarHeader() {
             onClick={handleNext}
             aria-label="Next month"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 rtl:-scale-100" />
           </Button>
         </div>
         <h2 className="text-lg font-semibold">
           {formatTitle(currentDate, currentView)}
         </h2>
       </div>
-      <div className="space-x-2">
+      <div className="flex gap-x-2">
         <Button
           variant={currentView === "dayGridMonth" ? "default" : "outline"} // Default variant when it's the active view; otherwise, outline for non-active views
           size="sm"

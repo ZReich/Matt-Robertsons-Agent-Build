@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MoreVertical, ListRestart, Send } from "lucide-react";
 
 import { EmailComposerSchema } from "../../../_schemas/email-composer-schema";
+
+import type { EmailComposerFormType } from "../../../types";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,15 +26,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
-import { EmailComposerTextarea } from "../email-composer-textarea";
-
-type FormType = z.infer<typeof EmailComposerSchema>;
+import { Editor } from "@/components/editor";
 
 export function EmailComposerForm() {
   const [showCc, setShowCc] = React.useState(false);
   const [showBcc, setShowBcc] = React.useState(false);
 
-  const form = useForm<FormType>({
+  const form = useForm<EmailComposerFormType>({
     resolver: zodResolver(EmailComposerSchema),
     defaultValues: {
       to: "",
@@ -44,7 +43,7 @@ export function EmailComposerForm() {
     },
   });
 
-  function onSubmit(data: FormType) {}
+  function onSubmit(data: EmailComposerFormType) {}
 
   return (
     <Form {...form}>
@@ -125,9 +124,11 @@ export function EmailComposerForm() {
             render={({ field }) => (
               <FormItem className="space-y-0">
                 <FormControl>
-                  <EmailComposerTextarea
-                    content={field.value}
-                    onChange={field.onChange}
+                  <Editor
+                    placeholder="Write your message here..."
+                    onValueChange={field.onChange}
+                    className="h-40"
+                    {...field}
                   />
                 </FormControl>
                 <FormMessage />

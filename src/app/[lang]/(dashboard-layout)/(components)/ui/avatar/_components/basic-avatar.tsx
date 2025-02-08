@@ -7,9 +7,13 @@ export function BasicAvatar() {
       <CardHeader>
         <CardTitle>Basic Avatar</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex justify-center items-center gap-2">
         <Avatar>
           <AvatarImage src="/images/avatars/01.png" alt="John Doe" />
+          <AvatarFallback>JD</AvatarFallback>
+        </Avatar>
+        <Avatar>
+          <AvatarImage src="#" alt="John Doe" />
           <AvatarFallback>JD</AvatarFallback>
         </Avatar>
       </CardContent>

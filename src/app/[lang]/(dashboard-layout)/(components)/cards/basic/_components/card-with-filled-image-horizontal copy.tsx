@@ -31,7 +31,7 @@ export function CardWithFilledImageHorizontal() {
             High-quality sound, deep bass, and long battery life.
           </CardDescription>
         </CardContent>
-        <CardFooter className="space-x-3 pt-6 ps-0">
+        <CardFooter className="gap-x-3 pt-6 ps-0">
           <Button>Buy Now</Button>
           <Button variant="secondary">Learn More</Button>
         </CardFooter>

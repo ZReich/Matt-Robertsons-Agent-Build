@@ -11,7 +11,7 @@ export function AvatarStackLimit() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Limit</CardTitle>
+        <CardTitle>Avatar Stack Limit</CardTitle>
       </CardHeader>
       <CardContent className="grid justify-center gap-2">
         <AvatarStack avatars={avatarsData} limit={2} />

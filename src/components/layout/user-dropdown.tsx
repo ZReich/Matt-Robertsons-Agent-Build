@@ -73,7 +73,7 @@ export function UserDropdown({
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup className="max-w-48">
-          <DropdownMenuItem className="hover:cursor-pointer" asChild>
+          <DropdownMenuItem asChild>
             <Link
               href={ensureLocalizedPathname("/pages/account/profile", locale)}
               className={cn(
@@ -85,7 +85,7 @@ export function UserDropdown({
               {dictionary.navigation.userNav.profile}
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem className="hover:cursor-pointer" asChild>
+          <DropdownMenuItem asChild>
             <Link
               href={ensureLocalizedPathname("/pages/account/settings", locale)}
               className={cn(
@@ -99,7 +99,7 @@ export function UserDropdown({
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="p-0">
+        <DropdownMenuItem asChild>
           <Button
             variant="ghost"
             className="w-full justify-start gap-2"

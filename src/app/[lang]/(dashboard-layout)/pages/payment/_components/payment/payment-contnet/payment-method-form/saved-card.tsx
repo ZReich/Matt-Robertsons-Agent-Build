@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { Landmark } from "lucide-react";
 
-import type { PaymentType } from "../../../../types";
-import type { FormType } from ".";
+import type { PaymentType, PaymentMethodFormType } from "../../../../types";
 
 import { Card } from "@/components/ui/card";
 import { RadioGroupItem } from "@/components/ui/radio-group";
@@ -15,7 +14,7 @@ export function SavedCard({
   onSelect,
 }: {
   card: PaymentType["savedCards"][0];
-  onSelect: (id: FormType["savedCard"]) => void;
+  onSelect: (id: PaymentMethodFormType["savedCard"]) => void;
 }) {
   const isBankAccount = !card.cardType;
 
@@ -28,7 +27,7 @@ export function SavedCard({
       />
       <Label
         htmlFor={card.id}
-        className="w-full flex items-center justify-start gap-2 cursor-pointer"
+        className="w-full flex items-center justify-start gap-2"
       >
         {isBankAccount ? (
           <>

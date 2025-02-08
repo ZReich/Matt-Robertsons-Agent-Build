@@ -3,19 +3,17 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Grid2x2Plus, CalendarIcon } from "lucide-react";
+import { Grid2x2Plus } from "lucide-react";
 
 import { labelsData } from "../../_data/labels";
 
 import { KanbanTaskSchema } from "../../_schemas/kanban-task-schema";
 
-import { cn, formatDate, isBeforeToday } from "@/lib/utils";
+import type { KanbanTaskFormType } from "../../types";
 
 import { useKanbanContext } from "../../hooks/use-kanban-context";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -34,11 +32,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -46,8 +39,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AssignedFormField } from "./assigned-form-field";
-import { AttachmentsFormField } from "./attachments-form-field";
+import { DatePicker } from "@/components/date-picker";
+import { TagsInputWithSuggestions } from "@/components/ui/tags-input";
+import { FileDropzone } from "@/components/ui/file-dropzone";
 
 const defaultValues = {
   title: "",
@@ -59,8 +53,6 @@ const defaultValues = {
   attachments: [],
 };
 
-type FormType = z.infer<typeof KanbanTaskSchema>;
-
 export function KanbanUpdateTaskSidebar() {
   const {
     kanbanState,
@@ -70,12 +62,12 @@ export function KanbanUpdateTaskSidebar() {
     handleSelectTask,
   } = useKanbanContext();
 
-  const form = useForm<FormType>({
+  const form = useForm<KanbanTaskFormType>({
     resolver: zodResolver(KanbanTaskSchema),
     defaultValues,
   });
 
-  const selectedTask = kanbanState.selectedTask;
+  const { teamMembers, selectedTask } = kanbanState;
 
   // Reset the form with the current selected task's values whenever `selectedTask` changes
   React.useEffect(() => {
@@ -92,7 +84,7 @@ export function KanbanUpdateTaskSidebar() {
     }
   }, [selectedTask, form]);
 
-  function onSubmit(data: FormType) {
+  function onSubmit(data: KanbanTaskFormType) {
     if (selectedTask) {
       handleUpdateTask({
         ...data,
@@ -170,42 +162,38 @@ export function KanbanUpdateTaskSidebar() {
                   </FormItem>
                 )}
               />
-              <AssignedFormField form={form} />
+              <FormField
+                control={form.control}
+                name="assigned"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Assigned Team Members</FormLabel>
+                    <TagsInputWithSuggestions
+                      suggestions={teamMembers.map(({ name }) => name)}
+                      tags={field.value.map(({ name }) => name)}
+                      onTagsChange={(tags) =>
+                        field.onChange(
+                          teamMembers.filter((member) =>
+                            tags.includes(member.name)
+                          )
+                        )
+                      }
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="dueDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Due Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              formatDate(field.value)
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value || undefined}
-                          onSelect={field.onChange}
-                          disabled={(date) => isBeforeToday(date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <DatePicker
+                      formatStr="PPP"
+                      onValueChange={field.onChange}
+                      {...field}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -227,7 +215,24 @@ export function KanbanUpdateTaskSidebar() {
                   </FormItem>
                 )}
               />
-              <AttachmentsFormField form={form} />
+              <FormField
+                control={form.control}
+                name="attachments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Attachments</FormLabel>
+                    <FormControl>
+                      <FileDropzone
+                        multiple
+                        onFilesChange={field.onChange}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <Button type="submit" className="w-full">
                 <Grid2x2Plus className="me-1 size-4" />
                 Save

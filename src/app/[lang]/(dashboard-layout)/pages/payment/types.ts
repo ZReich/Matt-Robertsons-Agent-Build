@@ -1,3 +1,7 @@
+import { z } from "zod";
+
+import { PaymentMethodSchema } from "./_schemas/payment-method-schema";
+
 export interface CardType {
   id: string;
   cardType?: string;
@@ -20,3 +24,5 @@ export interface PaymentType {
   };
   savedCards: CardType[];
 }
+
+export type PaymentMethodFormType = z.infer<typeof PaymentMethodSchema>;

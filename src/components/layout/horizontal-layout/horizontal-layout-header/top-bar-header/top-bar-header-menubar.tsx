@@ -53,10 +53,7 @@ export function TopBarHeaderMenubar({
         <MenubarSub>
           <MenubarSubTrigger className="gap-2">
             {"iconName" in item && (
-              <DynamicIcon
-                name={item.iconName}
-                className="me-2 h-4 w-4"
-              />
+              <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
             )}
             <span>{title}</span>
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
@@ -77,7 +74,7 @@ export function TopBarHeaderMenubar({
     // Otherwise, render the item with a link.
     if ("href" in item) {
       const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = pathname.includes(item.href);
+      const isActive = pathname.endsWith(item.href);
 
       return (
         <MenubarItem asChild>

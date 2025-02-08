@@ -7,7 +7,7 @@ export function ButtonVariants() {
       <CardHeader>
         <CardTitle>Button Variants</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-wrap justify-center items-center gap-2">
+      <CardContent className="flex flex-wrap justify-center items-center gap-2 text-center">
         <div className="space-y-1.5">
           <h4>Primary</h4>
           <Button>Click Here</Button>

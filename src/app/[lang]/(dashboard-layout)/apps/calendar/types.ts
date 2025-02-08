@@ -1,3 +1,7 @@
+import { z } from "zod";
+
+import { EventSidebarSchema } from "./_schemas/event-sidebar-schema";
+
 import type { CalendarApi } from "@fullcalendar/core/index.js";
 
 export interface CalendarContextType {
@@ -57,3 +61,5 @@ export type CalendarActionType = {
   eventId?: string;
   isSelectAllCategories?: boolean;
 };
+
+export type EventSidebarFormType = z.infer<typeof EventSidebarSchema>;

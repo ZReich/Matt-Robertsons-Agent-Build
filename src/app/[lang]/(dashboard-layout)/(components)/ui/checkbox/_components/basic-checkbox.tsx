@@ -9,8 +9,8 @@ export function BasicCheckbox() {
       <CardHeader>
         <CardTitle>Basic Checkbox</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2">
-        <div className="flex items-center space-x-2">
+      <CardContent className="grid justify-center gap-2">
+        <div className="flex items-center gap-x-2">
           <Checkbox id="terms" />
           <label
             htmlFor="terms"
@@ -19,7 +19,7 @@ export function BasicCheckbox() {
             Accept terms and conditions
           </label>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-x-2">
           <Checkbox id="terms2" checked />
           <label
             htmlFor="terms2"

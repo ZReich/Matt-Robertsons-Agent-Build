@@ -11,7 +11,7 @@ export function AvatarStackSize() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Size</CardTitle>
+        <CardTitle>Avatar Stack Size</CardTitle>
       </CardHeader>
       <CardContent className="grid justify-center gap-2">
         <div className="space-y-1.5">

@@ -1,23 +1,23 @@
+import { z } from "zod";
+
+import { TextMessageSchema } from "./_schemas/text-message-schema";
+import { FilesUploaderSchema } from "./_schemas/files-uploader-schema";
+import { ImagesUploaderSchema } from "./_schemas/images-uploader-schema";
+
+import type { FileType } from "@/types";
+
 export interface ChatContextType {
   chatState: ChatStateType;
   isChatSidebarOpen: boolean;
   setIsChatSidebarOpen: (val: boolean) => void;
   handleSelectChat: (chat: ChatType) => void;
   handleAddTextMessage: (text: string) => void;
-  handleAddImagesMessage: (images: File[]) => void;
-  handleAddFilesMessage: (files: File[]) => void;
+  handleAddImagesMessage: (images: FileType[]) => void;
+  handleAddFilesMessage: (files: FileType[]) => void;
   handleSetUnreadCount: () => void;
 }
 
 export type ChatStatusType = "READ" | "DELIVERED" | "SENT" | null;
-
-export interface FileType {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  url: string;
-}
 
 export interface MessageType {
   id: string;
@@ -34,9 +34,9 @@ export type NewMessageType = Omit<
   MessageType,
   "id" | "senderId" | "createdAt" | "images" | "files" | "voiceMessage"
 > & {
-  images?: File[];
-  files?: File[];
-  voiceMessage?: File;
+  images?: FileType[];
+  files?: FileType[];
+  voiceMessage?: FileType;
 };
 
 export interface UserType {
@@ -75,11 +75,11 @@ export type ChatActionType =
     }
   | {
       type: "addImagesMessage";
-      images: File[];
+      images: FileType[];
     }
   | {
       type: "addFilesMessage";
-      files: File[];
+      files: FileType[];
     }
   | {
       type: "setUnreadCount";
@@ -88,3 +88,9 @@ export type ChatActionType =
       type: "selectChat";
       chat: ChatType;
     };
+
+export type TextMessageFormType = z.infer<typeof TextMessageSchema>;
+
+export type FilesUploaderFormType = z.infer<typeof FilesUploaderSchema>;
+
+export type ImagesUploaderFormType = z.infer<typeof ImagesUploaderSchema>;

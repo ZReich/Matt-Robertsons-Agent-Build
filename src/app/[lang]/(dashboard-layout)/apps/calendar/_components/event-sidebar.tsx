@@ -3,20 +3,15 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { format } from "date-fns";
-import { CalendarCheck2, CalendarIcon, CalendarMinus } from "lucide-react";
+import { CalendarCheck2, CalendarMinus } from "lucide-react";
 
 import { EventSidebarSchema } from "../_schemas/event-sidebar-schema";
 
-import { cn, isBeforeToday } from "@/lib/utils";
-
 import { useCalendarContext } from "../hooks/calendar-context";
 
-import type { EventWithoutIdType } from "../types";
+import type { EventWithoutIdType, EventSidebarFormType } from "../types";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -37,11 +32,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -49,8 +39,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-type FormType = z.infer<typeof EventSidebarSchema>;
+import { DatePicker } from "@/components/date-picker";
 
 export function EventSidebar() {
   const {
@@ -64,7 +53,7 @@ export function EventSidebar() {
     setEventSidebarIsOpen,
   } = useCalendarContext();
 
-  const form = useForm<FormType>({
+  const form = useForm<EventSidebarFormType>({
     resolver: zodResolver(EventSidebarSchema),
     defaultValues: {
       title: "",
@@ -108,7 +97,7 @@ export function EventSidebar() {
     setEventSidebarIsOpen(false); // Close the sidebar
   };
 
-  function onSubmit(data: FormType) {
+  function onSubmit(data: EventSidebarFormType) {
     if (!calendarApi) return; // Ensure the calendar API is available before proceeding
 
     const event: EventWithoutIdType = {
@@ -231,35 +220,13 @@ export function EventSidebar() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Start Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={isBeforeToday}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DatePicker
+                        formatStr="PPP"
+                        onValueChange={field.onChange}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -270,35 +237,13 @@ export function EventSidebar() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>End Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={isBeforeToday}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DatePicker
+                        formatStr="PPP"
+                        onValueChange={field.onChange}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

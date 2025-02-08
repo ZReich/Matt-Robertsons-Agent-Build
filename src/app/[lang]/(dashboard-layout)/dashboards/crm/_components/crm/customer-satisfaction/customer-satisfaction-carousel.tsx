@@ -1,10 +1,12 @@
 "use client";
 
 import Autoplay from "embla-carousel-autoplay";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { formatDate, getInitials } from "@/lib/utils";
 
 import type { CustomerSatisfactionType } from "../../../types";
+
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,6 +28,8 @@ export function CustomerSatisfactionCarousel({
 }: {
   data: CustomerSatisfactionType["feedbacks"];
 }) {
+  const direction = useDirection();
+
   return (
     <Carousel
       plugins={[
@@ -38,6 +42,7 @@ export function CustomerSatisfactionCarousel({
       opts={{
         align: "center",
         loop: true,
+        direction,
       }}
       className="w-[calc(100vw-190px)] mx-14 select-none md:w-3/5"
     >
@@ -64,11 +69,7 @@ export function CustomerSatisfactionCarousel({
                 <div className="flex flex-wrap justify-between items-center gap-2">
                   <div className="flex items-center gap-2">
                     <Badge>{feedback.rating.toFixed(1)}</Badge>
-                    <Ratings
-                      variant="yellow"
-                      value={feedback.rating}
-                      size={16}
-                    />
+                    <Ratings value={feedback.rating.toString()} />
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(feedback.createdAt)}

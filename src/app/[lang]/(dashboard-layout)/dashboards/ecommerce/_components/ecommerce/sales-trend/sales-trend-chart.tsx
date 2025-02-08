@@ -2,6 +2,7 @@
 
 import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { useDirection } from "@radix-ui/react-direction";
 
 import { remToPx } from "@/lib/utils";
 
@@ -20,7 +21,10 @@ export function SalesTrendChart({
 }: {
   data: SalesTrendType["salesTrends"];
 }) {
+  const direction = useDirection();
   const { settings } = useSettings();
+
+  const isRtl = direction === "rtl";
 
   return (
     <ChartContainer config={{}} className="w-full md:h-[200px]">
@@ -44,6 +48,7 @@ export function SalesTrendChart({
           }
         />
         <XAxis
+          reversed={isRtl}
           dataKey="date"
           tickLine={false}
           axisLine={false}

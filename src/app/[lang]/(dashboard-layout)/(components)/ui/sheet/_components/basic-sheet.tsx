@@ -18,7 +18,7 @@ export function BasicSheet() {
       <CardHeader>
         <CardTitle>Basic Sheet</CardTitle>
       </CardHeader>
-      <CardContent className="flex justify-center items-center">
+      <CardContent className="h-24 flex justify-center items-center">
         <Sheet>
           <SheetTrigger>Open</SheetTrigger>
           <SheetContent>

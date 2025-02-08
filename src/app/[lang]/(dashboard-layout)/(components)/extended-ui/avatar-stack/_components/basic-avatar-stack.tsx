@@ -7,11 +7,11 @@ import { avatarsData } from "../_data/avatars";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvatarStack } from "@/components/ui/avatar";
 
-export function DefaultAvatarStack() {
+export function BasicAvatarStack() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Defualt</CardTitle>
+        <CardTitle>Basic Avatar Stack</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
         <AvatarStack avatars={avatarsData} />

@@ -9,8 +9,8 @@ export function CheckboxDisabled() {
       <CardHeader>
         <CardTitle>Checkbox Disabled</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2">
-        <div className="flex items-center space-x-2">
+      <CardContent className="grid justify-center gap-2">
+        <div className="flex items-center gap-x-2">
           <Checkbox id="terms3" disabled />
           <label
             htmlFor="terms3"
@@ -19,7 +19,7 @@ export function CheckboxDisabled() {
             Accept terms and conditions
           </label>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-x-2">
           <Checkbox id="terms4" checked disabled />
           <label
             htmlFor="terms4"

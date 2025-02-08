@@ -18,6 +18,7 @@ const CommentSchema = z.object({
 });
 
 const FileSchema = z.object({
+  id: z.string(),
   url: z.string(),
   name: z.string(),
   size: z.number().max(MAX_SIZE, {
@@ -52,7 +53,6 @@ export const KanbanTaskSchema = z.object({
     invalid_type_error: "Invalid due date. Please provide a valid date.",
   }),
   attachments: z.array(FileSchema).max(10, {
-    message:
-      "At most you can attach a maximum of 10 files.",
+    message: "At most you can attach a maximum of 10 files.",
   }),
 });

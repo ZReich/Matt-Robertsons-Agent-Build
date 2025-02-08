@@ -67,7 +67,7 @@ export function PricingCard({
           </div>
           <ul className="space-y-4">
             {features.map((feature) => (
-              <li key={feature} className="flex items-center space-x-3">
+              <li key={feature} className="flex items-center gap-x-3">
                 <Check className="size-4 text-success" />
                 <span>{feature}</span>
               </li>

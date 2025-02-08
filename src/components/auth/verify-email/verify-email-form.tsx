@@ -12,17 +12,16 @@ import { VerifyEmailSchema } from "@/schemas/verify-email-schema";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-import type { LocaleType } from "@/types";
+import type { LocaleType, VerifyEmailFormType } from "@/types";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 
-type FormType = z.infer<typeof VerifyEmailSchema>;
 
 export function VerifyEmailForm() {
   const params = useParams();
-  const form = useForm<FormType>({
+  const form = useForm<VerifyEmailFormType>({
     resolver: zodResolver(VerifyEmailSchema),
     defaultValues: {
       email: "",
@@ -31,7 +30,7 @@ export function VerifyEmailForm() {
 
   const locale = params.lang as LocaleType;
 
-  async function onSubmit(data: FormType) {
+  async function onSubmit(data: VerifyEmailFormType) {
     try {
       const response = await fetch("/api/auth/verify-email", {
         method: "POST",

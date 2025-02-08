@@ -16,9 +16,9 @@ export default function CarouselPage() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <BasicCarousel />
+      <CarouselOrientation />
       <CarouselSizes />
       <CarouselSpacing />
-      <CarouselOrientation />
       <CarouselAutoplay />
     </section>
   );

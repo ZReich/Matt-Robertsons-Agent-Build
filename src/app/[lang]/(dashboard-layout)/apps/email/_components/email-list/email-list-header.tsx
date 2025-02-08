@@ -31,7 +31,7 @@ export function EmailListHeader() {
   const filterParam = params.segment as string;
 
   return (
-    <CardHeader className="flex-row items-center space-x-1.5 space-y-0 pb-0">
+    <CardHeader className="flex-row items-center gap-x-1.5 space-y-0 pb-0">
       <EmailMenuButton isIcon />
       <EmailListSearchForm pageQuery={pageQuery} filterParam={filterParam} />
       <Button
@@ -55,7 +55,7 @@ export function EmailListHeader() {
               aria-label="Go to previous page"
               disabled={pageQuery <= 1}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 rtl:-scale-100" />
             </Button>
           </PaginationItem>
           <PaginationItem>
@@ -68,7 +68,7 @@ export function EmailListHeader() {
               aria-label="Go to next page"
               disabled={pageQuery >= emailState.totalPages}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 rtl:-scale-100" />
             </Button>
           </PaginationItem>
         </PaginationContent>

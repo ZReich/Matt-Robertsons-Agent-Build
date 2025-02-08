@@ -13,7 +13,7 @@ import { RegisterSchema } from "@/schemas/register-schema";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
 
-import type { LocaleType } from "@/types";
+import type { LocaleType, RegisterFormType } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,14 +29,12 @@ import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
 import { OAuthLinks } from "../oauth-links";
 
-type FormType = z.infer<typeof RegisterSchema>;
-
 export function RegisterForm() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const form = useForm<FormType>({
+  const form = useForm<RegisterFormType>({
     resolver: zodResolver(RegisterSchema),
   });
 
@@ -45,7 +43,7 @@ export function RegisterForm() {
   const { isSubmitting, isValid, isDirty } = form.formState;
   const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: FormType) {
+  async function onSubmit(data: RegisterFormType) {
     const { firstName, lastName, username, email, password } = data;
 
     try {
@@ -68,7 +66,7 @@ export function RegisterForm() {
           issues,
           message,
         }: {
-          issues?: { path: (keyof FormType)[]; message: string }[];
+          issues?: { path: (keyof RegisterFormType)[]; message: string }[];
           message?: string;
         } = await res.json();
 
@@ -104,7 +102,7 @@ export function RegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
         <div className="grid gap-2">
-          <div className="flex justify-between gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <FormField
               control={form.control}
               name="firstName"

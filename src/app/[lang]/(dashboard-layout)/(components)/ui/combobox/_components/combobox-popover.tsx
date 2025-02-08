@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface Status {
   value: string;
   label: string;
-};
+}
 
 const statuses: Status[] = [
   {
@@ -58,7 +58,7 @@ export function ComboboxPopover() {
         <CardTitle>Combobox Popover</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-x-4">
           <p className="text-sm text-muted-foreground">Status</p>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>

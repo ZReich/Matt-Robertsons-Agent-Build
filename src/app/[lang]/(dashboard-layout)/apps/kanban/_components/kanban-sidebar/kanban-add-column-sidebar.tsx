@@ -3,10 +3,11 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Grid2x2Plus } from "lucide-react";
 
 import { KanbanColumnSchema } from "../../_schemas/kanban-column-schema";
+
+import type { KanbanColumnFormType } from "../../types";
 
 import { useKanbanContext } from "../../hooks/use-kanban-context";
 
@@ -33,8 +34,6 @@ const defaultValues = {
   title: "",
 };
 
-type FormType = z.infer<typeof KanbanColumnSchema>;
-
 export function KanbanAddColumnSidebar() {
   const {
     kanbanAddColumnSidebarIsOpen,
@@ -42,7 +41,7 @@ export function KanbanAddColumnSidebar() {
     handleAddColumn,
   } = useKanbanContext();
 
-  const form = useForm<FormType>({
+  const form = useForm<KanbanColumnFormType>({
     resolver: zodResolver(KanbanColumnSchema),
     defaultValues,
   });
@@ -52,7 +51,7 @@ export function KanbanAddColumnSidebar() {
     form.reset();
   }, [kanbanAddColumnSidebarIsOpen, form]);
 
-  function onSubmit(data: FormType) {
+  function onSubmit(data: KanbanColumnFormType) {
     handleAddColumn(data);
 
     handleSidebarClose();

@@ -210,10 +210,6 @@ export const navigationsData: NavigationType[] = [
             href: "/ui/context-menu",
           },
           {
-            title: "Date Picker",
-            href: "/ui/date-picker",
-          },
-          {
             title: "Dialog",
             href: "/ui/dialog",
           },
@@ -298,8 +294,8 @@ export const navigationsData: NavigationType[] = [
             href: "/ui/slider",
           },
           {
-            title: "Snackbar",
-            href: "/ui/snackbar",
+            title: "Sonner",
+            href: "/ui/sonner",
           },
           {
             title: "Switch",
@@ -398,8 +394,8 @@ export const navigationsData: NavigationType[] = [
             href: "/forms/basic-inputs",
           },
           {
-            title: "File Dropzone",
-            href: "/forms/file-dropzone",
+            title: "File Dropzones",
+            href: "/forms/file-dropzones",
           },
           {
             title: "Form Layouts",

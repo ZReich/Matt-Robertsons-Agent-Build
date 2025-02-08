@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon, Mail } from "lucide-react";
+import { CalendarIcon, Mail, Clock } from "lucide-react";
 
 import { formatDate } from "@/lib/utils";
 
@@ -30,7 +30,11 @@ export function BasicInputs() {
       <CardContent className="grid gap-2">
         <div className="space-y-1.5">
           <Label htmlFor="inputTime">Input Time</Label>
-          <InputTime id="inputTime" />
+
+          <div className="relative">
+            <InputTime id="inputTime" />
+            <Clock className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="enabledInput">Enabled Input</Label>

@@ -4,6 +4,13 @@ import { i18n } from "@/configs/i18n";
 import { baseColors } from "@/configs/base-colors";
 
 import type { LucideIcon } from "lucide-react";
+import { z } from "zod";
+import { ForgotPasswordSchema } from "./schemas/forgot-passward-schema";
+import { NewPasswordSchema } from "./schemas/new-passward-schema";
+import { RegisterSchema } from "./schemas/register-schema";
+import { SignInSchema } from "./schemas/sign-in-schema";
+import { VerifyEmailSchema } from "./schemas/verify-email-schema";
+import { ComingSoonSchema } from "./schemas/coming-soon-schema";
 
 export type LayoutType = "vertical" | "horizontal";
 
@@ -25,10 +32,11 @@ export type SettingsType = {
   locale: LocaleType;
 };
 
-interface IconProps extends React.SVGAttributes<SVGElement> {
+export interface IconProps extends React.SVGAttributes<SVGElement> {
   children?: never;
   color?: string;
 }
+
 export type IconType = React.ComponentType<IconProps> | LucideIcon;
 
 export type DynamicIconNameType = keyof typeof icons;
@@ -106,3 +114,23 @@ export interface OAuthLinkType {
   label: string;
   icon: IconType;
 }
+
+export interface FileType {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+}
+
+export type ForgotPasswordFormType = z.infer<typeof ForgotPasswordSchema>;
+
+export type NewPasswordFormType = z.infer<typeof NewPasswordSchema>;
+
+export type RegisterFormType = z.infer<typeof RegisterSchema>;
+
+export type SignInFormType = z.infer<typeof SignInSchema>;
+
+export type VerifyEmailFormType = z.infer<typeof VerifyEmailSchema>;
+
+export type ComingSoonFormType = z.infer<typeof ComingSoonSchema>;
