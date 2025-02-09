@@ -7,7 +7,6 @@ import { formatDate, getInitials } from "@/lib/utils";
 
 import type { CustomerSatisfactionType } from "../../../types";
 
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +19,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Ratings } from "@/components/ui/ratings";
+import { Rating } from "@/components/ui/rating";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CustomerSatisfactionCarousel({
@@ -68,8 +67,8 @@ export function CustomerSatisfactionCarousel({
               <CardContent className="space-y-1.5 p-3">
                 <div className="flex flex-wrap justify-between items-center gap-2">
                   <div className="flex items-center gap-2">
-                    <Badge>{feedback.rating.toFixed(1)}</Badge>
-                    <Ratings value={feedback.rating.toString()} />
+                    <Badge aria-hidden>{feedback.rating.toFixed(1)}</Badge>
+                    <Rating value={feedback.rating.toString()} readOnly />
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(feedback.createdAt)}

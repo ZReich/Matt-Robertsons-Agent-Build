@@ -28,9 +28,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { ScrollArea } from "../ui/scroll-area";
-import { Keyboard } from "../ui/keyboard";
-import { Button } from "../ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Keyboard } from "@/components/ui/keyboard";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,

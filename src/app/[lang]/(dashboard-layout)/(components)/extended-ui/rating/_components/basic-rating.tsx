@@ -2,19 +2,19 @@
 
 import * as React from "react";
 
-import { Ratings } from "@/components/ui/ratings";
+import { Rating } from "@/components/ui/rating";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function BasicRatings() {
+export function BasicRating() {
   const [rating, setRating] = React.useState("0");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Basic Ratings</CardTitle>
+        <CardTitle>Basic Rating</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <Ratings value={rating} onValueChange={setRating} />
+        <Rating value={rating} onValueChange={setRating} />
       </CardContent>
     </Card>
   );

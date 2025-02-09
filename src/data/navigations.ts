@@ -371,8 +371,8 @@ export const navigationsData: NavigationType[] = [
             href: "/extended-ui/keyboard",
           },
           {
-            title: "Ratings",
-            href: "/extended-ui/ratings",
+            title: "Rating",
+            href: "/extended-ui/rating",
           },
           {
             title: "Separator with Text",

@@ -2,21 +2,21 @@
 
 import * as React from "react";
 
-import { Ratings } from "@/components/ui/ratings";
+import { Rating } from "@/components/ui/rating";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function RatingsLength() {
+export function RatingLength() {
   const [rating, setRating] = React.useState("0");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ratings Length</CardTitle>
+        <CardTitle>Rating Length</CardTitle>
       </CardHeader>
       <CardContent className="grid justify-center gap-2">
-        <Ratings value={rating} onValueChange={setRating} />
-        <Ratings value={rating} onValueChange={setRating} length={4} />
-        <Ratings value={rating} onValueChange={setRating} length={3} />
+        <Rating value={rating} onValueChange={setRating} />
+        <Rating value={rating} onValueChange={setRating} length={4} />
+        <Rating value={rating} onValueChange={setRating} length={3} />
       </CardContent>
     </Card>
   );

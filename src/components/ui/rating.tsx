@@ -3,11 +3,13 @@
 import * as React from "react";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { cva } from "class-variance-authority";
-import { Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 import type { VariantProps } from "class-variance-authority";
+import type { DynamicIconNameType } from "@/types";
+
+import { DynamicIcon } from "../dynamic-icon";
 
 const starVariants = cva(
   "transition-all duration-100 ease-in-out hover:scale-110",
@@ -21,7 +23,7 @@ const starVariants = cva(
       variant: {
         default: "text-yellow-400",
         primary: "text-primary",
-        secondary: "text-secondary",
+        muted: "text-muted-foreground",
       },
       filled: {
         true: "",
@@ -36,15 +38,17 @@ const starVariants = cva(
   }
 );
 
-interface RatingsProps
+export interface RatingProps
   extends React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>,
     VariantProps<typeof starVariants> {
   length?: number;
+  readOnly?: boolean;
+  iconName?: DynamicIconNameType;
 }
 
-export const Ratings = React.forwardRef<
+export const Rating = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Root>,
-  RatingsProps
+  RatingProps
 >(
   (
     {
@@ -53,12 +57,47 @@ export const Ratings = React.forwardRef<
       size,
       variant = "default",
       orientation = "horizontal",
+      readOnly = false,
+      iconName = "Star",
       ...props
     },
     ref
   ) => {
     const currentValue = props.value || "0";
     const [hoverValue, onHoverValue] = React.useState(currentValue);
+
+    if (readOnly) {
+      return (
+        <div
+          ref={ref}
+          role="img"
+          className={cn(
+            "flex",
+            orientation === "horizontal" ? "gap-x-1.5" : "flex-col space-y-1.5",
+            className
+          )}
+          aria-label={`Rating: ${currentValue} out of ${length}`}
+          {...props}
+        >
+          {Array.from({ length }, (_, index) => {
+            const starValue = (index + 1).toString();
+            const filled = Number(starValue) <= Number(currentValue);
+
+            return (
+              <DynamicIcon
+                key={starValue}
+                name={iconName}
+                className={cn(
+                  starVariants({ size, variant, filled }),
+                  "fill-current"
+                )}
+                aria-hidden
+              />
+            );
+          })}
+        </div>
+      );
+    }
 
     return (
       <RadioGroupPrimitive.Root
@@ -74,18 +113,19 @@ export const Ratings = React.forwardRef<
         {...props}
       >
         {Array.from({ length }).map((_, index) => {
-          const itemValue = (index + 1).toString();
+          const starValue = (index + 1).toString();
           const filled =
-            Number(itemValue) <= (Number(hoverValue) || Number(currentValue));
+            Number(starValue) <= (Number(hoverValue) || Number(currentValue));
 
           return (
-            <RatingsStar
-              key={index}
+            <RatingStar
+              key={starValue}
               variant={variant}
               size={size}
               filled={filled}
-              value={itemValue}
+              value={starValue}
               onHoverValue={onHoverValue}
+              iconName={iconName}
             />
           );
         })}
@@ -93,18 +133,19 @@ export const Ratings = React.forwardRef<
     );
   }
 );
-Ratings.displayName = "Ratings";
+Rating.displayName = "Rating";
 
-interface RatingsStarProps
+export interface RatingStarProps
   extends RadioGroupPrimitive.RadioGroupItemProps,
     VariantProps<typeof starVariants> {
   onHoverValue: (rating: string) => void;
+  iconName: DynamicIconNameType;
 }
 
-const RatingsStar = React.forwardRef<
+const RatingStar = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
-  RatingsStarProps
->(({ value, size, variant, filled, onHoverValue, ...props }, ref) => {
+  RatingStarProps
+>(({ value, size, variant, filled, onHoverValue, iconName, ...props }, ref) => {
   return (
     <RadioGroupPrimitive.Item
       ref={ref}
@@ -117,8 +158,8 @@ const RatingsStar = React.forwardRef<
       aria-label={`Rate ${value} star${value === "1" ? "" : "s"}`}
       {...props}
     >
-      <Star className="h-full w-full fill-current" />
+      <DynamicIcon name={iconName} className="h-full w-full fill-current" />
     </RadioGroupPrimitive.Item>
   );
 });
-RatingsStar.displayName = "RatingsStar";
+RatingStar.displayName = "RatingStar";

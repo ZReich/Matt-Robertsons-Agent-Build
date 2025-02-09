@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { InputTime } from "@/components/ui/input-time";
-import { Separator } from "./ui/separator";
+import { Separator } from "@/components/ui/separator";
 
 export type DateTimePickerProps = CalendarProps &
   React.HTMLAttributes<HTMLDivElement> & {

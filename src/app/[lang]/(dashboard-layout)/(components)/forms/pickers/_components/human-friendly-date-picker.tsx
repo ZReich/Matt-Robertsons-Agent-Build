@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { DatePicker } from "../../../../../../../components/date-picker";
+import { DatePicker } from "@/components/date-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function HumanFriendlyDatePicker() {
