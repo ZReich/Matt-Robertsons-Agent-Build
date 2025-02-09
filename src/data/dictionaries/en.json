@@ -111,7 +111,8 @@
     "ratings": "Ratings",
     "separatorWithText": "Separator with Text",
     "showMoreText": "Show More Text",
-    "tagsInput": "Tags Input",
+    "inputTags": "Input Tags",
+    "emojiPicker": "Emoji Picker",
     "timeline": "Timeline",
     "language": {
       "language": "Language",

@@ -1,3 +1,4 @@
+// Refer to FullCalendar documentation for more details https://fullcalendar.io/docs
 "use client";
 
 import * as React from "react";
@@ -17,7 +18,6 @@ import type { CategoryType, EventType } from "../../types";
 import { useCalendarContext } from "../../hooks/calendar-context";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Map of category types to specific event colors for visual differentiation
 const eventColors: Record<CategoryType, string> = {
   Business: "hsl(var(--chart-1))",
   Personal: "hsl(var(--chart-2))",
@@ -30,7 +30,6 @@ const eventColors: Record<CategoryType, string> = {
 export function CalendarContent() {
   const isMobile = useIsMobile();
   const direction = useDirection();
-  // Destructure context values related to the calendar state and actions
   const {
     calendarState,
     calendarApi,
@@ -40,7 +39,6 @@ export function CalendarContent() {
     setEventSidebarIsOpen,
   } = useCalendarContext();
 
-  // Create a reference to access the FullCalendar instance
   const calendarRef = React.useRef<null | FullCalendar>(null);
 
   // Initialize the calendar API when the component mounts or when `calendarApi` is not already set
@@ -68,24 +66,20 @@ export function CalendarContent() {
     };
   };
 
-  // Handler for date click events to switch the view to the day view for the clicked date
   const handleDateClick = (date: DateInput) => {
     if (calendarApi) {
       calendarApi.changeView("timeGridDay", date);
     }
   };
 
-  // Handler for event drop (drag-and-drop) to update the event's position
   const handleEventDrop = ({ event }: { event: EventImpl }) => {
     return handleUpdateEvent(parseEvent(event));
   };
 
-  // Handler for event resize to update the event's timing
   const handleEventResize = ({ event }: { event: EventImpl }) => {
     return handleUpdateEvent(parseEvent(event));
   };
 
-  // Handler for event click to open the event sidebar and display event details
   const handleEventClick = ({
     event,
     jsEvent,
@@ -95,7 +89,6 @@ export function CalendarContent() {
   }) => {
     jsEvent.preventDefault(); // Prevent default behavior like following a link
 
-    // Call the event selection handler and open the event sidebar
     handleSelectEvent(parseEvent(event));
     setEventSidebarIsOpen(true);
   };
@@ -104,7 +97,7 @@ export function CalendarContent() {
   const events = calendarState.events.map(
     (event: EventType): EventSourceInput[] => ({
       ...event,
-      // @ts-ignore: Ignoring TypeScript error for color property type
+      // @ts-ignore
       color: eventColors[event.extendedProps.category], // Set color based on event category
     })
   );
@@ -117,24 +110,24 @@ export function CalendarContent() {
 
   return (
     <FullCalendar
-      ref={calendarRef} // Reference for accessing the FullCalendar instance
+      ref={calendarRef}
       direction={direction}
-      initialView={INITIAL_VIEW} // Initial calendar view on load
-      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]} // List of FullCalendar plugins for functionality
-      eventDisplay="block" // Display events as block elements
-      events={events} // Events data for the calendar
-      eventClassNames={eventClassNames} // Custom class names for styling events
-      headerToolbar={false} // Hide the default header toolbar
-      editable // Allow events to be edited through drag-and-drop
-      eventResizableFromStart // Allow resizing events from the start
-      dragScroll // Enable scrolling while dragging events
-      dayMaxEvents={2} // Limit the number of events displayed per day
+      initialView={INITIAL_VIEW}
+      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+      eventDisplay="block"
+      events={events}
+      eventClassNames={eventClassNames}
+      headerToolbar={false}
+      editable
+      eventResizableFromStart
+      dragScroll
+      dayMaxEvents={2}
       height={isMobile ? "calc(100svh - 20rem)" : "calc(100vh - 17rem)"}
-      navLinks // Allow navigation links for days and weeks
-      navLinkDayClick={handleDateClick} // Callback for day navigation link click
-      eventDrop={handleEventDrop} // Event handler for drag-and-drop
-      eventResize={handleEventResize} // Event handler for resizing events
-      eventClick={handleEventClick} // Event handler for clicking events
+      navLinks
+      navLinkDayClick={handleDateClick}
+      eventDrop={handleEventDrop}
+      eventResize={handleEventResize}
+      eventClick={handleEventClick}
     />
   );
 }

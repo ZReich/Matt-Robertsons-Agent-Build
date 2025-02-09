@@ -125,17 +125,20 @@ const AvatarStack = React.memo(
         ))}
 
         {/* Show "+N" if avatars exceed the limit */}
-        {remainingCount > 0 && moreHref ? (
-          <Link href={moreHref} className="-ms-1 -me-1">
-            <Avatar className={avatarStackVariants({ size })}>
+        {remainingCount > 0 &&
+          (moreHref ? (
+            <Link href={moreHref} className="-ms-1 -me-1">
+              <Avatar className={avatarStackVariants({ size })}>
+                <AvatarFallback>+{remainingCount}</AvatarFallback>
+              </Avatar>
+            </Link>
+          ) : (
+            <Avatar
+              className={cn("-ms-1 -me-1", avatarStackVariants({ size }))}
+            >
               <AvatarFallback>+{remainingCount}</AvatarFallback>
             </Avatar>
-          </Link>
-        ) : (
-          <Avatar className={cn("-ms-1 -me-1", avatarStackVariants({ size }))}>
-            <AvatarFallback>+{remainingCount}</AvatarFallback>
-          </Avatar>
-        )}
+          ))}
       </div>
     );
   }

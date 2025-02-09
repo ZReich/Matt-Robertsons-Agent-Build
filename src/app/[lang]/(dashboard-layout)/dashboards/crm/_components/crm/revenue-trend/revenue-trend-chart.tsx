@@ -1,29 +1,27 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { useDirection } from "@radix-ui/react-direction";
 
 import { remToPx } from "@/lib/utils";
 
 import type { RevenueTrendType } from "../../../types";
 
+import { useSettings } from "@/hooks/use-settings";
+import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useSettings } from "@/hooks/use-settings";
 
 export function RevenueTrendChart({
   data,
 }: {
   data: RevenueTrendType["revenueTrends"];
 }) {
-  const direction = useDirection();
   const { settings } = useSettings();
-
-  const isRtl = direction === "rtl";
+  const isRtl = useIsRtl();
 
   return (
     <ChartContainer config={{}} className="aspect-auto h-40 w-full">

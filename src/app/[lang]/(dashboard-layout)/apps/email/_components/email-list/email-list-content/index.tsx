@@ -27,7 +27,7 @@ export function EmailListContent() {
   }, [pageQuery, filterParam, handleGetFilteredEmails]);
 
   return (
-    <CardContent className="p-0">
+    <CardContent className="flex-1 h-full flex flex-col p-0">
       <EmailListContentHeader />
       {isMediumOrSmaller ? (
         <EmailListContentMobile />

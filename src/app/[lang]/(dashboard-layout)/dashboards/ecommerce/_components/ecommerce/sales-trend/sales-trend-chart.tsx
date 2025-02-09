@@ -2,13 +2,13 @@
 
 import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { useDirection } from "@radix-ui/react-direction";
 
 import { remToPx } from "@/lib/utils";
 
 import type { SalesTrendType } from "../../../types";
 
 import { useSettings } from "@/hooks/use-settings";
+import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
   ChartContainer,
@@ -21,10 +21,8 @@ export function SalesTrendChart({
 }: {
   data: SalesTrendType["salesTrends"];
 }) {
-  const direction = useDirection();
   const { settings } = useSettings();
-
-  const isRtl = direction === "rtl";
+  const isRtl = useIsRtl();
 
   return (
     <ChartContainer config={{}} className="w-full md:h-[200px]">

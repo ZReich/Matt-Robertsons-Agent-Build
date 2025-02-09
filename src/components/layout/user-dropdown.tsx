@@ -64,50 +64,36 @@ export function UserDropdown({
               </AvatarFallback>
             </Avatar>
           </Button>
-          <dl className="flex flex-col overflow-hidden">
-            <dt className="text-sm font-medium truncate">John Doe</dt>
-            <dd className="text-xs text-muted-foreground truncate">
+          <div className="flex flex-col overflow-hidden">
+            <p className="text-sm font-medium truncate">John Doe</p>
+            <p className="text-xs text-muted-foreground truncate">
               {userData?.email}
-            </dd>
-          </dl>
+            </p>
+          </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup className="max-w-48">
           <DropdownMenuItem asChild>
             <Link
               href={ensureLocalizedPathname("/pages/account/profile", locale)}
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "w-full justify-start gap-2 focus-visible:ring-0"
-              )}
             >
-              <User className="size-4 text-muted-foreground" />
+              <User className="me-2 size-4" />
               {dictionary.navigation.userNav.profile}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link
               href={ensureLocalizedPathname("/pages/account/settings", locale)}
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "w-full justify-start gap-2 focus-visible:ring-0"
-              )}
             >
-              <UserCog className="size-4 text-muted-foreground" />
+              <UserCog className="me-2 size-4" />
               {dictionary.navigation.userNav.settings}
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-2"
-            onClick={() => signOut()}
-          >
-            <LogOut className="size-4 text-muted-foreground" />
-            {dictionary.navigation.userNav.signOut}
-          </Button>
+        <DropdownMenuItem onClick={() => signOut()}>
+          <LogOut className="me-2 size-4" />
+          {dictionary.navigation.userNav.signOut}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

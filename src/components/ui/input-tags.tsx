@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "./scroll-area";
 
-export interface TagsInputProps
+export interface InputTagsProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string;
   tags: string[];
@@ -27,13 +27,13 @@ export interface TagsInputProps
   className?: string;
 }
 
-export function TagsInput({
+export function InputTags({
   placeholder,
   tags,
   onTagsChange,
   className,
   ...props
-}: TagsInputProps) {
+}: InputTagsProps) {
   const [inputValue, setInputValue] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -100,7 +100,7 @@ export function TagsInput({
   );
 }
 
-interface TagsInputWithSuggestionsProps
+interface InputTagsWithSuggestionsProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string;
   tags: string[];
@@ -109,14 +109,14 @@ interface TagsInputWithSuggestionsProps
   className?: string;
 }
 
-export function TagsInputWithSuggestions({
+export function InputTagsWithSuggestions({
   placeholder,
   tags,
   suggestions,
   onTagsChange,
   className,
   ...props
-}: TagsInputWithSuggestionsProps) {
+}: InputTagsWithSuggestionsProps) {
   const [inputValue, setInputValue] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);

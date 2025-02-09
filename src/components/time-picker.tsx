@@ -6,6 +6,8 @@ import { Clock } from "lucide-react";
 
 import { timeToDate } from "@/lib/utils";
 
+import type { InputTimeProps } from "@/components/ui/input-time";
+
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -14,12 +16,11 @@ import {
 } from "@/components/ui/popover";
 import { InputTime } from "@/components/ui/input-time";
 
-export interface TimePickerProps {
+export interface TimePickerProps extends InputTimeProps {
   value: string | undefined;
-  onValueChange: (value: string | undefined) => void;
 }
 
-export function TimePicker({ value, onValueChange }: TimePickerProps) {
+export function TimePicker({ value, ...props }: TimePickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -36,12 +37,7 @@ export function TimePicker({ value, onValueChange }: TimePickerProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <InputTime
-          indicator={false}
-          className="border-0"
-          value={value}
-          onValueChange={onValueChange}
-        />
+        <InputTime className="border-0" value={value} {...props} />
       </PopoverContent>
     </Popover>
   );

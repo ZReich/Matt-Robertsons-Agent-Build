@@ -31,7 +31,7 @@ export function EmailSidebar() {
   if (!isMediumOrSmaller) {
     return (
       <aside>
-        <Card className="w-72 border border-border">{content}</Card>
+        <Card className="h-full w-72 flex flex-col border border-border">{content}</Card>
       </aside>
     );
   }

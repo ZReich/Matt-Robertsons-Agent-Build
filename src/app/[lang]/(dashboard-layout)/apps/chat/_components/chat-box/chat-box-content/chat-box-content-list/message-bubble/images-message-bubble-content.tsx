@@ -40,7 +40,7 @@ export function ImagesMessageBubbleContent({
       {/* Check if there are 4 or more images and if there are more than 4 render '+N' over the 4th image */}
       {images && images.length >= 4 && (
         <li>
-          <Link href="" className="relative size-full block aspect-square ">
+          <Link href="" className="relative size-full block aspect-square">
             <Image
               src={images[3].url}
               alt={images[3].name}

@@ -43,7 +43,7 @@ export function NewVsReturningVisitorsChart({
           </div>
         </div>
 
-        <SeparatorWithText orientation="vertical" className="h-16">
+        <SeparatorWithText orientation="vertical" className="h-20">
           <TbVs
             className="size-4 stroke-border rotate-90 rtl:-rotate-90"
             aria-label="Versus"

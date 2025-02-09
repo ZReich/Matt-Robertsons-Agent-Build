@@ -65,7 +65,7 @@ export const Ratings = React.forwardRef<
         ref={ref}
         className={cn(
           "flex",
-          orientation === "horizontal" ? "space-x-1.5" : "flex-col space-y-1.5",
+          orientation === "horizontal" ? "gap-x-1.5" : "flex-col space-y-1.5",
           className
         )}
         orientation={orientation}

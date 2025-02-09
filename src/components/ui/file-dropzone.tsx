@@ -3,9 +3,9 @@
 import * as React from "react";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
-import { UploadCloud, X } from "lucide-react";
+import { Loader2, UploadCloud, X } from "lucide-react";
 
-import { cn, formatFileSize } from "@/lib/utils";
+import { cn, formatFileSize, wait } from "@/lib/utils";
 
 import type { DropzoneOptions } from "react-dropzone";
 import type { FileType } from "@/types";
@@ -27,12 +27,15 @@ export function FileDropzone({
   ...props
 }: FileDropzoneProps) {
   const [files, setFiles] = React.useState<FileType[]>(value || []);
+  const [loadingFiles, setLoadingFiles] = React.useState<Set<string>>(
+    new Set()
+  );
 
   const maxFiles = props.multiple ? props.maxFiles : 1;
   const isDisabled = maxFiles === files.length;
 
   const onDrop = React.useCallback(
-    (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[]) => {
       const newFiles = acceptedFiles.map((file) => ({
         id: crypto.randomUUID(),
         name: file.name,
@@ -44,6 +47,17 @@ export function FileDropzone({
       const updatedFiles = [...files, ...newFiles];
       setFiles(updatedFiles);
       onFilesChange?.(updatedFiles);
+      setLoadingFiles(new Set(newFiles.map((file) => file.id)));
+
+      // Simulate file processing
+      for (const file of newFiles) {
+        await wait(2000); // Simulate 2 seconds of processing
+        setLoadingFiles((prev) => {
+          const newLoadingFiles = new Set(prev);
+          newLoadingFiles.delete(file.id);
+          return newLoadingFiles;
+        });
+      }
     },
     [files, onFilesChange]
   );
@@ -86,7 +100,7 @@ export function FileDropzone({
       <ScrollArea className="w-0 flex-1 p-6">
         {files.length > 0 ? (
           <div className="grid gap-4 grid-cols-2">
-            {Array.from(files).map((file, index) => (
+            {files.map((file) => (
               <div
                 key={file.id}
                 className="relative flex flex-col rounded-lg border bg-background p-2 cursor-auto"
@@ -104,6 +118,11 @@ export function FileDropzone({
                     fileName={file.name}
                     className="self-center size-[10.312rem] text-4xl"
                   />
+                )}
+                {loadingFiles.has(file.id) && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                  </div>
                 )}
                 <div className="space-y-1">
                   <p className="text-sm font-medium truncate">{file.name}</p>

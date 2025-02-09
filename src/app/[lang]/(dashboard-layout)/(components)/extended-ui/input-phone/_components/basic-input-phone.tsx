@@ -11,7 +11,7 @@ export function BasicInputPhone() {
       <CardHeader>
         <CardTitle>Basic Input Phone</CardTitle>
       </CardHeader>
-      <CardContent className="flex justify-center items-center">
+      <CardContent className="h-40 flex justify-center items-center">
         <InputPhone className="max-w-72" />
       </CardContent>
     </Card>

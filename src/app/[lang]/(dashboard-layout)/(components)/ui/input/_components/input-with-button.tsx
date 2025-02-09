@@ -13,7 +13,7 @@ export function InputWithButton() {
         <CardTitle>Input with Button</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <div className="flex w-full max-w-sm items-center space-x-2">
+        <div className="flex w-full max-w-sm items-center gap-x-2">
           <Input type="email" placeholder="Email" />
           <Button type="submit">Subscribe</Button>
         </div>

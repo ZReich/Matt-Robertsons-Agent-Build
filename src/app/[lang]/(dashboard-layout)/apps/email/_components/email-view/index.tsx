@@ -19,7 +19,9 @@ export function EmailView() {
   const email = React.useMemo(() => {
     if (emailIdParam) {
       // Find the email by ID
-      return emailState.emails.find((email) => email.id === emailIdParam);
+      return emailState.initialEmails.find(
+        (email) => email.id === emailIdParam
+      );
     }
 
     // Return null if not found

@@ -4,6 +4,8 @@ import * as React from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
+import type { CalendarProps } from "@/components/ui/calendar";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -14,17 +16,18 @@ import {
 import { InputTime } from "@/components/ui/input-time";
 import { Separator } from "./ui/separator";
 
-export interface DateTimePickerProps
-  extends React.HTMLAttributes<HTMLDivElement> {
-  value?: Date;
-  onValueChange?: (date?: Date) => void;
-  formatStr?: string;
-}
+export type DateTimePickerProps = CalendarProps &
+  React.HTMLAttributes<HTMLDivElement> & {
+    value?: Date;
+    onValueChange?: (date?: Date) => void;
+    formatStr?: string;
+  };
 
 export function DateTimePicker({
   value,
   onValueChange,
   formatStr = "yyyy-MM-dd p",
+  ...props
 }: DateTimePickerProps) {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
     value
@@ -60,7 +63,7 @@ export function DateTimePicker({
   };
 
   return (
-    <Popover>
+    <Popover modal>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -76,13 +79,11 @@ export function DateTimePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
+          initialFocus
+          {...props}
           mode="single"
           selected={selectedDate}
           onSelect={handleDateSelect}
-          disabled={(date) =>
-            date > new Date() || date < new Date("1900-01-01")
-          }
-          initialFocus
         />
         <Separator />
         <InputTime

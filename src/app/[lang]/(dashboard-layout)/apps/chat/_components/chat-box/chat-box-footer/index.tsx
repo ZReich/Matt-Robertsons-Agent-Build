@@ -1,7 +1,7 @@
 "use client";
 
 import { CardFooter } from "@/components/ui/card";
-import { TextMessageForm } from "../text-message-form";
+import { TextMessageForm } from "./text-message-form";
 import { ChatBoxFooterActions } from "./chat-box-footer-actions";
 
 export function ChatBoxFooter() {

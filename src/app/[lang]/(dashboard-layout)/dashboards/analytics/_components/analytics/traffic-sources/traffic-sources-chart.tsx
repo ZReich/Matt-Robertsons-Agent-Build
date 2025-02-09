@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
-import { useDirection } from "@radix-ui/react-direction";
 
 import { remToPx } from "@/lib/utils";
 
@@ -10,6 +9,7 @@ import type { TrafficSourcesType } from "../../../types";
 import type { ChartConfig } from "@/components/ui/chart";
 
 import { useSettings } from "@/hooks/use-settings";
+import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
   ChartContainer,
@@ -25,9 +25,7 @@ const chartConfig = {
 
 export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
   const { settings } = useSettings();
-  const direction = useDirection();
-
-  const isRtl = direction === "rtl";
+  const isRtl = useIsRtl();
 
   return (
     <ChartContainer

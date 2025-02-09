@@ -1,3 +1,4 @@
+// Refer to Emoji Mart README.md file for more details https://github.com/missive/emoji-mart
 "use client";
 
 import * as React from "react";
@@ -6,10 +7,10 @@ import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { Smile } from "lucide-react";
 
-import { useSettings } from "@/hooks/use-settings";
-
 import type { PickerProps } from "emoji-mart";
 import type { LocaleType } from "@/types";
+
+import { useSettings } from "@/hooks/use-settings";
 
 import {
   Popover,

@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
@@ -173,16 +172,16 @@ export function RegisterForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isDisabled} aria-live="assertive">
-            {isSubmitting && (
-              <LoaderCircle
-                className="me-2 size-4 animate-spin"
-                aria-label="Loading"
-              />
-            )}
-            Sign In with Email
-          </Button>
         </div>
+        <Button type="submit" disabled={isDisabled} aria-live="assertive">
+          {isSubmitting && (
+            <LoaderCircle
+              className="me-2 size-4 animate-spin"
+              aria-label="Loading"
+            />
+          )}
+          Sign In with Email
+        </Button>
         <div className="-mt-4 text-center text-sm">
           Already have an account?{" "}
           <Link

@@ -17,7 +17,7 @@ export function Unauthorized401({ locale }: { locale: LocaleType }) {
         You don&apos;t have permission to access this page. If you&apos;re
         logged in, check your access or contact support.
       </p>
-      <div className="space-x-4">
+      <div className="gap-x-4">
         <Button size="lg" asChild>
           <Link href={ensureLocalizedPathname("/sign-in", locale)}>
             Sign In

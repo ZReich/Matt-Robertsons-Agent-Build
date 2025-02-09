@@ -48,6 +48,18 @@ export function isUrl(text: string) {
   return z.string().url().safeParse(text).success;
 }
 
+export const isActivePathname = (
+  basePathname: string,
+  currentPathname: string
+) => {
+  if (typeof basePathname !== "string" || typeof currentPathname !== "string") {
+    throw new Error("Both basePathname and currentPathname must be strings");
+  }
+
+  const regex = new RegExp(`^${basePathname}(?:/|$)`);
+  return regex.test(currentPathname);
+};
+
 export function formatFileSize(bytes: number, decimals: number = 2) {
   if (bytes === 0) return "0 Bytes";
 

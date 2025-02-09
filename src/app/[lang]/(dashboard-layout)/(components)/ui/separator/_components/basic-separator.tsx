@@ -22,7 +22,7 @@ export function BasicSeparator() {
             </p>
           </div>
           <Separator className="my-4" />
-          <div className="flex h-5 items-center space-x-4 text-sm">
+          <div className="h-5 flex items-center gap-x-4 text-sm">
             <div>Blog</div>
             <Separator orientation="vertical" />
             <div>Docs</div>

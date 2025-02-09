@@ -14,7 +14,7 @@ export function EmailListContentDesktop() {
   );
 
   return (
-    <ScrollArea className="h-[calc(100vh-19.1rem)]">
+    <ScrollArea className="h-[calc(100vh-16.5rem)]">
       <Table>
         <TableBody>
           {emailState.emails.map((email: EmailType) => {

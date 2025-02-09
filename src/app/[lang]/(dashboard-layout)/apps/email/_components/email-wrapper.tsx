@@ -15,10 +15,10 @@ export function EmailWrapper({
 }) {
   return (
     <EmailProvider emailsData={emailsData} sidebarItemsData={sidebarItemsData}>
-      <div className="container h-full w-full flex gap-4 p-4">
+      <section className="container h-full w-full flex gap-4 p-4">
         <EmailSidebar />
         {children}
-      </div>
+      </section>
     </EmailProvider>
   );
 }

@@ -12,7 +12,7 @@ export default function PricingCardList({
   isAnnual: boolean;
 }) {
   return (
-    <ul className="space-y-8 md:grid md:grid-cols-3 md:space-x-4 md:space-y-0">
+    <ul className="space-y-8 md:grid md:grid-cols-3 md:gap-x-4 md:space-y-0">
       {data.map((item) => (
         <PricingCard
           key={item.title}

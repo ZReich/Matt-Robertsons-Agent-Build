@@ -2,19 +2,19 @@
 
 import * as React from "react";
 
-import { TagsInput } from "@/components/ui/tags-input";
+import { InputTags } from "@/components/ui/input-tags";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function TagsInputPlaceholder() {
+export function InputTagsPlaceholder() {
   const [tags, setTags] = React.useState<string[]>([]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tags Input Placeholder</CardTitle>
+        <CardTitle>Input Tags Placeholder</CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center items-center">
-        <TagsInput
+        <InputTags
           placeholder="Add tags..."
           tags={tags}
           onTagsChange={setTags}

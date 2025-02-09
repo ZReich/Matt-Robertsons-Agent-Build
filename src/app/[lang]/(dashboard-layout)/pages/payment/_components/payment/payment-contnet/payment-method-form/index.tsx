@@ -161,7 +161,7 @@ export function PaymentMethodForm({
                   </FormItem>
                 )}
               />
-              <div className="flex space-x-4">
+              <div className="flex gap-x-4">
                 <FormField
                   control={form.control}
                   name="expiry"
@@ -194,7 +194,7 @@ export function PaymentMethodForm({
                 name="saveCard"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-x-2">
                       <Switch
                         id="save-card"
                         checked={field.value}

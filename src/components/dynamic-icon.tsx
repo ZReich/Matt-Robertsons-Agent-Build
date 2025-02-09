@@ -1,10 +1,11 @@
+// Refer to Lucide documentation for more details https://lucide.dev/guide/packages/lucide-react
 import { icons } from "lucide-react";
 
 import type { LucideProps } from "lucide-react";
 import type { DynamicIconNameType } from "@/types";
 
 interface DynamicIconProps extends LucideProps {
-  name: DynamicIconNameType; 
+  name: DynamicIconNameType;
 }
 
 // Component to render a dynamic Lucide icon based on its name.

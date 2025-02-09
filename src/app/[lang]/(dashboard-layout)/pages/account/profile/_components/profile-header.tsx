@@ -10,6 +10,7 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 export function ProfileHeader({
   locale,
@@ -22,14 +23,14 @@ export function ProfileHeader({
 
   return (
     <section className="bg-background border border-border">
-      <div className="relative h-[180px] w-full md:h-[250px]">
+      <AspectRatio ratio={5 / 1}>
         <Image
           src={background || "/images/placeholder.svg"} // Fallback placeholder image
           fill
           className="object-cover"
           alt="Profile Background"
         />
-      </div>
+      </AspectRatio>
       <div className="w-full flex justify-between items-center p-4 md:p-8">
         <div className="flex items-center gap-4">
           <Avatar className="size-14 md:size-16">

@@ -7,7 +7,6 @@ import type { LocaleType } from "@/types";
 import { useEmailContext } from "../../hooks/use-email-context";
 
 import { EmailSidebarItem } from "./email-sidebar-item";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function EmailSidebarList() {
   const { emailState } = useEmailContext();
@@ -17,10 +16,20 @@ export function EmailSidebarList() {
   const segmentParam = params.segment;
 
   return (
-    <ScrollArea className="h-[23rem]">
-      <ul className="p-3 pt-0">
-        <nav className="space-y-1.5">
-          {emailState.sidebarItems.folders.map((item) => (
+    <ul className="p-3 pt-0">
+      <nav className="space-y-1.5">
+        {emailState.sidebarItems.folders.map((item) => (
+          <EmailSidebarItem
+            key={item.name}
+            item={item}
+            segmentParam={segmentParam}
+            locale={locale}
+          />
+        ))}
+
+        <div>
+          <h4 className="mt-4 mb-1 ms-4">Labels</h4>
+          {emailState.sidebarItems.labels.map((item) => (
             <EmailSidebarItem
               key={item.name}
               item={item}
@@ -28,20 +37,8 @@ export function EmailSidebarList() {
               locale={locale}
             />
           ))}
-
-          <div>
-            <h4 className="mt-4 mb-1 ms-4">Labels</h4>
-            {emailState.sidebarItems.labels.map((item) => (
-              <EmailSidebarItem
-                key={item.name}
-                item={item}
-                segmentParam={segmentParam}
-                locale={locale}
-              />
-            ))}
-          </div>
-        </nav>
-      </ul>
-    </ScrollArea>
+        </div>
+      </nav>
+    </ul>
   );
 }

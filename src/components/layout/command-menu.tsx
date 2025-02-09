@@ -7,7 +7,7 @@ import { useMedia } from "react-use";
 
 import { navigationsData } from "@/data/navigations";
 
-import { cn, getDictionaryValue, titleCaseToCamelCase } from "@/lib/utils";
+import { cn, getDictionaryValue, isActivePathname, titleCaseToCamelCase } from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type {
@@ -118,7 +118,7 @@ export function CommandMenu({
     // Otherwise, render the item with a link.
     if ("href" in item) {
       const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = pathname.endsWith(item.href);
+      const isActive = isActivePathname(localizedPathname, pathname);
 
       return (
         <CommandItem

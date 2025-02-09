@@ -5,10 +5,10 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-import type { LocaleType } from "@/types";
-
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+
+import type { LocaleType } from "@/types";
 
 import Logo from "/public/images/icons/shadboard.svg";
 

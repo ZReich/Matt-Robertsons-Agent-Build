@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DatePicker } from "@/components/date-picker";
-import { TagsInputWithSuggestions } from "@/components/ui/tags-input";
+import { InputTagsWithSuggestions } from "@/components/ui/input-tags";
 import { FileDropzone } from "@/components/ui/file-dropzone";
 
 const defaultValues = {
@@ -151,7 +151,7 @@ export function KanbanAddTaskSidebar() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assigned Team Members</FormLabel>
-                    <TagsInputWithSuggestions
+                    <InputTagsWithSuggestions
                       suggestions={teamMembers.map(({ name }) => name)}
                       tags={field.value.map(({ name }) => name)}
                       onTagsChange={(tags) =>

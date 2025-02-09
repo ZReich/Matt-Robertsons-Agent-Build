@@ -5,7 +5,6 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
 import { ForgotPasswordSchema } from "@/schemas/forgot-passward-schema";
@@ -80,16 +79,16 @@ export function ForgotPasswordForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isDisabled} aria-live="assertive">
-            {isSubmitting && (
-              <LoaderCircle
-                className="me-2 size-4 animate-spin"
-                aria-label="Loading"
-              />
-            )}
-            Send instructions
-          </Button>
         </div>
+        <Button type="submit" disabled={isDisabled} aria-live="assertive">
+          {isSubmitting && (
+            <LoaderCircle
+              className="me-2 size-4 animate-spin"
+              aria-label="Loading"
+            />
+          )}
+          Send instructions
+        </Button>
         <Link
           href={ensureLocalizedPathname(
             // Include redirect pathname if available, otherwise default to "/sign-in"

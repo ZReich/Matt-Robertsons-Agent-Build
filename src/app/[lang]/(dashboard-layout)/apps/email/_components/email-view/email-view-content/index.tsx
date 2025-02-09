@@ -10,7 +10,7 @@ import { EmailViewContentFooter } from "./email-view-content-footer";
 
 export function EmailViewContent({ email }: { email: EmailType }) {
   return (
-    <CardContent className="p-3 space-y-3">
+    <CardContent className="p-3 space-y-3 overflow-hidden">
       <EmailViewContentActions />
       <EmailViewContentHeader email={email} />
       <EmailViewContentBody email={email} />

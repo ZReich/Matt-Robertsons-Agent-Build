@@ -47,7 +47,10 @@ export function EmailComposerForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="h-full flex flex-col justify-between gap-3"
+      >
         <div className="px-3 space-y-1.5">
           <div className="flex items-center justify-between gap-1.5">
             <FormField
@@ -127,7 +130,7 @@ export function EmailComposerForm() {
                   <Editor
                     placeholder="Write your message here..."
                     onValueChange={field.onChange}
-                    className="h-40"
+                    className="h-[12.5rem]"
                     {...field}
                   />
                 </FormControl>
@@ -136,7 +139,7 @@ export function EmailComposerForm() {
             )}
           />
         </div>
-        <div className="flex justify-between items-center mt-3 p-3 border-t border-border">
+        <div className="flex justify-between items-center p-3 border-t border-border">
           <div className="flex items-center gap-1.5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -6,7 +6,7 @@ import { EmailComposerContent } from "./email-composer-content";
 
 export function EmailComposer() {
   return (
-    <Card className="flex-1 w-full md:w-auto">
+    <Card className="flex-1 w-full flex flex-col md:w-auto">
       <EmailComposerHeader />
       <EmailComposerContent />
     </Card>

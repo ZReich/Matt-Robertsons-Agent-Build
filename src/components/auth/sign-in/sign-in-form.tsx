@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { signIn } from "next-auth/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
@@ -102,7 +101,7 @@ export function SignInForm() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Password *</FormLabel>
                   <Link
                     href={ensureLocalizedPathname(
                       // Include redirect pathname if available, otherwise default to "/forgot-password"
@@ -126,16 +125,16 @@ export function SignInForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isDisabled} aria-live="assertive">
-            {isSubmitting && (
-              <LoaderCircle
-                className="me-2 size-4 animate-spin"
-                aria-label="Loading"
-              />
-            )}
-            Sign In with Email
-          </Button>
         </div>
+        <Button type="submit" disabled={isDisabled} aria-live="assertive">
+          {isSubmitting && (
+            <LoaderCircle
+              className="me-2 size-4 animate-spin"
+              aria-label="Loading"
+            />
+          )}
+          Sign In with Email
+        </Button>
         <div className="-mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
           <Link

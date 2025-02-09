@@ -31,7 +31,7 @@ export function EmailListHeader() {
   const filterParam = params.segment as string;
 
   return (
-    <CardHeader className="flex-row items-center gap-x-1.5 space-y-0 pb-0">
+    <CardHeader className="flex-row justify-between items-center gap-x-1.5 space-y-0 px-3 pb-0">
       <EmailMenuButton isIcon />
       <EmailListSearchForm pageQuery={pageQuery} filterParam={filterParam} />
       <Button

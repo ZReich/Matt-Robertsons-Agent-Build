@@ -1,3 +1,4 @@
+// Refer to react-beautiful-dnd README.md file for more details https://github.com/atlassian/react-beautiful-dnd
 "use client";
 
 import * as React from "react";

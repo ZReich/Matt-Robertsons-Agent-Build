@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 import type { UseEditorOptions } from "@tiptap/react";
 
+import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,8 +41,7 @@ export function Editor({
   ...props
 }: EditorProps) {
   const direction = useDirection();
-
-  const isRtl = direction === "rtl";
+  const isRtl = useIsRtl();
 
   const editor = useEditor({
     editorProps: {

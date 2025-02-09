@@ -360,6 +360,13 @@ export const navigationsData: NavigationType[] = [
             href: "/extended-ui/input-spin",
           },
           {
+            title: "Input Tags",
+            href: "/extended-ui/input-tags",
+          },
+          { title: 'Emoji Picker',
+            href: '/extended-ui/emoji-picker'
+          },
+          {
             title: "Keyboard",
             href: "/extended-ui/keyboard",
           },
@@ -374,10 +381,6 @@ export const navigationsData: NavigationType[] = [
           {
             title: "Show More Text",
             href: "/extended-ui/show-more-text",
-          },
-          {
-            title: "Tags Input",
-            href: "/extended-ui/tags-input",
           },
           {
             title: "Timeline",

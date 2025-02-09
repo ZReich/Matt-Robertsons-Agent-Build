@@ -9,7 +9,11 @@ import { navigationsData } from "@/data/navigations";
 import { i18n } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
-import { getDictionaryValue, titleCaseToCamelCase } from "@/lib/utils";
+import {
+  getDictionaryValue,
+  isActivePathname,
+  titleCaseToCamelCase,
+} from "@/lib/utils";
 
 import type {
   LocaleType,
@@ -103,10 +107,14 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
     // Otherwise, render the item with a link.
     if ("href" in item) {
       const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = pathname.endsWith(item.href);
+      const isActive = isActivePathname(localizedPathname, pathname);
 
       return (
-        <SidebarMenuButton isActive={isActive} asChild>
+        <SidebarMenuButton
+          isActive={isActive}
+          onClick={() => setOpenMobile(!openMobile)}
+          asChild
+        >
           <Link href={localizedPathname}>
             {"iconName" in item && (
               <DynamicIcon name={item.iconName} className="h-4 w-4" />

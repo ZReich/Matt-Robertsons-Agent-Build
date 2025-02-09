@@ -20,7 +20,7 @@ export function EmailListContentMobile() {
     <ul>
       <ScrollArea
         className={cn(
-          "h-[calc(100vh-19.1rem)]",
+          "h-[calc(100vh-18.5rem)]",
           settings.layout === "horizontal" && "md:h-[calc(100vh-22.1rem)]"
         )}
       >

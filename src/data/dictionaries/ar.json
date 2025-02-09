@@ -111,7 +111,8 @@
     "ratings": "التقييمات",
     "separatorWithText": "فاصل مع نص",
     "showMoreText": "عرض المزيد من النص",
-    "tagsInput": "إدخال الوسوم",
+    "inputTags": "إدخال الوسوم",
+    "emojiPicker": "منتقي الرموز التعبيرية",
     "timeline": "الجدول الزمني",
     "language": {
       "language": "اللغة",

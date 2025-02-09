@@ -1,3 +1,4 @@
+// Refer to react-phone-number-input README.md file for more details https://gitlab.com/catamphetamine/react-phone-number-input
 "use client";
 
 import * as React from "react";
@@ -20,7 +21,6 @@ import {
 
 import type { InputProps } from "@/components/ui/input";
 
-
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -33,38 +33,42 @@ type InputPhoneProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "onChange" | "value"
 > &
-  Omit<RPNInputPrimitive.Props<typeof RPNInputPrimitive.default>, "onChange"> & {
+  Omit<
+    RPNInputPrimitive.Props<typeof RPNInputPrimitive.default>,
+    "onChange"
+  > & {
     onChange?: (value: RPNInputPrimitive.Value) => void;
   };
 
 const InputPhone: React.ForwardRefExoticComponent<InputPhoneProps> =
-  React.forwardRef<React.ElementRef<typeof RPNInputPrimitive.default>, InputPhoneProps>(
-    ({ className, onChange, ...props }, ref) => {
-      const direction = useDirection();
+  React.forwardRef<
+    React.ElementRef<typeof RPNInputPrimitive.default>,
+    InputPhoneProps
+  >(({ className, onChange, ...props }, ref) => {
+    const direction = useDirection();
 
-      return (
-        <RPNInputPrimitive.default
-          ref={ref}
-          dir={direction}
-          className={cn("w-full flex", className)}
-          flagComponent={FlagComponent}
-          countrySelectComponent={CountrySelect}
-          inputComponent={InputComponent}
-          /**
-           * Handles the onChange event.
-           *
-           * react-phone-number-input might trigger the onChange event as undefined
-           * when a valid phone number is not entered. To prevent this,
-           * the value is coerced to an empty string.
-           *
-           * @param {E164Number | undefined} value - The entered value
-           */
-          onChange={(value) => onChange?.(value as RPNInputPrimitive.Value)}
-          {...props}
-        />
-      );
-    }
-  );
+    return (
+      <RPNInputPrimitive.default
+        ref={ref}
+        dir={direction}
+        className={cn("w-full flex", className)}
+        flagComponent={FlagComponent}
+        countrySelectComponent={CountrySelect}
+        inputComponent={InputComponent}
+        /**
+         * Handles the onChange event.
+         *
+         * react-phone-number-input might trigger the onChange event as undefined
+         * when a valid phone number is not entered. To prevent this,
+         * the value is coerced to an empty string.
+         *
+         * @param {E164Number | undefined} value - The entered value
+         */
+        onChange={(value) => onChange?.(value as RPNInputPrimitive.Value)}
+        {...props}
+      />
+    );
+  });
 InputPhone.displayName = "InputPhone";
 
 const InputComponent = React.forwardRef<HTMLInputElement, InputProps>(
