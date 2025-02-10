@@ -1,6 +1,6 @@
 # Internationalization (I18n)
 
-This guide provides step-by-step instructions to **add** or **remove** multi-language support (I18n) in your application. The I18n system supports **Right-to-Left (RTL)** and **Left-to-Right (LTR)** layouts based on the selected language.
+This guide provides step-by-step instructions to **add** multi-language support (I18n) in your application. The I18n system supports **Right-to-Left (RTL)** and **Left-to-Right (LTR)** layouts based on the selected language.
 
 ---
 
@@ -163,95 +163,8 @@ Replace static text with dictionary-based content.
 
 ---
 
-## Removing I18n
-
-Follow these steps to remove I18n from the project and revert to a single-language setup.
-
----
-
-### Uninstall Dependencies
-
-Remove I18n-related packages:
-
-```bash
-npm uninstall @formatjs/intl-localematcher @types/negotiator negotiator
-```
-
----
-
-### Restructure the Application
-
-1. Move all content from `src/app/[lang]` back to `src/app`.
-2. Delete the `[lang]` folder entirely.
-3. Remove `params` and `lang` references in `layout.tsx` files.
-
----
-
-### Remove Language Dictionaries
-
-1. Delete the `src/data/dictionaries` folder.
-2. Remove any references to `getDictionary` and dictionary props throughout the project.
-
----
-
-### Update Components
-
-Remove dictionary-related code from layout components and headers:
-
-#### Example: `DropdownMenuLabel`
-
-**Before**:
-
-```tsx
-<DropdownMenuLabel>
-  {dictionary.navigation.language["language"]}
-</DropdownMenuLabel>
-```
-
-**After**:
-
-```tsx
-<DropdownMenuLabel>language</DropdownMenuLabel>
-```
-
----
-
-### Clean Up Layout Files
-
-Revert `DashboardLayout` to a single-language implementation:
-
-```typescript
-import { Layout } from "@/components/layout";
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <Layout>{children}</Layout>;
-}
-```
-
----
-
-### Remove I18n Configurations and Utilities
-
-Delete the following files:
-
-- `src/configs/i18n.ts`
-- `src/lib/i18n.ts`
-- `src/lib/getDictionary.ts`
-
----
-
 ## Additional Resources
 
 For more information on Internationalization (I18n) in Next.js, refer to the official documentation:
 
 [Next.js I18n Documentation](https://nextjs.org/docs/app/building-your-application/routing/internationalization)
-
----
-
-## Conclusion
-
-With this guide, you can now **add** or **remove** Internationalization (I18n) from your project as needed. 🎉

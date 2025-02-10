@@ -1,6 +1,6 @@
-import { NavigationGroupType } from "@/types";
+import { NavigationType } from "@/types";
 
-export const sidebarNavigationData: NavigationGroupType[] = [
+export const sidebarNavigationData: NavigationType[] = [
   {
     title: "Overview",
     items: [
@@ -53,11 +53,11 @@ export const sidebarNavigationData: NavigationGroupType[] = [
     ],
   },
   {
-    title: "Others",
+    title: "Miscellaneous",
     items: [
       {
         title: "Credits",
-        href: "/docs/others/credits",
+        href: "/docs/miscellaneous/credits",
         iconName: "User",
       },
     ],

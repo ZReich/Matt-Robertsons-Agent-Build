@@ -1,30 +1,64 @@
 # Navigation
 
----
+The navigation structure of the application is defined in the `src/data/navigation.ts` file. This file allows you to configure and customize the navigation according to the specific needs of your project.
 
-## Customizing the Navigation Data
+## Overview
 
-The `src/data/navigation.ts` file contains the navigation structure for the application. This file defines groups of navigation items, such as dashboards, pages, apps, and authentication links.
+The `navigationsData` constant contains an array of navigation sections (or root items). Each section defines a set of related navigation items. By editing this structure, you can customize which links and sections appear in the app's navigation menu.
 
-To customize the navigation, you can add new navigation items or modify existing ones according to your project's requirements.
+## File Structure
 
-### File Structure
+The structure of the navigation data is based on the following format:
 
-The `navigationsData` constant holds an array of navigation groups. Each group contains an array of items with the following properties:
+```typescript
+const navigationsData: NavigationType[] = [
+  {
+    title: "Section Title", // The title of the navigation section (e.g., "Dashboards")
+    items: [
+      {
+        title: "Item Title", // The title of the navigation item
+        href: "/some/path", // or "items" for nested items
+        iconName: "IconName", // Name of the Lucide icon associated with the item
+        label: "Optional Label", // Optional label (e.g., "New", "Soon")
+        items: [
+          // For nested items
+          {
+            title: "Nested Item",
+            href: "/nested/path",
+          },
+        ],
+      },
+    ],
+  },
+];
+```
+
+### Navigation Properties
 
 - **title**: The name of the navigation group (e.g., "Dashboards", "Pages").
 - **items**: A list of navigation items within that group.
   - **title**: The name of the navigation item.
-  - **href**: The URL path for the navigation item.
-  - **iconName**: The name of the icon associated with the navigation item (e.g., "ChartPie", "User").
+  - **iconName**: The name of the Lucide icon associated with the navigation item (e.g., "ChartPie", "User").
   - **label**: Optional label for items (e.g., "Soon" or "New").
+  - Each navigation item must have one of the following:
+    - **href**: The URL path for the navigation item.
+      <br />
+      **or**
+    - **items**: A list of navigation items within that item.
+      - **title**: The name of the navigation item.
+      - **label**: Optional label for items (e.g., "Soon" or "New").
+      - Each navigation item must have one of the following:
+        - **href**: The URL path for the navigation item.
+          <br />
+          **or**
+        - **items**: A list of navigation items within that item.
 
 ### Example: Default Navigation Structure
 
 ```typescript
-import type { NavigationGroupType } from "@/types";
+import type { NavigationType } from "@/types";
 
-export const navigationsData: NavigationGroupType[] = [
+export const navigationsData: NavigationType[] = [
   {
     title: "Dashboards",
     items: [
@@ -71,29 +105,9 @@ export const navigationsData: NavigationGroupType[] = [
         iconName: "Headset",
       },
       {
-        title: "Not Found 404",
-        href: "/pages/not-found-404",
-        iconName: "Frown",
-      },
-      {
-        title: "Unauthorized 401",
-        href: "/pages/unauthorized-401",
-        iconName: "Lock",
-      },
-      {
-        title: "Maintenance",
-        href: "/pages/maintenance",
-        iconName: "Wrench",
-      },
-      {
-        title: "Coming Soon",
-        href: "/pages/coming-soon",
-        iconName: "Clock",
-      },
-      {
         title: "Settings",
         href: "/pages/account/settings",
-        iconName: "UserRoundCog",
+        iconName: "UserCog",
       },
       {
         title: "Profile",
@@ -101,66 +115,53 @@ export const navigationsData: NavigationGroupType[] = [
         label: "Soon",
         iconName: "User",
       },
-    ],
-  },
-  {
-    title: "Apps",
-    items: [
       {
-        title: "Email",
-        href: "/apps/email",
-        iconName: "AtSign",
+        title: "Fallback",
+        iconName: "Replace",
+        items: [
+          {
+            title: "Coming Soon",
+            href: "/pages/coming-soon",
+          },
+          {
+            title: "Not Found 404",
+            href: "/pages/not-found-404",
+          },
+          {
+            title: "Unauthorized 401",
+            href: "/pages/unauthorized-401",
+          },
+          {
+            title: "Maintenance",
+            href: "/pages/maintenance",
+          },
+        ],
       },
       {
-        title: "Chat",
-        href: "/apps/chat",
-        iconName: "MessageCircle",
-      },
-      {
-        title: "Calendar",
-        href: "/apps/calendar",
-        iconName: "Calendar",
-      },
-      {
-        title: "Kanban",
-        href: "/apps/kanban",
-        iconName: "Grid2x2",
-      },
-      {
-        title: "Todo",
-        href: "#",
-        label: "Soon",
-        iconName: "ListTodo",
-      },
-    ],
-  },
-  {
-    title: "Authentication",
-    items: [
-      {
-        title: "Forgot Password",
-        href: "/auth/forgot-password",
-        iconName: "RotateCw",
-      },
-      {
-        title: "New Password",
-        href: "/auth/new-password",
-        iconName: "RefreshCw",
-      },
-      {
-        title: "Verify Email",
-        href: "/auth/verify-email",
-        iconName: "MailCheck",
-      },
-      {
-        title: "Register",
-        href: "/auth/register",
-        iconName: "FilePen",
-      },
-      {
-        title: "Sign In",
-        href: "/auth/sign-in",
+        title: "Authentication",
         iconName: "LogIn",
+        items: [
+          {
+            title: "Forgot Password",
+            href: "/auth/forgot-password",
+          },
+          {
+            title: "New Password",
+            href: "/auth/new-password",
+          },
+          {
+            title: "Verify Email",
+            href: "/auth/verify-email",
+          },
+          {
+            title: "Register",
+            href: "/auth/register",
+          },
+          {
+            title: "Sign In",
+            href: "/auth/sign-in",
+          },
+        ],
       },
     ],
   },
@@ -169,42 +170,76 @@ export const navigationsData: NavigationGroupType[] = [
 
 ### How to Modify the Navigation
 
+#### **Add a New Navigation Section (Root Item)**
+
+To add a new section (root item) in the navigation, simply append a new object to the `navigationsData` array. The new section should include the `title` property for the section name and an `items` array that holds the section's individual navigation items.
+
+Example: Add a "Support" root item:
+
+```typescript
+export const navigationsData: NavigationType[] = [
+  {
+    title: "Support",
+    items: [],
+  },
+];
+```
+
+This will add a new "Support" section to the navigation menu.
+
 #### **Add a New Navigation Item**
 
-To add a new item to any navigation group, simply insert a new object into the `items` array of the corresponding group.
+To add a new item under an existing navigation section (root item), simply insert a new object into the `items` array of the corresponding section. Each navigation item should contain an `href` or `items` field (to support nested items).
+Note: If the corresponding item is the root item make sure to add iconName otherwize it should not be included.
 
-Example: Add a "Dashboard" item under the "Dashboards" group:
+Note: Item must contain either **href** or **items**.
 
-```typescript
-{
-  title: "Dashboard",
-  href: "/dashboards/dashboard",
-  iconName: "Home",
-}
-```
-
-#### **Add a New Navigation Group**
-
-To create a new navigation group, simply add a new object to the `navigationsData` array. This object should have a `title` property for the group name, and an `items` array that contains the group's navigation items.
-
-Example: Add a "Support" group with related items:
+Example: Add a "Dashboard" item under the "Dashboards" root item:
 
 ```typescript
-{
-  title: "Support",
-  items: [
-    {
-      title: "Help Center",
-      href: "/support/help-center",
-      iconName: "Headset",
-    },
-    {
-      title: "Contact Us",
-      href: "/support/contact",
-      iconName: "Mail",
-    },
-  ],
-}
+export const navigationsData: NavigationType[] = [
+  {
+    title: "Dashboards",
+    items: [
+      {
+        title: "Dashboard",
+        href: "/dashboard",
+        iconName: "ChartPie",
+      },
+    ],
+  },
+];
 ```
 
-This will create a new "Support" section in the navigation with the listed items.
+#### **Add a Nested Navigation Item**
+
+To add a nested item within an existing navigation item (e.g., a submenu), simply insert the new item into the `items` array of the target item. This is useful for creating submenus or hierarchical navigation.
+
+Example: Add a "Settings" item under the "Dashboard" item:
+
+```typescript
+export const navigationsData: NavigationType[] = [
+  {
+    title: "Dashboards",
+    items: [
+      {
+        title: "Dashboard",
+        iconName: "ChartPie",
+        items: [
+          {
+            title: "Settings",
+            href: "/dashboard/settings",
+          },
+        ],
+      },
+    ],
+  },
+];
+```
+
+### **Important Notes:**
+
+1. **Icon Names**: Each root navigation section (root item) requires an `iconName` property, but nested items (submenus) do not need it.
+2. **Item Structure**: Each item must contain either an `href` (a link) or an `items` array (for nested items). If an item contains `items`, it is treated as a parent item and will appear as a collapsible section in the navigation.
+
+By following this structure and these guidelines, you can easily customize and extend the navigation for your application.

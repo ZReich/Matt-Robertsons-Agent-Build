@@ -1,0 +1,171 @@
+# Theme Color
+
+## Overview
+
+In this guide, we will cover two methods to customize the theme color of your dashboard: directly modifying the **globals.css** file or utilizing a **settings** cookie to switch themes dynamically.
+
+---
+
+## Method 1: Customizing Theme Color with **globals.css**
+
+### Steps for Customization:
+
+1. **Navigate to the `globals.css` file**  
+   The file is located in `src/app/globals.css`. Here is the default structure that defines all theme colors:
+
+   ```css
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+
+   @layer base {
+     :root {
+       --background: 0 0% 100%;
+       --foreground: 240 10% 3.9%;
+       --card: 0 0% 100%;
+       --card-foreground: 240 10% 3.9%;
+       --popover: 0 0% 100%;
+       --popover-foreground: 240 10% 3.9%;
+       --primary: 240 5.9% 10%;
+       --primary-foreground: 0 0% 98%;
+       --secondary: 240 4.8% 95.9%;
+       --secondary-foreground: 240 5.9% 10%;
+       --muted: 240 4.8% 95.9%;
+       --muted-foreground: 240 3.8% 46.1%;
+       --accent: 240 4.8% 95.9%;
+       --accent-foreground: 240 5.9% 10%;
+       --destructive: 0 84.2% 60.2%;
+       --destructive-foreground: 0 0% 98%;
+       --success: 142.1 76.2% 36.3%;
+       --success-foreground: 0 0% 98%;
+       --border: 240 5.9% 90%;
+       --input: 240 5.9% 90%;
+       --ring: 240 10% 3.9%;
+       --radius: 0.5rem;
+       --chart-1: 12 76% 61%;
+       --chart-2: 173 58% 39%;
+       --chart-3: 197 37% 24%;
+       --chart-4: 43 74% 66%;
+       --chart-5: 27 87% 67%;
+       --sidebar-background: var(--background);
+       --sidebar-foreground: var(--foreground);
+       --sidebar-primary: var(--primary);
+       --sidebar-primary-foreground: var(--primary-foreground);
+       --sidebar-accent: var(--accent);
+       --sidebar-accent-foreground: var(--accent-foreground);
+       --sidebar-border: var(--border);
+       --sidebar-ring: var(--ring);
+     }
+
+     /* Dark Mode */
+     .dark {
+       --background: 240 10% 3.9%;
+       --foreground: 0 0% 98%;
+       --card: 240 10% 3.9%;
+       --card-foreground: 0 0% 98%;
+       --popover: 240 10% 3.9%;
+       --popover-foreground: 0 0% 98%;
+       --primary: 0 0% 98%;
+       --primary-foreground: 240 5.9% 10%;
+       --secondary: 240 3.7% 15.9%;
+       --secondary-foreground: 0 0% 98%;
+       --muted: 240 3.7% 15.9%;
+       --muted-foreground: 240 5% 64.9%;
+       --accent: 240 3.7% 15.9%;
+       --accent-foreground: 0 0% 98%;
+       --destructive: 0 62.8% 30.6%;
+       --destructive-foreground: 0 0% 98%;
+       --border: 240 3.7% 15.9%;
+       --input: 240 3.7% 15.9%;
+       --ring: 240 4.9% 83.9%;
+     }
+   }
+   ```
+
+2. **Modify the Colors**  
+   Replace the `:root` and `.dark` CSS variable values to the desired theme colors. **Ensure all colors are in HSL format.**  
+   You can use online tools to help you pick colors in HSL format, such as the [Shadcn/ui color picker](https://ui.shadcn.com/colors), or use converters like [HSL to HEX by Easy Retro](https://easyretro.io/tools/hsl-to-hex/) or [HSL to HEX by Htmlcolors](https://htmlcolors.com/hsl-to-hex).
+
+3. **Remove Unnecessary Files**  
+   After setting your preferred theme colors, you can remove the following files:
+
+   - `src/configs/base-colors.ts`
+   - `src/providers/theme-provider.tsx`
+
+4. **Update Types**
+
+   - Remove the `BaseColorType` definition in `src/types.ts`.
+   - Remove the `baseColor` import from files using it.
+
+5. **Remove `ThemeProvider`**
+
+   - In `src/providers/index.tsx`, remove the `ThemeProvider` and its import.
+
+6. **Update `settings-context.tsx`**  
+   In the `src/contexts/settings-context.tsx`, remove the `theme` property from the `defaultSettings` object.
+
+7. **Update `src/types.ts`**  
+   Make sure the `SettingsType` type in `src/types.ts` no longer includes the `theme` property.
+
+8. **Hard Refresh the Website**  
+   After making all the changes, perform a **hard refresh** on your website to apply the new theme.
+
+---
+
+## Method 2: Changing Theme Color Using **Settings** Cookie
+
+### Steps for Changing the Theme Color:
+
+1. **Navigate to `settings-context.tsx`**  
+   The `defaultSettings` object within `src/contexts/settings-context.tsx` holds the current theme. To change the theme, update the `theme` property to the desired theme color.
+
+### Steps for Using Custom Theme Color:
+
+1. **Navigate to `base-colors.ts`**  
+   Open `src/configs/base-colors.ts` and add a new theme object to the `baseColors` array. The object should follow the structure below, where you define both light and dark theme variables:
+
+   ```javascript
+   {
+     name: "Zinc", // Theme color name
+     cssVars: {
+       light: {
+         background: "0 0% 100%",
+         foreground: "240 10% 3.9%",
+         card: "0 0% 100%",
+         "card-foreground": "240 10% 3.9%",
+         // Add all necessary color variables...
+       },
+       dark: {
+         background: "240 10% 3.9%",
+         foreground: "0 0% 98%",
+         card: "240 10% 3.9%",
+         "card-foreground": "0 0% 98%",
+         // Add all necessary dark mode color variables...
+       },
+     },
+   }
+   ```
+
+2. **Update `defaultSettings` in `settings-context.tsx`**  
+   After defining the new custom color theme in `base-colors.ts`, navigate to `src/contexts/settings-context.tsx` and update the `defaultSettings` object. Set the `theme` property to the new theme color name you just added.
+
+3. **Hard Refresh the Website**  
+   After the changes are made, **perform a hard refresh** to see the new custom theme applied to the website.
+
+---
+
+### **Important Notes:**
+
+- **Color Variables**: Make sure to only modify the necessary color variables in the `globals.css` or `base-colors.ts` file, and leave the ones that are already set for the calendar and UI components unless needed.
+- **Hard Refresh**: Always remember to perform a hard refresh (Ctrl + F5) after making changes to ensure that the new styles are loaded correctly.
+- **Customization Flexibility**: Whether using the CSS file or settings cookie, you can further tweak the theme as needed based on your project requirements.
+
+By following these instructions, you can seamlessly customize the theme colors of your dashboard to fit your project's needs.
+
+---
+
+## Additional Resources
+
+For more information on theming in Shadcn/ui, refer to the official documentation:
+
+[Shadcn/ui Theming Documentation](https://ui.shadcn.com/docs/theming)

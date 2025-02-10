@@ -363,9 +363,7 @@ export const navigationsData: NavigationType[] = [
             title: "Input Tags",
             href: "/extended-ui/input-tags",
           },
-          { title: 'Emoji Picker',
-            href: '/extended-ui/emoji-picker'
-          },
+          { title: "Emoji Picker", href: "/extended-ui/emoji-picker" },
           {
             title: "Keyboard",
             href: "/extended-ui/keyboard",
@@ -491,7 +489,6 @@ export const navigationsData: NavigationType[] = [
             title: "Analytics",
             href: "/cards/analytics",
           },
-
           {
             title: "Statistics",
             href: "/cards/statistics",
