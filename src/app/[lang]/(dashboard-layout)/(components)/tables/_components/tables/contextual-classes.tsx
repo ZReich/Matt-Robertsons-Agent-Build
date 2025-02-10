@@ -1,5 +1,7 @@
 import { invoicesData } from "../../_data/invoices";
 
+import type { InvoiceType } from "../../types";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -10,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const statusClasses = {
+const statusClasses: Record<InvoiceType["status"], string> = {
   Paid: "bg-green-100 hover:bg-green-200",
   Pending: "bg-yellow-100 hover:bg-yellow-200",
   Overdue: "bg-red-100 hover:bg-red-200",

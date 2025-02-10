@@ -9,7 +9,7 @@ import { i18n } from "@/configs/i18n";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import type { LocaleType } from "@/types";
+import type { LocaleType, NavigationRootItem } from "@/types";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -29,12 +29,12 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import Logo from "/public/images/icons/shadboard.svg";
+import { isActivePathname } from "@/lib/utils";
 
 export function DocsSidebar() {
   const pathname = usePathname();
   const params = useParams();
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
-  const { settings } = useSettings();
 
   const locale = params.lang as LocaleType;
   const direction = i18n.localeDirection[locale];
@@ -59,27 +59,27 @@ export function DocsSidebar() {
               <SidebarGroupLabel>{nav.title}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {nav.items.map((item) => {
-                    const localizedPathname = ensureLocalizedPathname(
-                      item.href,
-                      locale
-                    );
+                  {nav.items.map((item: NavigationRootItem) => {
+                    if (item.href) {
+                      const localizedPathname = ensureLocalizedPathname(item.href, locale);
+                      const isActive = isActivePathname(
+                        localizedPathname,
+                        pathname
+                      );
 
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          isActive={pathname.includes(localizedPathname)}
-                          asChild
-                        >
-                          <Link href={localizedPathname}>
-                            <span>{item.title}</span>
-                            {"label" in item && (
-                              <Badge variant="secondary">{item.label}</Badge>
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton isActive={isActive} asChild>
+                            <Link href={localizedPathname}>
+                              <span>{item.title}</span>
+                              {"label" in item && (
+                                <Badge variant="secondary">{item.label}</Badge>
+                              )}
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    }
                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
