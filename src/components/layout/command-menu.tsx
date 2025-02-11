@@ -193,7 +193,11 @@ export function CommandMenu({
                   heading={title}
                   className="[&_[cmdk-group-items]]:space-y-1"
                 >
-                  {nav.items.map((item) => renderMenuItem(item))}
+                  {nav.items.map((item) => (
+                    <React.Fragment key={item.title}>
+                      {renderMenuItem(item)}
+                    </React.Fragment>
+                  ))}
                 </CommandGroup>
               );
             })}

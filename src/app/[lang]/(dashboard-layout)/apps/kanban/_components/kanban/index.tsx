@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { useKanbanContext } from "../../hooks/use-kanban-context";
 import { KanbanColumnList } from "./kanban-column-list";

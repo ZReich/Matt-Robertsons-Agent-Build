@@ -1,11 +1,17 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
 import { navigationsData } from "@/data/navigations";
 
-import { cn, getDictionaryValue, isActivePathname, titleCaseToCamelCase } from "@/lib/utils";
+import {
+  cn,
+  getDictionaryValue,
+  isActivePathname,
+  titleCaseToCamelCase,
+} from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type {
@@ -106,7 +112,11 @@ export function TopBarHeaderMenubar({
           <MenubarMenu key={nav.title}>
             <MenubarTrigger>{title}</MenubarTrigger>
             <MenubarContent className="space-y-1">
-              {nav.items.map((item) => renderMenuItem(item))}
+              {nav.items.map((item) => (
+                <React.Fragment key={item.title}>
+                  {renderMenuItem(item)}
+                </React.Fragment>
+              ))}
             </MenubarContent>
           </MenubarMenu>
         );

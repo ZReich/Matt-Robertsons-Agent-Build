@@ -20,12 +20,10 @@ export interface FileDropzoneProps extends Partial<DropzoneOptions> {
   onFilesChange?: (files: FileType[]) => void;
 }
 
-export function FileDropzone({
-  className,
-  value,
-  onFilesChange,
-  ...props
-}: FileDropzoneProps) {
+export const FileDropzone = React.forwardRef<
+  HTMLInputElement,
+  FileDropzoneProps
+>(({ className, value, onFilesChange, ...props }, ref) => {
   const [files, setFiles] = React.useState<FileType[]>(value || []);
   const [loadingFiles, setLoadingFiles] = React.useState<Set<string>>(
     new Set()
@@ -68,11 +66,6 @@ export function FileDropzone({
     }
   }, [value]);
 
-  React.useEffect(() => {
-    // Cleanup: Revoke the object URL when component unmounts
-    return () => files.forEach((file) => URL.revokeObjectURL(file.url));
-  }, [files]);
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     disabled: isDisabled,
@@ -81,7 +74,15 @@ export function FileDropzone({
   });
 
   const removeFile = (fileId: string) => {
-    const updatedFiles = files.filter((file) => file.id !== fileId);
+    const updatedFiles = files.filter((file) => {
+      if (file.id === fileId) {
+        URL.revokeObjectURL(file.url);
+        return false;
+      }
+
+      return true;
+    });
+
     setFiles(updatedFiles);
     onFilesChange?.(updatedFiles);
   };
@@ -96,7 +97,7 @@ export function FileDropzone({
         className
       )}
     >
-      <input {...getInputProps()} />
+      <input ref={ref} {...getInputProps()} />
       <ScrollArea className="w-0 flex-1 p-6">
         {files.length > 0 ? (
           <div className="grid gap-4 grid-cols-2">
@@ -156,4 +157,5 @@ export function FileDropzone({
       </ScrollArea>
     </div>
   );
-}
+});
+FileDropzone.displayName = "FileDropzone";

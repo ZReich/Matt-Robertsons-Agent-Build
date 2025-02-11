@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Draggable, DraggableProvided } from "react-beautiful-dnd";
+import { Draggable, DraggableProvided } from "@hello-pangea/dnd";
 
 import type { TaskType } from "../../../../../../types";
 

@@ -20,25 +20,31 @@ export interface TimePickerProps extends InputTimeProps {
   value: string | undefined;
 }
 
-export function TimePicker({ value, ...props }: TimePickerProps) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-full px-3 text-start font-normal"
-        >
-          {value ? (
-            format(timeToDate(value), "p")
-          ) : (
-            <span className="text-muted-foreground">Pick date and time</span>
-          )}
-          <Clock className="ms-auto h-4 w-4 text-muted-foreground" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <InputTime className="border-0" value={value} {...props} />
-      </PopoverContent>
-    </Popover>
-  );
-}
+const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
+  ({ value, ...props }, ref) => {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            ref={ref}
+            variant="outline"
+            className="w-full px-3 text-start font-normal"
+          >
+            {value ? (
+              format(timeToDate(value), "p")
+            ) : (
+              <span className="text-muted-foreground">Pick date and time</span>
+            )}
+            <Clock className="ms-auto h-4 w-4 text-muted-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <InputTime className="border-0" value={value} {...props} />
+        </PopoverContent>
+      </Popover>
+    );
+  }
+);
+TimePicker.displayName = "TimePicker";
+
+export { TimePicker };

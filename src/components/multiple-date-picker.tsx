@@ -18,15 +18,15 @@ export type MultipleDatesPickerProps = CalendarProps & {
   formatStr?: string;
 };
 
-export function MultipleDatesPicker({
-  value,
-  onValueChange,
-  formatStr = "yyyy-MM-dd",
-}: MultipleDatesPickerProps) {
+const MultipleDatesPicker = React.forwardRef<
+  HTMLButtonElement,
+  MultipleDatesPickerProps
+>(({ value, onValueChange, formatStr = "yyyy-MM-dd p", ...props }, ref) => {
   return (
     <Popover modal>
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           className="w-full px-3 text-start font-normal"
         >
@@ -40,12 +40,16 @@ export function MultipleDatesPicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
+          initialFocus
+          {...props}
           mode="multiple"
           selected={value}
           onSelect={onValueChange}
-          initialFocus
         />
       </PopoverContent>
     </Popover>
   );
-}
+});
+MultipleDatesPicker.displayName = "MultipleDatesPicker";
+
+export { MultipleDatesPicker };

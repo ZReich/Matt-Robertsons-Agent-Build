@@ -1,9 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { DroppableProvided } from "react-beautiful-dnd";
-
-import { StrictModeDroppable } from "@/lib/strict-mode-droppable";
+import { Droppable, DroppableProvided } from "@hello-pangea/dnd";
 
 import { useKanbanContext } from "../../../hooks/use-kanban-context";
 
@@ -16,7 +14,7 @@ export function KanbanColumnList() {
 
   return (
     <ScrollArea orientation="horizontal" className="container p-0">
-      <StrictModeDroppable
+      <Droppable
         droppableId="root" // Unique identifier for the droppable area. Used to track drag-and-drop events
         type="Column" // Specifies the type of draggable items this droppable area will accept. Helps differentiate between column and task movements
         direction="horizontal" // Indicates the drag direction within the droppable area (horizontal layout for Kanban columns)
@@ -38,7 +36,7 @@ export function KanbanColumnList() {
             />
           </div>
         )}
-      </StrictModeDroppable>
+      </Droppable>
     </ScrollArea>
   );
 }

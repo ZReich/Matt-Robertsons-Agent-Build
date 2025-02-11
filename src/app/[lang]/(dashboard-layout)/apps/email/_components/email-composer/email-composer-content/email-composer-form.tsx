@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
-import { Editor } from "@/components/editor";
+import { Editor } from "@/components/ui/editor";
 
 export function EmailComposerForm() {
   const [showCc, setShowCc] = React.useState(false);
@@ -131,7 +131,6 @@ export function EmailComposerForm() {
                     placeholder="Write your message here..."
                     onValueChange={field.onChange}
                     className="h-[12.5rem]"
-                    {...field}
                   />
                 </FormControl>
                 <FormMessage />

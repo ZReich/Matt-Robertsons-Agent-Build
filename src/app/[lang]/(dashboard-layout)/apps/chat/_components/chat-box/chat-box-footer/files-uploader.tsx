@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, Paperclip, Send } from "lucide-react";
 
@@ -63,7 +62,7 @@ export function FilesUploader() {
           <Paperclip className="h-4 w-4" aria-label="Files" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-lg">
+      <DialogContent className="rounded-lg" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Send Files</DialogTitle>
         </DialogHeader>

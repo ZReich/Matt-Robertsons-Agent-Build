@@ -1,6 +1,6 @@
 "use client";
 
-import { Draggable, DraggableProvided } from "react-beautiful-dnd";
+import { Draggable, DraggableProvided } from "@hello-pangea/dnd";
 
 import type { ColumnType } from "../../../../types";
 

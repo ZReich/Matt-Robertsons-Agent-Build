@@ -1,8 +1,10 @@
 "use client";
 
+import * as React from "react";
 import { Archive, Clock, MoreVertical, Star, Tag, Trash2 } from "lucide-react";
 
 import type { IconType } from "@/types";
+import type { ButtonProps } from "@/components/ui/button";
 
 import {
   DropdownMenu,
@@ -12,19 +14,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-function ActionButton({
-  icon: Icon,
-  label,
-}: {
+interface ActionButtonProps extends ButtonProps {
   icon: IconType;
   label: string;
-}) {
-  return (
-    <Button variant="ghost" size="icon" aria-label={label}>
-      <Icon className="h-4 w-4" />
-    </Button>
-  );
 }
+
+const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(
+  ({ icon: Icon, label, ...props }, ref) => {
+    return (
+      <Button
+        ref={ref}
+        variant="ghost"
+        size="icon"
+        aria-label={label}
+        {...props}
+      >
+        <Icon className="h-4 w-4" />
+      </Button>
+    );
+  }
+);
+ActionButton.displayName = "ActionButton";
 
 export function EmailViewContentActions() {
   return (

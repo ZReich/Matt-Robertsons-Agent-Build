@@ -61,7 +61,7 @@ export function ImagesUploader() {
           <Image className="h-4 w-4" aria-label="Images" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-lg">
+      <DialogContent className="rounded-lg" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Send Images</DialogTitle>
         </DialogHeader>

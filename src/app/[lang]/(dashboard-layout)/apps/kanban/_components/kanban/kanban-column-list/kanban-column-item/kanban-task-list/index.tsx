@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Droppable, DroppableProvided } from "react-beautiful-dnd";
+import { Droppable, DroppableProvided } from "@hello-pangea/dnd";
 
 import type { ColumnType } from "../../../../../types";
 

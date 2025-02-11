@@ -21,16 +21,15 @@ export type DateRangePickerProps = CalendarProps & {
   formatStr?: string;
 };
 
-export function DateRangePicker({
-  value,
-  onValueChange,
-  formatStr = "yyyy-MM-dd",
-  ...props
-}: DateRangePickerProps) {
+const DateRangePicker = React.forwardRef<
+  HTMLButtonElement,
+  DateRangePickerProps
+>(({ value, onValueChange, formatStr = "yyyy-MM-dd", ...props }, ref) => {
   return (
     <Popover modal>
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           className="w-full px-3 text-start font-normal"
         >
@@ -59,4 +58,8 @@ export function DateRangePicker({
       </PopoverContent>
     </Popover>
   );
-}
+});
+
+DateRangePicker.displayName = "DateRangePicker";
+
+export { DateRangePicker };

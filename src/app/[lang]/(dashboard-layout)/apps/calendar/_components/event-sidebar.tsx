@@ -76,8 +76,13 @@ export function EventSidebar() {
       const { extendedProps, ...eventProps } = selectedEvent;
 
       form.reset({
-        ...eventProps,
-        ...extendedProps,
+        title: eventProps.title || "",
+        url: eventProps.url || "",
+        description: extendedProps.description || "",
+        category: extendedProps.category || "Miscellaneous",
+        start: eventProps.start || new Date(),
+        end: eventProps.end || new Date(),
+        allDay: eventProps.allDay ?? true,
       });
     } else {
       form.reset({

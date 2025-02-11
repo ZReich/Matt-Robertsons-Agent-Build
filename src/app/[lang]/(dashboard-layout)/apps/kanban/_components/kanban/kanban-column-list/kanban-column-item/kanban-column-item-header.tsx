@@ -1,6 +1,6 @@
 "use client";
 
-import { DraggableProvided } from "react-beautiful-dnd";
+import { DraggableProvided } from "@hello-pangea/dnd";
 import { GripVertical } from "lucide-react";
 
 import { cn } from "@/lib/utils";
