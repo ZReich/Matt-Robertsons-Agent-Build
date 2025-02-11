@@ -42,10 +42,10 @@ export function EmailListSearchForm({
           name="term"
           render={({ field }) => (
             <FormItem className="relative space-y-0">
-              <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
+              <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
               <FormControl>
                 <Input
-                  className="w-full shadow-none ps-8 pe-4"
+                  className="w-full shadow-none ps-9 pe-4"
                   placeholder="Search..."
                   type="search"
                   {...field}
