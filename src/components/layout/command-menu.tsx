@@ -7,7 +7,12 @@ import { useMedia } from "react-use";
 
 import { navigationsData } from "@/data/navigations";
 
-import { cn, getDictionaryValue, isActivePathname, titleCaseToCamelCase } from "@/lib/utils";
+import {
+  cn,
+  getDictionaryValue,
+  isActivePathname,
+  titleCaseToCamelCase,
+} from "@/lib/utils";
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type {
@@ -28,6 +33,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { DialogTitle } from "../ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Keyboard } from "@/components/ui/keyboard";
 import { Button } from "@/components/ui/button";
@@ -170,6 +176,7 @@ export function CommandMenu({
         </Button>
       )}
       <CommandDialog open={open} onOpenChange={setOpen} {...props}>
+        <DialogTitle className="sr-only">Search Menu</DialogTitle>
         <CommandInput placeholder={dictionary.search.typeCommand} />
         <CommandList>
           <CommandEmpty>{dictionary.search.noResults}</CommandEmpty>
