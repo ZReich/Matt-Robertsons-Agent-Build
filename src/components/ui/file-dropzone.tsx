@@ -71,7 +71,7 @@ export function FileDropzone({
   React.useEffect(() => {
     // Cleanup: Revoke the object URL when component unmounts
     return () => files.forEach((file) => URL.revokeObjectURL(file.url));
-  }, []);
+  }, [files]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

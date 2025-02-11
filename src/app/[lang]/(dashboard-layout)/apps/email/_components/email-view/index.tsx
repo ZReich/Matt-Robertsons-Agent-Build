@@ -26,7 +26,7 @@ export function EmailView() {
 
     // Return null if not found
     return null;
-  }, [emailState.emails, emailIdParam]);
+  }, [emailIdParam, emailState.initialEmails]);
 
   // If no matching email is found, show a not found UI
   if (!email) return <EmailNotFound />;

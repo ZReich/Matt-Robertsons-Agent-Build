@@ -7,8 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint --config eslint.config.mjs .",
+    "lint:fix": "eslint --config eslint.config.mjs . --fix",
     "migrate": "npx prisma migrate dev",
     "postinstall": "prisma generate"
   },
@@ -16,6 +16,7 @@
     "@auth/prisma-adapter": "^2.6.0",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
+    "@eslint/eslintrc": "^3.2.0",
     "@formatjs/intl-localematcher": "^0.5.4",
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.15",

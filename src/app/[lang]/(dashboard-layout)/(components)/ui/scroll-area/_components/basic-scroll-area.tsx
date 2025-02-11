@@ -18,20 +18,20 @@ export function BasicScrollArea() {
           stir up chaos. Known only as Jokester, this mischievous prankster had
           a knack for slipping into the castle under the cover of darkness. Each
           night, Jokester would leave jokes in the most peculiar places: riddles
-          scribbled on the queen's tiara, limericks tucked into the folds of the
-          royal napkins, and tiny scrolls of puns stuffed into the court
-          jester's oversized shoes. The king, who prided himself on his serious
-          demeanor, was livid. He doubled the guards, set traps around the
-          castle, and even enlisted the court wizard to cast spells of
+          scribbled on the queen&apos;s tiara, limericks tucked into the folds
+          of the royal napkins, and tiny scrolls of puns stuffed into the court
+          jester&apos;s oversized shoes. The king, who prided himself on his
+          serious demeanor, was livid. He doubled the guards, set traps around
+          the castle, and even enlisted the court wizard to cast spells of
           protection. But Jokester was clever, always one step ahead. The pranks
           became bolder: a giant rubber chicken was discovered in the throne
           room; the royal banners were replaced with silly poems about the
           king’s snoring; even the royal toilet paper bore cheeky messages, such
-          as, "For throne emergencies only." As the days passed, the people of
-          Merrymirth began to notice something strange. While the king fumed and
-          plotted, the citizens found the jokes irresistible. Chuckles turned
-          into guffaws, and soon the streets were filled with laughter. The
-          butcher laughed as he chopped meat, the baker chuckled over his
+          as, &quotFor throne emergencies only.&quot As the days passed, the
+          people of Merrymirth began to notice something strange. While the king
+          fumed and plotted, the citizens found the jokes irresistible. Chuckles
+          turned into guffaws, and soon the streets were filled with laughter.
+          The butcher laughed as he chopped meat, the baker chuckled over his
           loaves, and even the grumpy blacksmith cracked a grin as he hammered.
           The mood of the entire kingdom began to shift. At first, the king
           dismissed it as a nuisance. But when his advisors started laughing

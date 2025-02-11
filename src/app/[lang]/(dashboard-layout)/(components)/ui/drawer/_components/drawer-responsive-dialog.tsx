@@ -47,7 +47,7 @@ export function DrawerResponsiveDialog() {
               <DialogHeader>
                 <DialogTitle>Edit profile</DialogTitle>
                 <DialogDescription>
-                  Make changes to your profile here. Click save when you're
+                  Make changes to your profile here. Click save when you&apos;re
                   done.
                 </DialogDescription>
               </DialogHeader>
@@ -63,7 +63,7 @@ export function DrawerResponsiveDialog() {
               <DrawerHeader className="text-left">
                 <DrawerTitle>Edit profile</DrawerTitle>
                 <DrawerDescription>
-                  Make changes to your profile here. Click save when you're
+                  Make changes to your profile here. Click save when you&apos;re
                   done.
                 </DrawerDescription>
               </DrawerHeader>

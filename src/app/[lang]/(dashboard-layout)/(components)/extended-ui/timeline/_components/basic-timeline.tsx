@@ -75,8 +75,8 @@ export function BasicTimeline() {
             <TimelineDot />
             <TimelineLine />
             <TimelineContent>
-              Once your software has passed rigorous testing, it's time to
-              deploy it. Consider the deployment environment, whether it's
+              Once your software has passed rigorous testing, it&apos;s time to
+              deploy it. Consider the deployment environment, whether it&apos;s
               on-premises or in the cloud. Ensure proper documentation and
               provide clear instructions for installation and configuration.
             </TimelineContent>
