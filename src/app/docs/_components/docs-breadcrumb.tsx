@@ -2,8 +2,6 @@
 
 import { usePathname } from "next/navigation";
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,21 +14,19 @@ import {
 export function DocsBreadcrumb() {
   const pathname = usePathname();
   const paths = pathname.split("/").filter(Boolean);
-  const pathsOfDocs = paths.slice(3);
+  const pathsOfDocs = paths.slice(2);
 
-  if (!paths[2]) return;
+  if (!paths[1]) return;
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href={ensureLocalizedPathname("/docs", paths[0])}>
-            Home
-          </BreadcrumbLink>
+          <BreadcrumbLink href="/docs">Home</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem className="capitalize">
-          {paths[2].replace("-", " ").toLowerCase()}
+          {paths[1].replace("-", " ").toLowerCase()}
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         {pathsOfDocs.map((segment, index) => {
@@ -38,15 +34,12 @@ export function DocsBreadcrumb() {
           const label = segment.replace("-", " ").toLowerCase();
 
           return (
-            <BreadcrumbItem key={ensureLocalizedPathname(href, paths[0])}>
+            <BreadcrumbItem key={href}>
               {index === pathsOfDocs.length - 1 ? (
                 <BreadcrumbPage className="capitalize">{label}</BreadcrumbPage>
               ) : (
                 <>
-                  <BreadcrumbLink
-                    href={ensureLocalizedPathname(href, paths[0])}
-                    className="capitalize"
-                  >
+                  <BreadcrumbLink href={href} className="capitalize">
                     {label}
                   </BreadcrumbLink>
                   <BreadcrumbSeparator />

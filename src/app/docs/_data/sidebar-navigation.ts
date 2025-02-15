@@ -7,22 +7,22 @@ export const sidebarNavigationData: NavigationType[] = [
       {
         title: "Introduction",
         href: "/docs/overview/introduction",
-        iconName: "User",
+        iconName: "Play",
       },
       {
         title: "Kits",
         href: "/docs/overview/kits",
-        iconName: "User",
+        iconName: "Folders",
       },
       {
         title: "Installation",
         href: "/docs/overview/installation",
-        iconName: "User",
+        iconName: "ArrowDownToLine",
       },
       {
         title: "Deployment",
         href: "/docs/overview/deployment",
-        iconName: "User",
+        iconName: "ArrowUpToLine",
       },
     ],
   },
@@ -32,23 +32,23 @@ export const sidebarNavigationData: NavigationType[] = [
       {
         title: "Authentication",
         href: "/docs/development/authentication",
-        iconName: "User",
+        iconName: "Lock",
       },
       {
-        title: "I18n",
+        title: "Internationalization (I18n)",
         href: "/docs/development/i18n",
-        iconName: "User",
+        iconName: "Languages",
       },
       {
         title: "Navigation",
         href: "/docs/development/navigation",
-        iconName: "User",
+        iconName: "Menu",
       },
 
       {
         title: "Theme Color",
         href: "/docs/development/theme-color",
-        iconName: "User",
+        iconName: "SwatchBook",
       },
     ],
   },
@@ -58,7 +58,7 @@ export const sidebarNavigationData: NavigationType[] = [
       {
         title: "Credits",
         href: "/docs/miscellaneous/credits",
-        iconName: "User",
+        iconName: "LibraryBig",
       },
     ],
   },

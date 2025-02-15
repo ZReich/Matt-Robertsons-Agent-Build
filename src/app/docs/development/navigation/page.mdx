@@ -1,14 +1,18 @@
 # Navigation
 
-The navigation structure of the application is defined in the `src/data/navigation.ts` file. This file allows you to configure and customize the navigation according to the specific needs of your project.
+This guide explains how to configure and customize the navigation structure of your application. The navigation data is defined in the `src/data/navigation.ts` file, which allows you to set up navigation sections, items, and submenus according to your project's needs.
 
-## Overview
+---
 
-The `navigationsData` constant contains an array of navigation sections (or root items). Each section defines a set of related navigation items. By editing this structure, you can customize which links and sections appear in the app's navigation menu.
+## 1. Overview
 
-## File Structure
+The `navigationsData` constant holds an array of navigation sections (or root items). Each section contains a set of navigation items. You can customize this structure to define which links and sections appear in your app's navigation menu.
 
-The structure of the navigation data is based on the following format:
+---
+
+## 2. File Structure
+
+The navigation data follows this format:
 
 ```typescript
 const navigationsData: NavigationType[] = [
@@ -18,7 +22,7 @@ const navigationsData: NavigationType[] = [
       {
         title: "Item Title", // The title of the navigation item
         href: "/some/path", // or "items" for nested items
-        iconName: "IconName", // Name of the Lucide icon associated with the item
+        iconName: "IconName", // The associated Lucide icon name
         label: "Optional Label", // Optional label (e.g., "New", "Soon")
         items: [
           // For nested items
@@ -33,7 +37,9 @@ const navigationsData: NavigationType[] = [
 ];
 ```
 
-### Navigation Properties
+---
+
+## 3. Navigation Properties
 
 - **title**: The name of the navigation group (e.g., "Dashboards", "Pages").
 - **items**: A list of navigation items within that group.
@@ -53,7 +59,9 @@ const navigationsData: NavigationType[] = [
           **or**
         - **items**: A list of navigation items within that item.
 
-### Example: Default Navigation Structure
+---
+
+## 4. Example: Default Navigation Structure
 
 ```typescript
 import type { NavigationType } from "@/types";
@@ -168,13 +176,15 @@ export const navigationsData: NavigationType[] = [
 ];
 ```
 
-### How to Modify the Navigation
+---
 
-#### **Add a New Navigation Section (Root Item)**
+## 5. How to Modify the Navigation
 
-To add a new section (root item) in the navigation, simply append a new object to the `navigationsData` array. The new section should include the `title` property for the section name and an `items` array that holds the section's individual navigation items.
+### Add a New Navigation Section (Root Item)
 
-Example: Add a "Support" root item:
+To add a new section (root item), append a new object to the `navigationsData` array. The section must include a `title` and an `items` array containing the navigation items for that section.
+
+**Example**: Add a "Support" root item:
 
 ```typescript
 export const navigationsData: NavigationType[] = [
@@ -185,16 +195,15 @@ export const navigationsData: NavigationType[] = [
 ];
 ```
 
-This will add a new "Support" section to the navigation menu.
+This will create a new "Support" section in the navigation menu.
 
-#### **Add a New Navigation Item**
+---
 
-To add a new item under an existing navigation section (root item), simply insert a new object into the `items` array of the corresponding section. Each navigation item should contain an `href` or `items` field (to support nested items).
-Note: If the corresponding item is the root item make sure to add iconName otherwize it should not be included.
+### Add a New Navigation Item
 
-Note: Item must contain either **href** or **items**.
+To add a new item under an existing section, insert a new object into the `items` array of the relevant section. Each item must include either an `href` or an `items` field (for nested items). If the item is a root item, make sure to add the `iconName` property.
 
-Example: Add a "Dashboard" item under the "Dashboards" root item:
+**Example**: Add a "Dashboard" item under the "Dashboards" section:
 
 ```typescript
 export const navigationsData: NavigationType[] = [
@@ -211,11 +220,13 @@ export const navigationsData: NavigationType[] = [
 ];
 ```
 
-#### **Add a Nested Navigation Item**
+---
 
-To add a nested item within an existing navigation item (e.g., a submenu), simply insert the new item into the `items` array of the target item. This is useful for creating submenus or hierarchical navigation.
+### Add a Nested Navigation Item
 
-Example: Add a "Settings" item under the "Dashboard" item:
+To create a submenu, insert a new item into the `items` array of an existing navigation item. This allows you to define hierarchical navigation.
+
+**Example**: Add a "Settings" item under the "Dashboard" item:
 
 ```typescript
 export const navigationsData: NavigationType[] = [
@@ -237,9 +248,11 @@ export const navigationsData: NavigationType[] = [
 ];
 ```
 
-### **Important Notes:**
+---
 
-1. **Icon Names**: Each root navigation section (root item) requires an `iconName` property, but nested items (submenus) do not need it.
-2. **Item Structure**: Each item must contain either an `href` (a link) or an `items` array (for nested items). If an item contains `items`, it is treated as a parent item and will appear as a collapsible section in the navigation.
+## 6. Important Notes
 
-By following this structure and these guidelines, you can easily customize and extend the navigation for your application.
+1. **Icon Names**: Root navigation sections (root items) must include an `iconName` property, while nested items do not need one.
+2. **Item Structure**: Each navigation item must contain either an `href` (link) or an `items` array (for nested items). Items with nested `items` will appear as collapsible sections in the navigation.
+
+By following these guidelines, you can easily customize and extend the navigation structure of your application to fit your needs.

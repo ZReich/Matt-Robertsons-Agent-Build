@@ -5,13 +5,7 @@ import { useParams, usePathname } from "next/navigation";
 
 import { sidebarNavigationData } from "../_data/sidebar-navigation";
 
-import { i18n } from "@/configs/i18n";
-
-import { ensureLocalizedPathname } from "@/lib/i18n";
-
-import type { LocaleType, NavigationRootItem } from "@/types";
-
-import { useSettings } from "@/hooks/use-settings";
+import type { NavigationRootItem } from "@/types";
 
 import {
   Sidebar as SidebarWrapper,
@@ -36,15 +30,11 @@ export function DocsSidebar() {
   const params = useParams();
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
 
-  const locale = params.lang as LocaleType;
-  const direction = i18n.localeDirection[locale];
-  const isRTL = direction === "rtl";
-
   return (
-    <SidebarWrapper side={isRTL ? "right" : "left"}>
-      <SidebarHeader className="md:hidden">
+    <SidebarWrapper className="absolute h-full">
+      <SidebarHeader className={!isMobile ? "md:hidden" : ""}>
         <Link
-          href={ensureLocalizedPathname("/", locale)}
+          href="/"
           className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
           onClick={() => isMobile && setOpenMobile(!openMobile)}
         >
@@ -61,16 +51,16 @@ export function DocsSidebar() {
                 <SidebarMenu>
                   {nav.items.map((item: NavigationRootItem) => {
                     if (item.href) {
-                      const localizedPathname = ensureLocalizedPathname(item.href, locale);
-                      const isActive = isActivePathname(
-                        localizedPathname,
-                        pathname
-                      );
+                      const isActive = isActivePathname(item.href, pathname);
 
                       return (
                         <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton isActive={isActive} asChild>
-                            <Link href={localizedPathname}>
+                          <SidebarMenuButton
+                            isActive={isActive}
+                            onClick={() => setOpenMobile(!openMobile)}
+                            asChild
+                          >
+                            <Link href={item.href}>
                               <span>{item.title}</span>
                               {"label" in item && (
                                 <Badge variant="secondary">{item.label}</Badge>

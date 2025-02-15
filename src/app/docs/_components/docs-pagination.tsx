@@ -6,10 +6,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 import { sidebarNavigationData } from "../_data/sidebar-navigation";
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
 import { cn, withoutPrefix } from "@/lib/utils";
 
-import type { LocaleType } from "@/types";
 import type { DocNav } from "../types";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -35,21 +33,18 @@ function getPreviousNext(pathname: string, navs: DocNav[]) {
 
 export function DocsPagination() {
   const pathname = usePathname();
-  const params = useParams();
-  const locale = params.lang as LocaleType;
-  const pathnameWithoutLocale = withoutPrefix(pathname, `/${locale}`);
   const navs = flattenSidebarNavigation(sidebarNavigationData);
-  const { previous, next } = getPreviousNext(pathnameWithoutLocale, navs);
+  const { previous, next } = getPreviousNext(pathname, navs);
 
   return (
-    <article className="grid grid-cols-2 gap-4 mt-20">
+    <article className="grid grid-cols-2 gap-4 mt-10">
       {previous && (
         <Link
           className={cn(
             buttonVariants({ variant: "outline" }),
             "w-full flex flex-col items-start gap-1 px-4 py-12 no-underline"
           )}
-          href={ensureLocalizedPathname(previous.href as string, locale)}
+          href={previous.href as string}
         >
           <div className="flex items-center gap-1 text-muted-foreground">
             <ChevronLeftIcon
@@ -67,7 +62,7 @@ export function DocsPagination() {
             buttonVariants({ variant: "outline" }),
             "col-start-2 w-full flex flex-col items-end gap-1 px-4 py-12 no-underline"
           )}
-          href={ensureLocalizedPathname(next.href as string, locale)}
+          href={next.href as string}
         >
           <div className="flex items-center gap-1 text-muted-foreground">
             <span className="me-px">Next</span>

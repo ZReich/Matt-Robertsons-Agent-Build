@@ -5,22 +5,15 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Search } from "lucide-react";
 import { useMedia } from "react-use";
 
-import { navigationsData } from "@/data/navigations";
+import { sidebarNavigationData } from "../_data/sidebar-navigation";
 
-import {
-  cn,
-  getDictionaryValue,
-  isActivePathname,
-  titleCaseToCamelCase,
-} from "@/lib/utils";
-import { ensureLocalizedPathname } from "@/lib/i18n";
+import { cn, isActivePathname } from "@/lib/utils";
 
 import type {
   LocaleType,
   NavigationNestedItem,
   NavigationRootItem,
 } from "@/types";
-import type { DictionaryType } from "@/lib/getDictionary";
 import type { DialogProps } from "@radix-ui/react-dialog";
 
 import { DynamicIcon } from "@/components/dynamic-icon";
@@ -43,16 +36,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-interface CommandMenuProps extends DialogProps {
-  dictionary: DictionaryType;
+interface DocsCommandMenuProps extends DialogProps {
   buttonClassName?: string;
 }
 
-export function CommandMenu({
+export function DocsCommandMenu({
   buttonClassName,
-  dictionary,
   ...props
-}: CommandMenuProps) {
+}: DocsCommandMenuProps) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
   const params = useParams();
@@ -88,13 +79,8 @@ export function CommandMenu({
   }, []);
 
   const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
-    const title = getDictionaryValue(
-      titleCaseToCamelCase(item.title),
-      dictionary.navigation
-    );
-    const label =
-      item.label &&
-      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label);
+    const title = item.title;
+    const label = item.label;
 
     // If the item has nested items, render it with a collapsible dropdown.
     if (item.items) {
@@ -123,13 +109,12 @@ export function CommandMenu({
 
     // Otherwise, render the item with a link.
     if ("href" in item) {
-      const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = isActivePathname(localizedPathname, pathname);
+      const isActive = isActivePathname(item.href, pathname);
 
       return (
         <CommandItem
           key={item.title}
-          onSelect={() => runCommand(() => router.push(localizedPathname))}
+          onSelect={() => runCommand(() => router.push(item.href))}
           className={cn(
             "flex items-center gap-2 px-2 py-1.5",
             isActive && "bg-accent"
@@ -160,7 +145,7 @@ export function CommandMenu({
           {...props}
         >
           <Search className="me-2 h-4 w-4" />
-          <span>{dictionary.search.search}</span>
+          <span>Search...</span>
           <Keyboard className="ms-auto">K</Keyboard>
         </Button>
       ) : (
@@ -177,15 +162,12 @@ export function CommandMenu({
       )}
       <CommandDialog open={open} onOpenChange={setOpen} {...props}>
         <DialogTitle className="sr-only">Search Menu</DialogTitle>
-        <CommandInput placeholder={dictionary.search.typeCommand} />
+        <CommandInput placeholder="Type a command or search..." />
         <CommandList>
-          <CommandEmpty>{dictionary.search.noResults}</CommandEmpty>
+          <CommandEmpty>No results found.</CommandEmpty>
           <ScrollArea className="h-[300px] max-h-[300px]">
-            {navigationsData.map((nav) => {
-              const title = getDictionaryValue(
-                titleCaseToCamelCase(nav.title),
-                dictionary.navigation
-              );
+            {sidebarNavigationData.map((nav) => {
+              const title = nav.title;
 
               return (
                 <CommandGroup
@@ -193,7 +175,7 @@ export function CommandMenu({
                   heading={title}
                   className="[&_[cmdk-group-items]]:space-y-1"
                 >
-                  {nav.items.map((item) => (
+                  {nav.items.map((item: NavigationRootItem) => (
                     <React.Fragment key={item.title}>
                       {renderMenuItem(item)}
                     </React.Fragment>

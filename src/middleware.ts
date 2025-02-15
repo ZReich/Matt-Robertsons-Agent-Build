@@ -80,6 +80,10 @@ export default withAuth(
     const locale = getLocale(request);
     const isUserAuthenticated = !!request.nextauth.token;
 
+    if (pathname.startsWith("/docs")) {
+      return NextResponse.next();
+    }
+
     const guestRoutes = ["sign-in", "register", "forgot-password"];
     const commonRoutes = ["common-route"];
     const currentRoute = getFirstSegment(pathname);
@@ -87,8 +91,8 @@ export default withAuth(
     const isCommonRoute = commonRoutes.includes(currentRoute);
     const isProtectedRoute = !isCommonRoute && !isGuestRoute;
 
-    // Redirect unauthenticated users from protected routes to sign-in
     if (!isUserAuthenticated && isProtectedRoute) {
+      // Redirect unauthenticated users from protected routes to sign-in
       let redirectPathname = "/sign-in";
 
       // Maintain the original path for redirection

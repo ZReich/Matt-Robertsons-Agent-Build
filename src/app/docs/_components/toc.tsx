@@ -1,6 +1,8 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -93,6 +95,7 @@ interface TableOfContentsProps {
 
 export function TableOfContents({ items }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
+  const { isMobile } = useSidebar();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -144,10 +147,20 @@ export function TableOfContents({ items }: TableOfContentsProps) {
   };
 
   return (
-    <aside className="hidden w-64 bg-background md:block">
-      <nav className="fixed top-0 bottom-0 p-4 border-s-[1px] border-sidebar-border">
-        <ScrollArea className="h-full">
-          <h2 className="text-sm font-medium mb-4 mt-16">On this page</h2>
+    <aside
+      className={cn(
+        "shrink-0 sticky top-0 bottom-0 end-0 w-64 hidden bg-background",
+        !isMobile && " block"
+      )}
+    >
+      <nav
+        className={cn(
+          "mt-16 h-[calc(100svh-4rem)] border-s-[1px] border-sidebar-border",
+          items.length <= 0 && "hidden"
+        )}
+      >
+        <ScrollArea className="h-full p-4">
+          <h2 className="text-sm font-medium mb-4">On this page</h2>
           {renderItems(items)}
         </ScrollArea>
       </nav>

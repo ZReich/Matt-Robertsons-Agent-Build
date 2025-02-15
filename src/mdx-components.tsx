@@ -1,5 +1,8 @@
+import Image from "next/image";
+
 import type { MDXComponents } from "mdx/types";
-import Image, { ImageProps } from "next/image";
+import type { ImageProps } from "next/image";
+import { CodeBlock } from "./components/code-block";
 
 // This file allows you to provide custom React components
 // to be used in MDX files. You can import and use any
@@ -23,6 +26,30 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {...(props as ImageProps)}
       />
     ),
+    code: ({ children, className }) => {
+      if (className) {
+        return (
+          <CodeBlock className={className}>{children as string}</CodeBlock>
+        );
+      }
+      return (
+        <code className="px-3 py-1 bg-primary/5 text-foreground rounded-md before:content-none after:content-none">
+          {children}
+        </code>
+      );
+    },
+    inlineCode: ({ children }) => (
+      <code
+        style={{
+          backgroundColor: "red",
+          padding: "0.2em 0.4em",
+          borderRadius: "6px",
+        }}
+      >
+        {children}
+      </code>
+    ),
+    pre: ({ children }) => <>{children}</>,
     ...components,
   };
 }
