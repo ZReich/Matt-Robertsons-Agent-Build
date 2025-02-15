@@ -101,7 +101,7 @@ export function SignInForm() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel>Password *</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <Link
                     href={ensureLocalizedPathname(
                       // Include redirect pathname if available, otherwise default to "/forgot-password"

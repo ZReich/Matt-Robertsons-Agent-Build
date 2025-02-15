@@ -38,17 +38,6 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         </code>
       );
     },
-    inlineCode: ({ children }) => (
-      <code
-        style={{
-          backgroundColor: "red",
-          padding: "0.2em 0.4em",
-          borderRadius: "6px",
-        }}
-      >
-        {children}
-      </code>
-    ),
     pre: ({ children }) => <>{children}</>,
     ...components,
   };

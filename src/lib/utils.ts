@@ -1,9 +1,10 @@
-import { clsx, type ClassValue } from "clsx";
+import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
 import { z } from "zod";
 
 import type { LocaleType, FormatStyleType } from "@/types";
+import type { ClassValue } from "clsx";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -179,19 +180,19 @@ export function titleCaseToCamelCase(titleCaseStr: string) {
   return camelCaseStr;
 }
 
-export function ensurePrefix(value: string, prefix: string) {
+export function ensureWithPrefix(value: string, prefix: string) {
   return value.startsWith(prefix) ? value : `${prefix}${value}`;
 }
 
-export function ensureSuffix(value: string, suffix: string) {
+export function ensureWithSuffix(value: string, suffix: string) {
   return value.endsWith(suffix) ? value : `${value}${suffix}`;
 }
 
-export function withoutSuffix(value: string, suffix: string) {
+export function ensureWithoutSuffix(value: string, suffix: string) {
   return value.endsWith(suffix) ? value.slice(0, -suffix.length) : value;
 }
 
-export function withoutPrefix(value: string, prefix: string) {
+export function ensureWithoutPrefix(value: string, prefix: string) {
   return value.startsWith(prefix) ? value.slice(prefix.length) : value;
 }
 
@@ -200,10 +201,10 @@ export const ensureRedirectPathname = (
   redirectPathname: string
 ): string => {
   const searchParams = new URLSearchParams({
-    redirectTo: withoutSuffix(redirectPathname, "/"),
+    redirectTo: ensureWithoutSuffix(redirectPathname, "/"),
   });
 
-  return ensureSuffix(currentPathname, "?" + searchParams);
+  return ensureWithoutSuffix(currentPathname, "?" + searchParams);
 };
 
 export function isNonNegative(num: number) {

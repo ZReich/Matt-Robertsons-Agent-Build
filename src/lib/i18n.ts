@@ -1,6 +1,6 @@
 import { i18n } from "@/configs/i18n";
 
-import { ensurePrefix } from "@/lib/utils";
+import { ensureWithPrefix } from "@/lib/utils";
 
 export const isPathnameMissingLocale = (pathname: string) => {
   return i18n.locales.every(
@@ -19,8 +19,8 @@ export const ensureLocalizedPathname = (
 
   // Add the locale prefix to the pathname if it is missing, otherwise return the original pathname
   return isPathnameMissingLocale(pathname)
-    ? `${ensurePrefix(languageCode, "/")}${
-        pathname === "/" ? "" : ensurePrefix(pathname, "/")
+    ? `${ensureWithPrefix(languageCode, "/")}${
+        pathname === "/" ? "" : ensureWithPrefix(pathname, "/")
       }`
     : pathname;
 };

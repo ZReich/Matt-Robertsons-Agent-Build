@@ -119,8 +119,27 @@ npx prisma generate
 
 ---
 
-## 8. Additional Resources
+## 8. Protecting Routes
+
+To protect specific routes using authentication in your Next.js application, you can use Next.js middleware to check if a user is authenticated before allowing access. If the user is not authenticated, they will be redirected to the sign-in page. This functionality is implemented in the `src/middleware.ts` file.
+
+- If a user tries to access a protected route without being authenticated, the middleware redirects them to the `/sign-in` page.
+- If a user is authenticated but tries to access guest routes (routes that do not require authentication), they will be redirected to the home page or another specified route.
+
+### Customize Route Protection
+
+You can customize the route protection logic by defining which routes are considered guest routes, public routes, or the home page. These configurations are found in the `guestRoutes`, `publicRoutes`, and `homeRoute` variables within the `src/configs/routes.ts` file.
+
+The middleware will then check the current `pathname` against these route configurations and determine whether to redirect or allow access based on the user's authentication status.
+
+---
+
+## 9. Additional Resources
 
 For further information on setting up and using **NextAuth.js**, refer to the official documentation:
 
 [NextAuth.js Documentation](https://next-auth.js.org/)
+
+Additionally, for details on how to use and customize middleware in your Next.js application, refer to the official **Next.js Middleware documentation**:
+
+[Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)

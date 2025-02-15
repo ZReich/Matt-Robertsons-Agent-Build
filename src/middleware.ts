@@ -4,15 +4,14 @@ import Negotiator from "negotiator";
 import { match } from "@formatjs/intl-localematcher";
 
 import { i18n } from "@/configs/i18n";
+import { guestRoutes, homeRoute, publicRoutes } from "./configs/routes";
 
 import { isPathnameMissingLocale, ensureLocalizedPathname } from "@/lib/i18n";
-import { ensureRedirectPathname } from "@/lib/utils";
+import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils";
 
 import type { LocaleType } from "@/types";
 import type { NextRequest } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
-
-const HOME_PATHNAME = "/dashboards/analytics";
 
 const getLocale = (request: NextRequest) => {
   const settingsCookie = request.cookies.get("settings")?.value;
@@ -65,15 +64,6 @@ function redirectTo(
   return NextResponse.redirect(redirectUrl);
 }
 
-function getFirstSegment(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-
-  // Return the first segment of the pathname, excluding locale if present
-  return i18n.locales.includes(segments[0] as LocaleType)
-    ? segments[1]
-    : segments[0];
-}
-
 export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
     const { pathname } = request.nextUrl;
@@ -84,12 +74,10 @@ export default withAuth(
       return NextResponse.next();
     }
 
-    const guestRoutes = ["sign-in", "register", "forgot-password"];
-    const commonRoutes = ["common-route"];
-    const currentRoute = getFirstSegment(pathname);
-    const isGuestRoute = guestRoutes.includes(currentRoute);
-    const isCommonRoute = commonRoutes.includes(currentRoute);
-    const isProtectedRoute = !isCommonRoute && !isGuestRoute;
+    const currentRoute = ensureWithoutPrefix(pathname, `/${locale}`);
+    const isGuestRoute = guestRoutes.has(currentRoute);
+    const isPublicRoute = publicRoutes.has(currentRoute);
+    const isProtectedRoute = !isPublicRoute && !isGuestRoute;
 
     if (!isUserAuthenticated && isProtectedRoute) {
       // Redirect unauthenticated users from protected routes to sign-in
@@ -105,12 +93,12 @@ export default withAuth(
 
     // Redirect authenticated users away from guest routes
     if (isUserAuthenticated && isGuestRoute) {
-      return redirectTo(HOME_PATHNAME, request, locale);
+      return redirectTo(homeRoute, request, locale);
     }
 
     // Redirect to home page if the request is for the root or locale root
     if (pathname === "/" || pathname === `/${locale}`) {
-      return redirectTo(HOME_PATHNAME, request, locale);
+      return redirectTo(homeRoute, request, locale);
     }
 
     // Redirect to localized URL if the pathname is missing a locale

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 import { sidebarNavigationData } from "../_data/sidebar-navigation";
 
-import { cn, withoutPrefix } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 import type { DocNav } from "../types";
 

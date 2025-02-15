@@ -1,7 +1,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { Star, EllipsisVertical } from "lucide-react";
 
-import { cn, ensureSuffix, formatDate } from "@/lib/utils";
+import { cn, ensureWithSuffix, formatDate } from "@/lib/utils";
 
 import type { EmailType } from "../../../../types";
 
@@ -35,13 +35,13 @@ export function EmailListContentItemMoblie({
   function handleOnKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" || e.key === " ") {
       handleSetRead(email);
-      router.push(ensureSuffix(pathname, "/") + email.id);
+      router.push(ensureWithSuffix(pathname, "/") + email.id);
     }
   }
 
   function handleOnClick() {
     handleSetRead(email);
-    router.push(ensureSuffix(pathname, "/") + email.id);
+    router.push(ensureWithSuffix(pathname, "/") + email.id);
   }
 
   return (
