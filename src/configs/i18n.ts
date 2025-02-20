@@ -5,4 +5,8 @@ export const i18n = {
     en: "ltr",
     ar: "rtl",
   },
+  localeNames: {
+    en: "english",
+    ar: "arabic",
+  },
 } as const;

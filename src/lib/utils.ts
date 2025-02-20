@@ -260,7 +260,9 @@ export function formatOverviewCardValue(
     case "currency":
       return formatCurrency(value);
     default:
-      return value.toLocaleString();
+      return value.toLocaleString("en", {
+        maximumFractionDigits: 0,
+      });
   }
 }
 

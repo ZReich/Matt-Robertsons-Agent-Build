@@ -7,6 +7,8 @@ import { Earth } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 
+import { relocalizePathname } from "@/lib/i18n";
+
 import type { LocaleType } from "@/types";
 import type { DictionaryType } from "@/lib/getDictionary";
 
@@ -22,33 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-
-type LanguageDictionary = DictionaryType["navigation"]["language"];
-
-type LanguageDataType = {
-  langCode: LocaleType;
-  langName: keyof LanguageDictionary;
-};
-
-const relocalizePathname = (pathname: string, locale: string) => {
-  if (!pathname) return "/";
-  const segments = pathname.split("/");
-
-  segments[1] = locale;
-
-  return segments.join("/");
-};
-
-const languageData: LanguageDataType[] = [
-  {
-    langCode: "en",
-    langName: "english",
-  },
-  {
-    langCode: "ar",
-    langName: "arabic",
-  },
-];
+import { getDictionaryValue } from "@/lib/utils";
 
 export function LanguageDropdown({
   dictionary,
@@ -82,19 +58,25 @@ export function LanguageDropdown({
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={locale}>
-          {languageData.map((locale) => (
-            <Link
-              key={locale.langCode}
-              href={relocalizePathname(pathname, locale.langCode)}
-              onClick={() => setLocale(locale.langCode)}
-            >
-              <DropdownMenuRadioItem
-                value={locale.langCode}
+          {i18n.locales.map((locale) => {
+            const localeName = i18n.localeNames[locale];
+            const localizedLocaleName = getDictionaryValue(
+              localeName,
+              dictionary.navigation.language
+            );
+
+            return (
+              <Link
+                key={locale}
+                href={relocalizePathname(pathname, locale)}
+                onClick={() => setLocale(locale)}
               >
-                {dictionary.navigation.language[locale.langName]}
-              </DropdownMenuRadioItem>
-            </Link>
-          ))}
+                <DropdownMenuRadioItem value={locale}>
+                  {localizedLocaleName}
+                </DropdownMenuRadioItem>
+              </Link>
+            );
+          })}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>

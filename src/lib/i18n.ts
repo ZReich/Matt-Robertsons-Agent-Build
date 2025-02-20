@@ -11,16 +11,27 @@ export const isPathnameMissingLocale = (pathname: string) => {
 
 export const ensureLocalizedPathname = (
   pathname: string,
-  languageCode: string
+  locale: string
 ): string => {
-  // Ensure both pathname and languageCode are provided
-  if (!pathname || !languageCode)
-    throw new Error("Pathname or Language Code cannot be empty");
+  // Ensure both pathname and locale are provided
+  if (!pathname || !locale)
+    throw new Error("Pathname or Locale cannot be empty");
 
   // Add the locale prefix to the pathname if it is missing, otherwise return the original pathname
   return isPathnameMissingLocale(pathname)
-    ? `${ensureWithPrefix(languageCode, "/")}${
+    ? `${ensureWithPrefix(locale, "/")}${
         pathname === "/" ? "" : ensureWithPrefix(pathname, "/")
       }`
     : pathname;
+};
+
+export const relocalizePathname = (pathname: string, locale: string) => {
+  // Ensure both pathname and locale are provided
+  if (!pathname || !locale)
+    throw new Error("Pathname or Locale cannot be empty");
+
+  const segments = pathname.split("/");
+  segments[1] = locale;
+
+  return segments.join("/");
 };

@@ -1,23 +1,25 @@
 "use client";
 
 import * as React from "react";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import {
   Sun,
   MoonStar,
   SunMoon,
-  Check,
-  X,
   RotateCcw,
   Settings,
   AlignStartHorizontal,
   AlignStartVertical,
+  AlignLeft,
+  AlignRight,
 } from "lucide-react";
 
 import { baseColors } from "@/configs/base-colors";
+import { i18n } from "@/configs/i18n";
 
-import { cn } from "@/lib/utils";
+import { relocalizePathname } from "@/lib/i18n";
 
-import type { ModeType } from "@/types";
+import type { LocaleType, ModeType } from "@/types";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -39,6 +41,7 @@ const themes = {
     activeColor: {
       light: "240 5.9% 10%",
       dark: "240 5.2% 33.9%",
+      foreground: "0 0% 98%",
     },
   },
   slate: {
@@ -47,6 +50,7 @@ const themes = {
     activeColor: {
       light: "215.4 16.3% 46.9%",
       dark: "215.3 19.3% 34.5%",
+      foreground: "210 40% 98%",
     },
   },
   stone: {
@@ -54,6 +58,7 @@ const themes = {
     activeColor: {
       light: "25 5.3% 44.7%",
       dark: "33.3 5.5% 32.4%",
+      foreground: "60 9.1% 97.8%",
     },
   },
   gray: {
@@ -61,6 +66,7 @@ const themes = {
     activeColor: {
       light: "220 8.9% 46.1%",
       dark: "215 13.8% 34.1%",
+      foreground: "210 20% 98%",
     },
   },
   neutral: {
@@ -68,6 +74,7 @@ const themes = {
     activeColor: {
       light: "0 0% 45.1%",
       dark: "0 0% 32.2%",
+      foreground: "0 0% 98%",
     },
   },
   red: {
@@ -76,6 +83,7 @@ const themes = {
     activeColor: {
       light: "0 72.2% 50.6%",
       dark: "0 72.2% 50.6%",
+      foreground: "0 85.7% 97.3%",
     },
   },
   rose: {
@@ -83,6 +91,7 @@ const themes = {
     activeColor: {
       light: "346.8 77.2% 49.8%",
       dark: "346.8 77.2% 49.8%",
+      foreground: "355.7 100% 97.3%",
     },
   },
   orange: {
@@ -90,6 +99,7 @@ const themes = {
     activeColor: {
       light: "24.6 95% 53.1%",
       dark: "20.5 90.2% 48.2%",
+      foreground: "60 9.1% 97.8%",
     },
   },
   green: {
@@ -97,6 +107,7 @@ const themes = {
     activeColor: {
       light: "142.1 76.2% 36.3%",
       dark: "142.1 70.6% 45.3%",
+      foreground: "355.7 100% 97.3%",
     },
   },
   blue: {
@@ -104,6 +115,7 @@ const themes = {
     activeColor: {
       light: "221.2 83.2% 53.3%",
       dark: "217.2 91.2% 59.8%",
+      foreground: "210 40% 98%",
     },
   },
   yellow: {
@@ -111,6 +123,7 @@ const themes = {
     activeColor: {
       light: "47.9 95.8% 53.1%",
       dark: "47.9 95.8% 53.1%",
+      foreground: "26 83.3% 14.1%",
     },
   },
   violet: {
@@ -118,13 +131,29 @@ const themes = {
     activeColor: {
       light: "262.1 83.3% 57.8%",
       dark: "263.4 70% 50.4%",
+      foreground: "210 20% 98%",
     },
   },
 };
 
+const radiusSizes = ["0", "0.3", "0.5", "0.75", "1.0"];
+
 export function Customizer() {
   const { settings, updateSettings, resetSettings } = useSettings();
+  const pathname = usePathname();
+  const router = useRouter();
+  const params = useParams();
 
+  const locale = params.lang as LocaleType;
+  const direction = i18n.localeDirection[locale];
+
+  const setLocale = React.useCallback(
+    (localeName: LocaleType) => {
+      updateSettings({ ...settings, locale: localeName });
+      router.push(relocalizePathname(pathname, localeName));
+    },
+    [settings, updateSettings, router, pathname]
+  );
   const setMode = React.useCallback(
     (modeName: ModeType) => {
       updateSettings({ ...settings, mode: modeName });
@@ -136,7 +165,7 @@ export function Customizer() {
     <Sheet>
       <SheetTrigger className="fixed bottom-10 end-0 z-50" asChild>
         <Button size="icon" className="rounded-e-none" aria-label="Customizer">
-          <Settings className="size-4" />
+          <Settings className="shrink-0 h-4 w-4" />
         </Button>
       </SheetTrigger>
       <SheetPortal>
@@ -150,59 +179,49 @@ export function Customizer() {
                 </SheetDescription>
               </SheetHeader>
               <div className="space-y-1.5">
-                <span className="text-xs">Color</span>
+                <p className="text-sm">Color</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {baseColors.map((theme) => {
-                    const isActive = settings.theme === theme.name;
+                  {baseColors.map((color) => {
+                    const isActive = settings.theme === color.name;
 
                     return (
                       <Button
-                        variant={"outline"}
-                        size="sm"
-                        key={theme.name}
+                        key={color.name}
+                        variant={isActive ? "secondary" : "default"}
+                        style={
+                          {
+                            "--primary":
+                              themes[color.name].activeColor[
+                                settings.mode === "dark" ? "dark" : "light"
+                              ],
+                            "--primary-foreground":
+                              themes[color.name].activeColor["foreground"],
+                          } as React.CSSProperties
+                        }
                         onClick={() => {
                           updateSettings({
                             ...settings,
-                            theme: theme.name,
+                            theme: color.name,
                           });
                         }}
-                        className={cn(
-                          "justify-start gap-x-2",
-                          isActive && "border-2 border-primary"
-                        )}
-                        style={
-                          {
-                            "--theme-primary": `hsl(${
-                              themes[theme.name].activeColor[
-                                settings.mode === "dark" ? "dark" : "light"
-                              ]
-                            })`,
-                          } as React.CSSProperties
-                        }
                       >
-                        <span
-                          className={cn(
-                            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[--theme-primary]"
-                          )}
-                        >
-                          {isActive && (
-                            <Check className="h-4 w-4 text-primary-foreground" />
-                          )}
-                        </span>
-                        <span>{themes[theme.name].label}</span>
+                        <span>{themes[color.name].label}</span>
                       </Button>
                     );
                   })}
                 </div>
               </div>
               <div className="space-y-1.5">
-                <span className="text-xs">Radius</span>
+                <p className="text-sm">Radius</p>
                 <div className="grid grid-cols-5 gap-2">
-                  {["0", "0.3", "0.5", "0.75", "1.0"].map((value) => {
+                  {radiusSizes.map((value) => {
                     return (
                       <Button
-                        variant={"outline"}
-                        size="sm"
+                        variant={
+                          settings.radius === parseFloat(value)
+                            ? "secondary"
+                            : "outline"
+                        }
                         key={value}
                         onClick={() => {
                           updateSettings({
@@ -210,10 +229,6 @@ export function Customizer() {
                             radius: parseFloat(value),
                           });
                         }}
-                        className={cn(
-                          settings.radius === parseFloat(value) &&
-                            "border-2 border-primary"
-                        )}
                       >
                         {value}
                       </Button>
@@ -222,91 +237,100 @@ export function Customizer() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <span className="text-xs">Mode</span>
+                <p className="text-sm">Mode</p>
                 <div className="grid grid-cols-3 gap-2">
                   <Button
-                    variant={"outline"}
-                    size="sm"
+                    variant={
+                      settings.mode === "light" ? "secondary" : "outline"
+                    }
                     onClick={() => setMode("light")}
-                    className={cn(
-                      settings.mode === "light" && "border-2 border-primary"
-                    )}
                   >
-                    <Sun className="size-4 me-1 -translate-x-1" />
+                    <Sun className="shrink-0 h-4 w-4 me-2" />
                     Light
                   </Button>
                   <Button
-                    variant={"outline"}
-                    size="sm"
+                    variant={settings.mode === "dark" ? "secondary" : "outline"}
                     onClick={() => setMode("dark")}
-                    className={cn(
-                      settings.mode === "dark" && "border-2 border-primary"
-                    )}
                   >
-                    <MoonStar className="size-4 me-1 -translate-x-1" />
+                    <MoonStar className="shrink-0 h-4 w-4 me-2" />
                     Dark
                   </Button>
                   <Button
-                    variant={"outline"}
-                    size="sm"
+                    variant={
+                      settings.mode === "system" ? "secondary" : "outline"
+                    }
                     onClick={() => setMode("system")}
-                    className={cn(
-                      settings.mode === "system" && "border-2 border-primary"
-                    )}
                   >
-                    <SunMoon className="size-4 me-1 -translate-x-1" />
+                    <SunMoon className="shrink-0 h-4 w-4 me-2" />
                     System
                   </Button>
                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <span className="text-xs">Layout</span>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    variant={"outline"}
-                    size="sm"
-                    onClick={() => {
-                      updateSettings({
-                        ...settings,
-                        layout: "horizontal",
-                      });
-                    }}
-                    className={cn(
-                      settings.layout === "horizontal" &&
-                        "border-2 border-primary"
-                    )}
-                  >
-                    <AlignStartHorizontal className="size-4 me-1 -translate-x-1" />
-                    Horizontal
-                  </Button>
-                  <Button
-                    variant={"outline"}
-                    size="sm"
-                    onClick={() => {
-                      updateSettings({
-                        ...settings,
-                        layout: "vertical",
-                      });
-                    }}
-                    className={cn(
-                      settings.layout === "vertical" &&
-                        "border-2 border-primary"
-                    )}
-                  >
-                    <AlignStartVertical className="size-4 me-1 -translate-x-1" />
-                    Vertical
-                  </Button>
+                <div className="space-y-1.5">
+                  <span className="text-xs">Layout</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant={
+                        settings.layout === "horizontal"
+                          ? "secondary"
+                          : "outline"
+                      }
+                      onClick={() => {
+                        updateSettings({
+                          ...settings,
+                          layout: "horizontal",
+                        });
+                      }}
+                    >
+                      <AlignStartHorizontal className="shrink-0 h-4 w-4 me-2" />
+                      Horizontal
+                    </Button>
+                    <Button
+                      variant={
+                        settings.layout === "vertical" ? "secondary" : "outline"
+                      }
+                      onClick={() => {
+                        updateSettings({
+                          ...settings,
+                          layout: "vertical",
+                        });
+                      }}
+                    >
+                      <AlignStartVertical className="shrink-0 h-4 w-4 me-2" />
+                      Vertical
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-xs">Direction</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant={direction === "ltr" ? "secondary" : "outline"}
+                      onClick={() => setLocale("en")}
+                    >
+                      <AlignLeft className="shrink-0 h-4 w-4 me-2" />
+                      LRT
+                    </Button>
+                    <Button
+                      variant={direction === "rtl" ? "secondary" : "outline"}
+                      onClick={() => setLocale("ar")}
+                    >
+                      <AlignRight className="shrink-0 h-4 w-4 me-2" />
+                      RTL
+                    </Button>
+                  </div>
                 </div>
               </div>
+
               <Button
-                variant={"destructive"}
-                size="sm"
+                variant="outline"
+                className="w-full"
                 onClick={() => {
                   setMode("system");
                   resetSettings();
                 }}
               >
-                <RotateCcw className="size-4 me-1 -translate-x-1" />
+                <RotateCcw className="shrink-0 h-4 w-4 me-2" />
                 Reset
               </Button>
             </div>
