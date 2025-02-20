@@ -2,11 +2,16 @@
 
 import * as React from "react";
 import { useCookie } from "react-use";
+import { useSearchParams } from "next/navigation";
 
 import { defaultSettings, SettingsContext } from "@/contexts/settings-context";
 
 import type { SettingsType } from "@/types";
 import type { LocaleType } from "@/types";
+
+const validModes = ["light", "dark", "system"];
+const validLayouts = ["vertical", "horizontal"];
+const validRadii = [0, 0.3, 0.5, 0.75, 1];
 
 export function SettingsProvider({
   locale,
@@ -18,14 +23,37 @@ export function SettingsProvider({
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
     useCookie("settings");
   const [settings, setSettings] = React.useState<SettingsType | null>(null);
+  const searchParams = useSearchParams();
 
   React.useEffect(() => {
-    if (storedSettings) {
-      setSettings(JSON.parse(storedSettings));
-    } else {
-      setSettings({ ...defaultSettings, locale });
+    let initialSettings = storedSettings
+      ? JSON.parse(storedSettings)
+      : { ...defaultSettings, locale };
+
+    const queryLayout = searchParams.get("layout");
+    const queryMode = searchParams.get("mode");
+    const queryRadius = searchParams.get("radius");
+
+    if (
+      (queryLayout && validLayouts.includes(queryLayout)) ||
+      (queryMode && validModes.includes(queryMode)) ||
+      (queryRadius && validRadii.includes(parseFloat(queryRadius)))
+    ) {
+      initialSettings = {
+        ...initialSettings,
+        ...(queryLayout &&
+          validLayouts.includes(queryLayout) && { layout: queryLayout }),
+        ...(queryMode && validModes.includes(queryMode) && { mode: queryMode }),
+        ...(queryRadius &&
+          validRadii.includes(parseFloat(queryRadius)) && {
+            radius: parseFloat(queryRadius),
+          }),
+      };
+      setStoredSettings(JSON.stringify(initialSettings));
     }
-  }, [storedSettings, locale]);
+
+    setSettings(initialSettings);
+  }, [storedSettings, locale, searchParams, setStoredSettings]);
 
   const updateSettings = React.useCallback(
     (newSettings: SettingsType) => {
@@ -40,7 +68,6 @@ export function SettingsProvider({
     setSettings(defaultSettings);
   }, [deleteStoredSettings]);
 
-  // Render children only when settings are ready
   if (!settings) {
     return null;
   }

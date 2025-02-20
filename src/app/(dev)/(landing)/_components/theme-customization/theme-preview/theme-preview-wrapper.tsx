@@ -25,11 +25,13 @@ export function ThemePreviewWrapper({
   );
 
   return (
-    <div
-      style={style}
-      className="size-full flex justify-center items-center bg-accent rounded-lg transition-colors duration-500"
-    >
-      {children}
+    <div className="size-full border rounded-lg overflow-hidden">
+      <div
+        style={style}
+        className="size-full flex justify-center items-center bg-accent transition-colors duration-500"
+      >
+        {children}
+      </div>
     </div>
   );
 }
