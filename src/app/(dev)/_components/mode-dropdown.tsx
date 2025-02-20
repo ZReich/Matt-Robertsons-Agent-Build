@@ -24,7 +24,7 @@ const modeIcons = {
   system: SunMoon,
 };
 
-export function DocsModeDropdown() {
+export function ModeDropdown() {
   const { settings, updateSettings } = useSettings();
 
   const mode = settings.mode;
@@ -40,7 +40,11 @@ export function DocsModeDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Mode">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Mode"
+        >
           <ModeIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>

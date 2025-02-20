@@ -3,7 +3,7 @@ import * as React from "react";
 
 import { ToggleMobileSidebar } from "./toggle-moble-sidebar";
 import { DocsCommandMenu } from "./docs-command-menu";
-import { DocsModeDropdown } from "./docs-mode-dropdown";
+import { ModeDropdown } from "../../_components/mode-dropdown";
 
 import Logo from "/public/images/icons/shadboard.svg";
 
@@ -18,7 +18,7 @@ export function Header() {
         Shadboard
       </Link>
       <DocsCommandMenu buttonClassName="ms-auto" />
-      <DocsModeDropdown />
+      <ModeDropdown />
       <ToggleMobileSidebar />
     </header>
   );

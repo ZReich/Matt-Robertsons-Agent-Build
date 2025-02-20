@@ -70,7 +70,11 @@ export default withAuth(
     const locale = getLocale(request);
     const isUserAuthenticated = !!request.nextauth.token;
 
-    if (pathname.startsWith("/docs")) {
+    if (
+      pathname.startsWith("/docs") ||
+      pathname.startsWith("/contact-us") ||
+      pathname.startsWith("/")
+    ) {
       return NextResponse.next();
     }
 
