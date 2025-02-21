@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { sidebarNavigationData } from "../_data/sidebar-navigation";
+
+import { isActivePathname } from "@/lib/utils";
 
 import type { NavigationRootItem } from "@/types";
 
@@ -23,11 +25,9 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import Logo from "/public/images/icons/shadboard.svg";
-import { isActivePathname } from "@/lib/utils";
 
 export function DocsSidebar() {
   const pathname = usePathname();
-  const params = useParams();
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
 
   return (

@@ -12,7 +12,7 @@ export default function HorizontalLayout({
   dictionary: DictionaryType;
 }) {
   return (
-    <>
+    <div className="container relative flex justify-center p-0 border border-sidebar-border">
       <Sidebar dictionary={dictionary} />
       <div className="min-h-screen w-full grid md:grid-rows-[auto,_1fr,_auto]">
         <HorizontalLayoutHeader dictionary={dictionary} />
@@ -21,6 +21,6 @@ export default function HorizontalLayout({
         </main>
         <Footer />
       </div>
-    </>
+    </div>
   );
 }

@@ -2,18 +2,17 @@
 
 import * as React from "react";
 
-import { InputFile } from "@/components/ui/input-file";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Editor } from "@/components/ui/editor";
 
-export function InputFilePlaceholder() {
+export function EditorPlaceholder() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Input File Placeholder</CardTitle>
+        <CardTitle>Editor Placeholder</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col justify-center items-center gap-y-1.5">
-        <InputFile />
-        <InputFile placeholder="No uploaded files" />
+        <Editor placeholder="Write your message here..." className="h-32" />
       </CardContent>
     </Card>
   );

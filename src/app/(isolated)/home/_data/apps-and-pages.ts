@@ -73,27 +73,27 @@ export const appsAndPagesData: CardDemoProps[] = [
   },
   {
     title: "Forgot Passward",
-    href: "https://shadboard.vercel.app/auth/forgot-passward",
+    href: "https://shadboard.vercel.app/pages/forgot-passward",
     imgSrc: "/images/forgot-password-page.jpg",
   },
   {
     title: "New Passward",
-    href: "https://shadboard.vercel.app/auth/new-passward",
+    href: "https://shadboard.vercel.app/pages/new-passward",
     imgSrc: "/images/new-password-page.jpg",
   },
   {
     title: "Verify Email",
-    href: "https://shadboard.vercel.app/auth/verify-email",
+    href: "https://shadboard.vercel.app/pages/verify-email",
     imgSrc: "/images/verify-email-page.jpg",
   },
   {
     title: "Register",
-    href: "https://shadboard.vercel.app/auth/register",
+    href: "https://shadboard.vercel.app/pages/register",
     imgSrc: "/images/register-page.jpg",
   },
   {
     title: "Sign In",
-    href: "https://shadboard.vercel.app/auth/sign-in",
+    href: "https://shadboard.vercel.app/pages/sign-in",
     imgSrc: "/images/sign-in-page.jpg",
   },
 ];

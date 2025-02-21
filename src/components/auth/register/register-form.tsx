@@ -46,7 +46,7 @@ export function RegisterForm() {
     const { firstName, lastName, username, email, password } = data;
 
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/pages/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,8 +82,8 @@ export function RegisterForm() {
           ensureLocalizedPathname(
             // Include redirect pathname if available, otherwise default to "/sign-in"
             redirectPathname
-              ? ensureRedirectPathname("/auth/sign-in", redirectPathname)
-              : "/auth/sign-in",
+              ? ensureRedirectPathname("/pages/sign-in", redirectPathname)
+              : "/pages/sign-in",
             locale
           )
         );
@@ -188,8 +188,8 @@ export function RegisterForm() {
             href={ensureLocalizedPathname(
               // Include redirect pathname if available, otherwise default to "/sign-in"
               redirectPathname
-                ? ensureRedirectPathname("/auth/sign-in", redirectPathname)
-                : "/auth/sign-in",
+                ? ensureRedirectPathname("/pages/sign-in", redirectPathname)
+                : "/pages/sign-in",
               locale
             )}
             className="underline"

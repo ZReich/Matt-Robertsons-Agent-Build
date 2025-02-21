@@ -184,8 +184,9 @@ const Sidebar = React.forwardRef<
     if (collapsible === "none") {
       return (
         <div
+          data-side={side}
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground border-sidebar-border data-[side=left]:border-r data-[side=right]:border-l",
             className
           )}
           ref={ref}

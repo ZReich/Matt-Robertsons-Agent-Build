@@ -85,23 +85,23 @@ export const navigationsData: NavigationType[] = [
         items: [
           {
             title: "Forgot Password",
-            href: "/auth/forgot-password",
+            href: "/pages/forgot-password",
           },
           {
             title: "New Password",
-            href: "/auth/new-password",
+            href: "/pages/new-password",
           },
           {
             title: "Verify Email",
-            href: "/auth/verify-email",
+            href: "/pages/verify-email",
           },
           {
             title: "Register",
-            href: "/auth/register",
+            href: "/pages/register",
           },
           {
             title: "Sign In",
-            href: "/auth/sign-in",
+            href: "/pages/sign-in",
           },
         ],
       },
@@ -338,6 +338,10 @@ export const navigationsData: NavigationType[] = [
           {
             title: "Avatar Stack",
             href: "/extended-ui/avatar-stack",
+          },
+          {
+            title: "Editor",
+            href: "/extended-ui/editor",
           },
           {
             title: "File Dropzone",

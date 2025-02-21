@@ -128,7 +128,11 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   };
 
   return (
-    <SidebarWrapper side={isRTL ? "right" : "left"}>
+    <SidebarWrapper
+      side={isRTL ? "right" : "left"}
+      collapsible="none"
+      className="sticky inset-y-0 h-svh"
+    >
       <SidebarHeader>
         <Link
           href={ensureLocalizedPathname("/", locale)}

@@ -147,19 +147,25 @@ export function Customizer() {
   const locale = params.lang as LocaleType;
   const direction = i18n.localeDirection[locale];
 
-  const setLocale = React.useCallback(
+  const handleSetLocale = React.useCallback(
     (localeName: LocaleType) => {
       updateSettings({ ...settings, locale: localeName });
       router.push(relocalizePathname(pathname, localeName));
     },
     [settings, updateSettings, router, pathname]
   );
-  const setMode = React.useCallback(
+
+  const handleSetMode = React.useCallback(
     (modeName: ModeType) => {
       updateSettings({ ...settings, mode: modeName });
     },
     [settings, updateSettings]
   );
+
+  const handleReset = React.useCallback(() => {
+    resetSettings();
+    router.push(relocalizePathname(pathname, "en"));
+  }, [resetSettings, router, pathname]);
 
   return (
     <Sheet>
@@ -198,12 +204,12 @@ export function Customizer() {
                               themes[color.name].activeColor["foreground"],
                           } as React.CSSProperties
                         }
-                        onClick={() => {
+                        onClick={() =>
                           updateSettings({
                             ...settings,
                             theme: color.name,
-                          });
-                        }}
+                          })
+                        }
                       >
                         <span>{themes[color.name].label}</span>
                       </Button>
@@ -214,26 +220,24 @@ export function Customizer() {
               <div className="space-y-1.5">
                 <p className="text-sm">Radius</p>
                 <div className="grid grid-cols-5 gap-2">
-                  {radiusSizes.map((value) => {
-                    return (
-                      <Button
-                        variant={
-                          settings.radius === parseFloat(value)
-                            ? "secondary"
-                            : "outline"
-                        }
-                        key={value}
-                        onClick={() => {
-                          updateSettings({
-                            ...settings,
-                            radius: parseFloat(value),
-                          });
-                        }}
-                      >
-                        {value}
-                      </Button>
-                    );
-                  })}
+                  {radiusSizes.map((value) => (
+                    <Button
+                      variant={
+                        settings.radius === parseFloat(value)
+                          ? "secondary"
+                          : "outline"
+                      }
+                      key={value}
+                      onClick={() => {
+                        updateSettings({
+                          ...settings,
+                          radius: parseFloat(value),
+                        });
+                      }}
+                    >
+                      {value}
+                    </Button>
+                  ))}
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -243,14 +247,14 @@ export function Customizer() {
                     variant={
                       settings.mode === "light" ? "secondary" : "outline"
                     }
-                    onClick={() => setMode("light")}
+                    onClick={() => handleSetMode("light")}
                   >
                     <Sun className="shrink-0 h-4 w-4 me-2" />
                     Light
                   </Button>
                   <Button
                     variant={settings.mode === "dark" ? "secondary" : "outline"}
-                    onClick={() => setMode("dark")}
+                    onClick={() => handleSetMode("dark")}
                   >
                     <MoonStar className="shrink-0 h-4 w-4 me-2" />
                     Dark
@@ -259,7 +263,7 @@ export function Customizer() {
                     variant={
                       settings.mode === "system" ? "secondary" : "outline"
                     }
-                    onClick={() => setMode("system")}
+                    onClick={() => handleSetMode("system")}
                   >
                     <SunMoon className="shrink-0 h-4 w-4 me-2" />
                     System
@@ -274,12 +278,12 @@ export function Customizer() {
                           ? "secondary"
                           : "outline"
                       }
-                      onClick={() => {
+                      onClick={() =>
                         updateSettings({
                           ...settings,
                           layout: "horizontal",
-                        });
-                      }}
+                        })
+                      }
                     >
                       <AlignStartHorizontal className="shrink-0 h-4 w-4 me-2" />
                       Horizontal
@@ -288,12 +292,12 @@ export function Customizer() {
                       variant={
                         settings.layout === "vertical" ? "secondary" : "outline"
                       }
-                      onClick={() => {
+                      onClick={() =>
                         updateSettings({
                           ...settings,
                           layout: "vertical",
-                        });
-                      }}
+                        })
+                      }
                     >
                       <AlignStartVertical className="shrink-0 h-4 w-4 me-2" />
                       Vertical
@@ -306,14 +310,14 @@ export function Customizer() {
                   <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant={direction === "ltr" ? "secondary" : "outline"}
-                      onClick={() => setLocale("en")}
+                      onClick={() => handleSetLocale("en")}
                     >
                       <AlignLeft className="shrink-0 h-4 w-4 me-2" />
                       LRT
                     </Button>
                     <Button
                       variant={direction === "rtl" ? "secondary" : "outline"}
-                      onClick={() => setLocale("ar")}
+                      onClick={() => handleSetLocale("ar")}
                     >
                       <AlignRight className="shrink-0 h-4 w-4 me-2" />
                       RTL
@@ -325,10 +329,7 @@ export function Customizer() {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => {
-                  setMode("system");
-                  resetSettings();
-                }}
+                onClick={handleReset}
               >
                 <RotateCcw className="shrink-0 h-4 w-4 me-2" />
                 Reset

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { FaGithub, FaGoogle } from "react-icons/fa";
 
 import { OAuthLinks } from "@/components/auth/oauth-links";
 import { Button } from "@/components/ui/button";

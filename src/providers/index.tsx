@@ -1,7 +1,7 @@
 import type { Session } from "next-auth";
 import type { DirectionType, LocaleType } from "@/types";
 
-import { SettingsProvider } from "./settings-provider";
+import { SettingsProvider } from "@/contexts/settings-context";
 import { ModeProvider } from "./mode-provider";
 import { ThemeProvider } from "./theme-provider";
 import { NextAuthProvider } from "./next-auth-provider";
