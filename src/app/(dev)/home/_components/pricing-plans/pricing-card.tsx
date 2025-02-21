@@ -33,7 +33,7 @@ function RenderPrice({
   return (
     <div className="flex justify-center items-baseline mb-8 mt-2">
       <span className="text-4xl font-black">{fomrattedFinalPrice}</span>
-      <span className="text-muted-foreground">/{period}</span>
+      {period && <span className="text-muted-foreground">/{period}</span>}
     </div>
   );
 }
@@ -42,7 +42,7 @@ export function PricingCard({
   title,
   description,
   price,
-  period = "month",
+  period,
   discountRate,
   features,
   isCurrentPlan = false,

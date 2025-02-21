@@ -21,6 +21,7 @@ export default function PricingCardList({
           title={item.title}
           description={item.description}
           price={item.price}
+          period={item.period}
           discountRate={discountRate}
           features={item.features}
           isCurrentPlan={item.isCurrentPlan}

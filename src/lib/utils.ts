@@ -51,14 +51,25 @@ export function isUrl(text: string) {
 
 export const isActivePathname = (
   basePathname: string,
-  currentPathname: string
+  currentPathname: string,
+  exactMatch: boolean = false
 ) => {
   if (typeof basePathname !== "string" || typeof currentPathname !== "string") {
     throw new Error("Both basePathname and currentPathname must be strings");
   }
 
-  const regex = new RegExp(`^${basePathname}(?:/|$)`);
-  return regex.test(currentPathname);
+  // Use this when you want a strict comparison, e.g., highlighting a specific page.
+  if (exactMatch) {
+    return basePathname === currentPathname;
+  }
+
+  // Allow deeper routes to be considered as active.
+  // Example: If basePathname is "/dashboard", it should match "/dashboard/stats".
+  return (
+    currentPathname.startsWith(basePathname) &&
+    (currentPathname.length === basePathname.length ||
+      currentPathname[basePathname.length] === "/")
+  );
 };
 
 export function formatFileSize(bytes: number, decimals: number = 2) {

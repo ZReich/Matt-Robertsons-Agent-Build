@@ -12,7 +12,7 @@ export function FaqsList() {
     <Accordion
       type="single"
       collapsible
-      className="col-span-2 w-full rounded-lg border bg-card text-card-foreground p-6"
+      className="w-full rounded-lg border bg-card text-card-foreground p-6 md:col-span-2"
     >
       {faqsData.map((faq) => (
         <FaqsItem key={faq.question} faq={faq} />

@@ -4,12 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 
-import { landingNavigationsData } from "../../_data/landing-navigations";
+import { homeNavigationsData } from "../../_data/home-navigations";
 
 import { isActivePathname } from "@/lib/utils";
 
 import { buttonVariants } from "@/components/ui/button";
-import { LandingSidebar } from "./landing-sidebar";
+import { HomeSidebar } from "./home-sidebar";
 import { ModeDropdown } from "../../../_components/mode-dropdown";
 
 import Logo from "/public/images/icons/shadboard.svg";
@@ -33,8 +33,8 @@ export function Header() {
         Shadboard
       </Link>
       <ul className="hidden gap-2 me-16 lg:flex">
-        {landingNavigationsData.map((nav) => {
-          const isActive = isActivePathname(nav.href, fullPathname);
+        {homeNavigationsData.map((nav) => {
+          const isActive = isActivePathname(nav.href, fullPathname, true);
 
           return (
             <li key={nav.href}>
@@ -52,7 +52,7 @@ export function Header() {
       </ul>
       <div className="flex gap-x-2">
         <ModeDropdown />
-        <LandingSidebar fullPathname={fullPathname} />
+        <HomeSidebar fullPathname={fullPathname} />
       </div>
     </header>
   );

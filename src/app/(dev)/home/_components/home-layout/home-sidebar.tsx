@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { PanelLeft } from "lucide-react";
 
-import { landingNavigationsData } from "../../_data/landing-navigations";
+import { homeNavigationsData } from "../../_data/home-navigations";
 
 import { isActivePathname } from "@/lib/utils";
 
@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 
 import Logo from "/public/images/icons/shadboard.svg";
 
-export function LandingSidebar({ fullPathname }: { fullPathname: string }) {
+export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
 
   if (!isMobile) return;
@@ -65,8 +65,8 @@ export function LandingSidebar({ fullPathname }: { fullPathname: string }) {
         <ScrollArea className="p-2">
           <SidebarContent>
             <SidebarMenu>
-              {landingNavigationsData.map((nav) => {
-                const isActive = isActivePathname(nav.href, fullPathname);
+              {homeNavigationsData.map((nav) => {
+                const isActive = isActivePathname(nav.href, fullPathname, true);
 
                 if (nav.href) {
                   return (

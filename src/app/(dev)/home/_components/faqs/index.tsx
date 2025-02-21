@@ -3,14 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { faqsData } from "../../_data/faqs";
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { FaqsList } from "./faqs-list";
 
 export function Faqs() {
   return (
@@ -42,7 +35,7 @@ export function Faqs() {
           fill="url(#dot-patter)"
         />
       </svg>
-      <div className="space-y-6 text-center md:text-start">
+      <div className="space-y-6 text-center md:cols-span-1 md:text-start">
         <h1 className="text-2xl font-semibold">Frequently asked questions</h1>
         <p className="max-w-prose mx-auto">
           Explore answers to common questions. If you need further assistance,{" "}
@@ -57,20 +50,7 @@ export function Faqs() {
           .
         </p>
       </div>
-      <Accordion
-        type="single"
-        collapsible
-        className="col-span-2 w-full rounded-lg border bg-card text-card-foreground p-6"
-      >
-        {faqsData.map((faq) => (
-          <AccordionItem key={faq.question} value={faq.question}>
-            <AccordionTrigger className="font-semibold">
-              {faq.question}
-            </AccordionTrigger>
-            <AccordionContent>{faq.answer}</AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      <FaqsList />
     </section>
   );
 }

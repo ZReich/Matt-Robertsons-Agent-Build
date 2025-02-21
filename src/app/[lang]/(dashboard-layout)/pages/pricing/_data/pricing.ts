@@ -14,6 +14,7 @@ export const pricingData: PricingCardType[] = [
       "Designed for individual use",
     ],
     isCurrentPlan: true,
+    period: "month",
     href: "",
   },
   {
@@ -30,6 +31,7 @@ export const pricingData: PricingCardType[] = [
       "Tailor the dashboard to fit your team’s needs",
     ],
     isFeatured: true,
+    period: "month",
     href: "",
   },
   {
@@ -46,6 +48,7 @@ export const pricingData: PricingCardType[] = [
       "Benefit from enhanced security measures and compliance",
       "Integrate with other systems and services as needed",
     ],
+    period: "month",
     href: "",
   },
 ];

@@ -1,7 +1,7 @@
 import type { IconType } from "@/types";
 import type { ButtonProps } from "@/components/ui/button";
 
-export interface LandingNavigationType {
+export interface HomeNavigationType {
   title: string;
   href: string;
 }
