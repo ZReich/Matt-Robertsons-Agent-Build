@@ -2,10 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
-import { SecurityPreferencesSchema } from "../../../../../_schemas/security-preferences-form";
+import { SecurityPreferencesSchema } from "../../../../_schemas/security-preferences-form-schema";
 
 import type {
   UserType,

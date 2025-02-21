@@ -8,6 +8,17 @@ const nextConfig = {
   // See https://lucide.dev/guide/packages/lucide-react#nextjs-example
   transpilePackages: ["lucide-react"],
 
+  // See https://nextjs.org/docs/messages/next-image-unconfigured-host
+  // See https://nextjs.org/docs/pages/api-reference/components/image#remotepatterns
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
+
   webpack(config) {
     // Grab the existing rule that handles SVG imports
     const fileLoaderRule = config.module.rules.find((rule) =>

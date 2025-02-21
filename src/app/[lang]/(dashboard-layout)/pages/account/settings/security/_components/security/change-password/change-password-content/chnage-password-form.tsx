@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 
-import { ChangePasswordSchema } from "../../../../../_schemas/chnage-password-schema";
+import { ChangePasswordSchema } from "../../../../_schemas/chnage-password-schema";
 
 import { cn } from "@/lib/utils";
 

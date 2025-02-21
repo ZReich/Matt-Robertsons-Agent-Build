@@ -5,18 +5,18 @@ export const RegisterSchema = z.object({
     .string()
     .trim()
     .min(2, { message: "First Name must contain at least 2 characters." })
-    .max(50, { message: "First Name must be at most 50 characters." }),
+    .max(50, { message: "First Name must contain at most 50 characters." }),
   lastName: z
     .string()
     .trim()
     .min(2, { message: "Last Name must contain at least 2 characters." })
-    .max(50, { message: "Last Name must be at most 50 characters." }),
+    .max(50, { message: "Last Name must contain at most 50 characters." }),
   username: z
     .string()
     .toLowerCase()
     .trim()
     .min(3, { message: "Username must contain at least 3 characters." })
-    .max(50, { message: "Username must be at most 50 characters." }),
+    .max(50, { message: "Username must contain at most 50 characters." }),
   email: z
     .string()
     .email({ message: "Invalid email address" })

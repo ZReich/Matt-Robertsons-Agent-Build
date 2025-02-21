@@ -1,7 +1,7 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { ToggleMobileSidebar } from "./toggle-moble-sidebar";
+import { ToggleMobileSidebar } from "./toggle-mobile-sidebar";
 import { DocsCommandMenu } from "./docs-command-menu";
 import { ModeDropdown } from "../../_components/mode-dropdown";
 

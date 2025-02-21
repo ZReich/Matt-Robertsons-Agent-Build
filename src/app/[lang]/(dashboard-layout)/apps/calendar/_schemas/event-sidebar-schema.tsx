@@ -9,13 +9,13 @@ export const EventSidebarSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(2, { message: "Title must be at least 2 characters." })
-    .max(50, { message: "Title must be at most 50 characters." }),
+    .min(2, { message: "Title must contain at least 2 characters." })
+    .max(50, { message: "Title must contain at most 50 characters." }),
   allDay: z.boolean(),
   description: z
     .string()
     .trim()
-    .max(250, { message: "Description must be at most 250 characters." })
+    .max(250, { message: "Description must contain at most 250 characters." })
     .optional(),
   start: z.date(),
   end: z.date(),

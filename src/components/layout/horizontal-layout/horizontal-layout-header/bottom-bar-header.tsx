@@ -8,7 +8,7 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 import type { DictionaryType } from "@/lib/getDictionary";
 import type { LocaleType } from "@/types";
 
-import { ToggleMobileSidebar } from "../../toggle-moble-sidebar";
+import { ToggleMobileSidebar } from "../../toggle-mobile-sidebar";
 import { CommandMenu } from "@/components/layout/command-menu";
 import { ModeDropdown } from "@/components/layout/mode-dropdown";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";

@@ -11,7 +11,7 @@ import { UserDropdown } from "@/components/layout/user-dropdown";
 import { LanguageDropdown } from "@/components/layout/language-dropdown";
 import { NotificationDropdown } from "@/components/layout/notification-dropdown";
 import { FullscreenToggle } from "@/components/layout/full-screen-toggle";
-import { ToggleMobileSidebar } from "../toggle-moble-sidebar";
+import { ToggleMobileSidebar } from "../toggle-mobile-sidebar";
 
 export function VerticalLayoutHeader({
   dictionary,

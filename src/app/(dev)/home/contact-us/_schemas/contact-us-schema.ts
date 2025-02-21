@@ -12,7 +12,7 @@ export const ContactUsSchema = z.object({
     .trim()
     .email({ message: "Invalid email address" })
     .min(2, { message: "Email must contain at least 2 characters" })
-    .max(50, { message: "Email must be at most 50 characters" }),
+    .max(50, { message: "Email must contain at most 50 characters" }),
   message: z
     .string()
     .trim()

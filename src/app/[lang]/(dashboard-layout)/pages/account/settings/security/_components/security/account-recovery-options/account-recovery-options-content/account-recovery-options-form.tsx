@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 
-import { AccountRecoveryOptionsSchema } from "../../../../../_schemas/account-recovery-options-schema";
+import { AccountRecoveryOptionsSchema } from "../../../../_schemas/account-recovery-options-schema";
 
 import type {
   UserType,

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 
-import { ProfileInfoSchema } from "../../../_schemas/profile-info-form";
+import { ProfileInfoSchema } from "../../../_schemas/profile-info-form-schema";
 
 import { cn, getInitials } from "@/lib/utils";
 

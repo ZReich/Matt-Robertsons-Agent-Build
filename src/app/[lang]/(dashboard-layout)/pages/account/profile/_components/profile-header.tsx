@@ -23,11 +23,11 @@ export function ProfileHeader({
 
   return (
     <section className="bg-background border border-border">
-      <AspectRatio ratio={5 / 1}>
+      <AspectRatio ratio={5 / 1} className="bg-muted">
         <Image
-          src={background || "/images/placeholder.svg"} // Fallback placeholder image
+          src={background}
           fill
-          className="object-cover"
+          className="h-full w-full object-cover"
           alt="Profile Background"
         />
       </AspectRatio>

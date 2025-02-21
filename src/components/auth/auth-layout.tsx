@@ -65,6 +65,7 @@ const AuthImage = React.forwardRef<HTMLDivElement, AuthImageProps>(
         src={imgSrc}
         alt="Image"
         fill
+        sizes="(max-width: 1200px) 60vw, 38vw"
         className="object-cover dark:brightness-[0.2] dark:grayscale"
       />
     </div>

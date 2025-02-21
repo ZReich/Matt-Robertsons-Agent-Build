@@ -3,13 +3,13 @@ import { z } from "zod";
 import { userData } from "@/data/user";
 
 import { DeleteAccountSchema } from "./settings/_schemas/delete-account-schema";
-import { ProfileInfoSchema } from "./settings/_schemas/profile-info-form";
+import { ProfileInfoSchema } from "./settings/_schemas/profile-info-form-schema";
 import { NotificationPreferencesSchema } from "./settings/notifications/_schemas/notifications-preferenes-schema";
 import { ChangePlanSchema } from "./settings/plan-and-billing/_schemas/change-plan-schema";
 import { PaymentMethodSchema } from "./settings/plan-and-billing/_schemas/payment-method-schema";
-import { AccountRecoveryOptionsSchema } from "./settings/_schemas/account-recovery-options-schema";
-import { ChangePasswordSchema } from "./settings/_schemas/chnage-password-schema";
-import { SecurityPreferencesSchema } from "./settings/_schemas/security-preferences-form";
+import { AccountRecoveryOptionsSchema } from "./settings/security/_schemas/account-recovery-options-schema";
+import { ChangePasswordSchema } from "./settings/security/_schemas/chnage-password-schema";
+import { SecurityPreferencesSchema } from "./settings/security/_schemas/security-preferences-form-schema";
 
 import type { DynamicIconNameType } from "@/types";
 

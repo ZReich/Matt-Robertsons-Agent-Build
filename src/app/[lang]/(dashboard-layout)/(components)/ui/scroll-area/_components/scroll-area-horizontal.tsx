@@ -18,7 +18,7 @@ export function ScrollAreaHorizontal() {
             {Array.from({ length: 5 }).map((_, index) => (
               <Image
                 key={index}
-                src="/images/placeholder.svg"
+                src="https://images.unsplash.com/photo-1635315619556-5826839a1bea"
                 alt=""
                 className="shrink-0 aspect-[3/4] object-cover rounded-md overflow-hidden"
                 width={165}

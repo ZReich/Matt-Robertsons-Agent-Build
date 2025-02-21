@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 
-import { FormLayoutsSchema } from "../../_schemas/form-layouts";
+import { FormLayoutsSchema } from "../../_schemas/form-layouts-schema";
 
 import { Button } from "@/components/ui/button";
 import {

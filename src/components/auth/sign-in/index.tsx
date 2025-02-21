@@ -9,7 +9,7 @@ import {
 
 export function SignIn() {
   return (
-    <Auth imgSrc="/images/placeholder.svg">
+    <Auth imgSrc="https://images.unsplash.com/photo-1635315619556-5826839a1bea">
       <AuthHeader>
         <AuthTitle>Sign In</AuthTitle>
         <AuthDescription>

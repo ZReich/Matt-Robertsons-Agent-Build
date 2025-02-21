@@ -1,7 +1,6 @@
 import { userData } from "@/data/user";
 
 import type { Metadata } from "next";
-import type { LocaleType } from "@/types";
 
 import { General } from "./_components/general";
 
