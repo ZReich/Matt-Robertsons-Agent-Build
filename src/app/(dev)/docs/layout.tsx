@@ -25,8 +25,8 @@ export default async function DocsLayout({
         <DocsSidebar />
         <Toc />
       </div>
-      <main className="h-full w-full flex flex-col items-center p-4 pt-20 bg-muted/40 lg:-mt-[100svh]">
-        <div className="z-10 lg:mx-64">
+      <main className="h-full w-full grid justify-center pt-20 bg-muted/40 lg:-mt-[100svh]">
+        <div className="max-w-prose w-screen mx-auto p-4 z-10 lg:w-auto lg:mx-64">
           <DocsBreadcrumb />
           <div
             id="mdx-content"
