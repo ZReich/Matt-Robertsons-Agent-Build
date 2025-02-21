@@ -1,8 +1,16 @@
+import type { ButtonProps } from "@/components/ui/button";
+
 export interface PricingCardType {
   title: string;
   description: string;
-  price: number;
+  period?: string;
+  price?: number | null;
   features: string[];
+  isFeatured?: boolean;
   isCurrentPlan?: boolean;
-  isPopular?: boolean;
+  buttonOptions?: ButtonProps;
+  buttonContent?: React.ReactNode;
+  content?: React.ReactNode;
+  href: string;
+  discountRate?: number | null;
 }

@@ -7,7 +7,7 @@ import type { PricingCardType } from "../../types";
 import { PricingHeader } from "./pricing-header";
 import PricingCardList from "./pricing-card-list";
 
-export default function Pricing({ data }: { data: PricingCardType[] }) {
+export function Pricing({ data }: { data: PricingCardType[] }) {
   const [isAnnual, setIsAnnual] = React.useState(false);
 
   return (

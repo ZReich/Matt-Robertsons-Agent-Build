@@ -1,6 +1,6 @@
 "use client";
 
-import type { PricingCardType } from "./types";
+import type { PricingCardType } from "../../types";
 
 import { PricingCard } from "./pricing-card";
 

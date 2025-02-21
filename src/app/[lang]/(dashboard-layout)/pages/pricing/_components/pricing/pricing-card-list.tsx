@@ -11,6 +11,8 @@ export default function PricingCardList({
   data: PricingCardType[];
   isAnnual: boolean;
 }) {
+  const discountRate = isAnnual ? 0.15 : 0;
+
   return (
     <ul className="space-y-8 md:grid md:grid-cols-3 md:gap-x-4 md:space-y-0">
       {data.map((item) => (
@@ -19,10 +21,11 @@ export default function PricingCardList({
           title={item.title}
           description={item.description}
           price={item.price}
+          discountRate={discountRate}
           features={item.features}
           isCurrentPlan={item.isCurrentPlan}
-          isPopular={item.isPopular}
-          isAnnual={isAnnual}
+          isFeatured={item.isFeatured}
+          href={item.href}
         />
       ))}
     </ul>

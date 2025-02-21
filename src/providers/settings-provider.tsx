@@ -3,17 +3,14 @@
 import * as React from "react";
 import { useCookie } from "react-use";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { defaultSettings, SettingsContext } from "@/contexts/settings-context";
 
 import type { SettingsType } from "@/types";
 import type { LocaleType } from "@/types";
 
-const validModes = ["light", "dark", "system"];
-const validLayouts = ["vertical", "horizontal"];
-const validRadii = [0, 0.3, 0.5, 0.75, 1];
-
-export function SettingsProvider({
+function SettingsProviderContent({
   locale,
   children,
 }: {
@@ -33,6 +30,10 @@ export function SettingsProvider({
     const queryLayout = searchParams.get("layout");
     const queryMode = searchParams.get("mode");
     const queryRadius = searchParams.get("radius");
+
+    const validModes = ["light", "dark", "system"];
+    const validLayouts = ["vertical", "horizontal"];
+    const validRadii = [0, 0.3, 0.5, 0.75, 1];
 
     if (
       (queryLayout && validLayouts.includes(queryLayout)) ||
@@ -78,5 +79,21 @@ export function SettingsProvider({
     >
       {children}
     </SettingsContext.Provider>
+  );
+}
+
+export function SettingsProvider({
+  locale,
+  children,
+}: {
+  locale: LocaleType;
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <SettingsProviderContent locale={locale}>
+        {children}
+      </SettingsProviderContent>
+    </Suspense>
   );
 }

@@ -14,6 +14,7 @@ export const pricingData: PricingCardType[] = [
       "Designed for individual use",
     ],
     isCurrentPlan: true,
+    href: "",
   },
   {
     title: "Company",
@@ -28,7 +29,8 @@ export const pricingData: PricingCardType[] = [
       "Collaborate with up to ten team members",
       "Tailor the dashboard to fit your team’s needs",
     ],
-    isPopular: true,
+    isFeatured: true,
+    href: "",
   },
   {
     title: "Enterprise",
@@ -44,5 +46,6 @@ export const pricingData: PricingCardType[] = [
       "Benefit from enhanced security measures and compliance",
       "Integrate with other systems and services as needed",
     ],
+    href: "",
   },
 ];
