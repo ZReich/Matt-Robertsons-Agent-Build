@@ -20,6 +20,7 @@ import {
   Sheet,
   SheetContent,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
 
   return (
     <Sheet open={openMobile} onOpenChange={setOpenMobile}>
-      <SheetTrigger>
+      <SheetTrigger asChild>
         <Button
           data-sidebar="trigger"
           variant="ghost"
@@ -44,13 +45,13 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
           <PanelLeft className="h-4 w-4" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 p-0 [&>button]:hidden">
+      <SheetContent
+        side="left"
+        className="w-72 p-0 [&>button]:hidden"
+        aria-describedby={undefined}
+      >
         <SheetHeader>
-          {/* <SheetTitle>Are you absolutely sure?</SheetTitle>
-          <SheetDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </SheetDescription> */}
+          <SheetTitle className="sr-only">Navigation Sidebar</SheetTitle>
           <SidebarHeader>
             <Link
               href="/"

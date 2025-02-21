@@ -91,6 +91,7 @@ export function FullscreenToggle() {
       size="icon"
       onClick={toggleFullscreen}
       aria-label="Toggle Fullscreen"
+      className="hidden md:inline-flex"
     >
       <DynamicIcon
         name={isFullscreen ? "Shrink" : "Expand"}
