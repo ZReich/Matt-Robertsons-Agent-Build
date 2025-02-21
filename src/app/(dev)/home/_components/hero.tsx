@@ -20,7 +20,7 @@ export function Hero() {
     <section className="container relative p-8 !pb-0 space-y-16 overflow-hidden md:p-16">
       <svg
         aria-hidden
-        className="pointer-events-none absolute inset-0 h-1/2 w-full fill-muted-foreground -z-10 [mask-image:radial-gradient(closest-side,white,transparent)] [mask-size:50%]"
+        className="pointer-events-none absolute inset-0 h-1/2 w-full fill-muted-foreground -z-10 [mask-image:radial-gradient(closest-side,white,transparent)] md:[mask-size:50%]"
       >
         <defs>
           <pattern
