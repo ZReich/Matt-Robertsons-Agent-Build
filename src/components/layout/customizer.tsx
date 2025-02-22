@@ -271,7 +271,7 @@ export function Customizer() {
                 </div>
                 <div className="space-y-1.5">
                   <span className="text-xs">Layout</span>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant={
                         settings.layout === "horizontal"
@@ -307,7 +307,7 @@ export function Customizer() {
 
                 <div className="space-y-1.5">
                   <span className="text-xs">Direction</span>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant={direction === "ltr" ? "secondary" : "outline"}
                       onClick={() => handleSetLocale("en")}
