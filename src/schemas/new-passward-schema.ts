@@ -3,10 +3,10 @@ import { z } from "zod";
 export const NewPasswordSchema = z
   .object({
     password: z.string().min(8, {
-      message: "Password must contain at least 8 character(s)",
+      message: "Password must contain at least 8 characters",
     }),
     confirmPassword: z.string().min(8, {
-      message: "Confirm password must contain at least 8 character(s)",
+      message: "Confirm password must contain at least 8 characters",
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {

@@ -37,12 +37,12 @@ export function DocsPagination() {
   const { previous, next } = getPreviousNext(pathname, navs);
 
   return (
-    <article className="grid grid-cols-2 gap-4 mt-10">
+    <article className="grid grid-cols-2 gap-4 mt-16">
       {previous && (
         <Link
           className={cn(
             buttonVariants({ variant: "outline" }),
-            "w-full flex flex-col items-start gap-1 px-4 py-12 no-underline"
+            "w-full flex flex-col items-start gap-1 px-4 py-16 no-underline"
           )}
           href={previous.href as string}
         >
@@ -60,7 +60,7 @@ export function DocsPagination() {
         <Link
           className={cn(
             buttonVariants({ variant: "outline" }),
-            "col-start-2 w-full flex flex-col items-end gap-1 px-4 py-12 no-underline"
+            "col-start-2 w-full flex flex-col items-end gap-1 px-4 py-16 no-underline"
           )}
           href={next.href as string}
         >

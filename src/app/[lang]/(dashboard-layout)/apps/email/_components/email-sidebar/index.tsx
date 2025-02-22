@@ -31,7 +31,9 @@ export function EmailSidebar() {
   if (!isMediumOrSmaller) {
     return (
       <aside>
-        <Card className="h-full w-72 flex flex-col border border-border">{content}</Card>
+        <Card className="h-full w-72 flex flex-col border border-border">
+          {content}
+        </Card>
       </aside>
     );
   }
@@ -39,7 +41,7 @@ export function EmailSidebar() {
   // Render a sheet sidebar for smaller screens
   return (
     <Sheet open={isEmailSidebarOpen} onOpenChange={setIsEmailSidebarOpen}>
-      <SheetContent side="start">
+      <SheetContent side="start" className="p-0">
         <SheetHeader className="sr-only">
           <SheetTitle>Email Sidebar</SheetTitle>
           <SheetDescription>

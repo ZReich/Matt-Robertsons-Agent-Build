@@ -25,7 +25,7 @@ export const RegisterSchema = z.object({
   password: z
     .string()
     .min(8, {
-      message: "Password must contain at least 8 character(s)",
+      message: "Password must contain at least 8 characters",
     })
     .regex(/(?=.*[a-zA-Z])/, {
       message: "Password must contain at least one letter.",

@@ -131,7 +131,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
     <SidebarWrapper
       side={isRTL ? "right" : "left"}
       collapsible="none"
-      className="sticky inset-y-0 h-svh"
+      className="shrink-0 sticky inset-y-0 h-svh"
     >
       <SidebarHeader>
         <Link

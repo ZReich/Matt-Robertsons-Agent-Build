@@ -8,14 +8,14 @@ const Keyboard = React.forwardRef<HTMLElement, KeyboardProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <kbd
+        ref={ref}
         className={cn(
-          "pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-sm border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100",
+          "pointer-events-none select-none h-5 inline-flex items-center gap-x-1 px-1.5 bg-muted text-xs text-muted-foreground font-mono font-medium border rounded-sm",
+          "before:content-['⌘']",
           className
         )}
-        ref={ref}
         {...props}
       >
-        <span className="text-xs">⌘</span>
         {children}
       </kbd>
     );

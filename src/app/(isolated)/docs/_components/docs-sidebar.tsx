@@ -31,8 +31,8 @@ export function DocsSidebar() {
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
 
   return (
-    <SidebarWrapper className="absolute h-full">
-      <SidebarHeader className={!isMobile ? "md:hidden" : ""}>
+    <SidebarWrapper className="sticky top-[4.25rem] h-svh" collapsible="none">
+      <SidebarHeader className={openMobile && isMobile ? "" : "hidden"}>
         <Link
           href="/"
           className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
@@ -43,7 +43,7 @@ export function DocsSidebar() {
         </Link>
       </SidebarHeader>
       <ScrollArea>
-        <SidebarContent className="gap-0 md:mt-16">
+        <SidebarContent className="gap-0">
           {sidebarNavigationData.map((nav) => (
             <SidebarGroup key={nav.title}>
               <SidebarGroupLabel>{nav.title}</SidebarGroupLabel>

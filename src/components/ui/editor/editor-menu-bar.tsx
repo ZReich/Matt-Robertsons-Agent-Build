@@ -217,7 +217,10 @@ function ImageHandler({ editor }: { editor: Editor }) {
       </PopoverTrigger>
       <PopoverContent>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            e.stopPropagation();
+            handleSubmit(e);
+          }}
           className="flex justify-center items-center gap-2"
         >
           <InputFile onValueChange={handleFileChange} />

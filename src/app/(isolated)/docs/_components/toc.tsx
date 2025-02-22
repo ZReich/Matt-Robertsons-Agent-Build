@@ -149,15 +149,12 @@ export function TableOfContents({ items }: TableOfContentsProps) {
   return (
     <aside
       className={cn(
-        "shrink-0 sticky top-0 bottom-0 end-0 w-64 hidden bg-background",
+        "shrink-0 sticky top-[4.25rem] h-svh w-[--sidebar-width] hidden bg-background",
         !isMobile && " block"
       )}
     >
       <nav
-        className={cn(
-          "mt-16 h-[calc(100svh-4rem)] border-s-[1px] border-sidebar-border",
-          items.length <= 0 && "hidden"
-        )}
+        className={cn("h-[calc(100svh-4rem)]", items.length <= 0 && "hidden")}
       >
         <ScrollArea className="h-full p-4">
           <h2 className="text-sm font-medium mb-4">On this page</h2>

@@ -47,7 +47,7 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-72 p-0 [&>button]:hidden"
+        className="p-0"
         aria-describedby={undefined}
       >
         <SheetHeader>

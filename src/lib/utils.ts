@@ -124,13 +124,19 @@ export function formatDateShort(value: string | number | Date) {
 }
 
 export function formatDuration(value: string | number | Date) {
-  const duration = intervalToDuration({ start: 0, end: value });
+  const numberValue = Number(value);
+  const isNegative = numberValue < 0;
+  const absoluteValue = Math.abs(numberValue);
+
+  const duration = intervalToDuration({ start: 0, end: absoluteValue });
 
   const hours = duration.hours ? `${duration.hours}h` : "";
   const minutes = duration.minutes ? `${duration.minutes}m` : "";
   const seconds = duration.seconds ? `${duration.seconds}s` : "";
 
-  return `${hours} ${minutes} ${seconds}`.trim();
+  let formattedDuration = `${hours} ${minutes} ${seconds}`.trim();
+
+  return isNegative ? `-${formattedDuration}` : formattedDuration;
 }
 
 export function formatDistance(value: string | number | Date) {

@@ -8,6 +8,8 @@ import { cn, formatUnreadCount } from "@/lib/utils";
 import type { LocaleType } from "@/types";
 import type { EmailSidebarItemType } from "../../types";
 
+import { useEmailContext } from "../../hooks/use-email-context";
+
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DynamicIcon } from "@/components/dynamic-icon";
@@ -23,6 +25,8 @@ export function EmailSidebarItem({
   segmentParam,
   locale,
 }: EmailSidebarItemProps) {
+  const { setIsEmailSidebarOpen } = useEmailContext();
+
   const unreadCount = formatUnreadCount(item.unreadCount);
 
   return (
@@ -34,6 +38,7 @@ export function EmailSidebarItem({
           "w-full justify-start",
           segmentParam === item.name && "bg-accent" // Highlight the current email view
         )}
+        onClick={() => setIsEmailSidebarOpen(false)}
         aria-current={segmentParam === item.name ? "true" : undefined}
       >
         <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />

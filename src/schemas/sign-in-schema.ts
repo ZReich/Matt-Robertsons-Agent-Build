@@ -9,7 +9,10 @@ export const SignInSchema = z.object({
   password: z
     .string()
     .min(8, {
-      message: "Password must contain at least 8 character(s)",
+      message: "Password must contain at least 8 characters",
+    })
+    .max(250, {
+      message: "Password must contain at most 250 characters",
     })
     .regex(/(?=.*[a-zA-Z])/, {
       message: "Password must contain at least one letter.",

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { userData } from "@/data/user";
 
-import { SignInSchema } from "../_schemas/sign-in-schema";
+import { SignInSchema } from "@/schemas/sign-in-schema";
 
 export async function POST(req: Request) {
   const body = await req.json();

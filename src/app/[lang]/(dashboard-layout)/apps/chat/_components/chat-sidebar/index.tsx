@@ -39,7 +39,7 @@ export function ChatSidebar() {
   // Render a sheet sidebar for smaller screens
   return (
     <Sheet open={isChatSidebarOpen} onOpenChange={setIsChatSidebarOpen}>
-      <SheetContent side="start">
+      <SheetContent side="start" className="p-0">
         <SheetHeader className="sr-only">
           <SheetTitle>Chat Sidebar</SheetTitle>
           <SheetDescription>
