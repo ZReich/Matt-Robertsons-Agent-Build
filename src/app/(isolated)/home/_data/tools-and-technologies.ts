@@ -11,7 +11,7 @@ import {
   SiNextdotjs,
   SiReact,
   SiShadcnui,
-  SiLucid,
+  SiLucide,
   SiTailwindcss,
   SiZod,
 } from "react-icons/si";
@@ -68,7 +68,7 @@ export const toolsAndTechnologiesData: ToolAndTechnologieType[] = [
   {
     title: "Lucide",
     href: "https://lucide.dev/",
-    icon: SiLucid,
+    icon: SiLucide,
   },
   {
     title: "React Icons",
