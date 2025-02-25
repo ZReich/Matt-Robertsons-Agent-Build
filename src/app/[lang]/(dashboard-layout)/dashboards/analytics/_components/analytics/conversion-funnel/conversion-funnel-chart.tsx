@@ -1,56 +1,57 @@
 "use client";
 
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
-import { remToPx } from "@/lib/utils";
+import { Funnel, FunnelChart } from "recharts";
 
 import type { ConversionFunnelType } from "../../../types";
 
-import { useSettings } from "@/hooks/use-settings";
-
 import { ChartContainer } from "@/components/ui/chart";
-import { Badge } from "@/components/ui/badge";
-import { DynamicIcon } from "@/components/dynamic-icon";
 
 export function ConversionFunnelChart({
   data,
 }: {
   data: ConversionFunnelType["funnelSteps"];
 }) {
-  const { settings } = useSettings();
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [chartHeight, setChartHeight] = React.useState(0);
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      setChartHeight(containerRef.current.clientHeight);
+    }
+  }, []);
+
+  const trapezoidHeight = chartHeight / data.length;
 
   return (
-    <div className="flex flex-col justify-center items-center gap-6 md:flex-row">
-      <ul className="shrink-0 grid grid-cols-2 gap-4 md:grid-cols-1">
+    <div className="relative h-56 w-full rounded-lg overflow-hidden">
+      <ul
+        style={{
+          gridTemplateRows: `repeat(${data.length}, ${trapezoidHeight}px)`,
+        }}
+        className="absolute inset-0 grid divide-y"
+      >
         {data.map((stage) => (
-          <li key={stage.name} className="flex gap-x-2">
-            <Badge
-              style={{
-                backgroundColor: stage.fill,
-              }}
-              className="size-12 aspect-square shadow-none"
-              aria-hidden
-            >
-              <DynamicIcon name={stage.iconName} className="size-full" />
-            </Badge>
-            <div>
-              <h4 className="text-xs">{stage.name}</h4>
-              <p className="text-2xl">{stage.value.toLocaleString()}</p>
-            </div>
+          <li key={stage.name} className="flex flex-col justify-center">
+            <h4 className="text-xs">{stage.name}</h4>
+            <p className="text-2xl">{stage.value.toLocaleString()}</p>
           </li>
         ))}
       </ul>
-
       <ChartContainer
+        ref={containerRef}
         config={{}}
-        className="grow w-full max-h-72 md:aspect-[9/16]"
+        className="absolute inset-y-0 -end-1/2 h-full w-full"
       >
-        <BarChart accessibilityLayer data={data}>
-          <CartesianGrid vertical={false} />
-          <XAxis dataKey="name" type="category" hide />
-          <Bar dataKey="value" radius={remToPx(settings.radius) - 2} />
-        </BarChart>
+        <FunnelChart margin={{ top: 0, bottom: 0, left: 0, right: 0 }}>
+          <Funnel
+            dataKey="value"
+            data={data}
+            isAnimationActive
+            strokeWidth={0}
+            className="[clip-path:_inset(0_50%_0_0)] rtl:[clip-path:_inset(0_0_0_50%)]"
+          />
+        </FunnelChart>
       </ChartContainer>
     </div>
   );

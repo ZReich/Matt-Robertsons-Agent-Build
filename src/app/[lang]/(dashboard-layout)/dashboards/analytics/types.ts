@@ -22,12 +22,12 @@ export interface OverviewType {
 
 export interface TrafficSourcesType {
   period: string;
-  summary: { totalVisitors: number; totalPercentageChange: number };
   sources: Array<{
     name: string;
     visitors: number;
     fill: string;
     percentageChange: number;
+    icon: DynamicIconNameType;
   }>;
 }
 
@@ -46,7 +46,6 @@ export type ConversionFunnelType = {
     name: string;
     value: number;
     fill: string;
-    iconName: DynamicIconNameType;
   }>;
 };
 
@@ -65,7 +64,7 @@ export interface PerformanceOverTimeType {
 export interface TopPagesType {
   period: string;
   pages: Array<{
-    page: string;
+    name: string;
     views: number;
     avgTimeOnPage: number;
     bounceRate: number;
@@ -93,6 +92,8 @@ export interface GenderDistributionType {
   value: number;
   percentage: number;
   fill: string;
+  x: number;
+  y: number;
 }
 
 export interface RetentionVsChurnType {

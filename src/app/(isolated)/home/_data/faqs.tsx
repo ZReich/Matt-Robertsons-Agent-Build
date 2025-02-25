@@ -75,40 +75,12 @@ export const faqsData: FaqType[] = [
     ),
   },
   {
-    question: "Why consider a Custom License?",
-    answer: (
-      <p>
-        A Custom License is useful for cases where the product is distributed at
-        scale, embedded in third-party systems, or deployed in an enterprise
-        setting. It provides flexibility for unique business models, such as OEM
-        partnerships or on-premise installations. If you require a tailored
-        licensing solution, please contact us to discuss your specific needs.
-      </p>
-    ),
-  },
-  {
     question:
       "Can a single Regular or Extended License cover multiple projects?",
     answer: (
       <p>
         No, each license applies to a single project. If the product is used in
         multiple applications, a separate license must be obtained for each one.
-      </p>
-    ),
-  },
-  {
-    question: "Can I get a license that covers multiple projects?",
-    answer: (
-      <p>
-        If you require a license for multiple projects and want a streamlined
-        solution, feel free{" "}
-        <Link
-          href="/contact-us"
-          className="font-semibold underline-offset-4 hover:underline"
-        >
-          to reach out
-        </Link>
-        . We may be able to offer a licensing arrangement that suits your needs.
       </p>
     ),
   },

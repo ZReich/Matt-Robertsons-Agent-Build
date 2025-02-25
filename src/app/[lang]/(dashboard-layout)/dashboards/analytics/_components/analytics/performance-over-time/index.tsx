@@ -6,8 +6,8 @@ import { PerformanceOverTimeChart } from "./performance-over-time-chart";
 
 export async function PerformanceOverTime() {
   return (
-    <DashboardCardWithoutPeriod title="Performance Over Time">
-      <div className="space-y-4">
+    <DashboardCardWithoutPeriod title="Performance over Time">
+      <div className="space-y-6">
         <PerformanceOverTimeSummary data={performanceOverTimeData.summary} />
         <PerformanceOverTimeChart data={performanceOverTimeData.performance} />
       </div>

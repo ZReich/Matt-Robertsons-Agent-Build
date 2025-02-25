@@ -1,12 +1,12 @@
 import { genderDistributionData } from "../../../_data/gender-distribution";
 
 import { GenderDistributionChart } from "./gender-distribution-chart";
-import { DashboardCard } from "@/components/dashboards/dashboard-card";
+import { DashboardCardWithoutPeriod } from "@/components/dashboards/dashboard-card";
 
 export async function GenderDistribution() {
   return (
-    <DashboardCard title="Gender Distribution" period="Last month">
+    <DashboardCardWithoutPeriod title="Gender Distribution">
       <GenderDistributionChart data={genderDistributionData} />
-    </DashboardCard>
+    </DashboardCardWithoutPeriod>
   );
 }

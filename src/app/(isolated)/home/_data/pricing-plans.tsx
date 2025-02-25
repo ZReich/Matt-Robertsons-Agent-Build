@@ -7,7 +7,7 @@ export const pricingPlansData: PricingCardType[] = [
     title: "Regular License",
     description:
       "For personal or client use in a single project where end users do not pay for access.",
-    price: 9,
+    price: 14,
     features: [
       "Support for 6 months",
       "Quality checked by Envato",
@@ -21,7 +21,7 @@ export const pricingPlansData: PricingCardType[] = [
     title: "Extended License",
     description:
       "For personal or client use in a single project that allows monetization or paid user access.",
-    price: 300,
+    price: 399,
     features: [
       "Support for 6 months",
       "Quality checked by Envato",
@@ -30,19 +30,5 @@ export const pricingPlansData: PricingCardType[] = [
     isFeatured: true,
     buttonContent: "Purchase Shadboard",
     href: "/",
-  },
-  {
-    title: "Custom License",
-    description:
-      "Need a custom license for your business model? Contact us to discuss your requirements.",
-    price: null,
-    features: [],
-    isFeatured: false,
-    content: <Sparkles className="h-20 w-20 my-12 mx-auto" />,
-    buttonContent: "Contact Us",
-    buttonOptions: {
-      variant: "secondary",
-    },
-    href: "/contact-us",
   },
 ];

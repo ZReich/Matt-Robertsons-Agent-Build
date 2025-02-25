@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { RadialBar, RadialBarChart } from "recharts";
 
 import { remToPx } from "@/lib/utils";
 
@@ -9,7 +8,6 @@ import type { TrafficSourcesType } from "../../../types";
 import type { ChartConfig } from "@/components/ui/chart";
 
 import { useSettings } from "@/hooks/use-settings";
-import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
   ChartContainer,
@@ -23,47 +21,26 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TrafficSourcesChart({ data }: { data: TrafficSourcesType }) {
+export function TrafficSourcesChart({
+  data,
+}: {
+  data: TrafficSourcesType["sources"];
+}) {
   const { settings } = useSettings();
-  const isRtl = useIsRtl();
 
   return (
-    <ChartContainer
-      dir="ltr"
-      config={chartConfig}
-      className="h-72 w-[calc(100vw-90px)] md:w-1/2"
-    >
-      <BarChart
-        accessibilityLayer
-        data={data.sources}
-        layout="vertical"
-        margin={{
-          left: 0,
-        }}
-      >
-        <YAxis
-          orientation={isRtl ? "right" : "left"}
-          dataKey="name"
-          type="category"
-          tickLine={false}
-          tickMargin={10}
-          axisLine={false}
-          reversed
+    <ChartContainer config={chartConfig} className="aspect-square h-[15.15rem] mx-auto">
+      <RadialBarChart data={data} innerRadius={30} outerRadius={110}>
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent hideLabel />}
         />
-        <XAxis
-          reversed={isRtl}
+        <RadialBar
           dataKey="visitors"
-          type="number"
-          tickLine={false}
-          axisLine={false}
+          background
+          cornerRadius={remToPx(settings.radius) - 2}
         />
-        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-        <Bar
-          dataKey="visitors"
-          layout="vertical"
-          radius={remToPx(settings.radius) - 2}
-        />
-      </BarChart>
+      </RadialBarChart>
     </ChartContainer>
   );
 }

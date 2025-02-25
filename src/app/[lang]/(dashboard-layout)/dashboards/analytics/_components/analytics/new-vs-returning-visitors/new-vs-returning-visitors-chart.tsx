@@ -1,14 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Undo2, User, UserPlus } from "lucide-react";
 import { TbVs } from "react-icons/tb";
 
 import { formatPercent } from "@/lib/utils";
 
 import type { NewVsReturningVisitorsType } from "../../../types";
 
-import { Badge } from "@/components/ui/badge";
 import { SeparatorWithText } from "@/components/ui/separator";
 import { ProgressSegments } from "@/components/ui/progress";
 
@@ -25,72 +23,56 @@ export function NewVsReturningVisitorsChart({
   const { new: newVisitors, returning: returningVisitors } = data;
 
   return (
-    <>
-      <div className="flex justify-between items-center">
-        <div className="flex gap-x-2">
-          <Badge
+    <div className="grid items-between gap-6">
+      <ProgressSegments segments={segments} />
+      <div className="flex justify-between items-center gap-x-0.5">
+        <div className="grid place-items-start">
+          <h4 className="inline-flex items-center gap-x-1 text-xs">
+            <div
+              style={{
+                backgroundColor: newVisitors.fill,
+              }}
+              className="h-4 w-2 rounded-md"
+            />
+            <span>New</span>
+          </h4>
+          <p className="text-2xl">{newVisitors.value.toLocaleString()}</p>
+          <p
             style={{
-              backgroundColor: newVisitors.fill,
+              color: newVisitors.fill,
             }}
-            className="size-12 aspect-square p-2.5 shadow-none"
-            aria-hidden
+            className="text-4xl"
           >
-            <UserPlus className="size-full" />
-          </Badge>
-          <div>
-            <h4 className="text-xs">New Visitors</h4>
-            <p className="text-2xl">{newVisitors.value.toLocaleString()}</p>
-          </div>
+            {formatPercent(newVisitors.percentageChange)}
+          </p>
         </div>
-
-        <SeparatorWithText orientation="vertical" className="h-20">
+        <SeparatorWithText orientation="vertical" className="h-full">
           <TbVs
             className="size-4 stroke-border rotate-90 rtl:-rotate-90"
             aria-label="Versus"
           />
         </SeparatorWithText>
-
-        <div className="flex text-end gap-x-2">
-          <div>
-            <h4 className="text-xs">Returning Visitors</h4>
-            <p className="text-2xl">
-              {returningVisitors.value.toLocaleString()}
-            </p>
-          </div>
-          <Badge
+        <div className="grid place-items-end">
+          <h4 className="inline-flex items-center gap-x-1 text-xs">
+            <span>Returning</span>
+            <div
+              style={{
+                backgroundColor: returningVisitors.fill,
+              }}
+              className="h-4 w-2 rounded-md"
+            />
+          </h4>
+          <p className="text-2xl">{returningVisitors.value.toLocaleString()}</p>
+          <p
             style={{
-              backgroundColor: returningVisitors.fill,
+              color: returningVisitors.fill,
             }}
-            className="size-12 aspect-square p-2.5 shadow-none"
-            aria-hidden
+            className="text-4xl"
           >
-            <div className="relative size-full">
-              <User className="absolute top-0 right-[3.25px] size-full" />
-              <Undo2 className="absolute top-[6.5px] right-0 size-2.5 stroke-[4.5]" />
-            </div>
-          </Badge>
+            {formatPercent(returningVisitors.percentageChange)}
+          </p>
         </div>
       </div>
-
-      <div className="flex justify-between" aria-hidden>
-        <p
-          style={{
-            color: newVisitors.fill,
-          }}
-          className="text-2xl"
-        >
-          {formatPercent(newVisitors.percentageChange)}
-        </p>
-        <p
-          style={{
-            color: returningVisitors.fill,
-          }}
-          className="text-2xl"
-        >
-          {formatPercent(returningVisitors.percentageChange)}
-        </p>
-      </div>
-      <ProgressSegments segments={segments} />
-    </>
+    </div>
   );
 }

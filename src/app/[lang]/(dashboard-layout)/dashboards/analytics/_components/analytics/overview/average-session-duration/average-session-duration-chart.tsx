@@ -57,7 +57,11 @@ export function AverageSessionDurationChart({
           content={<ModifiedChartTooltipContent />}
         />
         <XAxis dataKey="month" hide />
-        <Bar dataKey="value" radius={remToPx(settings.radius) - 2} />
+        <Bar
+          dataKey="value"
+          barSize={44}
+          radius={remToPx(settings.radius) - 2}
+        />
       </BarChart>
     </ChartContainer>
   );

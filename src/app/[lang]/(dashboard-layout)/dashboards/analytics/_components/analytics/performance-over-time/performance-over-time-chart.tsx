@@ -17,7 +17,7 @@ export function PerformanceOverTimeChart({
   data: PerformanceOverTimeType["performance"];
 }) {
   return (
-    <ChartContainer config={{}} className="w-full md:h-48">
+    <ChartContainer config={{}} className="w-full md:h-64">
       <LineChart
         accessibilityLayer
         data={data}
@@ -40,16 +40,16 @@ export function PerformanceOverTimeChart({
         <Line
           dataKey="visitors"
           yAxisId="left"
-          type="monotone"
-          stroke="hsl(var(--chart-3))"
+          type="linear"
+          stroke="hsl(var(--chart-1))"
           strokeWidth={2}
           dot={false}
         />
         <Line
           dataKey="conversions"
           yAxisId="right"
-          type="monotone"
-          stroke="hsl(var(--chart-5))"
+          type="linear"
+          stroke="hsl(var(--chart-2))"
           strokeWidth={2}
           dot={false}
         />

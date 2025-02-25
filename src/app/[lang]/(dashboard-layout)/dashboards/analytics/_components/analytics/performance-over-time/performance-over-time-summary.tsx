@@ -24,14 +24,14 @@ export function PerformanceOverTimeSummary({
   data: PerformanceOverTimeType["summary"];
 }) {
   return (
-    <div className="flex justify-evenly items-center gap-x-6">
+    <div className="flex justify-evenly items-center gap-x-6 py-4">
       <ul className="space-y-2">
         <li className="flex gap-x-2">
           <Badge
             style={{
-              backgroundColor: "hsl(var(--chart-3))",
+              backgroundColor: "hsl(var(--chart-1))",
             }}
-            className="size-12 aspect-square bg-chart-3 shadow-none"
+            className="size-12 aspect-square bg-chart-1 shadow-none"
             aria-hidden
           >
             <Eye className="size-full" />
@@ -44,9 +44,9 @@ export function PerformanceOverTimeSummary({
         <li className="flex gap-x-2">
           <Badge
             style={{
-              backgroundColor: "hsl(var(--chart-5))",
+              backgroundColor: "hsl(var(--chart-2))",
             }}
-            className="size-12 aspect-square bg-chart-5 shadow-none"
+            className="size-12 aspect-square bg-chart-2 shadow-none"
             aria-hidden
           >
             <RefreshCw className="size-full" />
@@ -61,14 +61,14 @@ export function PerformanceOverTimeSummary({
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            buttonVariants(),
-            "w-fit [&[data-state=open]>svg]:rotate-180"
+            buttonVariants({ variant: "secondary" }),
+            "w-24 justify-between [&[data-state=open]>svg]:rotate-180"
           )}
         >
           <span>2024</span>
           <ChevronDown className="h-4 w-4 shrink-0 ms-2 transition-transform duration-200" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="min-w-[5.5rem]">
+        <DropdownMenuContent className="min-w-24">
           <DropdownMenuRadioGroup value="2024">
             <DropdownMenuRadioItem value="2024">2024</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="2023">2023</DropdownMenuRadioItem>
