@@ -3,7 +3,39 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header";
 
-import type { EngagementByDeviceType } from "../../../types";
+import { formatDuration, formatPercent } from "@/lib/utils";
+
+import type { EngagementByDeviceType } from "../../../../types";
+import type { DynamicIconNameType } from "@/types";
+
+import { Progress } from "@/components/ui/progress";
+import { DynamicIcon } from "@/components/dynamic-icon";
+
+function RenderPercentageValue({ value }: { value: number }) {
+  const formattedpercentage = formatPercent(value);
+
+  return (
+    <div className="max-w-32 flex items-center gap-x-2">
+      <Progress value={value * 100} />
+      <span>{formattedpercentage}</span>
+    </div>
+  );
+}
+
+function RenderValueWithIcon({
+  value,
+  iconName,
+}: {
+  value: number | string;
+  iconName: DynamicIconNameType;
+}) {
+  return (
+    <div className="flex items-center gap-x-2">
+      <DynamicIcon name={iconName} className="h-3 w-3" />
+      <span>{value}</span>
+    </div>
+  );
+}
 
 export const columns: ColumnDef<EngagementByDeviceType>[] = [
   {
@@ -26,12 +58,17 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
     id: "sessionDuration",
     accessorKey: "sessionDuration",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Session Duration (ms)" />
+      <DataTableColumnHeader column={column} title="Session Duration" />
     ),
     cell: ({ row }) => {
       const sessionDuration = row.getValue("sessionDuration") as number;
 
-      return <span>{sessionDuration.toLocaleString()} ms</span>;
+      return (
+        <RenderValueWithIcon
+          value={formatDuration(sessionDuration)}
+          iconName="Clock"
+        />
+      );
     },
   },
   {
@@ -43,7 +80,7 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
     cell: ({ row }) => {
       const pagesPerSession = row.getValue("pagesPerSession") as number;
 
-      return <span>{pagesPerSession.toFixed(1)}</span>;
+      return <RenderValueWithIcon value={pagesPerSession} iconName="Files" />;
     },
   },
   {
@@ -55,7 +92,7 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
     cell: ({ row }) => {
       const bounceRate = row.getValue("bounceRate") as number;
 
-      return <span>{(bounceRate * 100).toFixed(1)}%</span>;
+      return <RenderPercentageValue value={bounceRate} />;
     },
   },
   {
@@ -67,7 +104,7 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
     cell: ({ row }) => {
       const userPercentage = row.getValue("userPercentage") as number;
 
-      return <span>{(userPercentage * 100).toFixed(1)}%</span>;
+      return <RenderPercentageValue value={userPercentage} />;
     },
   },
   {
@@ -79,7 +116,7 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
     cell: ({ row }) => {
       const conversionRate = row.getValue("conversionRate") as number;
 
-      return <span>{(conversionRate * 100).toFixed(1)}%</span>;
+      return <RenderPercentageValue value={conversionRate} />;
     },
   },
 ];

@@ -5,6 +5,7 @@ import { ConversionFunnel } from "./conversion-funnel";
 import { PerformanceOverTime } from "./performance-over-time";
 import { NewVsReturningVisitors } from "./new-vs-returning-visitors";
 import { GenderDistribution } from "./gender-distribution";
+import { VisitorsByCountry } from "./visitors-by-country";
 
 export function Analytics() {
   return (
@@ -13,12 +14,13 @@ export function Analytics() {
       <TrafficSources />
       <div className="space-y-4">
         <ConversionFunnel />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 ">
+        <div className="grid gap-4 sm:grid-cols-2">
           <GenderDistribution />
           <NewVsReturningVisitors />
         </div>
       </div>
       <PerformanceOverTime />
+      <VisitorsByCountry />
       <EngagementByDevice />
     </section>
   );

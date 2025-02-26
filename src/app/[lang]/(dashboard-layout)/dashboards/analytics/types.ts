@@ -1,10 +1,15 @@
 import type { DynamicIconNameType } from "@/types";
 
-export interface GeographicLocationType {
-  country: string;
-  countryCode: string;
-  visitors: number;
-  percentageChange: number;
+export interface VisitorsByCountryDataType {
+  summary: {
+    totalVisitors: number;
+  };
+  countries: Array<{
+    countryName: string;
+    countryCode: string;
+    visitors: number;
+    percentageChange: number;
+  }>;
 }
 
 export interface MetricType {

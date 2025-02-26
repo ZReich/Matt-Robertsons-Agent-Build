@@ -1,6 +1,3 @@
-"use client";
-
-import * as React from "react";
 import { TbVs } from "react-icons/tb";
 
 import { formatPercent } from "@/lib/utils";

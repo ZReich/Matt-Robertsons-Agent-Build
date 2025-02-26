@@ -15,7 +15,7 @@ import type {
   SortingState,
   VisibilityState,
 } from "@tanstack/react-table";
-import type { EngagementByDeviceType } from "../../../types";
+import type { EngagementByDeviceType } from "../../../../types";
 
 import {
   Table,
