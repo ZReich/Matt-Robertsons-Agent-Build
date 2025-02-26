@@ -77,7 +77,6 @@ export interface TopPagesType {
 }
 
 export interface NewVsReturningVisitorsType {
-  period: string;
   visitors: {
     new: {
       value: number;

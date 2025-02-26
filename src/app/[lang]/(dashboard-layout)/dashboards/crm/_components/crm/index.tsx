@@ -1,5 +1,5 @@
 import { Overview } from "./overview";
-import { SalesPipeline } from "./sales-pipeline";
+import { SalesTrend } from "./sales-trend";
 import { LeadSources } from "./lead-sources";
 import { CustomerSatisfaction } from "./customer-satisfaction";
 import { ActiveProjects } from "./active-projects";
@@ -11,7 +11,9 @@ export function CRM() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
-      <SalesPipeline />
+      <div className="col-span-full grid gap-4 md:grid-cols-4">
+        <SalesTrend />
+      </div>
       <SalesByCountry />
       <LeadSources />
       <RevenueTrend />

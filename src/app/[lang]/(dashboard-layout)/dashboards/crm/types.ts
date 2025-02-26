@@ -11,7 +11,7 @@ export interface OverviewType {
   newCustomers: MetricType;
 }
 
-export interface SalesPipelineType {
+export interface SalesTrendType {
   period: string;
   summary: {
     totalLead: number;
@@ -74,7 +74,7 @@ export interface ActiveProjectType {
 export interface SalesByCountryType {
   period: string;
   countries: Array<{
-    country: string;
+    countryName: string;
     countryCode: string;
     sales: number;
   }>;

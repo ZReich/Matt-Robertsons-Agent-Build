@@ -28,18 +28,19 @@ export function TrafficSourcesChart({
 }) {
   const { settings } = useSettings();
 
+  const radius = remToPx(settings.radius) - 2;
+
   return (
-    <ChartContainer config={chartConfig} className="aspect-square h-[15.15rem] mx-auto">
+    <ChartContainer
+      config={chartConfig}
+      className="aspect-square h-[15.15rem] mx-auto"
+    >
       <RadialBarChart data={data} innerRadius={30} outerRadius={110}>
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
         />
-        <RadialBar
-          dataKey="visitors"
-          background
-          cornerRadius={remToPx(settings.radius) - 2}
-        />
+        <RadialBar dataKey="visitors" background cornerRadius={radius} />
       </RadialBarChart>
     </ChartContainer>
   );

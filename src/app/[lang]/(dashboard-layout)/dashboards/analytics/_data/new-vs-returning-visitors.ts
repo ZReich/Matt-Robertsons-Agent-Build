@@ -1,7 +1,6 @@
 import { NewVsReturningVisitorsType } from "../types";
 
 export const newVsReturningVisitors: NewVsReturningVisitorsType = {
-  period: "Last month",
   visitors: {
     new: {
       value: 7234,

@@ -6,7 +6,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { cn, remToPx } from "@/lib/utils";
 
 import type { ChartConfig } from "@/components/ui/chart";
-import type { SalesPipelineType } from "../../../types";
+import type { SalesTrendType } from "../../../types";
 
 import { useSettings } from "@/hooks/use-settings";
 
@@ -36,7 +36,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function SalesPipelineChart({ data }: { data: SalesPipelineType }) {
+export function SalesTrendChart({ data }: { data: SalesTrendType }) {
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("lead");
   const { settings } = useSettings();
@@ -55,27 +55,35 @@ export function SalesPipelineChart({ data }: { data: SalesPipelineType }) {
           return (
             <Button
               key={key}
-              variant="ghost"
+              variant="outline"
               className={cn(
-                "size-auto flex-col",
+                "size-auto flex-col items-start",
                 activeChart === stage && "bg-accent"
               )}
               onClick={() => setActiveChart(stage)}
             >
-              <span className="text-xs">{chartConfig[stage].label}</span>
-              <span
-                style={{
-                  color: chartConfig[stage].color,
-                }}
-                className="text-3xl font-semibold"
-              >
+              <div className="flex items-center gap-x-1">
+                <span
+                  style={{
+                    backgroundColor: chartConfig[stage].color,
+                  }}
+                  className="h-2.5 w-2.5 rounded-sm"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {chartConfig[stage].label}
+                </span>
+              </div>
+              <span className="text-2xl font-semibold">
                 {value.toLocaleString()}
               </span>
             </Button>
           );
         })}
       </div>
-      <ChartContainer config={chartConfig} className="aspect-auto h-56 w-full">
+      <ChartContainer
+        config={chartConfig}
+        className="aspect-auto h-56 w-full mt-6"
+      >
         <BarChart accessibilityLayer key={activeChart} data={monthly}>
           <CartesianGrid vertical={false} />
           <XAxis
@@ -91,6 +99,7 @@ export function SalesPipelineChart({ data }: { data: SalesPipelineType }) {
           />
           <Bar
             dataKey={activeChart}
+            barSize={44}
             fill={chartConfig[activeChart].color}
             radius={radius}
           />

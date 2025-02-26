@@ -29,7 +29,7 @@ export function NewVsReturningVisitorsChart({
               style={{
                 backgroundColor: newVisitors.fill,
               }}
-              className="h-4 w-2 rounded-md"
+              className="h-2.5 w-2.5 rounded-sm"
             />
             <span>New</span>
           </h4>
@@ -56,7 +56,7 @@ export function NewVsReturningVisitorsChart({
               style={{
                 backgroundColor: returningVisitors.fill,
               }}
-              className="h-4 w-2 rounded-md"
+              className="h-2.5 w-2.5 rounded-sm"
             />
           </h4>
           <p className="text-2xl">{returningVisitors.value.toLocaleString()}</p>
