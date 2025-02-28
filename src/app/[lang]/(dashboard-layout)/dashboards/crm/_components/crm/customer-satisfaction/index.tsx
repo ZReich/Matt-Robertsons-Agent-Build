@@ -11,7 +11,7 @@ export function CustomerSatisfaction() {
       period={customerSatisfactionData.period}
       className="col-span-full"
     >
-      <div className="flex flex-col justify-between items-center md:flex-row">
+      <div className="flex flex-col justify-between items-center gap-6 md:flex-row">
         <CustomerSatisfactionChart data={customerSatisfactionData.summary} />
         <CustomerSatisfactionCarousel
           data={customerSatisfactionData.feedbacks}

@@ -48,7 +48,10 @@ export function RevenueTrendChart({
   const isRtl = useIsRtl();
 
   return (
-    <ChartContainer config={chartConfig} className="aspect-auto h-16 w-full">
+    <ChartContainer
+      config={chartConfig}
+      className="aspect-auto h-[4.5rem] w-full"
+    >
       <BarChart
         accessibilityLayer
         data={data}

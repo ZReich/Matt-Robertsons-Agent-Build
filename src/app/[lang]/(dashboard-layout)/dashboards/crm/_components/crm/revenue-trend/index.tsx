@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 
 export function RevenueTrend() {
   return (
-    <Card className="p-6 h-fit">
+    <Card className="h-fit p-6">
       <h3 className="sr-only">Revenue Trend</h3>
       <div className="space-y-4">
         <RevenueTrendTotal data={revenueTrendData.summary} />

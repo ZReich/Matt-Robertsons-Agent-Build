@@ -12,10 +12,12 @@ export function CRM() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <Overview />
-      <div className="col-span-full grid gap-4 md:grid-cols-4 md:grid-rows-2">
+      <div className="col-span-full grid gap-4 md:grid-cols-4">
         <SalesTrend />
-        <LeadSources />
-        <RevenueTrend />
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1">
+          <LeadSources />
+          <RevenueTrend />
+        </div>
       </div>
       <ActiveProjects />
       <ActivityTimeline />

@@ -61,3 +61,17 @@ export interface InvoiceType {
     | "Processing"
     | "Pending";
 }
+
+export interface RevenueBySourceType {
+  period: string;
+  summary: {
+    totalRevenue: number;
+    percentageChange: number;
+  };
+  sources: Array<{
+    name: string;
+    value: number;
+    percentage: number;
+    fill: string;
+  }>;
+}

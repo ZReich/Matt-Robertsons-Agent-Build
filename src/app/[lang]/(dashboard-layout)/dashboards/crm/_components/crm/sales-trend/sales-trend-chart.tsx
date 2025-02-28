@@ -46,7 +46,7 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         {Object.entries(summary).map(([key, value]) => {
           const stage = key
             .replace("total", "")
@@ -99,7 +99,7 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
           />
           <Bar
             dataKey={activeChart}
-            barSize={44}
+            maxBarSize={44}
             fill={chartConfig[activeChart].color}
             radius={radius}
           />

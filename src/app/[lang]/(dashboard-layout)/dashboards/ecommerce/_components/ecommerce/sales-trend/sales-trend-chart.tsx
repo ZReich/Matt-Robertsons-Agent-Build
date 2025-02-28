@@ -1,11 +1,16 @@
 "use client";
 
-import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { remToPx } from "@/lib/utils";
+import {
+  camelCaseToTitleCase,
+  formatCurrency,
+  formatDateShort,
+  remToPx,
+} from "@/lib/utils";
 
 import type { SalesTrendType } from "../../../types";
+import type { ChartTooltipContentProps } from "@/components/ui/chart";
 
 import { useSettings } from "@/hooks/use-settings";
 import { useIsRtl } from "@/hooks/use-is-rtl";
@@ -16,6 +21,21 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
+function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+  if (!props.payload || props.payload.length === 0) return null;
+
+  return (
+    <ChartTooltipContent
+      {...props}
+      payload={props.payload.map((item) => ({
+        ...item,
+        name: camelCaseToTitleCase(String(item.name)),
+        value: formatCurrency(Number(item.value)),
+      }))}
+    />
+  );
+}
+
 export function SalesTrendChart({
   data,
 }: {
@@ -24,26 +44,15 @@ export function SalesTrendChart({
   const { settings } = useSettings();
   const isRtl = useIsRtl();
 
+  const radius = remToPx(settings.radius);
+
   return (
     <ChartContainer config={{}} className="w-full md:h-[200px]">
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <ChartTooltip
           cursor={false}
-          content={
-            <ChartTooltipContent
-              hideIndicator
-              hideLabel
-              formatter={(value, name) => (
-                <div className="w-full flex justify-between text-xs">
-                  <span className="capitalize text-muted-foreground">
-                    {name}
-                  </span>
-                  <span>{"$" + value.toLocaleString()}</span>
-                </div>
-              )}
-            />
-          }
+          content={<ModifiedChartTooltipContent hideIndicator hideLabel />}
         />
         <XAxis
           reversed={isRtl}
@@ -51,13 +60,9 @@ export function SalesTrendChart({
           tickLine={false}
           axisLine={false}
           tickMargin={10}
-          tickFormatter={(value) => format(value, "MMM dd")}
+          tickFormatter={(value) => formatDateShort(value)}
         />
-        <Bar
-          dataKey="sales"
-          fill="hsl(var(--primary))"
-          radius={remToPx(settings.radius)}
-        />
+        <Bar dataKey="sales" fill="hsl(var(--chart-4))" radius={radius} />
       </BarChart>
     </ChartContainer>
   );

@@ -3,6 +3,7 @@ import { Overview } from "./overview";
 import { SalesTrend } from "./sales-trend";
 import { TopProducts } from "./top-products";
 import { Invoices } from "./invoices";
+import { RevenueBySource } from "./revenue-by-source";
 
 export function Ecommerce() {
   return (
@@ -10,6 +11,7 @@ export function Ecommerce() {
       <Overview />
       <CustomerInsights />
       <SalesTrend />
+      <RevenueBySource />
       <TopProducts />
       <Invoices />
     </section>
