@@ -1,3 +1,5 @@
+import type { DynamicIconNameType } from "@/types";
+
 export interface MetricType {
   period: string;
   value: number;
@@ -40,11 +42,16 @@ export interface SalesRepresentativeType {
 
 export interface LeadSourceType {
   period: string;
-  leadSources: Array<{
-    name: string;
-    percentage: number;
-    fill: string;
-  }>;
+  summary: {
+    totalLeads: number;
+  };
+  leads: {
+    socialMedia: number;
+    emailCampaigns: number;
+    referrals: number;
+    website: number;
+    other: number;
+  };
 }
 
 export interface CustomerSatisfactionType {
@@ -87,4 +94,32 @@ export interface RevenueTrendType {
     totalPercentageChange: number;
   };
   revenueTrends: Array<{ month: string; revenue: number }>;
+}
+
+export type ActivityType =
+  | "email"
+  | "supportTicket"
+  | "dealUpdate"
+  | "call"
+  | "meeting"
+  | "note";
+
+export interface AssignedMemberType {
+  name: string;
+  avatar: string;
+  href: string;
+}
+
+export interface ActivityTimelineType {
+  period: string;
+  activities: Array<{
+    type: ActivityType;
+    iconName: DynamicIconNameType;
+    fill: string;
+    title: string;
+    description: string;
+    status?: string;
+    date: string;
+    assignedMembers: AssignedMemberType[];
+  }>;
 }

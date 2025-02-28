@@ -8,7 +8,7 @@ export function SalesTrend() {
     <DashboardCard
       title="Sales Trend"
       period={salesTrendData.period}
-      className="col-span-3"
+      className="col-span-3 row-span-full"
     >
       <SalesTrendChart data={salesTrendData} />
     </DashboardCard>

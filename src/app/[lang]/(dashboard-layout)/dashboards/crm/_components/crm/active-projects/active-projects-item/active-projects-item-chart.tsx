@@ -26,14 +26,15 @@ export function ActiveProjectsItemChart({
   const { settings } = useSettings();
 
   return (
-    <ChartContainer config={{}} className="aspect-square h-16">
+    <ChartContainer config={{}} className="aspect-square h-10">
       <RadialBarChart
         accessibilityLayer
         data={[{ value }]}
+        barSize={2.5}
         startAngle={450}
         endAngle={90}
         innerRadius={25}
-        outerRadius={50}
+        outerRadius={10}
       >
         <PolarAngleAxis
           type="number"
@@ -61,7 +62,7 @@ export function ActiveProjectsItemChart({
                     <tspan
                       x={viewBox.cx}
                       y={(viewBox.cy || 0) + 2}
-                      className="fill-foreground text-sm font-semibold"
+                      className="fill-foreground text-xs font-semibold"
                     >
                       {value}%
                     </tspan>

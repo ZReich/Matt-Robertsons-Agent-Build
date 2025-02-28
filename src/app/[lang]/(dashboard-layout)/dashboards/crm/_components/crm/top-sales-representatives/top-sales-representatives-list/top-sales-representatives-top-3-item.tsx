@@ -13,9 +13,9 @@ const medalAvatarColor = [
 ];
 
 const medalCardColor = [
-  "bg-yellow-400/15 border-yellow-400 dark:border-yellow-500",
-  "bg-gray-300/15 border-gray-300 dark:border-gray-400",
-  "bg-amber-600/15 border-amber-600 dark:border-amber-700",
+  "border-yellow-400 dark:border-yellow-500",
+  "border-gray-300 dark:border-gray-400",
+  "border-amber-600 dark:border-amber-700",
 ];
 
 export function TopSalesRepresentativesTop3Item({
@@ -28,11 +28,11 @@ export function TopSalesRepresentativesTop3Item({
   return (
     <li key={representative.name}>
       <Card className={medalCardColor[index]}>
-        <CardContent className="flex items-center gap-x-4 p-3">
+        <CardContent className="flex items-center gap-x-4 py-3 px-6">
           <div className="relative">
             <Avatar
               className={cn(
-                "w-12 h-12 border-2 border-secondary bg-secondary",
+                "w-10 h-10 border-2 border-secondary bg-secondary",
                 medalAvatarColor[index]
               )}
             >

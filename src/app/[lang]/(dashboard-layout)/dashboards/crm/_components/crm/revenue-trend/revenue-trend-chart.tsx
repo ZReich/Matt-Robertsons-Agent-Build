@@ -2,9 +2,13 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { remToPx } from "@/lib/utils";
+import { formatCurrency, remToPx } from "@/lib/utils";
 
 import type { RevenueTrendType } from "../../../types";
+import type {
+  ChartConfig,
+  ChartTooltipContentProps,
+} from "@/components/ui/chart";
 
 import { useSettings } from "@/hooks/use-settings";
 import { useIsRtl } from "@/hooks/use-is-rtl";
@@ -15,6 +19,26 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
+const chartConfig = {
+  revenue: {
+    label: "Revenue",
+  },
+} satisfies ChartConfig;
+
+function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+  if (!props.payload || props.payload.length === 0) return null;
+
+  return (
+    <ChartTooltipContent
+      {...props}
+      payload={props.payload.map((item) => ({
+        ...item,
+        value: formatCurrency(Number(item.value)),
+      }))}
+    />
+  );
+}
+
 export function RevenueTrendChart({
   data,
 }: {
@@ -24,13 +48,13 @@ export function RevenueTrendChart({
   const isRtl = useIsRtl();
 
   return (
-    <ChartContainer config={{}} className="aspect-auto h-40 w-full">
+    <ChartContainer config={chartConfig} className="aspect-auto h-16 w-full">
       <BarChart
         accessibilityLayer
         data={data}
         margin={{
-          left: 12,
-          right: 12,
+          left: 0,
+          right: 0,
         }}
       >
         <CartesianGrid vertical={false} />
@@ -39,27 +63,12 @@ export function RevenueTrendChart({
           dataKey="month"
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => value.slice(0, 3)}
+          hide
         />
-        <ChartTooltip
-          content={
-            <ChartTooltipContent
-              hideIndicator
-              hideLabel
-              formatter={(value, name) => (
-                <div className="w-full flex justify-between text-xs">
-                  <span className="capitalize text-muted-foreground">
-                    {name}
-                  </span>
-                  <span>{"$" + value.toLocaleString()}</span>
-                </div>
-              )}
-            />
-          }
-        />
+        <ChartTooltip content={<ModifiedChartTooltipContent hideIndicator />} />
         <Bar
           dataKey="revenue"
-          fill={`hsl(var(--primary))`}
+          fill="hsl(var(--chart-2))"
           radius={remToPx(settings.radius)}
         />
       </BarChart>

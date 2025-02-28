@@ -2,43 +2,27 @@
 
 import type { RevenueTrendType } from "../../../types";
 
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge";
 
 export function RevenueTrendTotal({
   data,
 }: {
   data: RevenueTrendType["summary"];
 }) {
-  const isPositiveChange = data.totalPercentageChange >= 0;
-
   return (
-    <div className="flex justify-between items-end gap-x-2 bg-accent text-accent-foreground p-4 rounded-lg">
-      <div>
-        <h4 className="text-sm text-muted-foreground">Total Revenue</h4>
-        <p className="text-3xl font-semibold">
-          ${data.totalRevenue.toLocaleString()}
-        </p>
-      </div>
-      <Badge
-        variant="destructive"
-        className={cn(
-          "size-fit justify-center",
-          isPositiveChange && "bg-success hover:bg-success/90"
-        )}
-        aria-label="Increase"
-      >
-        {isPositiveChange && <span>+</span>}
-        <span>{data.totalPercentageChange * 100 + "%"}</span>
-        <span className="ms-1" aria-hidden>
-          {isPositiveChange ? (
-            <TrendingUp className="size-4" />
-          ) : (
-            <TrendingDown className="size-4" />
-          )}
-        </span>
-      </Badge>
+    <div className="flex flex-col items-start bg-accent text-accent-foreground py-2 px-4 rounded-lg">
+      <h4 className="text-xs">Total Revenue</h4>
+      <p className="text-2xl font-semibold">
+        {formatCurrency(data.totalRevenue)}{" "}
+        <PercentageChangeBadge
+          value={data.totalPercentageChange}
+          variant="ghost"
+          className="p-0"
+        />
+      </p>
     </div>
   );
 }

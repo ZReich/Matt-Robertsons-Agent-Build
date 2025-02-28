@@ -41,8 +41,8 @@ function CustomLineDot({
     <image
       key={payload.countryName}
       href={flagUrl}
-      x={(cx ?? 0) - size / 2}
-      y={(cy ?? 0) - size / 2}
+      x={(cx || 0) - size / 2}
+      y={(cy || 0) - size / 2}
       width={size}
       height={size}
     />
@@ -55,7 +55,7 @@ export function SalesByCountryChart({
   data: SalesByCountryType["countries"];
 }) {
   return (
-    <ChartContainer config={{}} className="aspect-auto h-[250px] w-full">
+    <ChartContainer config={{}} className="aspect-auto h-[23.5rem] w-full">
       <LineChart
         accessibilityLayer
         data={data}

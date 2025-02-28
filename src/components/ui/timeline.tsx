@@ -92,15 +92,15 @@ type StatusIconNamesType = Record<
 const statusIconNames: StatusIconNamesType = {
   current: {
     iconName: "Circle",
-    className: "fill-foreground text-foreground",
+    className: "fill-foreground text-foreground rounded-full",
   },
   done: {
     iconName: "Check",
-    className: "bg-primary text-primary-foreground",
+    className: "bg-primary text-primary-foreground p-0.5 rounded-full",
   },
   error: {
     iconName: "X",
-    className: "bg-destructive text-destructive-foreground",
+    className: "bg-destructive text-destructive-foreground p-0.5 rounded-full",
   },
 };
 
@@ -109,11 +109,15 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
     let statusIconName;
     let statusLabel;
     let statusClassName;
+
+    // Determines if the component uses predefined statuses or custom ones
     if ("status" in props) {
+      // If the "status" prop exists, use the corresponding predefined icon and styling
       statusIconName = statusIconNames[props.status || "current"].iconName;
       statusClassName = statusIconNames[props.status || "current"].className;
-      statusLabel = props.status;
+      statusLabel = props.status; // Assigns the status label for accessibility
     } else if ("customIconName" in props) {
+      // If a custom icon is provided, use it along with the custom status label
       statusIconName = props.customIconName;
       statusLabel = props.customStatusName;
     }
@@ -123,7 +127,7 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
         ref={ref}
         role="status"
         className={cn(
-          "col-start-2 col-end-3 row-start-1 row-end-1 flex size-4 items-center justify-center rounded-full",
+          "col-start-2 col-end-3 row-start-1 row-end-1 flex justify-center items-center rounded-md",
           className
         )}
         aria-label={statusLabel}
@@ -132,7 +136,7 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
         <DynamicIcon
           name={statusIconName || "Circle"}
           className={cn(
-            "size-4 p-px text-muted-foreground rounded-full",
+            "size-4 text-muted-foreground",
             statusClassName,
             iconClassName
           )}

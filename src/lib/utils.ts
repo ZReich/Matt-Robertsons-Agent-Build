@@ -115,12 +115,30 @@ export function formatDate(value: string | number | Date) {
   return format(value, "PP");
 }
 
+export function formatRelativeDate(value?: string | number | Date) {
+  if (!value) return "No Date";
+
+  const date = new Date(value);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+  return formatDate(value);
+}
+
 export function formatDateWithTime(value: string | number | Date) {
   return format(value, "PP hh:mm a");
 }
 
 export function formatDateShort(value: string | number | Date) {
   return format(value, "MMM dd");
+}
+
+export function formatTime(value: string | number | Date) {
+  return format(value, "h:mm a");
 }
 
 export function formatDuration(value: string | number | Date) {

@@ -1,8 +1,9 @@
 "use client";
 
-import { PieChart, Pie, Cell } from "recharts";
+import { RadialBarChart, Label, PolarRadiusAxis, RadialBar } from "recharts";
 
 import type { LeadSourceType } from "../../../types";
+import type { ChartConfig } from "@/components/ui/chart";
 
 import {
   ChartContainer,
@@ -10,27 +11,98 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
+const chartConfig = {
+  socialMedia: {
+    label: "Social Media",
+    color: "hsl(var(--chart-1))",
+  },
+  emailCampaigns: {
+    label: "Email Campaigns",
+    color: "hsl(var(--chart-2))",
+  },
+  referrals: {
+    label: "Referrals",
+    color: "hsl(var(--chart-3))",
+  },
+  website: {
+    label: "Website",
+    color: "hsl(var(--chart-4))",
+  },
+  other: {
+    label: "Other",
+    color: "hsl(var(--chart-5))",
+  },
+} satisfies ChartConfig;
+
 export function LeadSourcesChart({
   data,
 }: {
-  data: LeadSourceType["leadSources"];
+  data: Pick<LeadSourceType, "leads" | "summary">;
 }) {
   return (
-    <ChartContainer config={{}} className="w-full md:h-[245px]">
-      <PieChart accessibilityLayer>
-        <Pie
-          data={data}
-          labelLine={false}
-          dataKey="percentage"
-          nameKey="name"
-          label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
-        >
-          {data.map((source) => (
-            <Cell key={source.name} fill={source.fill} fontWeight={600} />
-          ))}
-        </Pie>
-        <ChartTooltip content={<ChartTooltipContent nameKey="source" />} />
-      </PieChart>
+    <ChartContainer config={chartConfig} className="h-28 w-full mx-auto">
+      <RadialBarChart
+        data={[data.leads]}
+        cy="90%"
+        endAngle={180}
+        innerRadius={80}
+        outerRadius={130}
+      >
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent hideLabel />}
+        />
+        <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+          <Label
+            content={({ viewBox }) => {
+              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                return (
+                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) - 16}
+                      className="fill-foreground text-2xl font-semibold"
+                    >
+                      {data.summary.totalLeads.toLocaleString()}
+                    </tspan>
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) + 4}
+                      className="fill-muted-foreground"
+                    >
+                      Leads
+                    </tspan>
+                  </text>
+                );
+              }
+            }}
+          />
+        </PolarRadiusAxis>
+        <RadialBar
+          dataKey="socialMedia"
+          cornerRadius={5}
+          fill="var(--color-socialMedia)"
+          className="stroke-transparent stroke-2"
+        />
+        <RadialBar
+          dataKey="emailCampaigns"
+          fill="var(--color-emailCampaigns)"
+          cornerRadius={5}
+          className="stroke-transparent stroke-2"
+        />
+        <RadialBar
+          dataKey="referrals"
+          fill="var(--color-referrals)"
+          cornerRadius={5}
+          className="stroke-transparent stroke-2"
+        />
+        <RadialBar
+          dataKey="other"
+          fill="var(--color-other)"
+          cornerRadius={5}
+          className="stroke-transparent stroke-2"
+        />
+      </RadialBarChart>
     </ChartContainer>
   );
 }

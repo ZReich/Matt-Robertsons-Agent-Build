@@ -16,9 +16,9 @@ export function TopSalesRepresentativesOthersItem({
   return (
     <li key={representative.name}>
       <Card>
-        <CardContent className="flex items-center gap-x-4 p-3">
+        <CardContent className="flex items-center gap-x-4 py-3 px-6">
           <div className="relative">
-            <Avatar className="w-12 h-12 border-2 border-secondary bg-secondary">
+            <Avatar className="w-10 h-10 border-2 border-secondary bg-secondary">
               <AvatarImage src={representative.avatar} alt="Avatar" />
               <AvatarFallback>
                 {getInitials(representative.name)}

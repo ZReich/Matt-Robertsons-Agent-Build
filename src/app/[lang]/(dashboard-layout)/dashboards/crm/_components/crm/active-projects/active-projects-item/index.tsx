@@ -33,9 +33,9 @@ export function ActiveProjectsItem({
   const chartColor = statusColors[project.status].chart;
 
   return (
-    <li className="flex items-center gap-4">
+    <li className="flex items-center gap-4 py-2 px-4 bg-card border rounded-lg">
       <ActiveProjectsItemChart value={project.progress} color={chartColor} />
-      <div className="space-y-1">
+      <div>
         <h4>{project.name}</h4>
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="shrink-0 me-2 h-4 w-4" aria-hidden />

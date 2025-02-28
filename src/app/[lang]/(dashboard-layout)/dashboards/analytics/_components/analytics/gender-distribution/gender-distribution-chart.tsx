@@ -80,7 +80,7 @@ export function GenderDistributionChart({
                 />
                 <text
                   x={cx}
-                  y={(cy ?? 0) - 4}
+                  y={(cy || 0) - 4}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize="12"
@@ -90,7 +90,7 @@ export function GenderDistributionChart({
                 </text>
                 <text
                   x={cx}
-                  y={(cy ?? 0) + 8.5}
+                  y={(cy || 0) + 8.5}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize="16"
