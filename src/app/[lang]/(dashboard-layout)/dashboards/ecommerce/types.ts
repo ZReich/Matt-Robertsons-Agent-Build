@@ -75,3 +75,18 @@ export interface RevenueBySourceType {
     fill: string;
   }>;
 }
+
+export interface ChurnRateType {
+  period: string;
+  summary: {
+    totalCustomers: number;
+    totalLostCustomers: number;
+    averageChurnRate: number;
+  };
+  months: Array<{
+    month: string;
+    totalCustomers: number;
+    lostCustomers: number;
+    churnRate: number;
+  }>;
+}
