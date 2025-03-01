@@ -1,75 +1,47 @@
-import { TbVs } from "react-icons/tb";
+"use client";
 
-import { formatPercent } from "@/lib/utils";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
+
+import { remToPx } from "@/lib/utils";
 
 import type { NewVsReturningVisitorsType } from "../../../types";
 
-import { SeparatorWithText } from "@/components/ui/separator";
-import { ProgressSegments } from "@/components/ui/progress";
+import { useSettings } from "@/hooks/use-settings";
+import { useIsRtl } from "@/hooks/use-is-rtl";
+
+import { ChartContainer } from "@/components/ui/chart";
 
 export function NewVsReturningVisitorsChart({
   data,
 }: {
   data: NewVsReturningVisitorsType["visitors"];
 }) {
-  const segments = Object.entries(data).map(([_, value]) => ({
-    value: value.percentageChange * 100,
-    color: value.fill,
-  }));
+  const { settings } = useSettings();
+  const isRtl = useIsRtl();
 
-  const { new: newVisitors, returning: returningVisitors } = data;
+  const radius = remToPx(settings.radius);
+  // Transform `data` into an array format suitable for Recharts
+  const chartData = [{ new: data.new.value, returning: data.returning.value }];
+  // Determine the max value dynamically with a buffer
+  const maxValue = Math.max(data.new.value, data.returning.value, 1) * 1.1;
 
   return (
-    <div className="grid items-between gap-6">
-      <ProgressSegments segments={segments} />
-      <div className="flex justify-between items-center gap-x-0.5">
-        <div className="grid place-items-start">
-          <h4 className="inline-flex items-center gap-x-1 text-xs">
-            <div
-              style={{
-                backgroundColor: newVisitors.fill,
-              }}
-              className="h-2.5 w-2.5 rounded-sm"
-            />
-            <span>New</span>
-          </h4>
-          <p className="text-2xl">{newVisitors.value.toLocaleString()}</p>
-          <p
-            style={{
-              color: newVisitors.fill,
-            }}
-            className="text-4xl"
-          >
-            {formatPercent(newVisitors.percentageChange)}
-          </p>
-        </div>
-        <SeparatorWithText orientation="vertical" className="h-full">
-          <TbVs
-            className="size-4 stroke-border rotate-90 rtl:-rotate-90"
-            aria-label="Versus"
-          />
-        </SeparatorWithText>
-        <div className="grid place-items-end">
-          <h4 className="inline-flex items-center gap-x-1 text-xs">
-            <span>Returning</span>
-            <div
-              style={{
-                backgroundColor: returningVisitors.fill,
-              }}
-              className="h-2.5 w-2.5 rounded-sm"
-            />
-          </h4>
-          <p className="text-2xl">{returningVisitors.value.toLocaleString()}</p>
-          <p
-            style={{
-              color: returningVisitors.fill,
-            }}
-            className="text-4xl"
-          >
-            {formatPercent(returningVisitors.percentageChange)}
-          </p>
-        </div>
-      </div>
-    </div>
+    <ChartContainer config={{}} className="h-4 w-full">
+      <BarChart
+        data={chartData}
+        layout="vertical"
+        margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+      >
+        <XAxis type="number" reversed={isRtl} domain={[0, maxValue]} hide />
+        <YAxis type="category" hide />
+        <Bar dataKey="new" stackId="a" fill={data.new.fill} radius={radius} />
+        <Bar
+          dataKey="returning"
+          stackId="a"
+          fill={data.returning.fill}
+          radius={radius}
+        />
+      </BarChart>
+    </ChartContainer>
   );
 }

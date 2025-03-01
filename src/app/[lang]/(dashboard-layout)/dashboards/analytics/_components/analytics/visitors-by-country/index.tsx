@@ -1,12 +1,15 @@
 import { visitorsByCountryData } from "../../../_data/visitors-by-country";
 
-import { DashboardCardWithoutPeriod } from "@/components/dashboards/dashboard-card";
+import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
 import { VisitorsByCountryList } from "./visitors-by-country-list";
 
 export function VisitorsByCountry() {
   return (
-    <DashboardCardWithoutPeriod title="Visitors by Country">
+    <DashboardCard
+      title="Visitors by Country"
+      action={<DashboardCardActionsDropdown />}
+    >
       <VisitorsByCountryList data={visitorsByCountryData} />
-    </DashboardCardWithoutPeriod>
+    </DashboardCard>
   );
 }

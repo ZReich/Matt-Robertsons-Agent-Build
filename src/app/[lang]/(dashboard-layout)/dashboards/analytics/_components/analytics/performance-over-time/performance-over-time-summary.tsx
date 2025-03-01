@@ -37,7 +37,7 @@ export function PerformanceOverTimeSummary({
             <Eye className="size-full" />
           </Badge>
           <div className="shrink-0">
-            <h4 className="text-xs">Total Visitors</h4>
+            <h3 className="text-xs">Total Visitors</h3>
             <p className="text-2xl">{data.totalVisitors.toLocaleString()}</p>
           </div>
         </li>
@@ -52,12 +52,12 @@ export function PerformanceOverTimeSummary({
             <RefreshCw className="size-full" />
           </Badge>
           <div className="shrink-0">
-            <h4 className="text-xs">Total Conversions</h4>
+            <h3 className="text-xs">Total Conversions</h3>
             <p className="text-2xl">{data.totalConversions.toLocaleString()}</p>
           </div>
         </li>
       </ul>
-      <Separator orientation="vertical" className="h-20" />
+      <Separator orientation="vertical" className="h-24" />
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(

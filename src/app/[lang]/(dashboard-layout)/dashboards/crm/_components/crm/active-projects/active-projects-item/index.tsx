@@ -36,7 +36,7 @@ export function ActiveProjectsItem({
     <li className="flex items-center gap-4 py-2 px-4 bg-card border rounded-lg">
       <ActiveProjectsItemChart value={project.progress} color={chartColor} />
       <div>
-        <h4>{project.name}</h4>
+        <h3>{project.name}</h3>
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="shrink-0 me-2 h-4 w-4" aria-hidden />
           <p>

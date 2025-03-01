@@ -25,10 +25,10 @@ export function TopProductsItem({
             className="rounded-lg"
           />
           <div className="flex flex-col truncate">
-            <h4 className="font-semibold break-all truncate">
+            <h3 className="font-semibold break-all truncate">
               <span className="font-normal">#{product.order}</span>{" "}
               {product.name}
-            </h4>
+            </h3>
             <p className="text-sm text-muted-foreground">
               Item: #{product.sku}
             </p>

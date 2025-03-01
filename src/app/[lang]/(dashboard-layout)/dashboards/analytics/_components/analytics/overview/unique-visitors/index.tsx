@@ -1,6 +1,6 @@
 import { OverviewType } from "../../../../types";
 
-import { DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
+import { DashboardCardActionsDropdown, DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
 import { UniqueVisitorsChart } from "./unique-visitors-chart";
 
 export function UniqueVisitors({
@@ -15,6 +15,7 @@ export function UniqueVisitors({
         percentageChange: data.percentageChange,
       }}
       title="Unique Visitors"
+      action={<DashboardCardActionsDropdown />}
       chart={<UniqueVisitorsChart data={data.perMonth} />}
     />
   );

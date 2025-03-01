@@ -26,7 +26,7 @@ export function RevenueBySourceChart({
   }, {});
 
   return (
-    <ChartContainer config={{}} className="w-full h-4">
+    <ChartContainer config={{}} className="h-4 w-full">
       <BarChart
         accessibilityLayer
         data={[chartData]}

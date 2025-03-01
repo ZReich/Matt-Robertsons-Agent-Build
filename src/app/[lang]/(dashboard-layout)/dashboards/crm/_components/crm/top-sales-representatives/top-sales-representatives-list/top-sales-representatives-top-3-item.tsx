@@ -51,9 +51,9 @@ export function TopSalesRepresentativesTop3Item({
             </div>
           </div>
           <div className="flex-1 w-0">
-            <h4 className="text-sm font-semibold break-all truncate">
+            <h3 className="text-sm font-semibold break-all truncate">
               {representative.name}
-            </h4>
+            </h3>
             <p className="text-xs text-muted-foreground break-all truncate">
               {representative.email}
             </p>

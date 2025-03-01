@@ -1,11 +1,15 @@
 import { salesByCountryData } from "../../../_data/sales-by-country";
 
 import { SalesByCountryChart } from "./sales-by-country-chart";
-import { DashboardCard } from "@/components/dashboards/dashboard-card";
+import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
 
 export function SalesByCountry() {
   return (
-    <DashboardCard title="Sales by Country" period={salesByCountryData.period}>
+    <DashboardCard
+      title="Sales by Country"
+      period={salesByCountryData.period}
+      action={<DashboardCardActionsDropdown />}
+    >
       <SalesByCountryChart data={salesByCountryData.countries} />
     </DashboardCard>
   );

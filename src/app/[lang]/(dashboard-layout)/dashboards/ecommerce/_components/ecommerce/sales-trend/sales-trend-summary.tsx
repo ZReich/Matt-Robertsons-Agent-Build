@@ -19,7 +19,7 @@ export function SalesTrendSummary({
     <ul className="flex flex-col justify-around gap-4 sm:flex-row">
       <div className="flex flex-wrap justify-around gap-4 md:flex-col">
         <li>
-          <h4 className="text-sm">Highest Sales</h4>
+          <h3 className="text-sm">Highest Sales</h3>
           <p className="text-2xl font-semibold">
             {formatCurrency(data.highestSales.sales)}
           </p>
@@ -28,7 +28,7 @@ export function SalesTrendSummary({
           </p>
         </li>
         <li>
-          <h4 className="text-sm">Lowest Sales</h4>
+          <h3 className="text-sm">Lowest Sales</h3>
           <p className="text-2xl font-semibold">
             {formatCurrency(data.lowestSales.sales)}
           </p>
@@ -44,14 +44,14 @@ export function SalesTrendSummary({
       )}
       <div className="flex flex-wrap justify-around gap-4 md:flex-col">
         <li>
-          <h4 className="text-sm">Total Sales</h4>
+          <h3 className="text-sm">Total Sales</h3>
           <p className="text-2xl font-semibold">
             {formatCurrency(data.totalSales)}
           </p>
           <p className="text-xs text-muted-foreground">for the period</p>
         </li>
         <li>
-          <h4 className="text-sm">Avg. Sales</h4>
+          <h3 className="text-sm">Avg. Sales</h3>
           <p className="text-2xl font-semibold">
             {formatCurrency(data.avgSales)}
           </p>

@@ -73,11 +73,14 @@ type TimelineDotStatus = "current" | "done" | "error";
 
 interface TimelineDotPropsBase extends React.HTMLAttributes<HTMLDivElement> {
   status?: TimelineDotStatus;
+  customIconName: never;
+  customStatusName: never;
   iconClassName?: string;
 }
 
 interface TimelineDotPropsWithCustom
   extends React.HTMLAttributes<HTMLDivElement> {
+  status?: never;
   customIconName: DynamicIconNameType;
   customStatusName: string;
   iconClassName?: string;
@@ -105,21 +108,31 @@ const statusIconNames: StatusIconNamesType = {
 };
 
 const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
-  ({ className, iconClassName, ...props }, ref) => {
+  (
+    {
+      className,
+      iconClassName,
+      status,
+      customIconName,
+      customStatusName,
+      ...props
+    },
+    ref
+  ) => {
     let statusIconName;
     let statusLabel;
     let statusClassName;
 
     // Determines if the component uses predefined statuses or custom ones
-    if ("status" in props) {
+    if (status) {
       // If the "status" prop exists, use the corresponding predefined icon and styling
-      statusIconName = statusIconNames[props.status || "current"].iconName;
-      statusClassName = statusIconNames[props.status || "current"].className;
-      statusLabel = props.status; // Assigns the status label for accessibility
-    } else if ("customIconName" in props) {
+      statusIconName = statusIconNames[status].iconName;
+      statusClassName = statusIconNames[status].className;
+      statusLabel = status; // Assigns the status label for accessibility
+    } else if (customIconName) {
       // If a custom icon is provided, use it along with the custom status label
-      statusIconName = props.customIconName;
-      statusLabel = props.customStatusName;
+      statusIconName = customIconName;
+      statusLabel = customStatusName;
     }
 
     return (

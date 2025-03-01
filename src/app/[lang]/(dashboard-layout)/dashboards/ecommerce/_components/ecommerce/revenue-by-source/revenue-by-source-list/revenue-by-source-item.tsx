@@ -18,7 +18,7 @@ export function RevenueBySourceItem({
           }}
           className="h-2.5 w-2.5 rounded-md"
         />
-        <p className="text-muted-foreground">{data.name}</p>
+        <h4 className="text-muted-foreground">{data.name}</h4>
       </div>
       <div className="inline-flex items-center gap-x-1">
         <p className="font-semibold">{formatCurrency(data.value)}</p>

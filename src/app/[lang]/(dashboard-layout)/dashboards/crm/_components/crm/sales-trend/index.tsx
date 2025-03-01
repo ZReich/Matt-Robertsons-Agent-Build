@@ -1,6 +1,6 @@
 import { salesTrendData } from "../../../_data/sales-trend";
 
-import { DashboardCard } from "@/components/dashboards/dashboard-card";
+import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
 import { SalesTrendChart } from "./sales-trend-chart";
 
 export function SalesTrend() {
@@ -8,6 +8,7 @@ export function SalesTrend() {
     <DashboardCard
       title="Sales Trend"
       period={salesTrendData.period}
+      action={<DashboardCardActionsDropdown />}
       className="col-span-full md:col-span-3"
     >
       <SalesTrendChart data={salesTrendData} />

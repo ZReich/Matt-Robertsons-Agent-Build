@@ -24,7 +24,7 @@ export function ConversionFunnelChart({
   const trapezoidHeight = chartHeight / data.length;
 
   return (
-    <div className="relative h-56 w-full rounded-lg overflow-hidden">
+    <div className="relative h-56 w-full overflow-hidden">
       <ul
         style={{
           gridTemplateRows: `repeat(${data.length}, ${trapezoidHeight}px)`,
@@ -33,7 +33,7 @@ export function ConversionFunnelChart({
       >
         {data.map((stage) => (
           <li key={stage.name} className="flex flex-col justify-center">
-            <h4 className="text-xs">{stage.name}</h4>
+            <h3 className="text-xs">{stage.name}</h3>
             <p className="text-2xl">{stage.value.toLocaleString()}</p>
           </li>
         ))}

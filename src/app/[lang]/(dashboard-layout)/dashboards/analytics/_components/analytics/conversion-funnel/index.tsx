@@ -1,6 +1,9 @@
 import { conversionFunnelData } from "../../../_data/conversion-funnel";
 
-import { DashboardCard } from "@/components/dashboards/dashboard-card";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card";
 import { ConversionFunnelChart } from "./conversion-funnel-chart";
 
 export async function ConversionFunnel() {
@@ -8,6 +11,7 @@ export async function ConversionFunnel() {
     <DashboardCard
       title="Conversion Funnel"
       period={conversionFunnelData.period}
+      action={<DashboardCardActionsDropdown />}
     >
       <ConversionFunnelChart data={conversionFunnelData.funnelSteps} />
     </DashboardCard>

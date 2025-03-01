@@ -2,7 +2,7 @@
 
 import { Users, UserPlus, Crown, UserCheck } from "lucide-react";
 
-import type { CustomerInsightsType } from "../../../types";
+import type { CustomerInsightsType } from "../../../../types";
 
 import { CustomerInsightItem } from "./customer-insight-item";
 

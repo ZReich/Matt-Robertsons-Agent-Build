@@ -2,7 +2,7 @@ import { BadgePercent, HandCoins, Users } from "lucide-react";
 
 import { overviewData } from "../../_data/overview";
 
-import { DashboardOverviewCard } from "@/components/dashboards/dashboard-card";
+import { DashboardCardActionsDropdown, DashboardOverviewCard } from "@/components/dashboards/dashboard-card";
 
 export function Overview() {
   return (
@@ -11,6 +11,7 @@ export function Overview() {
         data={overviewData.totalSales}
         title="Total Sales"
         period={overviewData.totalSales.period}
+        action={<DashboardCardActionsDropdown />}
         icon={BadgePercent}
         formatStyle="currency"
       />
@@ -18,6 +19,7 @@ export function Overview() {
         data={overviewData.totalProfit}
         title="Total Profit"
         period={overviewData.totalProfit.period}
+        action={<DashboardCardActionsDropdown />}
         icon={HandCoins}
         formatStyle="currency"
       />
@@ -25,6 +27,7 @@ export function Overview() {
         data={overviewData.revenueGrowth}
         title="Revenue Growth"
         period={overviewData.revenueGrowth.period}
+        action={<DashboardCardActionsDropdown />}
         icon={HandCoins}
         formatStyle="currency"
       />
@@ -32,6 +35,7 @@ export function Overview() {
         data={overviewData.newCustomers}
         title="New Customers"
         period={overviewData.newCustomers.period}
+        action={<DashboardCardActionsDropdown />}
         icon={Users}
       />
     </div>

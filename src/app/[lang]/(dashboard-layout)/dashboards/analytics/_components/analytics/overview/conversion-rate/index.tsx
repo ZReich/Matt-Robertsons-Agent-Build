@@ -1,6 +1,6 @@
 import { OverviewType } from "../../../../types";
 
-import { DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
+import { DashboardCardActionsDropdown, DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
 import { ConversionRateChart } from "./conversion-rate-chart";
 
 export function ConversionRate({
@@ -15,6 +15,7 @@ export function ConversionRate({
         percentageChange: data.percentageChange,
       }}
       title="Conversion Rate"
+      action={<DashboardCardActionsDropdown />}
       chart={<ConversionRateChart data={data.perMonth} />}
       formatStyle="percent"
     />

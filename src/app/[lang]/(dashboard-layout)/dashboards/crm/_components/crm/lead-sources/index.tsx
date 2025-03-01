@@ -1,17 +1,20 @@
 import { leadSourcesData } from "../../../_data/lead-sources";
 
-import { DashboardCardWithoutPeriod } from "@/components/dashboards/dashboard-card";
+import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
 import { LeadSourcesChart } from "./lead-sources-chart";
 
 export function LeadSources() {
   return (
-    <DashboardCardWithoutPeriod title="Lead Sources">
+    <DashboardCard
+      title="Lead Sources"
+      action={<DashboardCardActionsDropdown />}
+    >
       <LeadSourcesChart
         data={{
           leads: leadSourcesData.leads,
           summary: leadSourcesData.summary,
         }}
       />
-    </DashboardCardWithoutPeriod>
+    </DashboardCard>
   );
 }

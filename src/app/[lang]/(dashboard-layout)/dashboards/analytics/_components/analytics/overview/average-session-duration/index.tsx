@@ -1,6 +1,6 @@
 import { OverviewType } from "../../../../types";
 
-import { DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
+import { DashboardCardActionsDropdown, DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
 import { AverageSessionDurationChart } from "./average-session-duration-chart";
 
 export function AverageSessionDuration({
@@ -15,6 +15,7 @@ export function AverageSessionDuration({
         percentageChange: data.percentageChange,
       }}
       title="Avg. Session Duration"
+      action={<DashboardCardActionsDropdown />}
       chart={<AverageSessionDurationChart data={data.perMonth} />}
       formatStyle="duration"
     />

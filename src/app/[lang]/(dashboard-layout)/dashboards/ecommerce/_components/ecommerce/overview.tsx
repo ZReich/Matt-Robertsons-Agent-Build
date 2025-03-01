@@ -2,7 +2,7 @@ import { BadgePercent, HandCoins, ShoppingBag } from "lucide-react";
 
 import { overviewData } from "../../_data/overview";
 
-import { DashboardOverviewCardV2 } from "@/components/dashboards/dashboard-card";
+import { DashboardCardActionsDropdown, DashboardOverviewCardV2 } from "@/components/dashboards/dashboard-card";
 
 export async function Overview() {
   return (
@@ -11,6 +11,7 @@ export async function Overview() {
         data={overviewData.totalSales}
         title="Total Sales"
         period={overviewData.totalSales.period}
+        action={<DashboardCardActionsDropdown />}
         icon={BadgePercent}
         formatStyle="currency"
       />
@@ -18,6 +19,7 @@ export async function Overview() {
         data={overviewData.revenueSummary}
         title="Revenue Summary"
         period={overviewData.revenueSummary.period}
+        action={<DashboardCardActionsDropdown />}
         icon={HandCoins}
         formatStyle="currency"
       />
@@ -25,12 +27,14 @@ export async function Overview() {
         data={overviewData.numberOfOrders}
         title="Number of Orders"
         period={overviewData.numberOfOrders.period}
+        action={<DashboardCardActionsDropdown />}
         icon={ShoppingBag}
       />
       <DashboardOverviewCardV2
         data={overviewData.averageOrderValue}
         title="Avg. Order Value"
         period={overviewData.averageOrderValue.period}
+        action={<DashboardCardActionsDropdown />}
         icon={HandCoins}
         formatStyle="currency"
       />
