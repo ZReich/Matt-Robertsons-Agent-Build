@@ -84,7 +84,12 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
         config={chartConfig}
         className="aspect-auto h-56 w-full mt-6"
       >
-        <BarChart accessibilityLayer key={activeChart} data={monthly}>
+        <BarChart
+          accessibilityLayer
+          key={activeChart}
+          data={monthly}
+          margin={{ top: 0, bottom: 0 }}
+        >
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="month"

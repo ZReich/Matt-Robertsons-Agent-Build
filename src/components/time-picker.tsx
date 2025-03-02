@@ -7,6 +7,7 @@ import { Clock } from "lucide-react";
 import { cn, timeToDate } from "@/lib/utils";
 
 import type { InputTimeProps } from "@/components/ui/input-time";
+import type { ButtonProps } from "@/components/ui/button";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +20,9 @@ import { InputTime } from "@/components/ui/input-time";
 export interface TimePickerProps extends InputTimeProps {
   value: string | undefined;
   popoverContentClassName?: string;
+  popoverContentOptions: React.ComponentPropsWithoutRef<typeof PopoverContent>;
   buttonClassName?: string;
+  buttonOptions?: ButtonProps;
   placeholder?: string;
 }
 
@@ -28,7 +31,9 @@ const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
     {
       value,
       popoverContentClassName,
+      popoverContentOptions,
       buttonClassName,
+      buttonOptions,
       placeholder = "Pick time",
       ...props
     },
@@ -46,7 +51,7 @@ const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
             )}
           >
             {value ? (
-              format(timeToDate(value), "p")
+              <span>{format(timeToDate(value), "p")}</span>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
@@ -56,6 +61,7 @@ const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
         <PopoverContent
           className={cn("w-auto p-0", popoverContentClassName)}
           align="start"
+          {...popoverContentOptions}
         >
           <InputTime className="border-0" value={value} {...props} />
         </PopoverContent>

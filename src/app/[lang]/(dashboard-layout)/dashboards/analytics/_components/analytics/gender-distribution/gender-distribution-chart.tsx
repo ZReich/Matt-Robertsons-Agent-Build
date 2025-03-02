@@ -50,10 +50,7 @@ export function GenderDistributionChart({
 
   return (
     <ChartContainer config={{}} className="h-[7.5rem] w-full max-w-72 mx-auto">
-      <ScatterChart
-        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-        className="border border-border rounded-full"
-      >
+      <ScatterChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
         <ChartTooltip
           cursor={false}
           content={<ModifiedChartTooltipContent />}

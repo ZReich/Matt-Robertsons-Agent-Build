@@ -7,6 +7,7 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import type { CalendarProps } from "@/components/ui/calendar";
+import type { ButtonProps } from "@/components/ui/button";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,7 +25,11 @@ export type DateTimePickerProps = CalendarProps &
     onValueChange?: (date?: Date) => void;
     formatStr?: string;
     popoverContentClassName?: string;
+    popoverContentOptions: React.ComponentPropsWithoutRef<
+      typeof PopoverContent
+    >;
     buttonClassName?: string;
+    buttonOptions?: ButtonProps;
     placeholder?: string;
   };
 
@@ -35,7 +40,9 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
       onValueChange,
       formatStr = "yyyy-MM-dd p",
       popoverContentClassName,
+      popoverContentOptions,
       buttonClassName,
+      buttonOptions,
       placeholder = "Pick date and time",
       ...props
     },
@@ -84,9 +91,10 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
               "w-full px-3 text-start font-normal",
               buttonClassName
             )}
+            {...buttonOptions}
           >
             {selectedDate ? (
-              format(selectedDate, formatStr)
+              <span>{format(selectedDate, formatStr)}</span>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
@@ -96,6 +104,7 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
         <PopoverContent
           className={cn("w-auto p-0", popoverContentClassName)}
           align="start"
+          {...popoverContentOptions}
         >
           <Calendar
             initialFocus

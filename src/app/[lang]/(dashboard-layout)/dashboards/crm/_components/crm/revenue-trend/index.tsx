@@ -1,7 +1,7 @@
 import { revenueTrendData } from "../../../_data/revenue-trend";
 
 import { RevenueTrendChart } from "./revenue-trend-chart";
-import { RevenueTrendTotal } from "./revenue-trend-total";
+import { RevenueTrendSummary } from "./revenue-trend-summary";
 import { Card } from "@/components/ui/card";
 
 export function RevenueTrend() {
@@ -9,7 +9,7 @@ export function RevenueTrend() {
     <Card className="h-fit p-6">
       <h3 className="sr-only">Revenue Trend</h3>
       <div className="space-y-4">
-        <RevenueTrendTotal data={revenueTrendData.summary} />
+        <RevenueTrendSummary data={revenueTrendData.summary} />
         <RevenueTrendChart data={revenueTrendData.revenueTrends} />
       </div>
     </Card>

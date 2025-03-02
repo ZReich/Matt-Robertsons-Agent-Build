@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 import type { DateRange } from "react-day-picker";
 import type { CalendarProps } from "@/components/ui/calendar";
+import type { ButtonProps } from "@/components/ui/button";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -22,7 +23,9 @@ export type DateRangePickerProps = CalendarProps & {
   onValueChange?: (date?: DateRange) => void;
   formatStr?: string;
   popoverContentClassName?: string;
+  popoverContentOptions: React.ComponentPropsWithoutRef<typeof PopoverContent>;
   buttonClassName?: string;
+  buttonOptions?: ButtonProps;
   placeholder?: string;
 };
 
@@ -36,7 +39,9 @@ const DateRangePicker = React.forwardRef<
       onValueChange,
       formatStr = "yyyy-MM-dd",
       popoverContentClassName,
+      popoverContentOptions,
       buttonClassName,
+      buttonOptions,
       placeholder = "Pick date",
       ...props
     },
@@ -52,15 +57,16 @@ const DateRangePicker = React.forwardRef<
               "w-full px-3 text-start font-normal",
               buttonClassName
             )}
+            {...buttonOptions}
           >
             {value?.from ? (
               value.to ? (
-                <>
+                <span>
                   {format(value.from, formatStr)} to{" "}
                   {format(value.to, formatStr)}
-                </>
+                </span>
               ) : (
-                format(value.from, formatStr)
+                <span>{format(value.from, formatStr)}</span>
               )
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
@@ -71,6 +77,7 @@ const DateRangePicker = React.forwardRef<
         <PopoverContent
           className={cn("w-auto p-0", popoverContentClassName)}
           align="start"
+          {...popoverContentOptions}
         >
           <Calendar
             initialFocus
