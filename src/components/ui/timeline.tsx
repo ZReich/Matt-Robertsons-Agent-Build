@@ -6,7 +6,8 @@ import * as SeparatorPrimitive from "@radix-ui/react-separator";
 import { cn } from "@/lib/utils";
 
 import type { VariantProps } from "class-variance-authority";
-import { DynamicIconNameType } from "@/types";
+import type { DynamicIconNameType } from "@/types";
+
 import { DynamicIcon } from "../dynamic-icon";
 import { Separator } from "./separator";
 
@@ -70,28 +71,29 @@ const TimelineItem = React.forwardRef<HTMLLIElement, TimelineItemProps>(
 TimelineItem.displayName = "TimelineItem";
 
 type TimelineDotStatus = "current" | "done" | "error";
-
 interface TimelineDotPropsBase extends React.HTMLAttributes<HTMLDivElement> {
-  status?: TimelineDotStatus;
-  customIconName: never;
-  customStatusName: never;
   iconClassName?: string;
 }
 
-interface TimelineDotPropsWithCustom
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface TimelineDotPropsWithStatus extends TimelineDotPropsBase {
+  status?: TimelineDotStatus;
+  customIconName?: never;
+  customStatusName?: never;
+}
+
+interface TimelineDotPropsWithCustom extends TimelineDotPropsBase {
   status?: never;
   customIconName: DynamicIconNameType;
   customStatusName: string;
-  iconClassName?: string;
 }
 
-type TimelineDotProps = TimelineDotPropsBase | TimelineDotPropsWithCustom;
+type TimelineDotProps = TimelineDotPropsWithStatus | TimelineDotPropsWithCustom;
 
 type StatusIconNamesType = Record<
   TimelineDotStatus,
   { iconName: DynamicIconNameType; className: string }
 >;
+
 const statusIconNames: StatusIconNamesType = {
   current: {
     iconName: "Circle",
@@ -112,27 +114,27 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
     {
       className,
       iconClassName,
-      status,
+      status = "current",
       customIconName,
       customStatusName,
       ...props
     },
     ref
   ) => {
-    let statusIconName;
-    let statusLabel;
+    let statusIconName = statusIconNames["current"].iconName;
+    let statusLabel = "current";
     let statusClassName;
 
     // Determines if the component uses predefined statuses or custom ones
-    if (status) {
+    if (customStatusName && customIconName) {
+      // If a custom icon is provided, use it along with the custom status label
+      statusIconName = customIconName;
+      statusLabel = customStatusName;
+    } else if (status) {
       // If the "status" prop exists, use the corresponding predefined icon and styling
       statusIconName = statusIconNames[status].iconName;
       statusClassName = statusIconNames[status].className;
       statusLabel = status; // Assigns the status label for accessibility
-    } else if (customIconName) {
-      // If a custom icon is provided, use it along with the custom status label
-      statusIconName = customIconName;
-      statusLabel = customStatusName;
     }
 
     return (
@@ -147,7 +149,7 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
         {...props}
       >
         <DynamicIcon
-          name={statusIconName || "Circle"}
+          name={statusIconName}
           className={cn(
             "size-4 text-muted-foreground",
             statusClassName,

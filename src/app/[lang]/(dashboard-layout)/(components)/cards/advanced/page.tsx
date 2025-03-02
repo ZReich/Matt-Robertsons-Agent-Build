@@ -4,8 +4,10 @@ import { ActiveProjects } from "../../../dashboards/crm/_components/crm/active-p
 import { TopSalesRepresentatives } from "../../../dashboards/crm/_components/crm/top-sales-representatives";
 import { CustomerSatisfaction } from "../../../dashboards/crm/_components/crm/customer-satisfaction";
 import { TopProducts } from "../../../dashboards/ecommerce/_components/ecommerce/top-products";
-import { TopPages } from "../../../dashboards/analytics/_components/analytics/top-pages";
-import { SalesByCountry } from "../../../dashboards/crm/_components/crm/sales-by-country";
+import { VisitorsByCountry } from "../../../dashboards/analytics/_components/analytics/visitors-by-country";
+import { EngagementByDevice } from "../../../dashboards/analytics/_components/analytics/engagement-by-device";
+import { ActivityTimeline } from "../../../dashboards/crm/_components/crm/activity-timeline";
+import { Invoices } from "../../../dashboards/ecommerce/_components/ecommerce/invoices";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -17,11 +19,13 @@ export default function AdvancedCardsPage() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <ActiveProjects />
-      <TopSalesRepresentatives />
+      <ActivityTimeline />
       <CustomerSatisfaction />
       <TopProducts />
-      <TopPages />
-      <SalesByCountry />
+      <TopSalesRepresentatives />
+      <VisitorsByCountry />
+      <EngagementByDevice />
+      <Invoices />
     </section>
   );
 }

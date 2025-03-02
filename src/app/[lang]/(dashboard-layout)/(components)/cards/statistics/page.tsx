@@ -6,6 +6,8 @@ import { Overview as OverviewV3 } from "../../../dashboards/analytics/_component
 import { NewVsReturningVisitors } from "../../../dashboards/analytics/_components/analytics/new-vs-returning-visitors";
 import { GenderDistribution } from "../../../dashboards/analytics/_components/analytics/gender-distribution";
 import { CustomerInsights } from "../../../dashboards/ecommerce/_components/ecommerce/customer-insights";
+import { RevenueTrend } from "../../../dashboards/crm/_components/crm/revenue-trend";
+import { LeadSources } from "../../../dashboards/crm/_components/crm/lead-sources";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -19,6 +21,8 @@ export default function StatisticsCardsPage() {
       <Overview />
       <OverviewV2 />
       <OverviewV3 />
+      <RevenueTrend />
+      <LeadSources />
       <NewVsReturningVisitors />
       <GenderDistribution />
       <CustomerInsights />
