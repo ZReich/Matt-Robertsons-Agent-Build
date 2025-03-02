@@ -4,7 +4,7 @@ import {
   DashboardCard,
   DashboardCardActionsDropdown,
 } from "@/components/dashboards/dashboard-card";
-import { ConversionFunnelChart } from "./conversion-funnel-chart";
+import { ConversionFunnelWrapper } from "./conversion-funnel-wrapper";
 
 export async function ConversionFunnel() {
   return (
@@ -13,7 +13,7 @@ export async function ConversionFunnel() {
       period={conversionFunnelData.period}
       action={<DashboardCardActionsDropdown />}
     >
-      <ConversionFunnelChart data={conversionFunnelData.funnelSteps} />
+      <ConversionFunnelWrapper data={conversionFunnelData.funnelSteps} />
     </DashboardCard>
   );
 }

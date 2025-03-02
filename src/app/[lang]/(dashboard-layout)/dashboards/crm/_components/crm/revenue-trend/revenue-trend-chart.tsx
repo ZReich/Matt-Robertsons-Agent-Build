@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { formatCurrency, remToPx } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 import type { RevenueTrendType } from "../../../types";
 import type {
@@ -10,7 +10,7 @@ import type {
   ChartTooltipContentProps,
 } from "@/components/ui/chart";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
@@ -44,7 +44,7 @@ export function RevenueTrendChart({
 }: {
   data: RevenueTrendType["revenueTrends"];
 }) {
-  const { settings } = useSettings();
+  const radius = useRadius();
   const isRtl = useIsRtl();
 
   return (
@@ -69,11 +69,7 @@ export function RevenueTrendChart({
           hide
         />
         <ChartTooltip content={<ModifiedChartTooltipContent hideIndicator />} />
-        <Bar
-          dataKey="revenue"
-          fill="hsl(var(--chart-2))"
-          radius={remToPx(settings.radius)}
-        />
+        <Bar dataKey="revenue" fill="hsl(var(--chart-2))" radius={radius} />
       </BarChart>
     </ChartContainer>
   );

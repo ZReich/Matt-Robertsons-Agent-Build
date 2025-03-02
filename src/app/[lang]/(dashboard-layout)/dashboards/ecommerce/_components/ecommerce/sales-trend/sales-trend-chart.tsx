@@ -6,13 +6,12 @@ import {
   camelCaseToTitleCase,
   formatCurrency,
   formatDateShort,
-  remToPx,
 } from "@/lib/utils";
 
 import type { SalesTrendType } from "../../../types";
 import type { ChartTooltipContentProps } from "@/components/ui/chart";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
@@ -41,10 +40,8 @@ export function SalesTrendChart({
 }: {
   data: SalesTrendType["salesTrends"];
 }) {
-  const { settings } = useSettings();
   const isRtl = useIsRtl();
-
-  const radius = remToPx(settings.radius);
+  const radius = useRadius();
 
   return (
     <ChartContainer config={{}} className="w-full md:h-[200px]">

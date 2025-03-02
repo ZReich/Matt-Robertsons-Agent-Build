@@ -150,7 +150,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
     <aside
       className={cn(
         "shrink-0 sticky top-[4.25rem] h-svh w-[--sidebar-width] hidden bg-background",
-        !isMobile && " block"
+        !isMobile && "block"
       )}
     >
       <nav

@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { formatDuration, remToPx } from "@/lib/utils";
+import { formatDuration } from "@/lib/utils";
 
 import type { OverviewType } from "../../../../types";
 import type {
@@ -10,7 +10,7 @@ import type {
   ChartTooltipContentProps,
 } from "@/components/ui/chart";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 
 import {
   ChartContainer,
@@ -43,7 +43,7 @@ export function AverageSessionDurationChart({
 }: {
   data: OverviewType["averageSessionDuration"]["perMonth"];
 }) {
-  const { settings } = useSettings();
+  const radius = useRadius();
 
   return (
     <ChartContainer
@@ -57,11 +57,7 @@ export function AverageSessionDurationChart({
           content={<ModifiedChartTooltipContent />}
         />
         <XAxis dataKey="month" hide />
-        <Bar
-          dataKey="value"
-          barSize={44}
-          radius={remToPx(settings.radius) - 2}
-        />
+        <Bar dataKey="value" barSize={44} radius={radius} />
       </BarChart>
     </ChartContainer>
   );

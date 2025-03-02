@@ -3,12 +3,12 @@
 import * as React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-import { cn, remToPx } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 import type { ChartConfig } from "@/components/ui/chart";
 import type { SalesTrendType } from "../../../types";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 
 import {
   ChartContainer,
@@ -39,10 +39,9 @@ const chartConfig = {
 export function SalesTrendChart({ data }: { data: SalesTrendType }) {
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("lead");
-  const { settings } = useSettings();
+  const radius = useRadius();
 
   const { monthly, summary } = data;
-  const radius = remToPx(settings.radius) - 2;
 
   return (
     <>

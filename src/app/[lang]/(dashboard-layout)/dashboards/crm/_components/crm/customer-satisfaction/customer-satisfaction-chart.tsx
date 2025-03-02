@@ -8,22 +8,22 @@ import {
   RadialBarChart,
 } from "recharts";
 
-import { ratingToPercentage, remToPx } from "@/lib/utils";
+import { ratingToPercentage } from "@/lib/utils";
 
 import type { CustomerSatisfactionType } from "../../../types";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 
 import { ChartContainer } from "@/components/ui/chart";
-
-const maxRating = 5;
 
 export function CustomerSatisfactionChart({
   data,
 }: {
   data: CustomerSatisfactionType["summary"];
 }) {
-  const { settings } = useSettings();
+  const radius = useRadius();
+
+  const maxRating = 5;
 
   return (
     <ChartContainer config={{}} className="aspect-square h-[200px] md:w-2/5">
@@ -44,7 +44,7 @@ export function CustomerSatisfactionChart({
         <RadialBar
           background
           dataKey="value"
-          cornerRadius={remToPx(settings.radius)}
+          cornerRadius={radius}
           fill="hsl(var(--primary))"
         />
         <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>

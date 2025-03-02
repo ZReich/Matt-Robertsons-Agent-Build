@@ -79,7 +79,7 @@ export interface AvatarStackProps
     VariantProps<typeof avatarStackVariants> {
   avatars: { src?: string; alt: string; href?: string }[];
   limit?: number;
-  moreHref?: string;
+  onMoreButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 const AvatarStack = React.memo(
@@ -87,7 +87,7 @@ const AvatarStack = React.memo(
     avatars,
     limit = 4,
     size,
-    moreHref,
+    onMoreButtonClick,
     className,
     ...props
   }: AvatarStackProps) => {
@@ -124,21 +124,19 @@ const AvatarStack = React.memo(
           </TooltipProvider>
         ))}
 
-        {/* Show "+N" if avatars exceed the limit */}
-        {remainingCount > 0 &&
-          (moreHref ? (
-            <Link href={moreHref} className="-ms-1 -me-1">
-              <Avatar className={avatarStackVariants({ size })}>
-                <AvatarFallback>+{remainingCount}</AvatarFallback>
-              </Avatar>
-            </Link>
-          ) : (
-            <Avatar
-              className={cn("-ms-1 -me-1", avatarStackVariants({ size }))}
-            >
+        {/* Show "+N" button if avatars exceed the limit */}
+        {remainingCount > 0 && (
+          <button
+            type="button"
+            onClick={onMoreButtonClick}
+            className="-ms-1 -me-1"
+            aria-label="Show more"
+          >
+            <Avatar className={avatarStackVariants({ size })}>
               <AvatarFallback>+{remainingCount}</AvatarFallback>
             </Avatar>
-          ))}
+          </button>
+        )}
       </div>
     );
   }

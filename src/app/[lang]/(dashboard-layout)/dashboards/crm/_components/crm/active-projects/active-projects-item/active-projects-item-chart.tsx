@@ -8,9 +8,7 @@ import {
   RadialBarChart,
 } from "recharts";
 
-import { remToPx } from "@/lib/utils";
-
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 
 import { ChartContainer } from "@/components/ui/chart";
 
@@ -23,7 +21,7 @@ export function ActiveProjectsItemChart({
   maxRating?: number;
   color?: string;
 }) {
-  const { settings } = useSettings();
+  const radius = useRadius();
 
   return (
     <ChartContainer config={{}} className="aspect-square h-10">
@@ -45,7 +43,7 @@ export function ActiveProjectsItemChart({
         <RadialBar
           background
           dataKey="value"
-          cornerRadius={remToPx(settings.radius)}
+          cornerRadius={radius}
           fill={color}
         />
         <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>

@@ -14,6 +14,7 @@ import { SignInSchema } from "@/schemas/sign-in-schema";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 import { ensureRedirectPathname } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 import type { LocaleType, SignInFormType } from "@/types";
 
@@ -27,7 +28,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
 import { SeparatorWithText } from "@/components/ui/separator";
 import { OAuthLinks } from "../oauth-links";
 
@@ -64,7 +64,7 @@ export function SignInForm() {
         throw new Error(result.error);
       }
 
-      router.push(redirectPathname ?? "/");
+      router.push(redirectPathname || "/");
     } catch (error) {
       toast({
         variant: "destructive",

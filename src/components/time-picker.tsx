@@ -20,7 +20,7 @@ import { InputTime } from "@/components/ui/input-time";
 export interface TimePickerProps extends InputTimeProps {
   value: string | undefined;
   popoverContentClassName?: string;
-  popoverContentOptions: React.ComponentPropsWithoutRef<typeof PopoverContent>;
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
   buttonClassName?: string;
   buttonOptions?: ButtonProps;
   placeholder?: string;

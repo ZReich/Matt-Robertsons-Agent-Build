@@ -232,14 +232,14 @@ export function ensureWithoutPrefix(value: string, prefix: string) {
 }
 
 export const ensureRedirectPathname = (
-  currentPathname: string,
+  basePathname: string,
   redirectPathname: string
 ): string => {
   const searchParams = new URLSearchParams({
     redirectTo: ensureWithoutSuffix(redirectPathname, "/"),
   });
 
-  return ensureWithoutSuffix(currentPathname, "?" + searchParams);
+  return ensureWithSuffix(basePathname, "?" + searchParams.toString());
 };
 
 export function isNonNegative(num: number) {

@@ -2,11 +2,9 @@
 
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
-import { remToPx } from "@/lib/utils";
-
 import type { NewVsReturningVisitorsType } from "../../../types";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import { ChartContainer } from "@/components/ui/chart";
@@ -16,10 +14,9 @@ export function NewVsReturningVisitorsChart({
 }: {
   data: NewVsReturningVisitorsType["visitors"];
 }) {
-  const { settings } = useSettings();
+  const radius = useRadius();
   const isRtl = useIsRtl();
 
-  const radius = remToPx(settings.radius);
   // Transform `data` into an array format suitable for Recharts
   const chartData = [{ new: data.new.value, returning: data.returning.value }];
   // Determine the max value dynamically with a buffer

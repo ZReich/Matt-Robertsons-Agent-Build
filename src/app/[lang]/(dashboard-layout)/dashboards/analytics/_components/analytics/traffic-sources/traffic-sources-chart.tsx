@@ -2,12 +2,10 @@
 
 import { RadialBar, RadialBarChart } from "recharts";
 
-import { remToPx } from "@/lib/utils";
-
 import type { TrafficSourcesType } from "../../../types";
 import type { ChartConfig } from "@/components/ui/chart";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 
 import {
   ChartContainer,
@@ -26,9 +24,7 @@ export function TrafficSourcesChart({
 }: {
   data: TrafficSourcesType["sources"];
 }) {
-  const { settings } = useSettings();
-
-  const radius = remToPx(settings.radius) - 2;
+  const radius = useRadius();
 
   return (
     <ChartContainer

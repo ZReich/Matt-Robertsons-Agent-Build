@@ -22,7 +22,7 @@ export default async function DocsLayout({
   return (
     <div className="w-screen">
       <Header />
-      <div className="relative grid grid-cols-[auto_1fr_auto]">
+      <div className="relative grid lg:grid-cols-[auto_1fr_auto]">
         <DocsSidebar />
         <main className="grid bg-muted/40 border-x border-b border-sidebar-border">
           <Separator className="sticky z-50 top-[4.25rem] hidden w-full h-[0.5px] md:block" />
@@ -30,7 +30,7 @@ export default async function DocsLayout({
             <DocsBreadcrumb />
             <div
               id="mdx-content"
-              className="prose prose-headings:mt-8 prose-headings:font-semibold prose-headings:text-foreground prose-h1:text-5xl prose-h2:text-4xl prose-h3:text-3xl prose-h4:text-2xl prose-h5:text-xl prose-h6:text-lg prose-strong:text-foreground prose-code:text-foreground prose-a:text-foreground prose-pre:bg-muted text-foreground"
+              className="min-h-[calc(100svh-16rem)] w-[65ch] prose prose-headings:mt-8 prose-headings:font-semibold prose-headings:text-foreground prose-h1:text-5xl prose-h2:text-4xl prose-h3:text-3xl prose-h4:text-2xl prose-h5:text-xl prose-h6:text-lg prose-strong:text-foreground prose-code:text-foreground prose-a:text-foreground prose-pre:bg-muted text-foreground"
             >
               {children}
             </div>

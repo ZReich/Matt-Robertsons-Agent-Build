@@ -94,7 +94,7 @@ export function Editor({
           editor={editor}
           tippyOptions={{
             duration: 100,
-            maxWidth: "none",
+            maxWidth: "98vw",
             appendTo: document.body,
             zIndex: 50,
           }}

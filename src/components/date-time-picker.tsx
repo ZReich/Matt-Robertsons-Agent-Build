@@ -19,19 +19,19 @@ import {
 import { InputTime } from "@/components/ui/input-time";
 import { Separator } from "@/components/ui/separator";
 
-export type DateTimePickerProps = CalendarProps &
-  React.HTMLAttributes<HTMLDivElement> & {
-    value?: Date;
-    onValueChange?: (date?: Date) => void;
-    formatStr?: string;
-    popoverContentClassName?: string;
-    popoverContentOptions: React.ComponentPropsWithoutRef<
-      typeof PopoverContent
-    >;
-    buttonClassName?: string;
-    buttonOptions?: ButtonProps;
-    placeholder?: string;
-  };
+export type DateTimePickerProps = Omit<
+  CalendarProps,
+  "mode" | "selected" | "onSelect"
+> & {
+  value?: Date;
+  onValueChange?: (date?: Date) => void;
+  formatStr?: string;
+  popoverContentClassName?: string;
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
+  buttonClassName?: string;
+  buttonOptions?: ButtonProps;
+  placeholder?: string;
+};
 
 const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
   (
@@ -52,7 +52,7 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
       value
     );
 
-    const handleDateSelect = (selected?: Date) => {
+    const handleDateSelect = (selected?: Date | undefined) => {
       if (!selected) return;
 
       // Preserve the time when changing the date
@@ -108,10 +108,10 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
         >
           <Calendar
             initialFocus
-            {...props}
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}
+            {...props}
           />
           <Separator />
           <InputTime

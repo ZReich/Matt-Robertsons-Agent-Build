@@ -7,9 +7,12 @@ import { ensureLocalizedPathname } from "@/lib/i18n";
 
 import type { LocaleType } from "@/types";
 
+import { useEmailContext } from "../../hooks/use-email-context";
+
 import { Button } from "@/components/ui/button";
 
 export function EmailSidebarHeader() {
+  const { setIsEmailSidebarOpen } = useEmailContext();
   const params = useParams();
 
   const locale = params.lang as LocaleType;
@@ -17,7 +20,10 @@ export function EmailSidebarHeader() {
   return (
     <div className="p-3">
       <Button className="w-full" size="lg" asChild>
-        <Link href={ensureLocalizedPathname("/apps/email/compose", locale)}>
+        <Link
+          href={ensureLocalizedPathname("/apps/email/compose", locale)}
+          onClick={() => setIsEmailSidebarOpen(false)}
+        >
           Compose
         </Link>
       </Button>

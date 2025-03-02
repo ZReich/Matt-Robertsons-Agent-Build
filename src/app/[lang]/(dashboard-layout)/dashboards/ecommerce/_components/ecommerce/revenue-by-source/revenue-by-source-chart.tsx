@@ -2,11 +2,9 @@
 
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
-import { remToPx } from "@/lib/utils";
-
 import type { RevenueBySourceType } from "../../../types";
 
-import { useSettings } from "@/hooks/use-settings";
+import { useRadius } from "@/hooks/use-radius";
 import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import { ChartContainer } from "@/components/ui/chart";
@@ -16,10 +14,9 @@ export function RevenueBySourceChart({
 }: {
   data: RevenueBySourceType["sources"];
 }) {
-  const { settings } = useSettings();
   const isRtl = useIsRtl();
+  const radius = useRadius();
 
-  const radius = remToPx(settings.radius);
   const chartData = data.reduce((acc: { [key: string]: number }, source) => {
     acc[source.name.toLocaleLowerCase()] = source.value;
     return acc;

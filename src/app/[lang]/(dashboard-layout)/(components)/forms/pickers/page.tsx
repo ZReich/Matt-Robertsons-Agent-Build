@@ -6,6 +6,7 @@ import { DateTimePicker } from "./_components/date-time-picker";
 import { MultipleDatesPicker } from "./_components/multiple-dates-picker";
 import { DateRangePicker } from "./_components/date-range-picker";
 import { HumanFriendlyDatePicker } from "./_components/human-friendly-date-picker";
+import { DatePickerPlaceholder } from "./_components/date-picker-placeholder";
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -22,6 +23,7 @@ export default function PickersPage() {
       <MultipleDatesPicker />
       <DateRangePicker />
       <HumanFriendlyDatePicker />
+      <DatePickerPlaceholder />
     </section>
   );
 }

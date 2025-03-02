@@ -2,19 +2,13 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis } from "recharts";
 
-import {
-  camelCaseToTitleCase,
-  formatCurrency,
-  formatDateShort,
-  formatPercent,
-  remToPx,
-} from "@/lib/utils";
+import { camelCaseToTitleCase, formatPercent } from "@/lib/utils";
 
 import type { ChurnRateType } from "../../../types";
 import type { ChartTooltipContentProps } from "@/components/ui/chart";
 
-import { useSettings } from "@/hooks/use-settings";
 import { useIsRtl } from "@/hooks/use-is-rtl";
+import { useRadius } from "@/hooks/use-radius";
 
 import {
   ChartContainer,
@@ -59,10 +53,8 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
 }
 
 export function ChurnRateChart({ data }: { data: ChurnRateType["months"] }) {
-  const { settings } = useSettings();
   const isRtl = useIsRtl();
-
-  const radius = remToPx(settings.radius);
+  const radius = useRadius();
 
   return (
     <ChartContainer config={{}} className="w-full md:h-[200px]">

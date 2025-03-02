@@ -18,12 +18,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-export type DateRangePickerProps = CalendarProps & {
+export type DateRangePickerProps = Omit<
+  CalendarProps,
+  "mode" | "selected" | "onSelect"
+> & {
   value?: DateRange;
   onValueChange?: (date?: DateRange) => void;
   formatStr?: string;
   popoverContentClassName?: string;
-  popoverContentOptions: React.ComponentPropsWithoutRef<typeof PopoverContent>;
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
   buttonClassName?: string;
   buttonOptions?: ButtonProps;
   placeholder?: string;
@@ -81,10 +84,10 @@ const DateRangePicker = React.forwardRef<
         >
           <Calendar
             initialFocus
-            {...props}
             mode="range"
             selected={value}
             onSelect={onValueChange}
+            {...props}
           />
         </PopoverContent>
       </Popover>

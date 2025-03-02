@@ -16,12 +16,12 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-export type DatePickerProps = CalendarProps & {
+export type DatePickerProps = Omit<CalendarProps, "mode" | "selected" | "onSelect"> & {
   value?: Date;
   onValueChange?: (date?: Date) => void;
   formatStr?: string;
   popoverContentClassName?: string;
-  popoverContentOptions: React.ComponentPropsWithoutRef<typeof PopoverContent>;
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
   buttonClassName?: string;
   buttonOptions?: ButtonProps;
   placeholder?: string;
@@ -69,10 +69,10 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
         >
           <Calendar
             initialFocus
-            {...props}
             mode="single"
             selected={value}
             onSelect={onValueChange}
+            {...props}
           />
         </PopoverContent>
       </Popover>
