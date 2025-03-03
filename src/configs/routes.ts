@@ -1,7 +1,5 @@
 import matcher from "picomatch";
 
-export const HOME_ROUTE = "/dashboards/analytics";
-
 export const isGuestRoute = matcher([
   "/{sign-in,register,forgot-password,verify-email,new-password}",
 ]);

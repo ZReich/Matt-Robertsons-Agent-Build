@@ -4,7 +4,7 @@ import Negotiator from "negotiator";
 import { match } from "@formatjs/intl-localematcher";
 
 import { i18n } from "@/configs/i18n";
-import { isGuestRoute, isProtectedRoute, HOME_ROUTE } from "@/configs/routes";
+import { isGuestRoute, isProtectedRoute } from "@/configs/routes";
 
 import { isPathnameMissingLocale, getLocaleFromPathname } from "@/lib/i18n";
 import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils";
@@ -42,7 +42,6 @@ function redirectTo(pathname: string, request: NextRequest) {
 
   // Add locale to pathname if it's missing
   if (isPathnameMissingLocale(pathname)) {
-    console.log("isPathnameMissingLocale");
     const preferredLocale = getPreferredLocale(request);
     redirectPathname = "/" + preferredLocale + pathname;
   }
@@ -77,12 +76,12 @@ export default withAuth(
 
     // Redirect authenticated users away from guest routes
     if (isAuthenticated && isGuestRoute(pathnameWithoutLocale)) {
-      return redirectTo(HOME_ROUTE, request);
+      return redirectTo(process.env.HOME_PATHNAME || "/", request);
     }
 
     // Redirect to home page if the request is for the root or locale root
     if (pathnameWithoutLocale === "") {
-      return redirectTo(HOME_ROUTE, request);
+      return redirectTo(process.env.HOME_PATHNAME || "/", request);
     }
 
     // Redirect to localized URL if the pathname is missing a locale

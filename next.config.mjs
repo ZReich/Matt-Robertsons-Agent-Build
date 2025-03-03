@@ -19,6 +19,21 @@ const nextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      {
+        source: "/:lang/apps/email",
+        destination: "/:lang/apps/email/inbox",
+        permanent: false,
+      },
+      {
+        source: "/",
+        destination: process.env.HOME_PATHNAME || "/",
+        permanent: false,
+      },
+    ];
+  },
+
   webpack(config) {
     // Grab the existing rule that handles SVG imports
     const fileLoaderRule = config.module.rules.find((rule) =>
