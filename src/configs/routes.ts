@@ -1,9 +1,7 @@
-export const homeRoute = "/dashboards/analytics";
+import pm from "picomatch";
 
-export const publicRoutes = new Set<string>(["/public-route", "/docs"]);
+export const HOME_ROUTE = "/dashboards/analytics";
 
-export const guestRoutes = new Set<string>([
-  "/sign-in",
-  "/register",
-  "/forgot-password",
-]);
+export const isGuestRoute = pm(["/sign-in", "/register", "/forgot-password"]);
+
+export const isProtectedRoute = pm(["/dashboards/**", "/pages/account/**"]);

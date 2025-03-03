@@ -9,6 +9,12 @@ export const isPathnameMissingLocale = (pathname: string) => {
   );
 };
 
+export const getLocaleFromPathname = (pathname: string) => {
+  return i18n.locales.find(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  );
+};
+
 export const ensureLocalizedPathname = (
   pathname: string,
   locale: string

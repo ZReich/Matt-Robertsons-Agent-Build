@@ -4,16 +4,16 @@ import Negotiator from "negotiator";
 import { match } from "@formatjs/intl-localematcher";
 
 import { i18n } from "@/configs/i18n";
-import { guestRoutes, homeRoute, publicRoutes } from "./configs/routes";
+import { isGuestRoute, isProtectedRoute, HOME_ROUTE } from "./configs/routes";
 
-import { isPathnameMissingLocale, ensureLocalizedPathname } from "@/lib/i18n";
+import { isPathnameMissingLocale, getLocaleFromPathname } from "@/lib/i18n";
 import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils";
 
 import type { LocaleType } from "@/types";
 import type { NextRequest } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
 
-const getLocale = (request: NextRequest) => {
+const getPreferredLocale = (request: NextRequest) => {
   const settingsCookie = request.cookies.get("settings")?.value;
   try {
     const parsedSettingsCookie = settingsCookie && JSON.parse(settingsCookie);
@@ -23,16 +23,8 @@ const getLocale = (request: NextRequest) => {
       return parsedSettingsCookie.locale as LocaleType;
     }
   } catch (error) {
-    console.error("Failed to parse settings cookie:", error);
+    console.error("Failed to parse settings cookie", error);
   }
-
-  const { pathname } = request.nextUrl;
-  const pathnameLocale = i18n.locales.find(
-    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  );
-
-  // Return locale based on pathname if it matches a supported locale
-  if (pathnameLocale) return pathnameLocale;
 
   const supportedLocales = [...i18n.locales];
   const preferredLocales = new Negotiator({
@@ -45,19 +37,13 @@ const getLocale = (request: NextRequest) => {
   return locale as LocaleType;
 };
 
-function redirectTo(
-  pathname: string,
-  request: NextRequest,
-  locale?: LocaleType
-) {
+function redirectTo(pathname: string, request: NextRequest) {
   let redirectPathname = pathname;
 
   // Add locale to pathname if it's missing
   if (isPathnameMissingLocale(pathname)) {
-    redirectPathname = ensureLocalizedPathname(
-      pathname,
-      locale ?? i18n.defaultLocale
-    );
+    const preferredLocale = getPreferredLocale(request);
+    redirectPathname = "/" + preferredLocale + pathname;
   }
 
   const redirectUrl = new URL(redirectPathname, request.url).toString();
@@ -67,43 +53,38 @@ function redirectTo(
 export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
     const { pathname } = request.nextUrl;
-    const locale = getLocale(request);
-    const isUserAuthenticated = !!request.nextauth.token;
+    const locale = getLocaleFromPathname(pathname);
+    const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
+    const isProtected = isProtectedRoute(pathnameWithoutLocale);
+    const isAuthenticated = !!request.nextauth.token;
 
-    if (pathname.startsWith("/docs") || pathname.startsWith("/home")) {
-      return NextResponse.next();
-    }
-
-    const currentRoute = ensureWithoutPrefix(pathname, `/${locale}`);
-    const isGuestRoute = guestRoutes.has(currentRoute);
-    const isPublicRoute = publicRoutes.has(currentRoute);
-    const isProtectedRoute = !isPublicRoute && !isGuestRoute;
-
-    if (!isUserAuthenticated && isProtectedRoute) {
-      // Redirect unauthenticated users from protected routes to sign-in
+    // Redirect unauthenticated users from protected routes to sign-in
+    if (!isAuthenticated && isProtected) {
       let redirectPathname = "/sign-in";
 
       // Maintain the original path for redirection
-      if (!(pathname === "/" || pathname === `/${locale}`)) {
+      if (pathnameWithoutLocale !== "/") {
         redirectPathname = ensureRedirectPathname(redirectPathname, pathname);
       }
 
-      return redirectTo(redirectPathname, request, locale);
+      return redirectTo(redirectPathname, request);
     }
 
+    const isGuest = isGuestRoute(pathnameWithoutLocale);
+
     // Redirect authenticated users away from guest routes
-    if (isUserAuthenticated && isGuestRoute) {
-      return redirectTo(homeRoute, request, locale);
+    if (isAuthenticated && isGuest) {
+      return redirectTo(HOME_ROUTE, request);
     }
 
     // Redirect to home page if the request is for the root or locale root
-    if (pathname === "/" || pathname === `/${locale}`) {
-      return redirectTo(homeRoute, request, locale);
+    if (pathnameWithoutLocale === "/") {
+      return redirectTo(HOME_ROUTE, request);
     }
 
     // Redirect to localized URL if the pathname is missing a locale
-    if (isPathnameMissingLocale(pathname)) {
-      return redirectTo(pathname, request, locale);
+    if (locale === undefined) {
+      return redirectTo(pathname, request);
     }
 
     return NextResponse.next();
