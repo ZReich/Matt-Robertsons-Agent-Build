@@ -4,7 +4,7 @@ import Negotiator from "negotiator";
 import { match } from "@formatjs/intl-localematcher";
 
 import { i18n } from "@/configs/i18n";
-import { isGuestRoute, isProtectedRoute, HOME_ROUTE } from "./configs/routes";
+import { isGuestRoute, isProtectedRoute, HOME_ROUTE } from "@/configs/routes";
 
 import { isPathnameMissingLocale, getLocaleFromPathname } from "@/lib/i18n";
 import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils";
@@ -13,7 +13,7 @@ import type { LocaleType } from "@/types";
 import type { NextRequest } from "next/server";
 import type { NextRequestWithAuth } from "next-auth/middleware";
 
-const getPreferredLocale = (request: NextRequest) => {
+function getPreferredLocale(request: NextRequest) {
   const settingsCookie = request.cookies.get("settings")?.value;
   try {
     const parsedSettingsCookie = settingsCookie && JSON.parse(settingsCookie);
@@ -35,13 +35,14 @@ const getPreferredLocale = (request: NextRequest) => {
   const locale = match(preferredLocales, supportedLocales, i18n.defaultLocale);
 
   return locale as LocaleType;
-};
+}
 
 function redirectTo(pathname: string, request: NextRequest) {
   let redirectPathname = pathname;
 
   // Add locale to pathname if it's missing
   if (isPathnameMissingLocale(pathname)) {
+    console.log("isPathnameMissingLocale");
     const preferredLocale = getPreferredLocale(request);
     redirectPathname = "/" + preferredLocale + pathname;
   }
@@ -53,32 +54,34 @@ function redirectTo(pathname: string, request: NextRequest) {
 export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
     const { pathname } = request.nextUrl;
+
+    if (pathname.startsWith("/home") || pathname.startsWith("/docs")) {
+      return NextResponse.next();
+    }
+
     const locale = getLocaleFromPathname(pathname);
     const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
-    const isProtected = isProtectedRoute(pathnameWithoutLocale);
     const isAuthenticated = !!request.nextauth.token;
 
     // Redirect unauthenticated users from protected routes to sign-in
-    if (!isAuthenticated && isProtected) {
+    if (!isAuthenticated && isProtectedRoute(pathnameWithoutLocale)) {
       let redirectPathname = "/sign-in";
 
       // Maintain the original path for redirection
-      if (pathnameWithoutLocale !== "/") {
+      if (pathnameWithoutLocale !== "") {
         redirectPathname = ensureRedirectPathname(redirectPathname, pathname);
       }
 
       return redirectTo(redirectPathname, request);
     }
 
-    const isGuest = isGuestRoute(pathnameWithoutLocale);
-
     // Redirect authenticated users away from guest routes
-    if (isAuthenticated && isGuest) {
+    if (isAuthenticated && isGuestRoute(pathnameWithoutLocale)) {
       return redirectTo(HOME_ROUTE, request);
     }
 
     // Redirect to home page if the request is for the root or locale root
-    if (pathnameWithoutLocale === "/") {
+    if (pathnameWithoutLocale === "") {
       return redirectTo(HOME_ROUTE, request);
     }
 
