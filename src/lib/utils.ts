@@ -231,16 +231,16 @@ export function ensureWithoutPrefix(value: string, prefix: string) {
   return value.startsWith(prefix) ? value.slice(prefix.length) : value;
 }
 
-export const ensureRedirectPathname = (
+export function ensureRedirectPathname(
   basePathname: string,
   redirectPathname: string
-): string => {
+) {
   const searchParams = new URLSearchParams({
     redirectTo: ensureWithoutSuffix(redirectPathname, "/"),
   });
 
   return ensureWithSuffix(basePathname, "?" + searchParams.toString());
-};
+}
 
 export function isNonNegative(num: number) {
   return num >= 0;

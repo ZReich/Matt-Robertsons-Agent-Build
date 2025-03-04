@@ -6,8 +6,16 @@ import { match } from "@formatjs/intl-localematcher";
 import { i18n } from "@/configs/i18n";
 import { isGuestRoute, isProtectedRoute } from "@/configs/routes";
 
-import { isPathnameMissingLocale, getLocaleFromPathname } from "@/lib/i18n";
-import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils";
+import {
+  isPathnameMissingLocale,
+  getLocaleFromPathname,
+  ensureLocalizedPathname,
+} from "@/lib/i18n";
+import {
+  ensureRedirectPathname,
+  ensureWithoutPrefix,
+  ensureWithSuffix,
+} from "@/lib/utils";
 
 import type { LocaleType } from "@/types";
 import type { NextRequest } from "next/server";
@@ -38,21 +46,19 @@ function getPreferredLocale(request: NextRequest) {
 }
 
 function redirectTo(pathname: string, request: NextRequest) {
-  let redirectPathname = pathname;
-
-  // Add locale to pathname if it's missing
+  // Attach preferred locale if missing
   if (isPathnameMissingLocale(pathname)) {
     const preferredLocale = getPreferredLocale(request);
-    redirectPathname = "/" + preferredLocale + pathname;
+    pathname = ensureLocalizedPathname(pathname, preferredLocale);
   }
 
-  const redirectUrl = new URL(redirectPathname, request.url).toString();
+  const redirectUrl = new URL(pathname, request.url).toString();
   return NextResponse.redirect(redirectUrl);
 }
 
 export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
-    const { pathname } = request.nextUrl;
+    const { pathname, search } = request.nextUrl;
 
     if (pathname.startsWith("/home") || pathname.startsWith("/docs")) {
       return NextResponse.next();
@@ -68,7 +74,10 @@ export default withAuth(
 
       // Maintain the original path for redirection
       if (pathnameWithoutLocale !== "") {
-        redirectPathname = ensureRedirectPathname(redirectPathname, pathname);
+        redirectPathname = ensureRedirectPathname(
+          redirectPathname,
+          ensureWithSuffix(pathname, search)
+        );
       }
 
       return redirectTo(redirectPathname, request);
