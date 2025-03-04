@@ -24,12 +24,17 @@ const nextConfig = {
       {
         source: "/:lang/apps/email",
         destination: "/:lang/apps/email/inbox",
-        permanent: false,
+        permanent: true,
       },
       {
         source: "/",
         destination: process.env.HOME_PATHNAME || "/",
-        permanent: false,
+        permanent: true,
+      },
+      {
+        source: "/docs",
+        destination: "/docs/overview/introduction",
+        permanent: true,
       },
     ];
   },
