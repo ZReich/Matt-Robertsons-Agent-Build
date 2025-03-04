@@ -22,6 +22,7 @@ Add the following environment variables to your `.env` file. For sample values, 
 API_URL=your_api_url
 NEXTAUTH_URL=your_nextauth_url
 NEXTAUTH_SECRET=your_nextauth_secret
+HOME_PATHNAME=your_home_pathname
 ```
 
 ---
@@ -36,9 +37,11 @@ Next, copy the necessary files and directories from the **full-kit**:
   - If you don't wish to use internationalization (i18n), make sure to remove its dependencies.
 - **Authentication UI Pages**: `src/components/auth`
   - If i18n is not needed, remove the i18n-related dependencies.
+- **Authentication Routes Configuration**: `src/configs/auth-routes.ts`
 - **NextAuth Configuration**: `src/configs/next-auth.ts`
 - **Prisma Client**: `src/lib/prisma.ts`
 - **Authentication Utilities**: `src/lib/auth.ts`
+- **Authentication Routes Utilities**: `src/lib/auth-routes.ts`
 - **NextAuth Provider**: `src/providers/next-auth-provider.tsx`
 - **Middleware**: `src/middleware.js`
   - If you do not need i18n, refer to the "Removing i18n Logic" section below for further steps.
