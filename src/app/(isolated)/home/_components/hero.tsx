@@ -54,7 +54,7 @@ export function Hero() {
         </p>
         <div className="flex gap-x-2">
           <Link
-            href="https://shadboard.vercel.app/dashboards/analytics"
+            href="https://shadboard.vercel.app/dashboards/crm"
             className={buttonVariants({ size: "lg" })}
           >
             Demo

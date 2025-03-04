@@ -1,8 +1,6 @@
 import { getServerSession } from "next-auth";
-import matcher from "picomatch";
 
 import { authOptions } from "@/configs/next-auth";
-import { guestRoutes, protectedRoutes } from "@/configs/auth-routes";
 
 export async function getSession() {
   return await getServerSession(authOptions);
@@ -17,7 +15,3 @@ export async function authenticateUser() {
 
   return session.user;
 }
-
-export const isGuestRoute = matcher(guestRoutes);
-
-export const isProtectedRoute = matcher(protectedRoutes);

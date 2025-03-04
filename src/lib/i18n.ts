@@ -1,6 +1,12 @@
+import Negotiator from "negotiator";
+import { match } from "@formatjs/intl-localematcher";
+
 import { i18n } from "@/configs/i18n";
 
 import { ensureWithPrefix } from "@/lib/utils";
+
+import type { LocaleType } from "@/types";
+import type { NextRequest } from "next/server";
 
 export function isPathnameMissingLocale(pathname: string) {
   return !i18n.locales.some((locale) => pathname.startsWith(`/${locale}`));
@@ -30,4 +36,28 @@ export function relocalizePathname(pathname: string, locale: string) {
   segments[1] = locale;
 
   return segments.join("/");
+}
+
+export function getPreferredLocale(request: NextRequest) {
+  const settingsCookie = request.cookies.get("settings")?.value;
+  try {
+    const parsedSettingsCookie = settingsCookie && JSON.parse(settingsCookie);
+
+    // Return locale from settings cookie if available
+    if (parsedSettingsCookie?.locale) {
+      return parsedSettingsCookie.locale as LocaleType;
+    }
+  } catch (error) {
+    console.error("Failed to parse settings cookie", error);
+  }
+
+  const supportedLocales = [...i18n.locales];
+  const preferredLocales = new Negotiator({
+    headers: Object.fromEntries(request.headers.entries()),
+  }).languages(supportedLocales);
+
+  // Match preferred locales with supported locales
+  const locale = match(preferredLocales, supportedLocales, i18n.defaultLocale);
+
+  return locale as LocaleType;
 }
