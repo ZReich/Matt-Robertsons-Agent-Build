@@ -15,8 +15,8 @@ export function CRM() {
       <div className="col-span-full grid gap-4 md:grid-cols-4">
         <SalesTrend />
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1">
-          <LeadSources />
           <RevenueTrend />
+          <LeadSources />
         </div>
       </div>
       <ActiveProjects />

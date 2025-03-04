@@ -43,7 +43,7 @@ export function CustomerSatisfactionCarousel({
         loop: true,
         direction,
       }}
-      className="w-[calc(100vw-190px)] mx-14 select-none md:w-3/5"
+      className="w-[calc(100vw-190px)] mx-14 select-none md:w-3/6"
     >
       <CarouselContent>
         {data.map((feedback) => (

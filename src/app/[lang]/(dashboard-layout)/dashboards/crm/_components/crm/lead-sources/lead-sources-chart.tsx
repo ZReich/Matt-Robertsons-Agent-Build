@@ -40,14 +40,11 @@ export function LeadSourcesChart({
   data: Pick<LeadSourceType, "leads" | "summary">;
 }) {
   return (
-    <ChartContainer config={chartConfig} className="h-28 w-full mx-auto">
-      <RadialBarChart
-        data={[data.leads]}
-        cy="90%"
-        endAngle={180}
-        innerRadius={80}
-        outerRadius={130}
-      >
+    <ChartContainer
+      config={chartConfig}
+      className="mx-auto aspect-square max-h-28"
+    >
+      <RadialBarChart data={[data.leads]} innerRadius={45} outerRadius={100}>
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
@@ -57,17 +54,22 @@ export function LeadSourcesChart({
             content={({ viewBox }) => {
               if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                 return (
-                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                  <text
+                    x={viewBox.cx}
+                    y={viewBox.cy}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                  >
                     <tspan
                       x={viewBox.cx}
-                      y={(viewBox.cy || 0) - 16}
+                      y={viewBox.cy}
                       className="fill-foreground text-2xl font-semibold"
                     >
                       {data.summary.totalLeads.toLocaleString()}
                     </tspan>
                     <tspan
                       x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 4}
+                      y={(viewBox.cy || 0) + 20}
                       className="fill-muted-foreground"
                     >
                       Leads

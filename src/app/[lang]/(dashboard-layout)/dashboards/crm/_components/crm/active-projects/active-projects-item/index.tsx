@@ -36,15 +36,15 @@ export function ActiveProjectsItem({
     <li className="flex items-center gap-4 py-2 px-4 bg-card border rounded-lg">
       <ActiveProjectsItemChart value={project.progress} color={chartColor} />
       <div>
-        <h3 className="text-[min(3vw,1rem)]">{project.name}</h3>
+        <h3 className="text-[min(3vw,1rem)] line-clamp-1">{project.name}</h3>
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="shrink-0 me-2 h-4 w-4" aria-hidden />
-          <p className="text-[min(3vw,1rem)]">
+          <p className="text-xs">
             {formatDate(project.startDate)} - {formatDate(project.dueDate)}
           </p>
         </div>
       </div>
-      <Badge className={cn("h-fit ms-auto", badgeColor)}>
+      <Badge className={cn("shrink-0 h-fit ms-auto", badgeColor)}>
         {project.status}
       </Badge>
     </li>

@@ -30,8 +30,7 @@ export function CustomerSatisfactionChart({
       <RadialBarChart
         accessibilityLayer
         data={[data]}
-        startAngle={450}
-        endAngle={90}
+        endAngle={360}
         innerRadius={80}
         outerRadius={150}
       >

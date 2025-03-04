@@ -19,8 +19,6 @@ export function NewVsReturningVisitorsChart({
 
   // Transform `data` into an array format suitable for Recharts
   const chartData = [{ new: data.new.value, returning: data.returning.value }];
-  // Determine the max value dynamically with a buffer
-  const maxValue = Math.max(data.new.value, data.returning.value, 1) * 1.1;
 
   return (
     <ChartContainer config={{}} className="h-4 w-full">
@@ -29,7 +27,12 @@ export function NewVsReturningVisitorsChart({
         layout="vertical"
         margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
       >
-        <XAxis type="number" reversed={isRtl} domain={[0, maxValue]} hide />
+        <XAxis
+          type="number"
+          reversed={isRtl}
+          domain={["dataMin", "dataMax"]}
+          hide
+        />
         <YAxis type="category" hide />
         <Bar dataKey="new" stackId="a" fill={data.new.fill} radius={radius} />
         <Bar
