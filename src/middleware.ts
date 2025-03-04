@@ -4,8 +4,8 @@ import Negotiator from "negotiator";
 import { match } from "@formatjs/intl-localematcher";
 
 import { i18n } from "@/configs/i18n";
-import { isGuestRoute, isProtectedRoute } from "@/configs/routes";
 
+import { isGuestRoute, isProtectedRoute } from "@/lib/auth";
 import {
   isPathnameMissingLocale,
   getLocaleFromPathname,
