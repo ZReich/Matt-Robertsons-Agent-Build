@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 
@@ -11,8 +12,6 @@ import { isActivePathname } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { HomeSidebar } from "./home-sidebar";
 import { ModeDropdown } from "../../../_components/mode-dropdown";
-
-import Logo from "/public/images/icons/shadboard.svg";
 
 export function Header() {
   const pathname = usePathname();
@@ -29,8 +28,13 @@ export function Header() {
         href="/"
         className="flex text-foreground font-black hover:text-primary/90"
       >
-        <Logo className="size-6" aira-hidden="true" />
-        Shadboard
+        <Image
+          src="/images/icons/shadboard.svg"
+          alt=""
+          height={24}
+          width={24}
+        />
+        <span>Shadboard</span>
       </Link>
       <ul className="hidden gap-2 me-16 lg:flex">
         {homeNavigationsData.map((nav) => {

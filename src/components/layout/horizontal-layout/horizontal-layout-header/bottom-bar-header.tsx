@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -16,8 +17,6 @@ import { UserDropdown } from "@/components/layout/user-dropdown";
 import { NotificationDropdown } from "@/components/layout/notification-dropdown";
 import { FullscreenToggle } from "@/components/layout/full-screen-toggle";
 
-import Logo from "/public/images/icons/shadboard.svg";
-
 export function BottomBarHeader({
   dictionary,
 }: {
@@ -33,8 +32,13 @@ export function BottomBarHeader({
         href={ensureLocalizedPathname("/", locale)}
         className="hidden text-foreground font-black hover:text-primary/90 lg:flex"
       >
-        <Logo className="size-6" aira-hidden="true" />
-        Shadboard
+        <Image
+          src="/images/icons/shadboard.svg"
+          alt=""
+          height={24}
+          width={24}
+        />
+        <span>Shadboard</span>
       </Link>
       <div className="flex gap-2">
         <CommandMenu dictionary={dictionary} buttonClassName="lg:hidden" />

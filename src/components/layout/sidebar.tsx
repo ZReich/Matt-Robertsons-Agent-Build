@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -45,8 +46,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
-import Logo from "/public/images/icons/shadboard.svg";
 
 export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   const pathname = usePathname();
@@ -139,7 +138,12 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
           className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
           onClick={() => isMobile && setOpenMobile(!openMobile)}
         >
-          <Logo className="size-6" aria-hidden />
+          <Image
+            src="/images/icons/shadboard.svg"
+            alt=""
+            height={24}
+            width={24}
+          />
           <span>Shadboard</span>
         </Link>
       </SidebarHeader>

@@ -10,8 +10,6 @@ import { cn } from "@/lib/utils";
 
 import type { LocaleType } from "@/types";
 
-import Logo from "/public/images/icons/shadboard.svg";
-
 interface AuthProps extends React.HTMLAttributes<HTMLDivElement> {
   imgSrc?: string;
 }
@@ -34,8 +32,13 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
           href={ensureLocalizedPathname("/", locale)}
           className="absolute top-4 start-4 flex text-foreground font-black z-50 hover:text-primary/90"
         >
-          <Logo className="size-6" aira-hidden />
-          Shadboard
+          <Image
+            src="/images/icons/shadboard.svg"
+            alt=""
+            height={24}
+            width={24}
+          />
+          <span>Shadboard</span>
         </Link>
         <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6">
           {children}

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { PanelLeft } from "lucide-react";
 
@@ -25,8 +26,6 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-import Logo from "/public/images/icons/shadboard.svg";
-
 export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
 
@@ -45,11 +44,7 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
           <PanelLeft className="h-4 w-4" />
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="left"
-        className="p-0"
-        aria-describedby={undefined}
-      >
+      <SheetContent side="left" className="p-0" aria-describedby={undefined}>
         <SheetHeader>
           <SheetTitle className="sr-only">Navigation Sidebar</SheetTitle>
           <SidebarHeader>
@@ -58,7 +53,12 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
               className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
               onClick={() => isMobile && setOpenMobile(!openMobile)}
             >
-              <Logo className="size-6" aria-hidden />
+              <Image
+                src="/images/icons/shadboard.svg"
+                alt=""
+                height={24}
+                width={24}
+              />
               <span>Shadboard</span>
             </Link>
           </SidebarHeader>

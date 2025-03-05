@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -24,8 +25,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import Logo from "/public/images/icons/shadboard.svg";
-
 export function DocsSidebar() {
   const pathname = usePathname();
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
@@ -38,7 +37,12 @@ export function DocsSidebar() {
           className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
           onClick={() => isMobile && setOpenMobile(!openMobile)}
         >
-          <Logo className="size-6" aria-hidden />
+          <Image
+            src="/images/icons/shadboard.svg"
+            alt=""
+            height={24}
+            width={24}
+          />
           <span>Shadboard</span>
         </Link>
       </SidebarHeader>

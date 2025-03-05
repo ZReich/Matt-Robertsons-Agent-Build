@@ -112,45 +112,6 @@ export function CreditTable() {
             <TableCell>MIT</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>@mdx-js/loader</TableCell>
-            <TableCell className="break-all">
-              <a
-                href="https://github.com/mdx-js/mdx"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://github.com/mdx-js/mdx
-              </a>
-            </TableCell>
-            <TableCell>MIT</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>@mdx-js/react</TableCell>
-            <TableCell className="break-all">
-              <a
-                href="https://github.com/mdx-js/mdx"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://github.com/mdx-js/mdx
-              </a>
-            </TableCell>
-            <TableCell>MIT</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>@next/mdx</TableCell>
-            <TableCell className="break-all">
-              <a
-                href="https://github.com/vercel/next.js"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://github.com/vercel/next.js
-              </a>
-            </TableCell>
-            <TableCell>MIT</TableCell>
-          </TableRow>
-          <TableRow>
             <TableCell>@prisma/client</TableCell>
             <TableCell className="break-all">
               <a
@@ -1035,19 +996,6 @@ export function CreditTable() {
             <TableCell>MIT</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>@svgr/webpack</TableCell>
-            <TableCell className="break-all">
-              <a
-                href="https://github.com/gregberge/svgr/tree/master/packages/webpack"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://github.com/gregberge/svgr/tree/master/packages/webpack
-              </a>
-            </TableCell>
-            <TableCell>MIT</TableCell>
-          </TableRow>
-          <TableRow>
             <TableCell>@tailwindcss/typography</TableCell>
             <TableCell className="break-all">
               <a
@@ -1056,19 +1004,6 @@ export function CreditTable() {
                 rel="noopener noreferrer"
               >
                 https://github.com/tailwindlabs/tailwindcss-typography
-              </a>
-            </TableCell>
-            <TableCell>MIT</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>@types/mdx</TableCell>
-            <TableCell className="break-all">
-              <a
-                href="https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/mdx"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/mdx
               </a>
             </TableCell>
             <TableCell>MIT</TableCell>
