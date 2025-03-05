@@ -5,7 +5,7 @@ import { notificationData } from "@/data/notifications";
 
 import { cn, formatDistance, formatUnreadCount } from "@/lib/utils";
 
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";

@@ -10,7 +10,7 @@ import { i18n } from "@/configs/i18n";
 import { relocalizePathname } from "@/lib/i18n";
 
 import type { LocaleType } from "@/types";
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 import { useSettings } from "@/hooks/use-settings";
 

@@ -1,4 +1,4 @@
-import { getDictionary } from "@/lib/getDictionary";
+import { getDictionary } from "@/lib/get-dictionary";
 
 import type { LocaleType } from "@/types";
 

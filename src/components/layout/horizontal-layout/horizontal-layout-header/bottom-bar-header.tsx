@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 
 import { ensureLocalizedPathname } from "@/lib/i18n";
 
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 import type { LocaleType } from "@/types";
 
 import { ToggleMobileSidebar } from "../../toggle-mobile-sidebar";

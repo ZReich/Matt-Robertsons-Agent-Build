@@ -1,16 +1,17 @@
+import { z } from "zod";
 import { icons } from "lucide-react";
 
 import { i18n } from "@/configs/i18n";
 import { baseColors } from "@/configs/base-colors";
 
-import type { LucideIcon } from "lucide-react";
-import { z } from "zod";
 import { ForgotPasswordSchema } from "./schemas/forgot-passward-schema";
 import { NewPasswordSchema } from "./schemas/new-passward-schema";
 import { RegisterSchema } from "./schemas/register-schema";
 import { SignInSchema } from "./schemas/sign-in-schema";
 import { VerifyEmailSchema } from "./schemas/verify-email-schema";
 import { ComingSoonSchema } from "./schemas/coming-soon-schema";
+
+import type { LucideIcon } from "lucide-react";
 
 export type LayoutType = "vertical" | "horizontal";
 

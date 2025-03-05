@@ -1,10 +1,10 @@
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 import { HorizontalLayoutHeader } from "./horizontal-layout-header";
 import { Footer } from "../footer";
 import { Sidebar } from "../sidebar";
 
-export default function HorizontalLayout({
+export function HorizontalLayout({
   children,
   dictionary,
 }: {

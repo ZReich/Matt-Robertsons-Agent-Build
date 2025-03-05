@@ -1,6 +1,6 @@
 "use client";
 
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 import { Separator } from "@/components/ui/separator";
 import { TopBarHeader } from "./top-bar-header";

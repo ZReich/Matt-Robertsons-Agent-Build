@@ -39,7 +39,7 @@ From the **full-kit**, add the following files to your project:
 
 - `src/configs/i18n.ts`
 - `src/lib/i18n.ts` (make sure to include the dependencies from the **full-kit**)
-- `src/lib/getDictionary.ts`
+- `src/lib/get-dictionary.ts`
 
 ---
 
@@ -64,9 +64,9 @@ Repeat this process for all supported languages, creating corresponding dictiona
 
 ---
 
-## 5. Update the `getDictionary.ts` File
+## 5. Update the `get-dictionary.ts` File
 
-Modify the `src/lib/getDictionary.ts` file to include the necessary language dictionaries within the `dictionaries` object.
+Modify the `src/lib/get-dictionary.ts` file to include the necessary language dictionaries within the `dictionaries` object.
 
 **Example**:
 
@@ -120,8 +120,8 @@ import { useSettings } from "@/hooks/use-settings";
 
 import type { DictionaryType } from "@/lib/getDictionary";
 
-import VerticalLayout from "./vertical-layout";
-import HorizontalLayout from "./horizontal-layout";
+import { VerticalLayout } from "./vertical-layout";
+import { HorizontalLayout } from "./horizontal-layout";
 
 export function Layout({
   children,

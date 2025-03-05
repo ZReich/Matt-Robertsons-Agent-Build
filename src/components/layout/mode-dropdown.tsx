@@ -7,7 +7,7 @@ import { MoonStar, Sun, SunMoon } from "lucide-react";
 import { i18n } from "@/configs/i18n";
 
 import type { LocaleType } from "@/types";
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 import type { ModeType } from "@/types";
 
 import { useSettings } from "@/hooks/use-settings";
@@ -56,16 +56,10 @@ export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
         <DropdownMenuLabel>{dictionary.navigation.mode.mode}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={mode}>
-          <DropdownMenuRadioItem
-            value="light"
-            onClick={() => setMode("light")}
-          >
+          <DropdownMenuRadioItem value="light" onClick={() => setMode("light")}>
             {dictionary.navigation.mode.light}
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            value="dark"
-            onClick={() => setMode("dark")}
-          >
+          <DropdownMenuRadioItem value="dark" onClick={() => setMode("dark")}>
             {dictionary.navigation.mode.dark}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem

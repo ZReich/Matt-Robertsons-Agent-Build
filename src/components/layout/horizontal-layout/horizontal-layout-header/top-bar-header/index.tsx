@@ -3,7 +3,7 @@
 import { CommandMenu } from "@/components/layout/command-menu";
 import { TopBarHeaderMenubar } from "./top-bar-header-menubar";
 
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 export function TopBarHeader({ dictionary }: { dictionary: DictionaryType }) {
   return (

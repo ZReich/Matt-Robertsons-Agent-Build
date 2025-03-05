@@ -19,7 +19,7 @@ import type {
   NavigationNestedItem,
   NavigationRootItem,
 } from "@/types";
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { Badge } from "@/components/ui/badge";

@@ -1,10 +1,10 @@
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 import { Sidebar } from "../sidebar";
 import { Footer } from "../footer";
 import { VerticalLayoutHeader } from "./vertical-layout-header";
 
-export default function VerticalLayout({
+export function VerticalLayout({
   children,
   dictionary,
 }: {

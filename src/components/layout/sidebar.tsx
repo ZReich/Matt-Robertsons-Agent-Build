@@ -20,7 +20,7 @@ import type {
   NavigationRootItem,
   NavigationNestedItem,
 } from "@/types";
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
 import { useSettings } from "@/hooks/use-settings";
 

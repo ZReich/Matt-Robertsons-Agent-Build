@@ -12,6 +12,10 @@ To begin, install the required packages for setting up authentication with **Nex
 npm install next-auth @auth/prisma-adapter @prisma/client prisma
 ```
 
+```bash
+npm install -D @types/picomatch
+```
+
 ---
 
 ## 2. Configure Environment Variables
@@ -22,7 +26,6 @@ Add the following environment variables to your `.env` file. For sample values, 
 API_URL=your_api_url
 NEXTAUTH_URL=your_nextauth_url
 NEXTAUTH_SECRET=your_nextauth_secret
-HOME_PATHNAME=your_home_pathname
 ```
 
 ---
@@ -33,7 +36,10 @@ Next, copy the necessary files and directories from the **full-kit**:
 
 - **Prisma Schema**: `prisma/schema.prisma`
 - **API Route for NextAuth.js**: `src/app/api/auth/[...nextauth]/route.ts`
+- **API Route for Sign In Page**: `src/app/api/auth/sign-in/route.ts`
+- **Schema for Sign In API Route**: `src/schemas/sign-in-schema.ts`
 - **Authentication Layout and Pages**: `src/app/(plain-layout)/(auth)`
+  - For now, just include `sign-in` and ensure that you include its dependencies from the **full-kit**.
   - If you don't wish to use internationalization (i18n), make sure to remove its dependencies.
 - **Authentication UI Pages**: `src/components/auth`
   - If i18n is not needed, remove the i18n-related dependencies.
@@ -44,11 +50,11 @@ Next, copy the necessary files and directories from the **full-kit**:
 - **Authentication Routes Utilities**: `src/lib/auth-routes.ts`
 - **NextAuth Provider**: `src/providers/next-auth-provider.tsx`
 - **Middleware**: `src/middleware.js`
-  - If you do not need i18n, refer to the "Removing i18n Logic" section below for further steps.
+  - If you do not need i18n, refer to the "Removing i18n Logic from Middleware" section below for further steps.
 
 ---
 
-## 4. Removing i18n Logic (Optional)
+## 4. Removing i18n Logic from Middleware (Optional)
 
 If you choose **not** to use internationalization (i18n) in your project, follow the steps below to modify `src/middleware.js`:
 
@@ -56,39 +62,56 @@ If you choose **not** to use internationalization (i18n) in your project, follow
 
 Delete any imports related to i18n:
 
-- `Negotiator`, `match`, `i18n`
-- Localization helper functions such as `isPathnameMissingLocale`, `ensureLocalizedPathname`
-
-### 4.2. Remove `getLocale` Function
-
-Remove the `getLocale` function entirely, as it is used to determine the locale, which is unnecessary without i18n.
-
-### 4.3. Remove Locale Handling Logic
-
-Delete any logic related to locale handling, including checks or redirects based on the locale.
-
----
-
-### 4.4. Simplify the `redirectTo` Function
-
-Update the `redirectTo` function to focus solely on redirecting to the given pathname, without handling locale:
-
 ```js
-function redirectTo(pathname: string, request: NextRequest) {
+import {
+  isPathnameMissingLocale,
+  getLocaleFromPathname,
+  getPreferredLocale,
+  ensureLocalizedPathname,
+} from "@/lib/i18n";
+```
+
+### 4.2. Simplify the `redirect` Function
+
+Update the `redirect` function to focus solely on redirecting to the given pathname, without handling locale:
+
+```ts
+function redirect(pathname: string, request: NextRequestWithAuth) {
   const redirectUrl = new URL(pathname, request.url).toString();
   return NextResponse.redirect(redirectUrl);
 }
 ```
 
-### 4.5. Simplify the `getFirstSegment` Function
+### 4.3. Remove Locale Extraction and Handling
 
-Update `getFirstSegment` to return the first segment of the URL path without checking for a locale:
+Inside the `middleware` function, remove these lines:
 
-```js
-function getFirstSegment(pathname: string) {
-  return pathname.split("/").filter(Boolean)[0] || "";
+```ts
+const locale = getLocaleFromPathname(pathname);
+const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
+```
+
+Since we are removing locale logic, we don't need `pathnameWithoutLocale`. Instead, use `pathname` directly.
+
+### 4.4. Simplify the `getFirstSegment` Function
+
+Find and remove the following blocks:
+
+```ts
+if (pathnameWithoutLocale === "") {
+  return redirect(process.env.HOME_PATHNAME || "/", request);
 }
 ```
+
+```ts
+if (locale === undefined) {
+  return redirect(pathname, request);
+}
+```
+
+### 4.5. Replace `pathnameWithoutLocale` with `pathname`
+
+Wherever `pathnameWithoutLocale` was used, replace it with `pathname`.
 
 ---
 
@@ -124,25 +147,104 @@ npx prisma generate
 
 ## 8. Protecting Routes
 
-To protect specific routes using authentication in your Next.js application, you can use Next.js middleware to check if a user is authenticated before allowing access. If the user is not authenticated, they will be redirected to the sign-in page. This functionality is implemented in the `src/middleware.ts` file.
+To protect specific routes in your Next.js application, you can utilize middleware to enforce authentication checks. This ensures that only authenticated users can access certain pages, while unauthenticated users are redirected appropriately. The configuration leverages pattern matching using [`picomatch`](https://github.com/micromatch/picomatch), a fast and accurate pattern-matching library.
 
-- If a user tries to access a protected route without being authenticated, the middleware redirects them to the `/sign-in` page.
-- If a user is authenticated but tries to access guest routes (routes that do not require authentication), they will be redirected to the home page or another specified route.
+### How Route Protection Works
 
-### Customize Route Protection
+- **Protected Routes**: Require authentication. Unauthenticated users attempting to access these routes are redirected to the `/sign-in` page.
+- **Guest Routes**: Accessible to unauthenticated users. Authenticated users attempting to access these routes are redirected to the home page or another specified route.
+- **Public Routes**: Any routes that don't match the defined patterns for protected or guest routes will be considered public routes. These are accessible to all users, regardless of whether they are authenticated or not.
 
-You can customize the route protection logic by defining which routes are considered guest routes, public routes, or the home page. These configurations are found in the `guestRoutes`, `publicRoutes`, and `homeRoute` variables within the `src/configs/routes.ts` file.
+### Configuring Protected and Guest Routes
 
-The middleware will then check the current `pathname` against these route configurations and determine whether to redirect or allow access based on the user's authentication status.
+Define which routes are considered guest or protected by specifying patterns in the `src/configs/auth-routes.ts` file. These patterns are matched using `picomatch`, similar to Next.js middleware matchers.
+
+#### Guest Routes
+
+Guest routes are accessible without authentication, such as sign-in or registration pages:
+
+```typescript
+export const guestRoutes = [
+  "/{sign-in,register,forgot-password,verify-email,new-password}",
+];
+```
+
+#### Protected Routes
+
+Protected routes require authentication. Unauthenticated users are redirected to the sign-in page:
+
+```typescript
+export const protectedRoutes = [
+  "/dashboards/**",
+  "/pages/!({unauthorized-401,not-found-404,coming-soon,maintenance})/**",
+];
+```
+
+### Pattern Matching Examples
+
+The patterns use `picomatch` syntax, allowing for flexible route matching:
+
+- `/dashboards/**`: Matches any route under `/dashboards/`, such as `/dashboards/overview`.
+- `/pages/!({unauthorized-401,not-found-404,coming-soon,maintenance})/**`: Matches any route under `/pages/` except for specified paths like `/pages/not-found-404`.
+- `/{sign-in,register,forgot-password,verify-email,new-password}`: Matches any of the listed routes directly, such as `/sign-in`.
+
+### Customizing Route Protection
+
+Adjust the `guestRoutes` and `protectedRoutes` arrays in `src/configs/auth-routes.ts` to suit your application's needs. The middleware will enforce access rules based on these configurations.
+
+By leveraging Next.js middleware and `picomatch`, you can effectively control access to your application's routes, ensuring a secure and user-friendly experience.
+
+### Understanding `picomatch`
+
+[`picomatch`](https://github.com/micromatch/picomatch) is a lightweight, fast pattern-matching library used for matching strings against patterns. It is widely used in various JavaScript applications, including Next.js middleware.
+
+#### Basic Guidelines for Using `picomatch`
+
+- Use `*` to match any number of characters except `/` (e.g., `pages/*` matches `pages/home` but not `pages/sub/home`).
+- Use `**` to match any number of characters, including `/` (e.g., `pages/**` matches `pages/home` and `pages/sub/home`).
+- Use `{a,b,c}` for multiple options (e.g., `/{sign-in,register}` matches `/sign-in` and `/register`).
+- Use `!(pattern)` to exclude matches (e.g., `pages/!(admin)` matches all `pages/*` except `pages/admin`).
 
 ---
 
 ## 9. Additional Resources
 
-For further information on setting up and using **NextAuth.js**, refer to the official documentation:
+For further information on setting up and using **NextAuth.js**, refer to the following resources:
 
-[NextAuth.js Documentation](https://next-auth.js.org/)
+### 9.1. **NextAuth.js Documentation**
 
-Additionally, for details on how to use and customize middleware in your Next.js application, refer to the official **Next.js Middleware documentation**:
+For a comprehensive guide on how to configure authentication, including advanced features and customization options, visit the official **NextAuth.js** documentation:
 
-[Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+📌 [NextAuth.js Documentation](https://next-auth.js.org/)
+
+### 9.2. **Next.js Middleware Documentation**
+
+Learn about implementing middleware in Next.js, which is useful for authentication, route protection, and custom redirect logic:
+
+📌 [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+
+### 9.3. **Prisma Documentation**
+
+Understand how to use **Prisma** for database schema modeling, migrations, and interacting with your database, which is integral for your authentication flow:
+
+📌 [Prisma Documentation](https://www.prisma.io/docs)
+
+### 9.4. **Picomatch GitHub Repository**
+
+For details on **picomatch**, the pattern-matching library used for route protection, visit the official GitHub repository to explore usage and advanced features:
+
+📌 [Picomatch GitHub Repository](https://github.com/micromatch/picomatch)
+
+### 9.5. **Next.js Environment Variables Guide**
+
+Learn about handling environment variables in Next.js securely, which is essential for configuring sensitive data like authentication secrets:
+
+📌 [Next.js Environment Variables Documentation](https://nextjs.org/docs/basic-features/environment-variables)
+
+### 9.6. **OWASP Authentication Cheat Sheet**
+
+For best practices in secure authentication and understanding common security pitfalls, refer to the **OWASP Authentication Cheat Sheet**:
+
+📌 [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+
+These resources provide valuable insights and detailed guidance to help you effectively implement authentication and security practices in your Next.js application.

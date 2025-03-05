@@ -23,7 +23,7 @@ export function getInitials(fullName: string) {
 
 export const isEven = (num: number) => num % 2 === 0;
 
-export const getCreditCardBrandName = (number: string) => {
+export function getCreditCardBrandName(number: string) {
   const re = {
     visa: /^4/,
     mastercard: /^5[1-5]/,
@@ -35,7 +35,7 @@ export const getCreditCardBrandName = (number: string) => {
     if (regex.test(number)) return type;
   }
   return "unknown";
-};
+}
 
 export function remToPx(rem: number) {
   // Get the root font size (default is 16px if not set otherwise)
@@ -49,11 +49,11 @@ export function isUrl(text: string) {
   return z.string().url().safeParse(text).success;
 }
 
-export const isActivePathname = (
+export function isActivePathname(
   basePathname: string,
   currentPathname: string,
   exactMatch: boolean = false
-) => {
+) {
   if (typeof basePathname !== "string" || typeof currentPathname !== "string") {
     throw new Error("Both basePathname and currentPathname must be strings");
   }
@@ -70,7 +70,7 @@ export const isActivePathname = (
     (currentPathname.length === basePathname.length ||
       currentPathname[basePathname.length] === "/")
   );
-};
+}
 
 export function formatFileSize(bytes: number, decimals: number = 2) {
   if (bytes === 0) return "0 Bytes";
@@ -302,10 +302,10 @@ export function formatOverviewCardValue(
 }
 
 // Retrieve the dictionary value safely
-export const getDictionaryValue = (
+export function getDictionaryValue(
   key: string,
   section: Record<string, unknown>
-) => {
+) {
   const value = section[key];
 
   if (typeof value !== "string") {
@@ -313,4 +313,4 @@ export const getDictionaryValue = (
   }
 
   return value;
-};
+}

@@ -4,10 +4,10 @@ import * as React from "react";
 
 import { useSettings } from "@/hooks/use-settings";
 
-import type { DictionaryType } from "@/lib/getDictionary";
+import type { DictionaryType } from "@/lib/get-dictionary";
 
-import VerticalLayout from "./vertical-layout";
-import HorizontalLayout from "./horizontal-layout";
+import { VerticalLayout } from "./vertical-layout";
+import { HorizontalLayout } from "./horizontal-layout";
 import { Customizer } from "./customizer";
 
 export function Layout({
