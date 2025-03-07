@@ -74,7 +74,15 @@ export function Hero() {
           fill
           sizes="(max-width: 768px) 640px, 1080px"
           priority
-          className="border border-border rounded-lg object-cover object-top"
+          className="block border border-border rounded-lg object-cover object-top dark:hidden"
+        />
+        <Image
+          src="/images/hero-dark.jpg"
+          alt=""
+          fill
+          sizes="(max-width: 768px) 640px, 1080px"
+          priority
+          className="hidden border border-border rounded-lg object-cover object-top dark:block"
         />
       </div>
     </section>
