@@ -37,6 +37,7 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
             alt=""
             height={24}
             width={24}
+            className="dark:invert"
           />
           <span>Shadboard</span>
         </Link>

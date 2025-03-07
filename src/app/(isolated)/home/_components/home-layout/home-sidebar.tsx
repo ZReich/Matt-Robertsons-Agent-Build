@@ -58,6 +58,7 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
                 alt=""
                 height={24}
                 width={24}
+                className="dark:invert"
               />
               <span>Shadboard</span>
             </Link>

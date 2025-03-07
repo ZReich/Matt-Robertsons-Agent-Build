@@ -33,6 +33,7 @@ export function Header() {
           alt=""
           height={24}
           width={24}
+          className="dark:invert"
         />
         <span>Shadboard</span>
       </Link>

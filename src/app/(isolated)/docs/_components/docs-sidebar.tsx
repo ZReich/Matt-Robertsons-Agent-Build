@@ -42,6 +42,7 @@ export function DocsSidebar() {
             alt=""
             height={24}
             width={24}
+            className="dark:invert"
           />
           <span>Shadboard</span>
         </Link>
