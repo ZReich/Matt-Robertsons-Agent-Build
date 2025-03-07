@@ -84,30 +84,20 @@ function redirect(pathname: string, request: NextRequestWithAuth) {
 
 ### 4.3. Remove Locale Extraction and Handling
 
-Inside the `middleware` function, remove these lines:
+Inside the `middleware` function, remove these blocks:
 
 ```ts
 const locale = getLocaleFromPathname(pathname);
 const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
 ```
 
-Since we are removing locale logic, we don't need `pathnameWithoutLocale`. Instead, use `pathname` directly.
-
-### 4.4. Simplify the `getFirstSegment` Function
-
-Find and remove the following blocks:
-
 ```ts
-if (pathnameWithoutLocale === "") {
-  return redirect(process.env.HOME_PATHNAME || "/", request);
-}
-```
-
-```ts
-if (locale === undefined) {
+if (!locale) {
   return redirect(pathname, request);
 }
 ```
+
+Since we are removing locale logic, we don't need `pathnameWithoutLocale`. Instead, use `pathname` directly.
 
 ### 4.5. Replace `pathnameWithoutLocale` with `pathname`
 
@@ -145,106 +135,70 @@ npx prisma generate
 
 ---
 
-## 8. Protecting Routes
+### 8. Protecting Routes
 
-To protect specific routes in your Next.js application, you can utilize middleware to enforce authentication checks. This ensures that only authenticated users can access certain pages, while unauthenticated users are redirected appropriately. The configuration leverages pattern matching using [`picomatch`](https://github.com/micromatch/picomatch), a fast and accurate pattern-matching library.
+To ensure that specific routes in your Next.js application are only accessible to authenticated users, you can implement middleware to enforce authentication checks. This allows you to protect sensitive pages while providing access to others based on user authentication status.
 
-### How Route Protection Works
+#### How Route Protection Works
 
-- **Protected Routes**: Require authentication. Unauthenticated users attempting to access these routes are redirected to the `/sign-in` page.
-- **Guest Routes**: Accessible to unauthenticated users. Authenticated users attempting to access these routes are redirected to the home page or another specified route.
-- **Public Routes**: Any routes that don't match the defined patterns for protected or guest routes will be considered public routes. These are accessible to all users, regardless of whether they are authenticated or not.
+- **Protected Routes (Default)**: By default, all routes require authentication. If an unauthenticated user tries to access these routes, they will be redirected to the `/sign-in` page.
+- **Guest Routes**: These routes are only accessible to unauthenticated users. If an authenticated user attempts to access these routes, they will be redirected to a different page (e.g., the homepage or dashboard).
+- **Public Routes**: These routes can be accessed by both authenticated and unauthenticated users. However, exceptions can be configured, so some paths within these routes may still require authentication.
 
-### Configuring Protected and Guest Routes
+#### How to Implement Route Protection
 
-Define which routes are considered guest or protected by specifying patterns in the `src/configs/auth-routes.ts` file. These patterns are matched using `picomatch`, similar to Next.js middleware matchers.
+In order to configure route protection, you’ll define the access control rules in the `src/configs/auth-routes.ts` file. Below is an example configuration:
 
-#### Guest Routes
+```ts
+import type { RouteType } from "@/types";
 
-Guest routes are accessible without authentication, such as sign-in or registration pages:
-
-```typescript
-export const guestRoutes = [
-  "/{sign-in,register,forgot-password,verify-email,new-password}",
-];
+export const routeMap = new Map<string, RouteType>([
+  ["/sign-in", { type: "guest" }], // Only unauthenticated users can access sign-in
+  ["/register", { type: "guest" }], // Only unauthenticated users can access register
+  ["/forgot-password", { type: "guest" }], // Only unauthenticated users can access forgot-password
+  ["/verify-email", { type: "guest" }], // Only unauthenticated users can access verify-email
+  ["/new-password", { type: "guest" }], // Only unauthenticated users can access new-password
+  ["/home", { type: "public", exceptions: ["/home/items"] }], // Home is public, but /home/items is protected
+  ["/docs", { type: "public" }], // Docs page is public
+]);
 ```
 
-#### Protected Routes
+Each route in the `routeMap` follows the structure:
 
-Protected routes require authentication. Unauthenticated users are redirected to the sign-in page:
-
-```typescript
-export const protectedRoutes = [
-  "/dashboards/**",
-  "/pages/!({unauthorized-401,not-found-404,coming-soon,maintenance})/**",
-];
+```ts
+[routePathname, { type: routeType, exceptions?: string[] }]
 ```
 
-### Pattern Matching Examples
+Where:
 
-The patterns use `picomatch` syntax, allowing for flexible route matching:
+- **`routePathname`**: A string representing the URL path for the route, such as `/sign-in`, `/home`, or `/dashboards/analytics`.
+- **`type`**: Defines the access control for that route, and it can be one of the following:
+  - **`"guest"`**: Accessible only to unauthenticated users. Authenticated users will be redirected to a different page (e.g., homepage or dashboard).
+  - **`"public"`**: Accessible to both authenticated and unauthenticated users. You can define exceptions for specific pages within the route that may require authentication.
+- **`exceptions` (Optional)**: A list of specific paths within a route that require authentication, even though the parent route is marked as public or guest. For example, `/home/items` can require authentication, while the general `/home` route remains accessible to everyone.
 
-- `/dashboards/**`: Matches any route under `/dashboards/`, such as `/dashboards/overview`.
-- `/pages/!({unauthorized-401,not-found-404,coming-soon,maintenance})/**`: Matches any route under `/pages/` except for specified paths like `/pages/not-found-404`.
-- `/{sign-in,register,forgot-password,verify-email,new-password}`: Matches any of the listed routes directly, such as `/sign-in`.
-
-### Customizing Route Protection
-
-Adjust the `guestRoutes` and `protectedRoutes` arrays in `src/configs/auth-routes.ts` to suit your application's needs. The middleware will enforce access rules based on these configurations.
-
-By leveraging Next.js middleware and `picomatch`, you can effectively control access to your application's routes, ensuring a secure and user-friendly experience.
-
-### Understanding `picomatch`
-
-[`picomatch`](https://github.com/micromatch/picomatch) is a lightweight, fast pattern-matching library used for matching strings against patterns. It is widely used in various JavaScript applications, including Next.js middleware.
-
-#### Basic Guidelines for Using `picomatch`
-
-- Use `*` to match any number of characters except `/` (e.g., `pages/*` matches `pages/home` but not `pages/sub/home`).
-- Use `**` to match any number of characters, including `/` (e.g., `pages/**` matches `pages/home` and `pages/sub/home`).
-- Use `{a,b,c}` for multiple options (e.g., `/{sign-in,register}` matches `/sign-in` and `/register`).
-- Use `!(pattern)` to exclude matches (e.g., `pages/!(admin)` matches all `pages/*` except `pages/admin`).
-
----
+The middleware will examine the `pathname` of the request and compare it with the keys in the `routeMap`. Based on the matching route type, the middleware will determine whether the route should be accessible to the user, or if a redirect is necessary.
 
 ## 9. Additional Resources
 
 For further information on setting up and using **NextAuth.js**, refer to the following resources:
 
-### 9.1. **NextAuth.js Documentation**
+- **NextAuth.js Documentation**  
+  For a comprehensive guide on how to configure authentication, including advanced features and customization options, visit the official **NextAuth.js** documentation:  
+  [NextAuth.js Documentation](https://next-auth.js.org/)
 
-For a comprehensive guide on how to configure authentication, including advanced features and customization options, visit the official **NextAuth.js** documentation:
+- **Next.js Middleware Documentation**  
+  Learn about implementing middleware in Next.js, which is useful for authentication, route protection, and custom redirect logic:  
+  [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
 
-📌 [NextAuth.js Documentation](https://next-auth.js.org/)
+- **Prisma Documentation**  
+  Understand how to use **Prisma** for database schema modeling, migrations, and interacting with your database, which is integral for your authentication flow:  
+  [Prisma Documentation](https://www.prisma.io/docs)
 
-### 9.2. **Next.js Middleware Documentation**
+- **Next.js Environment Variables Guide**  
+  Learn about handling environment variables in Next.js securely, which is essential for configuring sensitive data like authentication secrets:  
+  [Next.js Environment Variables Documentation](https://nextjs.org/docs/basic-features/environment-variables)
 
-Learn about implementing middleware in Next.js, which is useful for authentication, route protection, and custom redirect logic:
-
-📌 [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-
-### 9.3. **Prisma Documentation**
-
-Understand how to use **Prisma** for database schema modeling, migrations, and interacting with your database, which is integral for your authentication flow:
-
-📌 [Prisma Documentation](https://www.prisma.io/docs)
-
-### 9.4. **Picomatch GitHub Repository**
-
-For details on **picomatch**, the pattern-matching library used for route protection, visit the official GitHub repository to explore usage and advanced features:
-
-📌 [Picomatch GitHub Repository](https://github.com/micromatch/picomatch)
-
-### 9.5. **Next.js Environment Variables Guide**
-
-Learn about handling environment variables in Next.js securely, which is essential for configuring sensitive data like authentication secrets:
-
-📌 [Next.js Environment Variables Documentation](https://nextjs.org/docs/basic-features/environment-variables)
-
-### 9.6. **OWASP Authentication Cheat Sheet**
-
-For best practices in secure authentication and understanding common security pitfalls, refer to the **OWASP Authentication Cheat Sheet**:
-
-📌 [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
-
-These resources provide valuable insights and detailed guidance to help you effectively implement authentication and security practices in your Next.js application.
+- **OWASP Authentication Cheat Sheet**  
+  For best practices in secure authentication and understanding common security pitfalls, refer to the **OWASP Authentication Cheat Sheet**:  
+  [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
