@@ -42,6 +42,11 @@ export type IconType = React.ComponentType<IconProps> | LucideIcon;
 
 export type DynamicIconNameType = keyof typeof icons;
 
+export interface RouteType {
+  type: "guest" | "public";
+  exceptions?: string[];
+}
+
 export interface NotificationType {
   unreadCount: number;
   notifications: Array<{

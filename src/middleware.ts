@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 
-import { isGuestRoute, isProtectedRoute } from "@/lib/auth-routes";
+import { isGuestRoute, isPublicRoute } from "@/lib/auth-routes";
 import {
   isPathnameMissingLocale,
   getLocaleFromPathname,
@@ -32,41 +32,47 @@ export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
     const { pathname, search } = request.nextUrl;
 
+    const locale = getLocaleFromPathname(pathname);
+    const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
+
+    // Handle authentication for protected and guest routes
+    if (!isPublicRoute(pathnameWithoutLocale)) {
+      const isAuthenticated = !!request.nextauth.token;
+      const isGuest = isGuestRoute(pathnameWithoutLocale);
+      const isProtected = !isGuest;
+
+      // Redirect authenticated users away from guest routes
+      if (isAuthenticated && isGuest) {
+        return redirect(process.env.HOME_PATHNAME || "/", request);
+      }
+
+      // Redirect unauthenticated users from protected routes to sign-in
+      if (!isAuthenticated && isProtected) {
+        let redirectPathname = "/sign-in";
+
+        // Maintain the original path for redirection
+        if (pathnameWithoutLocale !== "") {
+          redirectPathname = ensureRedirectPathname(
+            redirectPathname,
+            ensureWithSuffix(pathname, search)
+          );
+        }
+
+        return redirect(redirectPathname, request);
+      }
+    }
+
     if (pathname.startsWith("/home") || pathname.startsWith("/docs")) {
       return NextResponse.next();
     }
 
-    const locale = getLocaleFromPathname(pathname);
-    const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
-    const isAuthenticated = !!request.nextauth.token;
-
-    // Redirect unauthenticated users from protected routes to sign-in
-    if (!isAuthenticated && isProtectedRoute(pathnameWithoutLocale)) {
-      let redirectPathname = "/sign-in";
-
-      // Maintain the original path for redirection
-      if (pathnameWithoutLocale !== "") {
-        redirectPathname = ensureRedirectPathname(
-          redirectPathname,
-          ensureWithSuffix(pathname, search)
-        );
-      }
-
-      return redirect(redirectPathname, request);
-    }
-
-    // Redirect authenticated users away from guest routes
-    if (isAuthenticated && isGuestRoute(pathnameWithoutLocale)) {
-      return redirect(process.env.HOME_PATHNAME || "/", request);
-    }
-
-    // Redirect to home page if the request is for the root or locale root
-    if (pathnameWithoutLocale === "") {
+    // Redirect to home if accessing the root or locale root
+    if (!pathnameWithoutLocale) {
       return redirect(process.env.HOME_PATHNAME || "/", request);
     }
 
     // Redirect to localized URL if the pathname is missing a locale
-    if (locale === undefined) {
+    if (!locale) {
       return redirect(pathname, request);
     }
 

@@ -1,8 +1,11 @@
-export const guestRoutes = [
-  "/{sign-in,register,forgot-password,verify-email,new-password}",
-];
+import type { RouteType } from "@/types";
 
-export const protectedRoutes = [
-  "/dashboards/**",
-  "/pages/!({unauthorized-401,not-found-404,coming-soon,maintenance})/**",
-];
+export const routeMap = new Map<string, RouteType>([
+  ["/sign-in", { type: "guest" }],
+  ["/register", { type: "guest" }],
+  ["/forgot-password", { type: "guest" }],
+  ["/verify-email", { type: "guest" }],
+  ["/new-password", { type: "guest" }],
+  ["/home", { type: "public" }],
+  ["/docs", { type: "public" }],
+]);
