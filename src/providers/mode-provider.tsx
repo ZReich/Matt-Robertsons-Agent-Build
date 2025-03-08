@@ -1,27 +1,18 @@
 "use client";
 
-import { useSettings } from "@/hooks/use-settings";
-import { useMedia } from "react-use";
+import { useIsDarkMode } from "@/hooks/use-mode";
 
 const defaultModes = ["light", "dark"];
 
-const handleUpdateClass = (name: "light" | "dark") => {
-  document.documentElement.classList.remove(...defaultModes);
-  if (name) document.documentElement.classList.add(name);
-};
-
 export function ModeProvider({ children }: { children: React.ReactNode }) {
-  const { settings } = useSettings();
-  const isDark = useMedia("(prefers-color-scheme: dark)");
+  const isDarkMode = useIsDarkMode();
 
-  let resolvedMode = settings.mode;
+  const mode = isDarkMode ? "dark" : "light";
 
-  if (resolvedMode === "system") {
-    const resolvedMode = isDark ? "dark" : "light";
-    handleUpdateClass(resolvedMode);
-  } else {
-    handleUpdateClass(resolvedMode);
-  }
+  // Update class name in the <html> tag
+  const rootElement = document.documentElement;
+  rootElement.classList.remove(...defaultModes);
+  if (mode) rootElement.classList.add(mode);
 
   return <>{children}</>;
 }
