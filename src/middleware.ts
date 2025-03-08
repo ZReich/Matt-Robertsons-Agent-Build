@@ -8,20 +8,23 @@ import {
   getPreferredLocale,
   ensureLocalizedPathname,
 } from "@/lib/i18n";
-import {
-  ensureRedirectPathname,
-  ensureWithoutPrefix,
-  ensureWithSuffix,
-} from "@/lib/utils";
+import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils";
 
 import type { NextRequestWithAuth } from "next-auth/middleware";
 
 function redirect(pathname: string, request: NextRequestWithAuth) {
+  const { search, hash } = request.nextUrl;
   let resolvedPathname = pathname;
 
   if (isPathnameMissingLocale(pathname)) {
     const preferredLocale = getPreferredLocale(request);
     resolvedPathname = ensureLocalizedPathname(pathname, preferredLocale);
+  }
+  if (search) {
+    resolvedPathname += search;
+  }
+  if (hash) {
+    resolvedPathname += hash;
   }
 
   const redirectUrl = new URL(resolvedPathname, request.url).toString();
@@ -30,7 +33,7 @@ function redirect(pathname: string, request: NextRequestWithAuth) {
 
 export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
-    const { pathname, search } = request.nextUrl;
+    const { pathname } = request.nextUrl;
 
     const locale = getLocaleFromPathname(pathname);
     const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
@@ -52,10 +55,7 @@ export default withAuth(
 
         // Maintain the original path for redirection
         if (pathnameWithoutLocale !== "") {
-          redirectPathname = ensureRedirectPathname(
-            redirectPathname,
-            ensureWithSuffix(pathname, search)
-          );
+          redirectPathname = ensureRedirectPathname(redirectPathname, pathname);
         }
 
         return redirect(redirectPathname, request);
