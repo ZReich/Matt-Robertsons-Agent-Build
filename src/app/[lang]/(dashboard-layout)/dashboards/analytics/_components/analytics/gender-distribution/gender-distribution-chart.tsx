@@ -2,16 +2,19 @@
 
 import { Scatter, ScatterChart, XAxis, YAxis } from "recharts";
 
+import { formatPercent } from "@/lib/utils";
+
 import type { GenderDistributionType } from "../../../types";
 import type { ScatterPointItem } from "recharts/types/cartesian/Scatter";
 import type { ChartTooltipContentProps } from "@/components/ui/chart";
+
+import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { formatPercent } from "@/lib/utils";
 
 // Function to normalize values to proportional sizes
 const getNormalizedSize = (value: number, min: number, max: number) => {
@@ -44,6 +47,8 @@ export function GenderDistributionChart({
 }: {
   data: GenderDistributionType[];
 }) {
+  const isRtl = useIsRtl();
+
   const values = data.map((item) => item.value);
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
@@ -55,7 +60,13 @@ export function GenderDistributionChart({
           cursor={false}
           content={<ModifiedChartTooltipContent />}
         />
-        <XAxis type="number" dataKey="x" domain={[0, 5]} hide />
+        <XAxis
+          reversed={isRtl}
+          type="number"
+          dataKey="x"
+          domain={[0, 5]}
+          hide
+        />
         <YAxis type="number" dataKey="y" domain={[0, 5]} hide />
         <Scatter
           name="Gender Distribution"

@@ -10,6 +10,7 @@ import type {
   ChartTooltipContentProps,
 } from "@/components/ui/chart";
 
+import { useIsRtl } from "@/hooks/use-is-rtl";
 import { useRadius } from "@/hooks/use-radius";
 
 import {
@@ -43,6 +44,7 @@ export function AverageSessionDurationChart({
 }: {
   data: OverviewType["averageSessionDuration"]["perMonth"];
 }) {
+  const isRtl = useIsRtl();
   const radius = useRadius();
 
   return (
@@ -56,7 +58,7 @@ export function AverageSessionDurationChart({
           cursor={false}
           content={<ModifiedChartTooltipContent />}
         />
-        <XAxis dataKey="month" hide />
+        <XAxis reversed={isRtl} dataKey="month" hide />
         <Bar dataKey="value" barSize={44} radius={radius} />
       </BarChart>
     </ChartContainer>

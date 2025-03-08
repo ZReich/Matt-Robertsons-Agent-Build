@@ -8,6 +8,8 @@ import type { SalesByCountryType } from "../../../types";
 import type { ChartTooltipContentProps } from "@/components/ui/chart";
 import type { DotProps } from "recharts";
 
+import { useIsRtl } from "@/hooks/use-is-rtl";
+
 import {
   ChartContainer,
   ChartTooltip,
@@ -54,8 +56,14 @@ export function SalesByCountryChart({
 }: {
   data: SalesByCountryType["countries"];
 }) {
+  const isRtl = useIsRtl();
+
   return (
-    <ChartContainer config={{}} className="aspect-auto h-[23.5rem] w-full">
+    <ChartContainer
+      dir="ltr"
+      config={{}}
+      className="aspect-auto h-[23.5rem] w-full"
+    >
       <LineChart
         accessibilityLayer
         data={data}
@@ -68,13 +76,14 @@ export function SalesByCountryChart({
       >
         <CartesianGrid vertical={false} />
         <YAxis
+          orientation={isRtl ? "right" : "left"}
           dataKey="sales"
           tickLine={false}
           axisLine={false}
           tickMargin={20}
           tickFormatter={(value) => formatCurrency(value)}
         />
-        <XAxis dataKey="countryName" hide />
+        <XAxis reversed={isRtl} dataKey="countryName" hide />
         <ChartTooltip
           cursor={false}
           content={<ModifiedChartTooltipContent hideIndicator />}

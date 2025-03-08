@@ -5,6 +5,8 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import type { OverviewType } from "../../../../types";
 import type { ChartConfig } from "@/components/ui/chart";
 
+import { useIsRtl } from "@/hooks/use-is-rtl";
+
 import {
   ChartContainer,
   ChartTooltip,
@@ -22,6 +24,8 @@ export function UniqueVisitorsChart({
 }: {
   data: OverviewType["uniqueVisitors"]["perMonth"];
 }) {
+  const isRtl = useIsRtl();
+
   return (
     <ChartContainer
       config={chartConfig}
@@ -37,6 +41,7 @@ export function UniqueVisitorsChart({
       >
         <CartesianGrid vertical={false} />
         <XAxis
+          reversed={isRtl}
           dataKey="month"
           tickLine={false}
           axisLine={false}

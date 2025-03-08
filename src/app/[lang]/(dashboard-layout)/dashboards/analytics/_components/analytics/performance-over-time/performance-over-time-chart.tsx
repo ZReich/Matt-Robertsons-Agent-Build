@@ -4,6 +4,8 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import type { PerformanceOverTimeType } from "../../../types";
 
+import { useIsRtl } from "@/hooks/use-is-rtl";
+
 import {
   ChartContainer,
   ChartTooltip,
@@ -15,6 +17,8 @@ export function PerformanceOverTimeChart({
 }: {
   data: PerformanceOverTimeType["performance"];
 }) {
+  const isRtl = useIsRtl();
+
   return (
     <ChartContainer config={{}} className="w-full md:h-[14.5rem]">
       <LineChart
@@ -27,6 +31,7 @@ export function PerformanceOverTimeChart({
       >
         <CartesianGrid vertical={false} />
         <XAxis
+          reversed={isRtl}
           dataKey="month"
           tickLine={false}
           axisLine={false}

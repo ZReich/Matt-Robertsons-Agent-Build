@@ -9,6 +9,7 @@ import type { ChartConfig } from "@/components/ui/chart";
 import type { SalesTrendType } from "../../../types";
 
 import { useRadius } from "@/hooks/use-radius";
+import { useIsRtl } from "@/hooks/use-is-rtl";
 
 import {
   ChartContainer,
@@ -39,6 +40,7 @@ const chartConfig = {
 export function SalesTrendChart({ data }: { data: SalesTrendType }) {
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("lead");
+  const isRtl = useIsRtl();
   const radius = useRadius();
 
   const { monthly, summary } = data;
@@ -91,6 +93,7 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
         >
           <CartesianGrid vertical={false} />
           <XAxis
+            reversed={isRtl}
             dataKey="month"
             tickLine={false}
             tickMargin={10}

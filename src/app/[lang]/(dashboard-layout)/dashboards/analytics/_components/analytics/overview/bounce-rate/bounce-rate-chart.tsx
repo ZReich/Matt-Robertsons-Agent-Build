@@ -10,6 +10,8 @@ import type {
   ChartTooltipContentProps,
 } from "@/components/ui/chart";
 
+import { useIsRtl } from "@/hooks/use-is-rtl";
+
 import {
   ChartContainer,
   ChartTooltip,
@@ -41,6 +43,8 @@ export function BounceRateChart({
 }: {
   data: OverviewType["bounceRate"]["perMonth"];
 }) {
+  const isRtl = useIsRtl();
+
   return (
     <ChartContainer
       config={chartConfig}
@@ -55,7 +59,7 @@ export function BounceRateChart({
         }}
       >
         <CartesianGrid vertical={false} />
-        <XAxis dataKey="month" hide />
+        <XAxis reversed={isRtl} dataKey="month" hide />
         <ChartTooltip
           cursor={false}
           content={<ModifiedChartTooltipContent />}
