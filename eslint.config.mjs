@@ -1,30 +1,36 @@
-import { dirname } from "path"
+import { dirname, resolve } from "path"
 import { fileURLToPath } from "url"
 
+import { includeIgnoreFile } from "@eslint/compat"
 import { FlatCompat } from "@eslint/eslintrc"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+const gitignorePath = resolve(__dirname, ".gitignore")
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
 })
 
 const eslintConfig = [
+  includeIgnoreFile(gitignorePath),
   ...compat.extends(
     "next/core-web-vitals",
     "next/typescript",
     "plugin:prettier/recommended"
   ),
   {
-    ignores: ["**/prisma", "**/.next", "**/public", "**/node_modules"],
     rules: {
-      "@typescript-eslint/consistent-type-imports": [
+      "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/no-unused-vars": [
         "error",
         {
-          prefer: "type-imports",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/ban-ts-comment": "off",
     },
   },
 ]
