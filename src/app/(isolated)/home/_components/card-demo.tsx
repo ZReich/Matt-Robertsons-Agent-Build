@@ -1,15 +1,16 @@
-import Image from "next/image";
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import Image from "next/image"
+import Link from "next/link"
+import { ExternalLink } from "lucide-react"
 
-import { buttonVariants } from "@/components/ui/button";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
+
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { buttonVariants } from "@/components/ui/button"
 
 export interface CardDemoProps {
-  title: string;
-  href: string;
-  imgSrc: string;
+  title: string
+  href: string
+  imgSrc: string
 }
 
 export function CardDemo({ title, href, imgSrc }: CardDemoProps) {
@@ -40,5 +41,5 @@ export function CardDemo({ title, href, imgSrc }: CardDemoProps) {
         />
       </AspectRatio>
     </article>
-  );
+  )
 }

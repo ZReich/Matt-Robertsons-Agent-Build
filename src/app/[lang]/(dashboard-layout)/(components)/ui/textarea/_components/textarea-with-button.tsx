@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 
 export function TextareaWithButton() {
   return (
@@ -19,5 +19,5 @@ export function TextareaWithButton() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,17 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicRating } from "./_components/basic-rating";
-import { RatingLength } from "./_components/rating-length";
-import { RatingSizes } from "./_components/rating-sizes";
-import { RatingVariants } from "./_components/rating-variants";
-import { RatingReadOnly } from "./_components/rating-read-only";
-import { RatingIcon } from "./_components/rating-icon";
+import { BasicRating } from "./_components/basic-rating"
+import { RatingIcon } from "./_components/rating-icon"
+import { RatingLength } from "./_components/rating-length"
+import { RatingReadOnly } from "./_components/rating-read-only"
+import { RatingSizes } from "./_components/rating-sizes"
+import { RatingVariants } from "./_components/rating-variants"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Rating",
-};
+}
 
 export default function RatingPage() {
   return (
@@ -23,5 +23,5 @@ export default function RatingPage() {
       <RatingReadOnly />
       <RatingIcon />
     </section>
-  );
+  )
 }

@@ -1,24 +1,24 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-import { Button } from "./button";
+import { Button } from "./button"
 
 export interface ShowMoreTextnProps
   extends React.HTMLAttributes<HTMLParagraphElement> {
-  text: string;
-  maxLength?: number;
-  asChild?: boolean;
+  text: string
+  maxLength?: number
+  asChild?: boolean
 }
 
 const ShowMoreText = React.forwardRef<HTMLParagraphElement, ShowMoreTextnProps>(
   ({ className, text, maxLength = 250, asChild = false, ...props }, ref) => {
-    const [isExpanded, setIsExpanded] = React.useState(false);
+    const [isExpanded, setIsExpanded] = React.useState(false)
 
-    const Comp = asChild ? Slot : "p";
+    const Comp = asChild ? Slot : "p"
 
     if (text.length > maxLength) {
       return (
@@ -33,16 +33,16 @@ const ShowMoreText = React.forwardRef<HTMLParagraphElement, ShowMoreTextnProps>(
             {isExpanded ? "Read less" : "Read more"}
           </Button>
         </Comp>
-      );
+      )
     }
 
     return (
       <Comp className={cn("text-base", className)} ref={ref} {...props}>
         {text}
       </Comp>
-    );
+    )
   }
-);
-ShowMoreText.displayName = "ShowMoreText";
+)
+ShowMoreText.displayName = "ShowMoreText"
 
-export { ShowMoreText };
+export { ShowMoreText }

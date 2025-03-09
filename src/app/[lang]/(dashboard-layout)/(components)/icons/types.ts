@@ -1,6 +1,6 @@
-import { IconType as IconElementType } from "@/types";
+import { IconType as IconElementType } from "@/types"
 
 export interface IconType {
-  icon: IconElementType;
-  name: string;
+  icon: IconElementType
+  name: string
 }

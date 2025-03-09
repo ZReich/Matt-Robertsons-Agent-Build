@@ -1,8 +1,8 @@
-import { currentPlanData } from "../../../../../_data/curremt-plan";
+import { currentPlanData } from "../../../../../_data/curremt-plan"
 
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils"
 
-import { CardFooter } from "@/components/ui/card";
+import { CardFooter } from "@/components/ui/card"
 
 export function CurrentPlanFooter() {
   return (
@@ -17,5 +17,5 @@ export function CurrentPlanFooter() {
         </p>
       </div>
     </CardFooter>
-  );
+  )
 }

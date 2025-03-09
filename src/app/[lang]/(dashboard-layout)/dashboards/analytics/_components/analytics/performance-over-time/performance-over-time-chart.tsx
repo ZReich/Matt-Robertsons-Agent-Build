@@ -1,23 +1,22 @@
-"use client";
+"use client"
 
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 
-import type { PerformanceOverTimeType } from "../../../types";
+import type { PerformanceOverTimeType } from "../../../types"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
+import { useIsRtl } from "@/hooks/use-is-rtl"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 export function PerformanceOverTimeChart({
   data,
 }: {
-  data: PerformanceOverTimeType["performance"];
+  data: PerformanceOverTimeType["performance"]
 }) {
-  const isRtl = useIsRtl();
+  const isRtl = useIsRtl()
 
   return (
     <ChartContainer config={{}} className="w-full md:h-[14.5rem]">
@@ -59,5 +58,5 @@ export function PerformanceOverTimeChart({
         />
       </LineChart>
     </ChartContainer>
-  );
+  )
 }

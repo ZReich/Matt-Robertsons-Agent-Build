@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Sheet,
   SheetContent,
@@ -9,8 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/sheet"
 
 export function BasicSheet() {
   return (
@@ -33,5 +33,5 @@ export function BasicSheet() {
         </Sheet>
       </CardContent>
     </Card>
-  );
+  )
 }

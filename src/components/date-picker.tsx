@@ -1,31 +1,35 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import * as React from "react"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
-import type { CalendarProps } from "@/components/ui/calendar";
-import type { ButtonProps } from "@/components/ui/button";
+import type { ButtonProps } from "@/components/ui/button"
+import type { CalendarProps } from "@/components/ui/calendar"
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils"
+
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+} from "@/components/ui/popover"
 
-export type DatePickerProps = Omit<CalendarProps, "mode" | "selected" | "onSelect"> & {
-  value?: Date;
-  onValueChange?: (date?: Date) => void;
-  formatStr?: string;
-  popoverContentClassName?: string;
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
-  buttonClassName?: string;
-  buttonOptions?: ButtonProps;
-  placeholder?: string;
-};
+export type DatePickerProps = Omit<
+  CalendarProps,
+  "mode" | "selected" | "onSelect"
+> & {
+  value?: Date
+  onValueChange?: (date?: Date) => void
+  formatStr?: string
+  popoverContentClassName?: string
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  buttonClassName?: string
+  buttonOptions?: ButtonProps
+  placeholder?: string
+}
 
 const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
   (
@@ -76,9 +80,9 @@ const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
           />
         </PopoverContent>
       </Popover>
-    );
+    )
   }
-);
-DatePicker.displayName = "DatePicker";
+)
+DatePicker.displayName = "DatePicker"
 
-export { DatePicker };
+export { DatePicker }

@@ -1,6 +1,4 @@
-import { Sparkles } from "lucide-react";
-
-import type { PricingCardType } from "../types";
+import type { PricingCardType } from "../types"
 
 export const pricingPlansData: PricingCardType[] = [
   {
@@ -31,4 +29,4 @@ export const pricingPlansData: PricingCardType[] = [
     buttonContent: "Purchase Shadboard",
     href: "/",
   },
-];
+]

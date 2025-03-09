@@ -1,4 +1,4 @@
-import { ActiveProjectType } from "../types";
+import { ActiveProjectType } from "../types"
 
 export const activeProjectsData: ActiveProjectType[] = [
   {
@@ -43,4 +43,4 @@ export const activeProjectsData: ActiveProjectType[] = [
     dueDate: new Date("2024-10-30T00:00:00Z"),
     status: "At Risk",
   },
-];
+]

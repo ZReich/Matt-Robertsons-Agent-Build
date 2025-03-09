@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from "react"
 
 import {
   Card,
@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 
 export function BasicCard() {
   return (
@@ -30,5 +30,5 @@ export function BasicCard() {
         </Card>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { MAX_AVATAR_SIZE } from "../../constants";
+import { formatFileSize } from "@/lib/utils"
 
-import { formatFileSize } from "@/lib/utils";
+import { MAX_AVATAR_SIZE } from "../../constants"
 
-export const fomratedAvatarSize = formatFileSize(MAX_AVATAR_SIZE);
+export const fomratedAvatarSize = formatFileSize(MAX_AVATAR_SIZE)
 
 export const ProfileInfoSchema = z.object({
   firstName: z
@@ -61,4 +61,4 @@ export const ProfileInfoSchema = z.object({
       message: `Avatar must be ${fomratedAvatarSize} or less.`,
     })
     .optional(),
-});
+})

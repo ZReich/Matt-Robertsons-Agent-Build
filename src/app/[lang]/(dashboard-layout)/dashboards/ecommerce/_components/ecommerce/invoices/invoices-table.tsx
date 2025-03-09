@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 import {
   flexRender,
   getCoreRowModel,
@@ -8,15 +8,24 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 
 import type {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from "@tanstack/react-table";
-import type { InvoiceType } from "../../../types";
+} from "@tanstack/react-table"
+import type { InvoiceType } from "../../../types"
 
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Table,
   TableBody,
@@ -24,31 +33,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { InvoiceTableToolbar } from "./invoice-table-toolbar";
-import { columns } from "./columns";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@/components/ui/table"
+import { columns } from "./columns"
+import { InvoiceTableToolbar } from "./invoice-table-toolbar"
 
 interface InvoicesTableProps {
-  data: InvoiceType[];
+  data: InvoiceType[]
 }
 
 export function InvoicesTable({ data }: InvoicesTableProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  );
+  )
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+    React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
     data: data,
@@ -67,7 +67,7 @@ export function InvoicesTable({ data }: InvoicesTableProps) {
       columnVisibility,
       rowSelection,
     },
-  });
+  })
 
   return (
     <Card>
@@ -132,5 +132,5 @@ export function InvoicesTable({ data }: InvoicesTableProps) {
         <DataTablePagination table={table} />
       </CardFooter>
     </Card>
-  );
+  )
 }

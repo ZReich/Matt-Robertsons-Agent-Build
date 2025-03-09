@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import type { PricingCardType } from "../../types";
+import type { PricingCardType } from "../../types"
 
-import { PricingCard } from "./pricing-card";
+import { PricingCard } from "./pricing-card"
 
 export function PricingCardList({ data }: { data: PricingCardType[] }) {
   return (
@@ -11,5 +11,5 @@ export function PricingCardList({ data }: { data: PricingCardType[] }) {
         <PricingCard key={item.title} {...item} />
       ))}
     </ul>
-  );
+  )
 }

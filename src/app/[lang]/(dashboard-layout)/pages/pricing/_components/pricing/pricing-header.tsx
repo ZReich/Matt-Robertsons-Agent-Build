@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 
 export function PricingHeader({
   isAnnual,
   setIsAnnual,
 }: {
-  isAnnual: boolean;
-  setIsAnnual: (isAnnual: boolean) => void;
+  isAnnual: boolean
+  setIsAnnual: (isAnnual: boolean) => void
 }) {
   return (
     <div className="mx-auto max-w-screen-md text-center mb-8 md:mb-12">
@@ -34,5 +34,5 @@ export function PricingHeader({
         <span>Yearly (Save 15%)</span>
       </Label>
     </div>
-  );
+  )
 }

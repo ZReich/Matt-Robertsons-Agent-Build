@@ -1,25 +1,25 @@
-"use client";
+"use client"
 
-import { useMedia } from "react-use";
-import { ChevronRight, CirclePlus, Mic } from "lucide-react";
+import { useMedia } from "react-use"
+import { ChevronRight, CirclePlus, Mic } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@/components/ui/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ImagesUploader } from "./images-uploader";
-import { FilesUploader } from "./files-uploader";
+} from "@/components/ui/dropdown-menu"
+import { FilesUploader } from "./files-uploader"
+import { ImagesUploader } from "./images-uploader"
 
 export function ChatBoxFooterActions() {
-  const isMobile = useMedia("(max-width: 480px)");
+  const isMobile = useMedia("(max-width: 480px)")
 
   return isMobile ? (
     <DropdownMenu>
@@ -79,5 +79,5 @@ export function ChatBoxFooterActions() {
         </Button>
       </CollapsibleContent>
     </Collapsible>
-  );
+  )
 }

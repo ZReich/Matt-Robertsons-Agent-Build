@@ -1,32 +1,31 @@
-"use client";
+"use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
-import { formatCurrency } from "@/lib/utils";
-
-import type { RevenueTrendType } from "../../../types";
 import type {
   ChartConfig,
   ChartTooltipContentProps,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
+import type { RevenueTrendType } from "../../../types"
 
-import { useRadius } from "@/hooks/use-radius";
-import { useIsRtl } from "@/hooks/use-is-rtl";
+import { formatCurrency } from "@/lib/utils"
 
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { useRadius } from "@/hooks/use-radius"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const chartConfig = {
   revenue: {
     label: "Revenue",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
-  if (!props.payload || props.payload.length === 0) return null;
+  if (!props.payload || props.payload.length === 0) return null
 
   return (
     <ChartTooltipContent
@@ -36,16 +35,16 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
         value: formatCurrency(Number(item.value)),
       }))}
     />
-  );
+  )
 }
 
 export function RevenueTrendChart({
   data,
 }: {
-  data: RevenueTrendType["revenueTrends"];
+  data: RevenueTrendType["revenueTrends"]
 }) {
-  const radius = useRadius();
-  const isRtl = useIsRtl();
+  const radius = useRadius()
+  const isRtl = useIsRtl()
 
   return (
     <ChartContainer
@@ -72,5 +71,5 @@ export function RevenueTrendChart({
         <Bar dataKey="revenue" fill="hsl(var(--chart-2))" radius={radius} />
       </BarChart>
     </ChartContainer>
-  );
+  )
 }

@@ -1,20 +1,20 @@
-"use client";
+"use client"
 
-import { Eye } from "lucide-react";
-import { Table } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table"
+import { Eye } from "lucide-react"
 
-import { camelCaseToTitleCase } from "@/lib/utils";
+import { camelCaseToTitleCase } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface EngagementByDeviceTableViewOptionsProps<TData> {
-  table: Table<TData>;
+  table: Table<TData>
 }
 
 export function EngagementByDeviceTableViewOptions<TData>({
@@ -48,9 +48,9 @@ export function EngagementByDeviceTableViewOptions<TData>({
               >
                 {camelCaseToTitleCase(column.id)}
               </DropdownMenuCheckboxItem>
-            );
+            )
           })}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

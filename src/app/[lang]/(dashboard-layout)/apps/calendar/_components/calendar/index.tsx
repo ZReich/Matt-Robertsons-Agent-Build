@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { Card } from "@/components/ui/card";
-import { CalendarHeader } from "./calendar-header";
-import { CalendarContent } from "./calendar-content";
+import { Card } from "@/components/ui/card"
+import { CalendarContent } from "./calendar-content"
+import { CalendarHeader } from "./calendar-header"
 
 export function Calendar() {
   return (
@@ -10,5 +10,5 @@ export function Calendar() {
       <CalendarHeader />
       <CalendarContent />
     </Card>
-  );
+  )
 }

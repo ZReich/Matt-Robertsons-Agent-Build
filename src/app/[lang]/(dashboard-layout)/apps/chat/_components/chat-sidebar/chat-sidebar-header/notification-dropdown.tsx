@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import { Bell } from "lucide-react";
+import { Bell } from "lucide-react"
 
 import {
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface NotificationDropdownProps {
-  notifications: string;
-  setNotifications: (val: string) => void;
+  notifications: string
+  setNotifications: (val: string) => void
 }
 
 export function NotificationDropdown({
@@ -23,7 +23,7 @@ export function NotificationDropdown({
     { value: "ALL_MESSAGES", label: "All Messages" },
     { value: "ONLY_MENTIONS", label: "Only @mentions" },
     { value: "NOTHING", label: "Nothing" },
-  ];
+  ]
 
   return (
     <DropdownMenuSub>
@@ -44,5 +44,5 @@ export function NotificationDropdown({
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
-  );
+  )
 }

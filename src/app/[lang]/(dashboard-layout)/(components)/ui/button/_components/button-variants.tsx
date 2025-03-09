@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function ButtonVariants() {
   return (
@@ -34,5 +34,5 @@ export function ButtonVariants() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

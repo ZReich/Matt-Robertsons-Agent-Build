@@ -1,10 +1,20 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useMedia } from "react-use";
+import * as React from "react"
+import { useMedia } from "react-use"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import {
   Drawer,
   DrawerClose,
@@ -14,23 +24,13 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/drawer"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export function DrawerResponsiveDialog() {
-  const [open, setOpen] = React.useState(false);
-  const isDesktop = useMedia("(min-width: 768px)");
+  const [open, setOpen] = React.useState(false)
+  const isDesktop = useMedia("(min-width: 768px)")
 
   return (
     <Card>
@@ -78,7 +78,7 @@ export function DrawerResponsiveDialog() {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function ProfileForm({ className }: React.ComponentProps<"form">) {
@@ -94,5 +94,5 @@ function ProfileForm({ className }: React.ComponentProps<"form">) {
       </div>
       <Button type="submit">Save changes</Button>
     </form>
-  );
+  )
 }

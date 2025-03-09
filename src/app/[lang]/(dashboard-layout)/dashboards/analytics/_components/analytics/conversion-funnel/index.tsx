@@ -1,10 +1,10 @@
-import { conversionFunnelData } from "../../../_data/conversion-funnel";
+import { conversionFunnelData } from "../../../_data/conversion-funnel"
 
 import {
   DashboardCard,
   DashboardCardActionsDropdown,
-} from "@/components/dashboards/dashboard-card";
-import { ConversionFunnelWrapper } from "./conversion-funnel-wrapper";
+} from "@/components/dashboards/dashboard-card"
+import { ConversionFunnelWrapper } from "./conversion-funnel-wrapper"
 
 export async function ConversionFunnel() {
   return (
@@ -15,5 +15,5 @@ export async function ConversionFunnel() {
     >
       <ConversionFunnelWrapper data={conversionFunnelData.funnelSteps} />
     </DashboardCard>
-  );
+  )
 }

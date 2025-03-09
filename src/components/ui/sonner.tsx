@@ -1,15 +1,15 @@
-"use client";
+"use client"
 
-import { Toaster as Sonner } from "sonner";
+import { Toaster as Sonner } from "sonner"
 
-import { useSettings } from "@/hooks/use-settings";
+import { useSettings } from "@/hooks/use-settings"
 
-type ToasterProps = React.ComponentProps<typeof Sonner>;
+type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { settings } = useSettings();
+  const { settings } = useSettings()
 
-  const mode = settings.mode;
+  const mode = settings.mode
 
   return (
     <Sonner
@@ -28,7 +28,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       {...props}
     />
-  );
-};
+  )
+}
 
-export { Toaster };
+export { Toaster }

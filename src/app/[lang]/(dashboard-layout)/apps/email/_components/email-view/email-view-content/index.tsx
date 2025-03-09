@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import type { EmailType } from "../../../types";
+import type { EmailType } from "../../../types"
 
-import { CardContent } from "@/components/ui/card";
-import { EmailViewContentActions } from "./email-view-content-actions";
-import { EmailViewContentHeader } from "./email-view-content-header";
-import { EmailViewContentBody } from "./email-view-content-body";
-import { EmailViewContentFooter } from "./email-view-content-footer";
+import { CardContent } from "@/components/ui/card"
+import { EmailViewContentActions } from "./email-view-content-actions"
+import { EmailViewContentBody } from "./email-view-content-body"
+import { EmailViewContentFooter } from "./email-view-content-footer"
+import { EmailViewContentHeader } from "./email-view-content-header"
 
 export function EmailViewContent({ email }: { email: EmailType }) {
   return (
@@ -16,5 +16,5 @@ export function EmailViewContent({ email }: { email: EmailType }) {
       <EmailViewContentBody email={email} />
       <EmailViewContentFooter />
     </CardContent>
-  );
+  )
 }

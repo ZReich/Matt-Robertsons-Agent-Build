@@ -1,14 +1,15 @@
-"use client";
+"use client"
 
-import type { RevenueTrendType } from "../../../types";
+import type { RevenueTrendType } from "../../../types"
 
-import { formatCurrency } from "@/lib/utils";
-import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge";
+import { formatCurrency } from "@/lib/utils"
+
+import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge"
 
 export function RevenueTrendSummary({
   data,
 }: {
-  data: RevenueTrendType["summary"];
+  data: RevenueTrendType["summary"]
 }) {
   return (
     <div className="flex flex-col items-start bg-accent text-accent-foreground py-2 px-4 rounded-lg">
@@ -24,5 +25,5 @@ export function RevenueTrendSummary({
         />
       </div>
     </div>
-  );
+  )
 }

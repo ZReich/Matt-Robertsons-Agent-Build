@@ -1,8 +1,8 @@
-import type { PaymentType } from "../../../types";
+import type { PaymentType } from "../../../types"
 
-import { CardContent } from "@/components/ui/card";
-import { PaymentMethodForm } from "./payment-method-form";
-import { PaymentSummary } from "./payment-summary";
+import { CardContent } from "@/components/ui/card"
+import { PaymentMethodForm } from "./payment-method-form"
+import { PaymentSummary } from "./payment-summary"
 
 export function PaymentContent({ data }: { data: PaymentType }) {
   return (
@@ -10,5 +10,5 @@ export function PaymentContent({ data }: { data: PaymentType }) {
       <PaymentMethodForm data={data.savedCards} />
       <PaymentSummary data={data.summary} />
     </CardContent>
-  );
+  )
 }

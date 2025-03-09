@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Command,
   CommandEmpty,
@@ -6,8 +7,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/command"
 
 export function BasicCommand() {
   return (
@@ -35,5 +35,5 @@ export function BasicCommand() {
         </Command>
       </CardContent>
     </Card>
-  );
+  )
 }

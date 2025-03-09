@@ -1,37 +1,37 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import * as React from "react"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { ButtonProps } from "@/components/ui/button"
+import type { CalendarProps } from "@/components/ui/calendar"
 
-import type { CalendarProps } from "@/components/ui/calendar";
-import type { ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { InputTime } from "@/components/ui/input-time"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { InputTime } from "@/components/ui/input-time";
-import { Separator } from "@/components/ui/separator";
+} from "@/components/ui/popover"
+import { Separator } from "@/components/ui/separator"
 
 export type DateTimePickerProps = Omit<
   CalendarProps,
   "mode" | "selected" | "onSelect"
 > & {
-  value?: Date;
-  onValueChange?: (date?: Date) => void;
-  formatStr?: string;
-  popoverContentClassName?: string;
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
-  buttonClassName?: string;
-  buttonOptions?: ButtonProps;
-  placeholder?: string;
-};
+  value?: Date
+  onValueChange?: (date?: Date) => void
+  formatStr?: string
+  popoverContentClassName?: string
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  buttonClassName?: string
+  buttonOptions?: ButtonProps
+  placeholder?: string
+}
 
 const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
   (
@@ -50,36 +50,36 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
   ) => {
     const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
       value
-    );
+    )
 
     const handleDateSelect = (selected?: Date | undefined) => {
-      if (!selected) return;
+      if (!selected) return
 
       // Preserve the time when changing the date
-      const newDateTime = new Date(selected);
+      const newDateTime = new Date(selected)
       if (selectedDate) {
-        newDateTime.setHours(selectedDate.getHours());
-        newDateTime.setMinutes(selectedDate.getMinutes());
+        newDateTime.setHours(selectedDate.getHours())
+        newDateTime.setMinutes(selectedDate.getMinutes())
       }
 
-      setSelectedDate(newDateTime);
-      onValueChange?.(newDateTime);
-    };
+      setSelectedDate(newDateTime)
+      onValueChange?.(newDateTime)
+    }
 
     const handleTimeChange = (timeString?: string) => {
-      if (!timeString) return;
+      if (!timeString) return
 
-      const [hours, minutes] = timeString.split(":").map(Number);
+      const [hours, minutes] = timeString.split(":").map(Number)
 
       if (selectedDate) {
-        const newDateTime = new Date(selectedDate);
-        newDateTime.setHours(hours);
-        newDateTime.setMinutes(minutes);
+        const newDateTime = new Date(selectedDate)
+        newDateTime.setHours(hours)
+        newDateTime.setMinutes(minutes)
 
-        setSelectedDate(newDateTime);
-        onValueChange?.(newDateTime);
+        setSelectedDate(newDateTime)
+        onValueChange?.(newDateTime)
       }
-    };
+    }
 
     return (
       <Popover modal>
@@ -121,9 +121,9 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
           />
         </PopoverContent>
       </Popover>
-    );
+    )
   }
-);
-DateTimePicker.displayName = "DateTimePicker";
+)
+DateTimePicker.displayName = "DateTimePicker"
 
-export { DateTimePicker };
+export { DateTimePicker }

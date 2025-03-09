@@ -1,27 +1,27 @@
-"use client";
+"use client"
 
-import { Row } from "@tanstack/react-table";
-import { EllipsisVertical } from "lucide-react";
+import { Row } from "@tanstack/react-table"
+import { EllipsisVertical } from "lucide-react"
 
-import type { InvoiceType } from "../../../types";
+import type { InvoiceType } from "../../../types"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 interface InvoiceTableRowActionsProps<TData> {
-  row: Row<TData>;
+  row: Row<TData>
 }
 
 export function InvoiceTableRowActions<TData>({
   row,
 }: InvoiceTableRowActionsProps<TData>) {
-  const invoice = row.original as InvoiceType;
+  const _invoice = row.original as InvoiceType
 
   return (
     <div className="flex justify-end me-4">
@@ -48,5 +48,5 @@ export function InvoiceTableRowActions<TData>({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
+  )
 }

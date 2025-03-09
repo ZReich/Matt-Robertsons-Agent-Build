@@ -1,38 +1,39 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter"
 
-import { db } from "@/lib/prisma";
+import type { NextAuthOptions } from "next-auth"
+import type { Adapter } from "next-auth/adapters"
 
-import type { NextAuthOptions } from "next-auth";
-import type { Adapter } from "next-auth/adapters";
+import { db } from "@/lib/prisma"
+
+import CredentialsProvider from "next-auth/providers/credentials"
 
 // Extend NextAuth's Session and User interfaces to include custom properties
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string;
-      email: string | null;
-      name: string;
-      avatar: string | null;
-      status: string;
-    };
+      id: string
+      email: string | null
+      name: string
+      avatar: string | null
+      status: string
+    }
   }
 
   interface User {
-    id: string;
-    email: string | null;
-    name: string;
-    avatar: string | null;
-    status: string;
+    id: string
+    email: string | null
+    name: string
+    avatar: string | null
+    status: string
   }
 }
 declare module "next-auth/jwt" {
   interface JWT {
-    id: string;
-    email: string | null;
-    name: string;
-    avatar: string | null;
-    status: string;
+    id: string
+    email: string | null
+    name: string
+    avatar: string | null
+    status: string
   }
 }
 
@@ -51,7 +52,7 @@ export const authOptions: NextAuthOptions = {
       },
       // Custom authorize function to validate user credentials
       async authorize(credentials) {
-        if (!credentials) return null;
+        if (!credentials) return null
 
         try {
           // Authenticate the user by sending credentials to an external API
@@ -66,21 +67,21 @@ export const authOptions: NextAuthOptions = {
               email: credentials.email,
               password: credentials.password,
             }),
-          });
+          })
 
-          const payload = await res.json();
+          const payload = await res.json()
 
           // Throw error if the response status indicates a failure
           if (res.status >= 400) {
-            throw new Error(payload?.message ?? "An unknown error occurred.");
+            throw new Error(payload?.message ?? "An unknown error occurred.")
           }
 
-          return payload; // Return user data on successful authentication
+          return payload // Return user data on successful authentication
         } catch (e: unknown) {
           // Handle errors and provide appropriate error message
           throw new Error(
             e instanceof Error ? e.message : "An unknown error occurred."
-          );
+          )
         }
       },
     }),
@@ -98,27 +99,27 @@ export const authOptions: NextAuthOptions = {
     // Learn more: https://next-auth.js.org/configuration/callbacks#jwt-callback
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.avatar = user.avatar;
-        token.email = user.email;
-        token.status = user.status;
+        token.id = user.id
+        token.name = user.name
+        token.avatar = user.avatar
+        token.email = user.email
+        token.status = user.status
       }
 
-      return token;
+      return token
     },
     // Callback to include JWT properties in the session object
     // Learn more: https://next-auth.js.org/configuration/callbacks#session-callback
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.avatar = token.avatar;
-        session.user.email = token.email;
-        token.status = token.status;
+        session.user.id = token.id
+        session.user.name = token.name
+        session.user.avatar = token.avatar
+        session.user.email = token.email
+        token.status = token.status
       }
 
-      return session;
+      return session
     },
   },
-};
+}

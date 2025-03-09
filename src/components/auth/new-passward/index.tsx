@@ -1,11 +1,11 @@
-import { NewPasswordForm } from "./new-password-form";
 import {
   Auth,
-  AuthHeader,
-  AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../auth-layout";
+  AuthHeader,
+  AuthTitle,
+} from "../auth-layout"
+import { NewPasswordForm } from "./new-password-form"
 
 export function NewPassword() {
   return (
@@ -18,5 +18,5 @@ export function NewPassword() {
         <NewPasswordForm />
       </AuthForm>
     </Auth>
-  );
+  )
 }

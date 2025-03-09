@@ -1,29 +1,29 @@
-import { cn, getInitials } from "@/lib/utils";
+import type { SalesRepresentativeType } from "../../../../types"
 
-import type { SalesRepresentativeType } from "../../../../types";
+import { cn, getInitials } from "@/lib/utils"
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 
 const medalAvatarColor = [
   "bg-yellow-400 border-yellow-400 dark:bg-yellow-500 dark:border-yellow-500",
   "bg-gray-300 border-gray-300 dark:bg-gray-400 dark:border-gray-400",
   "bg-amber-600 border-amber-600 dark:bg-amber-700 dark:border-amber-700",
-];
+]
 
 const medalCardColor = [
   "border-yellow-400 dark:border-yellow-500",
   "border-gray-300 dark:border-gray-400",
   "border-amber-600 dark:border-amber-700",
-];
+]
 
 export function TopSalesRepresentativesTop3Item({
   representative,
   index,
 }: {
-  representative: SalesRepresentativeType["representatives"][0];
-  index: number;
+  representative: SalesRepresentativeType["representatives"][0]
+  index: number
 }) {
   return (
     <li key={representative.name}>
@@ -64,5 +64,5 @@ export function TopSalesRepresentativesTop3Item({
         </CardContent>
       </Card>
     </li>
-  );
+  )
 }

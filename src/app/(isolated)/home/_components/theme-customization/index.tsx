@@ -1,7 +1,6 @@
-import { ThemeProvider } from "./contexts/theme-context";
-
-import { ThemeCustomizer } from "./theme-customizer";
-import { ThemePreview } from "./theme-preview";
+import { ThemeProvider } from "./contexts/theme-context"
+import { ThemeCustomizer } from "./theme-customizer"
+import { ThemePreview } from "./theme-preview"
 
 export function ThemeCustomization() {
   return (
@@ -24,5 +23,5 @@ export function ThemeCustomization() {
         </div>
       </ThemeProvider>
     </section>
-  );
+  )
 }

@@ -1,7 +1,10 @@
-import { salesTrendData } from "../../../_data/sales-trend";
+import { salesTrendData } from "../../../_data/sales-trend"
 
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
-import { SalesTrendChart } from "./sales-trend-chart";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { SalesTrendChart } from "./sales-trend-chart"
 
 export function SalesTrend() {
   return (
@@ -13,5 +16,5 @@ export function SalesTrend() {
     >
       <SalesTrendChart data={salesTrendData} />
     </DashboardCard>
-  );
+  )
 }

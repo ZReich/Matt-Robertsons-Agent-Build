@@ -1,57 +1,57 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import * as React from "react"
+import Link from "next/link"
+import { useParams, usePathname } from "next/navigation"
 
-import { navigationsData } from "@/data/navigations";
+import { navigationsData } from "@/data/navigations"
 
+import type { DictionaryType } from "@/lib/get-dictionary"
+import type {
+  LocaleType,
+  NavigationNestedItem,
+  NavigationRootItem,
+} from "@/types"
+
+import { ensureLocalizedPathname } from "@/lib/i18n"
 import {
   cn,
   getDictionaryValue,
   isActivePathname,
   titleCaseToCamelCase,
-} from "@/lib/utils";
-import { ensureLocalizedPathname } from "@/lib/i18n";
+} from "@/lib/utils"
 
-import type {
-  LocaleType,
-  NavigationNestedItem,
-  NavigationRootItem,
-} from "@/types";
-import type { DictionaryType } from "@/lib/get-dictionary";
-
-import { DynamicIcon } from "@/components/dynamic-icon";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
 import {
   Menubar,
   MenubarContent,
   MenubarItem,
   MenubarMenu,
-  MenubarTrigger,
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
-} from "@/components/ui/menubar";
+  MenubarTrigger,
+} from "@/components/ui/menubar"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 export function TopBarHeaderMenubar({
   dictionary,
 }: {
-  dictionary: DictionaryType;
+  dictionary: DictionaryType
 }) {
-  const pathname = usePathname();
-  const params = useParams();
+  const pathname = usePathname()
+  const params = useParams()
 
-  const locale = params.lang as LocaleType;
+  const locale = params.lang as LocaleType
 
   const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
     const title = getDictionaryValue(
       titleCaseToCamelCase(item.title),
       dictionary.navigation
-    );
+    )
     const label =
       item.label &&
-      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label);
+      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label)
 
     // If the item has nested items, render it with a MenubarSub.
     if (item.items) {
@@ -70,17 +70,17 @@ export function TopBarHeaderMenubar({
                 <MenubarItem key={subItem.title} className="p-0">
                   {renderMenuItem(subItem)}
                 </MenubarItem>
-              );
+              )
             })}
           </MenubarSubContent>
         </MenubarSub>
-      );
+      )
     }
 
     // Otherwise, render the item with a link.
     if ("href" in item) {
-      const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = isActivePathname(localizedPathname, pathname);
+      const localizedPathname = ensureLocalizedPathname(item.href, locale)
+      const isActive = isActivePathname(localizedPathname, pathname)
 
       return (
         <MenubarItem asChild>
@@ -97,9 +97,9 @@ export function TopBarHeaderMenubar({
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
           </Link>
         </MenubarItem>
-      );
+      )
     }
-  };
+  }
 
   return (
     <Menubar className="shadow-none border-0">
@@ -107,7 +107,7 @@ export function TopBarHeaderMenubar({
         const title = getDictionaryValue(
           titleCaseToCamelCase(nav.title),
           dictionary.navigation
-        );
+        )
         return (
           <MenubarMenu key={nav.title}>
             <MenubarTrigger>{title}</MenubarTrigger>
@@ -119,8 +119,8 @@ export function TopBarHeaderMenubar({
               ))}
             </MenubarContent>
           </MenubarMenu>
-        );
+        )
       })}
     </Menubar>
-  );
+  )
 }

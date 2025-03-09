@@ -1,10 +1,10 @@
-import { CustomerInsights } from "./customer-insights";
-import { Overview } from "./overview";
-import { SalesTrend } from "./sales-trend";
-import { TopProducts } from "./top-products";
-import { Invoices } from "./invoices";
-import { RevenueBySource } from "./revenue-by-source";
-import { ChurnRate } from "./churn-rate";
+import { ChurnRate } from "./churn-rate"
+import { CustomerInsights } from "./customer-insights"
+import { Invoices } from "./invoices"
+import { Overview } from "./overview"
+import { RevenueBySource } from "./revenue-by-source"
+import { SalesTrend } from "./sales-trend"
+import { TopProducts } from "./top-products"
 
 export function Ecommerce() {
   return (
@@ -17,5 +17,5 @@ export function Ecommerce() {
       <TopProducts />
       <Invoices />
     </section>
-  );
+  )
 }

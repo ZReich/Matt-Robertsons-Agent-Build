@@ -1,8 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Command,
   CommandEmpty,
@@ -10,17 +11,16 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/components/ui/command"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/popover"
 
 interface Status {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }
 
 const statuses: Status[] = [
@@ -44,13 +44,13 @@ const statuses: Status[] = [
     value: "canceled",
     label: "Canceled",
   },
-];
+]
 
 export function ComboboxPopover() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
   const [selectedStatus, setSelectedStatus] = React.useState<Status | null>(
     null
-  );
+  )
 
   return (
     <Card>
@@ -85,8 +85,8 @@ export function ComboboxPopover() {
                             statuses.find(
                               (priority) => priority.value === value
                             ) || null
-                          );
-                          setOpen(false);
+                          )
+                          setOpen(false)
                         }}
                       >
                         {status.label}
@@ -100,5 +100,5 @@ export function ComboboxPopover() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

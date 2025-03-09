@@ -1,6 +1,6 @@
-import * as React from "react";
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 export interface KeyboardProps extends React.HTMLProps<HTMLElement> {}
 
@@ -18,9 +18,9 @@ const Keyboard = React.forwardRef<HTMLElement, KeyboardProps>(
       >
         {children}
       </kbd>
-    );
+    )
   }
-);
-Keyboard.displayName = "Keyboard";
+)
+Keyboard.displayName = "Keyboard"
 
-export { Keyboard };
+export { Keyboard }

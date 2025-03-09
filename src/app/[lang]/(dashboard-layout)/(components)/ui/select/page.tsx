@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicSelect } from "./_components/basic-select";
-import { SelectScrollable } from "./_components/select-scrollable";
+import { BasicSelect } from "./_components/basic-select"
+import { SelectScrollable } from "./_components/select-scrollable"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Select",
-};
+}
 
 export default function SelectPage() {
   return (
@@ -15,5 +15,5 @@ export default function SelectPage() {
       <BasicSelect />
       <SelectScrollable />
     </section>
-  );
+  )
 }

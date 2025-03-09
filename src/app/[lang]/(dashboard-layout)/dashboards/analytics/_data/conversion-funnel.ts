@@ -1,4 +1,4 @@
-import type { ConversionFunnelType } from "../types";
+import type { ConversionFunnelType } from "../types"
 
 export const conversionFunnelData: ConversionFunnelType = {
   period: "Last month",
@@ -24,4 +24,4 @@ export const conversionFunnelData: ConversionFunnelType = {
       fill: `hsl(var(--chart-4))`,
     },
   ],
-};
+}

@@ -1,34 +1,33 @@
 import {
-  useRouter,
-  usePathname,
   useParams,
+  usePathname,
+  useRouter,
   useSearchParams,
-} from "next/navigation";
-import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
+} from "next/navigation"
+import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react"
 
-import { useEmailContext } from "../../hooks/use-email-context";
-
-import { Button } from "@/components/ui/button";
+import { useEmailContext } from "../../hooks/use-email-context"
+import { Button } from "@/components/ui/button"
+import { CardHeader } from "@/components/ui/card"
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-} from "@/components/ui/pagination";
-import { CardHeader } from "@/components/ui/card";
-import { EmailListSearchForm } from "./email-list-search-form";
-import { EmailMenuButton } from "../email-menu-button";
+} from "@/components/ui/pagination"
+import { EmailMenuButton } from "../email-menu-button"
+import { EmailListSearchForm } from "./email-list-search-form"
 
 export function EmailListHeader() {
-  const { emailState } = useEmailContext();
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useParams();
-  const searchParams = useSearchParams();
+  const { emailState } = useEmailContext()
+  const router = useRouter()
+  const pathname = usePathname()
+  const params = useParams()
+  const searchParams = useSearchParams()
 
   const pageQuery = searchParams.get("page")
     ? parseInt(searchParams.get("page") as string)
-    : 1; // Get the current page from the search params, default to page 1
-  const filterParam = params.segment as string;
+    : 1 // Get the current page from the search params, default to page 1
+  const filterParam = params.segment as string
 
   return (
     <CardHeader className="flex-row justify-between items-center gap-x-1.5 space-y-0 px-3 pb-0">
@@ -50,7 +49,7 @@ export function EmailListHeader() {
               variant="ghost"
               size="icon"
               onClick={() => {
-                router.push(`${pathname}?page=${pageQuery - 1}`);
+                router.push(`${pathname}?page=${pageQuery - 1}`)
               }}
               aria-label="Go to previous page"
               disabled={pageQuery <= 1}
@@ -63,7 +62,7 @@ export function EmailListHeader() {
               variant="ghost"
               size="icon"
               onClick={() => {
-                router.push(`${pathname}?page=${pageQuery + 1}`);
+                router.push(`${pathname}?page=${pageQuery + 1}`)
               }}
               aria-label="Go to next page"
               disabled={pageQuery >= emailState.totalPages}
@@ -74,5 +73,5 @@ export function EmailListHeader() {
         </PaginationContent>
       </Pagination>
     </CardHeader>
-  );
+  )
 }

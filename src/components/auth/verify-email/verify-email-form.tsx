@@ -1,32 +1,32 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import * as React from "react"
+import Link from "next/link"
+import { useParams } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 
-import { VerifyEmailSchema } from "@/schemas/verify-email-schema";
+import { VerifyEmailSchema } from "@/schemas/verify-email-schema"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import type { LocaleType, VerifyEmailFormType } from "@/types"
 
-import type { LocaleType, VerifyEmailFormType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { cn } from "@/lib/utils"
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast"
+import { buttonVariants } from "@/components/ui/button"
+import { Form } from "@/components/ui/form"
 
 export function VerifyEmailForm() {
-  const params = useParams();
+  const params = useParams()
   const form = useForm<VerifyEmailFormType>({
     resolver: zodResolver(VerifyEmailSchema),
     defaultValues: {
       email: "",
     },
-  });
+  })
 
-  const locale = params.lang as LocaleType;
+  const locale = params.lang as LocaleType
 
   async function onSubmit(data: VerifyEmailFormType) {
     try {
@@ -36,23 +36,23 @@ export function VerifyEmailForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error("Failed to send verification email");
+        throw new Error("Failed to send verification email")
       }
 
       toast({
         title: "Check your email",
         description:
           "We've sent you an email with instructions to verify your email address.",
-      });
+      })
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Something went wrong",
         description: error instanceof Error ? error.message : undefined,
-      });
+      })
     }
   }
 
@@ -73,5 +73,5 @@ export function VerifyEmailForm() {
         </div>
       </form>
     </Form>
-  );
+  )
 }

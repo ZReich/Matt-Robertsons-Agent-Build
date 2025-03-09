@@ -1,4 +1,4 @@
-import type { PerformanceOverTimeType } from "../types";
+import type { PerformanceOverTimeType } from "../types"
 
 export const performanceOverTimeData: PerformanceOverTimeType = {
   summary: {
@@ -19,4 +19,4 @@ export const performanceOverTimeData: PerformanceOverTimeType = {
     { month: "November", visitors: 5500, conversions: 200 },
     { month: "December", visitors: 6000, conversions: 250 },
   ],
-};
+}

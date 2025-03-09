@@ -1,82 +1,82 @@
-import { NextResponse } from "next/server";
-import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server"
+import { withAuth } from "next-auth/middleware"
 
-import { isGuestRoute, isPublicRoute } from "@/lib/auth-routes";
+import type { NextRequestWithAuth } from "next-auth/middleware"
+
+import { isGuestRoute, isPublicRoute } from "@/lib/auth-routes"
 import {
-  isPathnameMissingLocale,
+  ensureLocalizedPathname,
   getLocaleFromPathname,
   getPreferredLocale,
-  ensureLocalizedPathname,
-} from "@/lib/i18n";
-import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils";
-
-import type { NextRequestWithAuth } from "next-auth/middleware";
+  isPathnameMissingLocale,
+} from "@/lib/i18n"
+import { ensureRedirectPathname, ensureWithoutPrefix } from "@/lib/utils"
 
 function redirect(pathname: string, request: NextRequestWithAuth) {
-  const { search, hash } = request.nextUrl;
-  let resolvedPathname = pathname;
+  const { search, hash } = request.nextUrl
+  let resolvedPathname = pathname
 
   if (isPathnameMissingLocale(pathname)) {
-    const preferredLocale = getPreferredLocale(request);
-    resolvedPathname = ensureLocalizedPathname(pathname, preferredLocale);
+    const preferredLocale = getPreferredLocale(request)
+    resolvedPathname = ensureLocalizedPathname(pathname, preferredLocale)
   }
   if (search) {
-    resolvedPathname += search;
+    resolvedPathname += search
   }
   if (hash) {
-    resolvedPathname += hash;
+    resolvedPathname += hash
   }
 
-  const redirectUrl = new URL(resolvedPathname, request.url).toString();
-  return NextResponse.redirect(redirectUrl);
+  const redirectUrl = new URL(resolvedPathname, request.url).toString()
+  return NextResponse.redirect(redirectUrl)
 }
 
 export default withAuth(
   async function middleware(request: NextRequestWithAuth) {
-    const { pathname } = request.nextUrl;
+    const { pathname } = request.nextUrl
 
-    const locale = getLocaleFromPathname(pathname);
-    const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
+    const locale = getLocaleFromPathname(pathname)
+    const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`)
 
     // Handle authentication for protected and guest routes
     if (!isPublicRoute(pathnameWithoutLocale)) {
-      const isAuthenticated = !!request.nextauth.token;
-      const isGuest = isGuestRoute(pathnameWithoutLocale);
-      const isProtected = !isGuest;
+      const isAuthenticated = !!request.nextauth.token
+      const isGuest = isGuestRoute(pathnameWithoutLocale)
+      const isProtected = !isGuest
 
       // Redirect authenticated users away from guest routes
       if (isAuthenticated && isGuest) {
-        return redirect(process.env.HOME_PATHNAME || "/", request);
+        return redirect(process.env.HOME_PATHNAME || "/", request)
       }
 
       // Redirect unauthenticated users from protected routes to sign-in
       if (!isAuthenticated && isProtected) {
-        let redirectPathname = "/sign-in";
+        let redirectPathname = "/sign-in"
 
         // Maintain the original path for redirection
         if (pathnameWithoutLocale !== "") {
-          redirectPathname = ensureRedirectPathname(redirectPathname, pathname);
+          redirectPathname = ensureRedirectPathname(redirectPathname, pathname)
         }
 
-        return redirect(redirectPathname, request);
+        return redirect(redirectPathname, request)
       }
     }
 
     if (pathname.startsWith("/home") || pathname.startsWith("/docs")) {
-      return NextResponse.next();
+      return NextResponse.next()
     }
 
     // Redirect to home if accessing the root or locale root
     if (!pathnameWithoutLocale) {
-      return redirect(process.env.HOME_PATHNAME || "/", request);
+      return redirect(process.env.HOME_PATHNAME || "/", request)
     }
 
     // Redirect to localized URL if the pathname is missing a locale
     if (!locale) {
-      return redirect(pathname, request);
+      return redirect(pathname, request)
     }
 
-    return NextResponse.next();
+    return NextResponse.next()
   },
   {
     callbacks: {
@@ -84,7 +84,7 @@ export default withAuth(
       authorized: () => true,
     },
   }
-);
+)
 
 export const config = {
   matcher: [
@@ -98,4 +98,4 @@ export const config = {
      */
     "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images).*)",
   ],
-};
+}

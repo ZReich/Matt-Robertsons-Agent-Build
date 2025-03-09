@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function SavedCardsHeader() {
   return (
@@ -8,5 +8,5 @@ export function SavedCardsHeader() {
         View and manage your stored payment cards for easy checkout.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

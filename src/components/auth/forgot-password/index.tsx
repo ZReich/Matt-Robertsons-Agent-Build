@@ -1,11 +1,11 @@
-import { ForgotPasswordForm } from "./forgot-password-form";
 import {
   Auth,
-  AuthHeader,
-  AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../auth-layout";
+  AuthHeader,
+  AuthTitle,
+} from "../auth-layout"
+import { ForgotPasswordForm } from "./forgot-password-form"
 
 export function ForgotPassword() {
   return (
@@ -20,5 +20,5 @@ export function ForgotPassword() {
         <ForgotPasswordForm />
       </AuthForm>
     </Auth>
-  );
+  )
 }

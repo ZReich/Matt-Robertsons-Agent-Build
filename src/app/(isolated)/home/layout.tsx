@@ -1,9 +1,9 @@
-import { HomeLayout as Layout } from "./_components/home-layout";
+import { HomeLayout as Layout } from "./_components/home-layout"
 
 export default function HomeLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  return <Layout>{children}</Layout>;
+  return <Layout>{children}</Layout>
 }

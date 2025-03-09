@@ -1,35 +1,35 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import * as React from "react"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { ButtonProps } from "@/components/ui/button"
+import type { CalendarProps } from "@/components/ui/calendar"
 
-import type { CalendarProps } from "@/components/ui/calendar";
-import type { ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"
 
 export type MultipleDatesPickerProps = Omit<
   CalendarProps,
   "mode" | "selected" | "onSelect"
 > & {
-  value?: Date[];
-  onValueChange: (dates?: Date[]) => void;
-  formatStr?: string;
-  popoverContentClassName?: string;
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
-  buttonClassName?: string;
-  buttonOptions?: ButtonProps;
-  placeholder?: string;
-};
+  value?: Date[]
+  onValueChange: (dates?: Date[]) => void
+  formatStr?: string
+  popoverContentClassName?: string
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  buttonClassName?: string
+  buttonOptions?: ButtonProps
+  placeholder?: string
+}
 
 const MultipleDatesPicker = React.forwardRef<
   HTMLButtonElement,
@@ -85,9 +85,9 @@ const MultipleDatesPicker = React.forwardRef<
           />
         </PopoverContent>
       </Popover>
-    );
+    )
   }
-);
-MultipleDatesPicker.displayName = "MultipleDatesPicker";
+)
+MultipleDatesPicker.displayName = "MultipleDatesPicker"
 
-export { MultipleDatesPicker };
+export { MultipleDatesPicker }

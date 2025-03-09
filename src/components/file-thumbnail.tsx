@@ -1,11 +1,11 @@
-import * as React from "react";
-import { FileIcon } from "lucide-react";
+import * as React from "react"
+import { FileIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 interface FileThumbnailProps {
-  fileName: string;
-  className?: string;
+  fileName: string
+  className?: string
 }
 
 const FileThumbnail = React.forwardRef<HTMLDivElement, FileThumbnailProps>(
@@ -13,7 +13,7 @@ const FileThumbnail = React.forwardRef<HTMLDivElement, FileThumbnailProps>(
     // Extract the file extension from the file name
     const fileExtension = fileName
       .slice(fileName.lastIndexOf(".") + 1)
-      .toUpperCase();
+      .toUpperCase()
 
     return (
       <div
@@ -30,9 +30,9 @@ const FileThumbnail = React.forwardRef<HTMLDivElement, FileThumbnailProps>(
           <span className="sr-only">File</span>
         </div>
       </div>
-    );
+    )
   }
-);
-FileThumbnail.displayName = "FileThumbnail";
+)
+FileThumbnail.displayName = "FileThumbnail"
 
-export { FileThumbnail };
+export { FileThumbnail }

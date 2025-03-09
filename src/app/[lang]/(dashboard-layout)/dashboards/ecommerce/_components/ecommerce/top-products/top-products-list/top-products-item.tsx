@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import Image from "next/image";
+import Image from "next/image"
 
-import { formatCurrency } from "@/lib/utils";
+import type { TopProductType } from "../../../../types"
 
-import type { TopProductType } from "../../../../types";
+import { formatCurrency } from "@/lib/utils"
 
-import { Card } from "@/components/ui/card";
+import { Card } from "@/components/ui/card"
 
 export function TopProductsItem({
   product,
 }: {
-  product: TopProductType["products"][0];
+  product: TopProductType["products"][0]
 }) {
   return (
     <li>
@@ -46,5 +46,5 @@ export function TopProductsItem({
         </div>
       </Card>
     </li>
-  );
+  )
 }

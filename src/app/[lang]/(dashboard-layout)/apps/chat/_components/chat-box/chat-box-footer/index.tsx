@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { CardFooter } from "@/components/ui/card";
-import { TextMessageForm } from "./text-message-form";
-import { ChatBoxFooterActions } from "./chat-box-footer-actions";
+import { CardFooter } from "@/components/ui/card"
+import { ChatBoxFooterActions } from "./chat-box-footer-actions"
+import { TextMessageForm } from "./text-message-form"
 
 export function ChatBoxFooter() {
   return (
@@ -10,5 +10,5 @@ export function ChatBoxFooter() {
       <ChatBoxFooterActions />
       <TextMessageForm />
     </CardFooter>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicDrawer } from "./_components/basic-drawer";
-import { DrawerResponsiveDialog } from "./_components/drawer-responsive-dialog";
+import { BasicDrawer } from "./_components/basic-drawer"
+import { DrawerResponsiveDialog } from "./_components/drawer-responsive-dialog"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Drawer",
-};
+}
 
 export default function DrawerPage() {
   return (
@@ -15,5 +15,5 @@ export default function DrawerPage() {
       <BasicDrawer />
       <DrawerResponsiveDialog />
     </section>
-  );
+  )
 }

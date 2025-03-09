@@ -1,8 +1,8 @@
-import type { UserType } from "../../../../../types";
+import type { UserType } from "../../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { SecurityPreferencesHeader } from "./security-preferences-header";
-import { SecurityPreferencesContent } from "./security-preferences-content";
+import { Card } from "@/components/ui/card"
+import { SecurityPreferencesContent } from "./security-preferences-content"
+import { SecurityPreferencesHeader } from "./security-preferences-header"
 
 export function SecurityPreferences({ user }: { user: UserType }) {
   return (
@@ -10,5 +10,5 @@ export function SecurityPreferences({ user }: { user: UserType }) {
       <SecurityPreferencesHeader />
       <SecurityPreferencesContent user={user} />
     </Card>
-  );
+  )
 }

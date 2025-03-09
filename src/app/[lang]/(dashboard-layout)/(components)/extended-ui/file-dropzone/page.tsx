@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicFileDropzone } from "./_components/basic-file-dropzone";
-import { FileDropzoneMultiple } from "./_components/file-dropzone-multiple";
-import { FileDropzoneMaxFiles } from "./_components/file-dropzone-max-files";
-import { FileDropzoneMaxSize } from "./_components/file-dropzone-max-size";
+import { BasicFileDropzone } from "./_components/basic-file-dropzone"
+import { FileDropzoneMaxFiles } from "./_components/file-dropzone-max-files"
+import { FileDropzoneMaxSize } from "./_components/file-dropzone-max-size"
+import { FileDropzoneMultiple } from "./_components/file-dropzone-multiple"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "File Dropzone",
-};
+}
 
 export default function FileDropzonePage() {
   return (
@@ -19,5 +19,5 @@ export default function FileDropzonePage() {
       <FileDropzoneMaxFiles />
       <FileDropzoneMaxSize />
     </section>
-  );
+  )
 }

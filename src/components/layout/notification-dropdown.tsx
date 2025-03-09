@@ -1,28 +1,28 @@
-import Link from "next/link";
-import { Bell } from "lucide-react";
+import Link from "next/link"
+import { Bell } from "lucide-react"
 
-import { notificationData } from "@/data/notifications";
+import { notificationData } from "@/data/notifications"
 
-import { cn, formatDistance, formatUnreadCount } from "@/lib/utils";
+import type { DictionaryType } from "@/lib/get-dictionary"
 
-import type { DictionaryType } from "@/lib/get-dictionary";
+import { cn, formatDistance, formatUnreadCount } from "@/lib/utils"
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { Card, CardFooter } from "@/components/ui/card"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { DynamicIcon } from "@/components/dynamic-icon";
+} from "@/components/ui/popover"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 export function NotificationDropdown({
   dictionary,
 }: {
-  dictionary: DictionaryType;
+  dictionary: DictionaryType
 }) {
-  const unreadCount = formatUnreadCount(notificationData.unreadCount);
+  const unreadCount = formatUnreadCount(notificationData.unreadCount)
 
   return (
     <Popover modal>
@@ -95,5 +95,5 @@ export function NotificationDropdown({
         </Card>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

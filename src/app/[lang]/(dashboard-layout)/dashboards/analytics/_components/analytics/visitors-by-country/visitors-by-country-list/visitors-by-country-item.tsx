@@ -1,18 +1,18 @@
-import Image from "next/image";
+import Image from "next/image"
 
-import type { VisitorsByCountryDataType } from "../../../../types";
+import type { VisitorsByCountryDataType } from "../../../../types"
 
-import { Progress } from "@/components/ui/progress";
-import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge";
+import { Progress } from "@/components/ui/progress"
+import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge"
 
 export function VisitorsByCountryItem({
   data,
   totalVisitors,
 }: {
-  data: VisitorsByCountryDataType["countries"][number];
-  totalVisitors: number;
+  data: VisitorsByCountryDataType["countries"][number]
+  totalVisitors: number
 }) {
-  const flagUrl = `https://purecatamphetamine.github.io/country-flag-icons/3x2/${data.countryCode}.svg`;
+  const flagUrl = `https://purecatamphetamine.github.io/country-flag-icons/3x2/${data.countryCode}.svg`
 
   return (
     <li className="flex items-end justify-between gap-2">
@@ -34,5 +34,5 @@ export function VisitorsByCountryItem({
         <Progress value={data.visitors} max={totalVisitors} />
       </div>
     </li>
-  );
+  )
 }

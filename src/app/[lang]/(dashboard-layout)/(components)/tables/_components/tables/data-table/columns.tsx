@@ -1,14 +1,12 @@
-"use client";
+"use client"
 
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table"
 
-import { formatCurrency } from "@/lib/utils";
+import type { InvoiceType } from "../../../types"
 
-import type { InvoiceType } from "../../../types";
-
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header";
-import { InvoiceTableRowActions } from "./data-table-row-actions";
+import { Checkbox } from "@/components/ui/checkbox"
+import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { InvoiceTableRowActions } from "./data-table-row-actions"
 
 export const columns: ColumnDef<InvoiceType>[] = [
   {
@@ -41,9 +39,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Invoice ID" />
     ),
     cell: ({ row }) => {
-      const invoiceId = row.getValue("id") as string;
+      const invoiceId = row.getValue("id") as string
 
-      return <span className="text-primary">#{invoiceId}</span>;
+      return <span className="text-primary">#{invoiceId}</span>
     },
   },
   {
@@ -52,9 +50,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
+      const status = row.getValue("status") as string
 
-      return <span>{status}</span>;
+      return <span>{status}</span>
     },
   },
   {
@@ -63,9 +61,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Method" />
     ),
     cell: ({ row }) => {
-      const method = row.getValue("method") as string;
+      const method = row.getValue("method") as string
 
-      return <span>{method}</span>;
+      return <span>{method}</span>
     },
   },
   {
@@ -74,9 +72,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Amount" />
     ),
     cell: ({ row }) => {
-      const amount = row.getValue("amount") as number;
+      const amount = row.getValue("amount") as number
 
-      return <span>{amount}</span>;
+      return <span>{amount}</span>
     },
   },
   {
@@ -84,4 +82,4 @@ export const columns: ColumnDef<InvoiceType>[] = [
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => <InvoiceTableRowActions row={row} />,
   },
-];
+]

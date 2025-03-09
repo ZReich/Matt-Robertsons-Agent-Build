@@ -1,48 +1,46 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { ChangePlanSchema } from "../../../../_schemas/change-plan-schema";
-
-import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils";
+import { ChangePlanSchema } from "../../../../_schemas/change-plan-schema"
 
 import type {
+  ChangePlanFormType,
   PlanType,
   SubscriptionType,
-  ChangePlanFormType,
-} from "../../../../../../types";
+} from "../../../../../../types"
 
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormDescription,
-} from "@/components/ui/form";
+import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils"
+
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from "@/components/ui/card"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
 
 export function ChangePlanForm({
   plans,
   subscriptions,
 }: {
-  plans: PlanType[];
-  subscriptions: SubscriptionType[];
+  plans: PlanType[]
+  subscriptions: SubscriptionType[]
 }) {
-  const lastSubscribedPlan = plans.find(
-    (p) => p.id === subscriptions[0].planId
-  );
+  const lastSubscribedPlan = plans.find((p) => p.id === subscriptions[0].planId)
 
   const form = useForm<ChangePlanFormType>({
     resolver: zodResolver(ChangePlanSchema),
@@ -50,13 +48,13 @@ export function ChangePlanForm({
       plan: lastSubscribedPlan?.name,
       isAnnual: subscriptions[0].interval === "yearly",
     },
-  });
+  })
 
-  const isAnnual = form.watch("isAnnual");
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const isAnnual = form.watch("isAnnual")
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: ChangePlanFormType) {}
+  function onSubmit(_data: ChangePlanFormType) {}
 
   return (
     <Form {...form}>
@@ -96,8 +94,8 @@ export function ChangePlanForm({
                   {plans.map((plan) => {
                     const price = isAnnual
                       ? getDiscountedPrice(plan.price, 0.85, true) // Discounted monthly price for annual billing
-                      : plan.price;
-                    const formattedPrice = formatCurrency(price);
+                      : plan.price
+                    const formattedPrice = formatCurrency(price)
 
                     return (
                       <FormItem key={plan.name} className="relative">
@@ -142,7 +140,7 @@ export function ChangePlanForm({
                           </Card>
                         </FormLabel>
                       </FormItem>
-                    );
+                    )
                   })}
                 </RadioGroup>
               </FormControl>
@@ -163,5 +161,5 @@ export function ChangePlanForm({
         </Button>
       </form>
     </Form>
-  );
+  )
 }

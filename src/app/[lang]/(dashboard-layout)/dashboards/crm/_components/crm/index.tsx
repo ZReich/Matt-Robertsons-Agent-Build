@@ -1,12 +1,12 @@
-import { Overview } from "./overview";
-import { SalesTrend } from "./sales-trend";
-import { LeadSources } from "./lead-sources";
-import { CustomerSatisfaction } from "./customer-satisfaction";
-import { ActiveProjects } from "./active-projects";
-import { RevenueTrend } from "./revenue-trend";
-import { SalesByCountry } from "./sales-by-country";
-import { TopSalesRepresentatives } from "./top-sales-representatives";
-import { ActivityTimeline } from "./activity-timeline";
+import { ActiveProjects } from "./active-projects"
+import { ActivityTimeline } from "./activity-timeline"
+import { CustomerSatisfaction } from "./customer-satisfaction"
+import { LeadSources } from "./lead-sources"
+import { Overview } from "./overview"
+import { RevenueTrend } from "./revenue-trend"
+import { SalesByCountry } from "./sales-by-country"
+import { SalesTrend } from "./sales-trend"
+import { TopSalesRepresentatives } from "./top-sales-representatives"
 
 export function CRM() {
   return (
@@ -25,5 +25,5 @@ export function CRM() {
       <TopSalesRepresentatives />
       <CustomerSatisfaction />
     </section>
-  );
+  )
 }

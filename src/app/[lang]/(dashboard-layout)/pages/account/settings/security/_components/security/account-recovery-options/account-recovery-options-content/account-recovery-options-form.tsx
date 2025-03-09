@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { AccountRecoveryOptionsSchema } from "../../../../_schemas/account-recovery-options-schema";
+import { AccountRecoveryOptionsSchema } from "../../../../_schemas/account-recovery-options-schema"
 
 import type {
-  UserType,
   AccountRecoveryOptionsFormType,
-} from "../../../../../../types";
+  UserType,
+} from "../../../../../../types"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -19,12 +19,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from "@/components/ui/form"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 interface AccountRecoveryOptionsFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  user: UserType;
+  user: UserType
 }
 
 export function AccountRecoveryOptionsForm({
@@ -35,12 +35,12 @@ export function AccountRecoveryOptionsForm({
     defaultValues: {
       option: user.accountReoveryOption,
     },
-  });
+  })
 
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: AccountRecoveryOptionsFormType) {}
+  function onSubmit(_data: AccountRecoveryOptionsFormType) {}
 
   return (
     <Form {...form}>
@@ -118,5 +118,5 @@ export function AccountRecoveryOptionsForm({
         </Button>
       </form>
     </Form>
-  );
+  )
 }

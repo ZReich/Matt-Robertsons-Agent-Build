@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { faqsData } from "../../../_data/faqs";
+import { faqsData } from "../../../_data/faqs"
 
-import { Accordion } from "@/components/ui/accordion";
-import { FaqsItem } from "./faqs-item";
+import { Accordion } from "@/components/ui/accordion"
+import { FaqsItem } from "./faqs-item"
 
 export function FaqsList() {
   return (
@@ -18,5 +18,5 @@ export function FaqsList() {
         <FaqsItem key={faq.question} faq={faq} />
       ))}
     </Accordion>
-  );
+  )
 }

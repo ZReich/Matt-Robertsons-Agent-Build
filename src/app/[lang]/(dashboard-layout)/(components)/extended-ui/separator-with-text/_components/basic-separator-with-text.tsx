@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { SeparatorWithText } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { SeparatorWithText } from "@/components/ui/separator"
 
 export function BasicSeparatorWithText() {
   return (
@@ -15,5 +15,5 @@ export function BasicSeparatorWithText() {
         <SeparatorWithText>Basic</SeparatorWithText>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import { TbVs } from "react-icons/tb";
+import { TbVs } from "react-icons/tb"
 
-import { formatPercent } from "@/lib/utils";
+import type { NewVsReturningVisitorsType } from "../../../types"
 
-import type { NewVsReturningVisitorsType } from "../../../types";
+import { formatPercent } from "@/lib/utils"
 
-import { SeparatorWithText } from "@/components/ui/separator";
+import { SeparatorWithText } from "@/components/ui/separator"
 
 export function NewVsReturningVisitorsList({
   data,
 }: {
-  data: NewVsReturningVisitorsType["visitors"];
+  data: NewVsReturningVisitorsType["visitors"]
 }) {
-  const { new: newVisitors, returning: returningVisitors } = data;
+  const { new: newVisitors, returning: returningVisitors } = data
 
   return (
     <ul className="flex justify-between items-center">
@@ -68,5 +68,5 @@ export function NewVsReturningVisitorsList({
         </p>
       </li>
     </ul>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function ChangePlanHeader() {
   return (
@@ -8,5 +8,5 @@ export function ChangePlanHeader() {
         Choose the plan that best fits your needs. Prices shown are per month.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

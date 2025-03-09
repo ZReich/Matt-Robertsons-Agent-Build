@@ -1,5 +1,5 @@
-import { BarCharts } from "./_components/bar-charts";
+import { BarCharts } from "./_components/bar-charts"
 
 export default function BarChartsPage() {
-  return <BarCharts />;
+  return <BarCharts />
 }

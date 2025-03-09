@@ -1,8 +1,11 @@
-import { salesTrendData } from "../../../_data/sales-trend";
+import { salesTrendData } from "../../../_data/sales-trend"
 
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
-import { SalesTrendChart } from "./sales-trend-chart";
-import { SalesTrendSummary } from "./sales-trend-summary";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { SalesTrendChart } from "./sales-trend-chart"
+import { SalesTrendSummary } from "./sales-trend-summary"
 
 export async function SalesTrend() {
   return (
@@ -15,5 +18,5 @@ export async function SalesTrend() {
       <SalesTrendSummary data={salesTrendData.summary} />
       <SalesTrendChart data={salesTrendData.salesTrends} />
     </DashboardCard>
-  );
+  )
 }

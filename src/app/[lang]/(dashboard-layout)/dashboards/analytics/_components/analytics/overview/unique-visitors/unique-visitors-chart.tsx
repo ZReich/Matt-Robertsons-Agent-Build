@@ -1,30 +1,29 @@
-"use client";
+"use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
-import type { OverviewType } from "../../../../types";
-import type { ChartConfig } from "@/components/ui/chart";
+import type { ChartConfig } from "@/components/ui/chart"
+import type { OverviewType } from "../../../../types"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
+import { useIsRtl } from "@/hooks/use-is-rtl"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const chartConfig = {
   value: {
     label: "Visitors",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export function UniqueVisitorsChart({
   data,
 }: {
-  data: OverviewType["uniqueVisitors"]["perMonth"];
+  data: OverviewType["uniqueVisitors"]["perMonth"]
 }) {
-  const isRtl = useIsRtl();
+  const isRtl = useIsRtl()
 
   return (
     <ChartContainer
@@ -59,5 +58,5 @@ export function UniqueVisitorsChart({
         />
       </AreaChart>
     </ChartContainer>
-  );
+  )
 }

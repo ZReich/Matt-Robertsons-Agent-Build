@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import type { EmailType } from "../../types";
+import type { EmailType } from "../../types"
 
-import { CardHeader, CardTitle } from "@/components/ui/card";
-import { EmailMenuButton } from "../email-menu-button";
+import { CardHeader, CardTitle } from "@/components/ui/card"
+import { EmailMenuButton } from "../email-menu-button"
 
 export function EmailViewHeader({ email }: { email: EmailType }) {
   return (
@@ -15,5 +15,5 @@ export function EmailViewHeader({ email }: { email: EmailType }) {
         </CardTitle>
       </div>
     </CardHeader>
-  );
+  )
 }

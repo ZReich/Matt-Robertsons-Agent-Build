@@ -1,5 +1,5 @@
-import { PreviewSignIn } from "./preview-sign-in";
-import { ThemePreviewWrapper } from "./theme-preview-wrapper";
+import { PreviewSignIn } from "./preview-sign-in"
+import { ThemePreviewWrapper } from "./theme-preview-wrapper"
 
 export function ThemePreview() {
   return (
@@ -9,5 +9,5 @@ export function ThemePreview() {
         <PreviewSignIn />
       </ThemePreviewWrapper>
     </div>
-  );
+  )
 }

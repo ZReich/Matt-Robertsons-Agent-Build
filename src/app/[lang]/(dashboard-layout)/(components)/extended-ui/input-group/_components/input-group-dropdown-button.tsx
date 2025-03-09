@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import * as React from "react"
+import { ChevronDown } from "lucide-react"
 
-import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupText } from "@/components/ui/input-group";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { InputGroup } from "@/components/ui/input-group"
 
 export function InputGroupDropdownAndButton() {
   return (
@@ -61,5 +61,5 @@ export function InputGroupDropdownAndButton() {
         </InputGroup>
       </CardContent>
     </Card>
-  );
+  )
 }

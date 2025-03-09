@@ -1,7 +1,7 @@
-import { MessageCircleX } from "lucide-react";
+import { MessageCircleX } from "lucide-react"
 
-import { Card, CardContent } from "@/components/ui/card";
-import { ChatMenuButton } from "../chat-menu-button";
+import { Card, CardContent } from "@/components/ui/card"
+import { ChatMenuButton } from "../chat-menu-button"
 
 export function ChatBoxNotFound() {
   return (
@@ -15,5 +15,5 @@ export function ChatBoxNotFound() {
         <ChatMenuButton />
       </CardContent>
     </Card>
-  );
+  )
 }

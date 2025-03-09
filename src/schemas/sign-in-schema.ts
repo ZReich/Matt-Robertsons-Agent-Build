@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const SignInSchema = z.object({
   email: z
@@ -20,4 +20,4 @@ export const SignInSchema = z.object({
     .regex(/(?=.*[0-9])/, {
       message: "Password must contain at least one number.",
     }),
-});
+})

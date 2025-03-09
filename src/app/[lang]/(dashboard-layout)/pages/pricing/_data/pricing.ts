@@ -1,4 +1,4 @@
-import type { PricingCardType } from "../types";
+import type { PricingCardType } from "../types"
 
 export const pricingData: PricingCardType[] = [
   {
@@ -51,4 +51,4 @@ export const pricingData: PricingCardType[] = [
     period: "month",
     href: "",
   },
-];
+]

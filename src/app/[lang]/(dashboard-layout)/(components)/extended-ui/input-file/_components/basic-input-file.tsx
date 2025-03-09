@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { InputFile } from "@/components/ui/input-file";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { InputFile } from "@/components/ui/input-file"
 
 export function BasicInputFile() {
   return (
@@ -15,5 +15,5 @@ export function BasicInputFile() {
         <InputFile />
       </CardContent>
     </Card>
-  );
+  )
 }

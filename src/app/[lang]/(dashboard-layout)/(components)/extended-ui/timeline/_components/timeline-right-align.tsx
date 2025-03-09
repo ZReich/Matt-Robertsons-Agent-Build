@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Timeline,
   TimelineContent,
@@ -9,8 +10,7 @@ import {
   TimelineHeading,
   TimelineItem,
   TimelineLine,
-} from "@/components/ui/timeline";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/timeline"
 
 export function TimelineRightAlign() {
   return (
@@ -88,5 +88,5 @@ export function TimelineRightAlign() {
         </Timeline>
       </CardContent>
     </Card>
-  );
+  )
 }

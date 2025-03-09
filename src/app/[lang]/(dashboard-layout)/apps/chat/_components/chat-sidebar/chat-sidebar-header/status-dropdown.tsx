@@ -1,26 +1,26 @@
-"use client";
+"use client"
 
-import { CircleDashed } from "lucide-react";
+import { CircleDashed } from "lucide-react"
 
 import {
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const options = [
   { value: "ONLINE", label: "Online" },
   { value: "IDLE", label: "Idle" },
   { value: "DO_NOT_DISTURB", label: "Do Not Disturb" },
   { value: "INVISIBLE", label: "Invisible" },
-];
+]
 
 type StatusDropdownProps = {
-  status: string;
-  setStatus: (val: string) => void;
-};
+  status: string
+  setStatus: (val: string) => void
+}
 
 export function StatusDropdown({ status, setStatus }: StatusDropdownProps) {
   return (
@@ -39,5 +39,5 @@ export function StatusDropdown({ status, setStatus }: StatusDropdownProps) {
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
-  );
+  )
 }

@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import * as React from "react"
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/input-otp"
 
 export function InputOtpPattern() {
   return (
@@ -29,5 +29,5 @@ export function InputOtpPattern() {
         </InputOTP>
       </CardContent>
     </Card>
-  );
+  )
 }

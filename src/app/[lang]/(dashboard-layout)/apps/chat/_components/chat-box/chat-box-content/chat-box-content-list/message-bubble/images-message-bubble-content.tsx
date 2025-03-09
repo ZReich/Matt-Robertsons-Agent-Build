@@ -1,16 +1,16 @@
-import Link from "next/link";
-import Image from "next/image";
+import Image from "next/image"
+import Link from "next/link"
 
-import { cn } from "@/lib/utils";
+import type { MessageType } from "../../../../../types"
 
-import type { MessageType } from "../../../../../types";
+import { cn } from "@/lib/utils"
 
 export function ImagesMessageBubbleContent({
   images,
 }: {
-  images: MessageType["images"];
+  images: MessageType["images"]
 }) {
-  if (!images || !images.length) return null; // Return null if the images are empty
+  if (!images || !images.length) return null // Return null if the images are empty
 
   return (
     <ul
@@ -57,5 +57,5 @@ export function ImagesMessageBubbleContent({
         </li>
       )}
     </ul>
-  );
+  )
 }

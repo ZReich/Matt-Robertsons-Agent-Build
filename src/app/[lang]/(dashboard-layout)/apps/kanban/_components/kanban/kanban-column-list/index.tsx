@@ -1,16 +1,15 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Droppable, DroppableProvided } from "@hello-pangea/dnd";
+import * as React from "react"
+import { Droppable, DroppableProvided } from "@hello-pangea/dnd"
 
-import { useKanbanContext } from "../../../hooks/use-kanban-context";
-
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { KanbanColumnItem } from "./kanban-column-item";
-import { KanbanAddNewColumnButton } from "./kanban-add-new-column-button";
+import { useKanbanContext } from "../../../hooks/use-kanban-context"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { KanbanAddNewColumnButton } from "./kanban-add-new-column-button"
+import { KanbanColumnItem } from "./kanban-column-item"
 
 export function KanbanColumnList() {
-  const { kanbanState, setKanbanAddColumnSidebarIsOpen } = useKanbanContext();
+  const { kanbanState, setKanbanAddColumnSidebarIsOpen } = useKanbanContext()
 
   return (
     <ScrollArea orientation="horizontal" className="container p-0">
@@ -38,5 +37,5 @@ export function KanbanColumnList() {
         )}
       </Droppable>
     </ScrollArea>
-  );
+  )
 }

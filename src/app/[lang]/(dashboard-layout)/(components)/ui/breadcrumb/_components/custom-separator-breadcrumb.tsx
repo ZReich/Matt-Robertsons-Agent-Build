@@ -1,13 +1,13 @@
-import { Slash } from "lucide-react";
+import { Slash } from "lucide-react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function CustomSeparatorBreadcrumb() {
   return (
@@ -31,5 +31,5 @@ export function CustomSeparatorBreadcrumb() {
         </Breadcrumb>
       </CardContent>
     </Card>
-  );
+  )
 }

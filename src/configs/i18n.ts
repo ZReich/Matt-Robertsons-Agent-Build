@@ -9,4 +9,4 @@ export const i18n = {
     en: "english",
     ar: "arabic",
   },
-} as const;
+} as const

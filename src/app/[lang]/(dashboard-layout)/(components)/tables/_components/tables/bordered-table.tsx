@@ -1,6 +1,6 @@
-import { invoicesData } from "../../_data/invoices";
+import { invoicesData } from "../../_data/invoices"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
 export default function BorderedTable() {
   return (
@@ -41,5 +41,5 @@ export default function BorderedTable() {
         </Table>
       </CardContent>
     </Card>
-  );
+  )
 }

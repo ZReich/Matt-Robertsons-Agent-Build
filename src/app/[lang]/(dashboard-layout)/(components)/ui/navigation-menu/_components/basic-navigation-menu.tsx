@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -5,8 +6,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/navigation-menu"
 
 export function BasicNavigationMenu() {
   return (
@@ -34,5 +34,5 @@ export function BasicNavigationMenu() {
         </NavigationMenu>
       </CardContent>
     </Card>
-  );
+  )
 }

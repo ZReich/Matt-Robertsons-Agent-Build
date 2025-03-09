@@ -1,7 +1,7 @@
-import * as React from "react";
+import * as React from "react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export function BasicCheckbox() {
   return (
@@ -30,5 +30,5 @@ export function BasicCheckbox() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

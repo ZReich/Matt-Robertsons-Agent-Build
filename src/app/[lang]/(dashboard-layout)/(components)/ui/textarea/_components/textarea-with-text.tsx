@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 export function TextareaWithText() {
   return (
@@ -22,5 +22,5 @@ export function TextareaWithText() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

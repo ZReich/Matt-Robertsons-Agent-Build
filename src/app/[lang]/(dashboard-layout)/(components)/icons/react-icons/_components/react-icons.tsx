@@ -1,42 +1,41 @@
-import Link from "next/link";
-
+import Link from "next/link"
 import {
-  FaReact,
-  FaGithub,
-  FaTwitter,
-  FaFacebook,
-  FaInstagram,
-  FaLinkedin,
-  FaYoutube,
-  FaTwitch,
   FaAmazon,
-  FaApple,
-  FaGoogle,
-  FaMicrosoft,
   FaAndroid,
   FaAngular,
+  FaApple,
   FaAws,
   FaBitcoin,
   FaChrome,
   FaDocker,
   FaDropbox,
   FaEthereum,
+  FaFacebook,
   FaFirefox,
+  FaGithub,
+  FaGoogle,
+  FaInstagram,
   FaJava,
+  FaLinkedin,
+  FaMicrosoft,
   FaPython,
+  FaReact,
+  FaTwitch,
+  FaTwitter,
   FaUber,
-} from "react-icons/fa";
+  FaYoutube,
+} from "react-icons/fa"
 
-import type { IconType } from "../../types";
+import type { IconType } from "../../types"
 
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/card"
 
 const icons: IconType[] = [
   { icon: FaReact, name: "FaReact" },
@@ -63,7 +62,7 @@ const icons: IconType[] = [
   { icon: FaJava, name: "FaJava" },
   { icon: FaPython, name: "FaPython" },
   { icon: FaUber, name: "FaUber" },
-];
+]
 
 export function ReactIcons() {
   return (
@@ -93,5 +92,5 @@ export function ReactIcons() {
         </Button>
       </CardFooter>
     </Card>
-  );
+  )
 }

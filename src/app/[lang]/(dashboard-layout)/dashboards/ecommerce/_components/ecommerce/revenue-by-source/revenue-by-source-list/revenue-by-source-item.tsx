@@ -1,13 +1,13 @@
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import type { RevenueBySourceType } from "../../../../types"
 
-import type { RevenueBySourceType } from "../../../../types";
+import { formatCurrency, formatPercent } from "@/lib/utils"
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
 
 export function RevenueBySourceItem({
   data,
 }: {
-  data: RevenueBySourceType["sources"][number];
+  data: RevenueBySourceType["sources"][number]
 }) {
   return (
     <li className="flex justify-between items-center gap-x-2">
@@ -32,5 +32,5 @@ export function RevenueBySourceItem({
         </Badge>
       </div>
     </li>
-  );
+  )
 }

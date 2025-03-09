@@ -1,8 +1,8 @@
-import { revenueTrendData } from "../../../_data/revenue-trend";
+import { revenueTrendData } from "../../../_data/revenue-trend"
 
-import { RevenueTrendChart } from "./revenue-trend-chart";
-import { RevenueTrendSummary } from "./revenue-trend-summary";
-import { Card } from "@/components/ui/card";
+import { Card } from "@/components/ui/card"
+import { RevenueTrendChart } from "./revenue-trend-chart"
+import { RevenueTrendSummary } from "./revenue-trend-summary"
 
 export function RevenueTrend() {
   return (
@@ -13,5 +13,5 @@ export function RevenueTrend() {
         <RevenueTrendChart data={revenueTrendData.revenueTrends} />
       </div>
     </Card>
-  );
+  )
 }

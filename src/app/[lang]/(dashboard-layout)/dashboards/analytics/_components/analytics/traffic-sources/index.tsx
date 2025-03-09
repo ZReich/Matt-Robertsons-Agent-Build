@@ -1,8 +1,11 @@
-import { trafficSourcesData } from "../../../_data/traffic-sources";
+import { trafficSourcesData } from "../../../_data/traffic-sources"
 
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
-import { TrafficSourcesChart } from "./traffic-sources-chart";
-import { TrafficSourcesTable } from "./traffic-sources-table";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { TrafficSourcesChart } from "./traffic-sources-chart"
+import { TrafficSourcesTable } from "./traffic-sources-table"
 
 export async function TrafficSources() {
   return (
@@ -15,5 +18,5 @@ export async function TrafficSources() {
       <TrafficSourcesChart data={trafficSourcesData.sources} />
       <TrafficSourcesTable data={trafficSourcesData.sources} />
     </DashboardCard>
-  );
+  )
 }

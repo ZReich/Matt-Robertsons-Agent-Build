@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { Forward, Reply } from "lucide-react";
+import { Forward, Reply } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"
+import { CardFooter } from "@/components/ui/card"
 
 export function EmailViewContentFooter() {
   return (
@@ -17,5 +17,5 @@ export function EmailViewContentFooter() {
         <span>Forward</span>
       </Button>
     </CardFooter>
-  );
+  )
 }

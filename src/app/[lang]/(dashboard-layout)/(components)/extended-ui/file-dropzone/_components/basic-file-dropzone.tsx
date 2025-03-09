@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileDropzone } from "@/components/ui/file-dropzone";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 
 export function BasicFileDropzone() {
   return (
@@ -11,5 +11,5 @@ export function BasicFileDropzone() {
         <FileDropzone />
       </CardContent>
     </Card>
-  );
+  )
 }

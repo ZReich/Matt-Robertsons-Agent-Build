@@ -1,33 +1,33 @@
-"use client";
+"use client"
 
-import Autoplay from "embla-carousel-autoplay";
-import { useDirection } from "@radix-ui/react-direction";
+import { useDirection } from "@radix-ui/react-direction"
+import Autoplay from "embla-carousel-autoplay"
 
-import { formatDate, getInitials } from "@/lib/utils";
+import type { CustomerSatisfactionType } from "../../../types"
 
-import type { CustomerSatisfactionType } from "../../../types";
+import { formatDate, getInitials } from "@/lib/utils"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ShowMoreText } from "@/components/ui/show-more-text";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Rating } from "@/components/ui/rating";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@/components/ui/carousel"
+import { Rating } from "@/components/ui/rating"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { ShowMoreText } from "@/components/ui/show-more-text"
 
 export function CustomerSatisfactionCarousel({
   data,
 }: {
-  data: CustomerSatisfactionType["feedbacks"];
+  data: CustomerSatisfactionType["feedbacks"]
 }) {
-  const direction = useDirection();
+  const direction = useDirection()
 
   return (
     <Carousel
@@ -89,5 +89,5 @@ export function CustomerSatisfactionCarousel({
       <CarouselPrevious />
       <CarouselNext />
     </Carousel>
-  );
+  )
 }

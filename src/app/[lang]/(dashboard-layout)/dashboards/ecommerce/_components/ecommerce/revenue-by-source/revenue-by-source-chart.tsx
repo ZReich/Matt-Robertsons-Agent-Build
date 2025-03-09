@@ -1,26 +1,25 @@
-"use client";
+"use client"
 
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts"
 
-import type { RevenueBySourceType } from "../../../types";
+import type { RevenueBySourceType } from "../../../types"
 
-import { useRadius } from "@/hooks/use-radius";
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
-import { ChartContainer } from "@/components/ui/chart";
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { useRadius } from "@/hooks/use-radius"
+import { ChartContainer } from "@/components/ui/chart"
 
 export function RevenueBySourceChart({
   data,
 }: {
-  data: RevenueBySourceType["sources"];
+  data: RevenueBySourceType["sources"]
 }) {
-  const isRtl = useIsRtl();
-  const radius = useRadius();
+  const isRtl = useIsRtl()
+  const radius = useRadius()
 
   const chartData = data.reduce((acc: { [key: string]: number }, source) => {
-    acc[source.name.toLocaleLowerCase()] = source.value;
-    return acc;
-  }, {});
+    acc[source.name.toLocaleLowerCase()] = source.value
+    return acc
+  }, {})
 
   return (
     <ChartContainer config={{}} className="h-4 w-full">
@@ -43,5 +42,5 @@ export function RevenueBySourceChart({
         ))}
       </BarChart>
     </ChartContainer>
-  );
+  )
 }

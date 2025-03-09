@@ -1,4 +1,4 @@
-import type { OverviewType } from "../types";
+import type { OverviewType } from "../types"
 
 export const overviewData: OverviewType = {
   totalSales: {
@@ -21,4 +21,4 @@ export const overviewData: OverviewType = {
     percentageChange: -0.03,
     period: "Last month",
   },
-};
+}

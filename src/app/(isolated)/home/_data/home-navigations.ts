@@ -1,4 +1,4 @@
-import { HomeNavigationType } from "../types";
+import { HomeNavigationType } from "../types"
 
 export const homeNavigationsData: HomeNavigationType[] = [
   {
@@ -21,4 +21,4 @@ export const homeNavigationsData: HomeNavigationType[] = [
     title: "Contact Us",
     href: "/home/contact-us",
   },
-];
+]

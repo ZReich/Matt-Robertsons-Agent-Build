@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const ContactUsSchema = z.object({
   name: z
@@ -18,4 +18,4 @@ export const ContactUsSchema = z.object({
     .trim()
     .min(2, { message: "Message must contain at least 2 character" })
     .max(5000, { message: "Message must contain at most 5000 characters" }),
-});
+})

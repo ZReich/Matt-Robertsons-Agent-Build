@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/dropdown-menu"
 
 export function BasicDropdownMenu() {
   return (
@@ -32,5 +32,5 @@ export function BasicDropdownMenu() {
         </DropdownMenu>
       </CardContent>
     </Card>
-  );
+  )
 }

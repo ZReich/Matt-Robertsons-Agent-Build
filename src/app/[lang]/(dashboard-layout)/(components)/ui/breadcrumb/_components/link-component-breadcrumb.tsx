@@ -1,6 +1,5 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,7 +7,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function LinkComponentBreadcrumb() {
   return (
@@ -38,5 +38,5 @@ export function LinkComponentBreadcrumb() {
         </Breadcrumb>
       </CardContent>
     </Card>
-  );
+  )
 }

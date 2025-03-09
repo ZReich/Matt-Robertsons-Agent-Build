@@ -1,27 +1,26 @@
-"use client";
+"use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+
+import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { SalesTrendType } from "../../../types"
 
 import {
   camelCaseToTitleCase,
   formatCurrency,
   formatDateShort,
-} from "@/lib/utils";
+} from "@/lib/utils"
 
-import type { SalesTrendType } from "../../../types";
-import type { ChartTooltipContentProps } from "@/components/ui/chart";
-
-import { useRadius } from "@/hooks/use-radius";
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { useRadius } from "@/hooks/use-radius"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
-  if (!props.payload || props.payload.length === 0) return null;
+  if (!props.payload || props.payload.length === 0) return null
 
   return (
     <ChartTooltipContent
@@ -32,16 +31,16 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
         value: formatCurrency(Number(item.value)),
       }))}
     />
-  );
+  )
 }
 
 export function SalesTrendChart({
   data,
 }: {
-  data: SalesTrendType["salesTrends"];
+  data: SalesTrendType["salesTrends"]
 }) {
-  const isRtl = useIsRtl();
-  const radius = useRadius();
+  const isRtl = useIsRtl()
+  const radius = useRadius()
 
   return (
     <ChartContainer config={{}} className="w-full md:h-[200px]">
@@ -62,5 +61,5 @@ export function SalesTrendChart({
         <Bar dataKey="sales" fill="hsl(var(--chart-4))" radius={radius} />
       </BarChart>
     </ChartContainer>
-  );
+  )
 }

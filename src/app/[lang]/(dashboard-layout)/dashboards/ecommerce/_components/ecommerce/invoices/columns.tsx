@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { ColumnDef } from "@tanstack/react-table";
-import { PackageCheck, Truck, Plane, Package, Clock } from "lucide-react";
+import { ColumnDef } from "@tanstack/react-table"
+import { Clock, Package, PackageCheck, Plane, Truck } from "lucide-react"
 
-import { formatCurrency, formatDate } from "@/lib/utils";
+import type { InvoiceType } from "../../../types"
 
-import type { InvoiceType } from "../../../types";
+import { formatCurrency, formatDate } from "@/lib/utils"
 
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header";
-import { InvoiceTableRowActions } from "./invoice-table-row-actions";
+import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
+import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { InvoiceTableRowActions } from "./invoice-table-row-actions"
 
 const deliveryStatusIcons = {
   Delivered: PackageCheck,
@@ -18,7 +18,7 @@ const deliveryStatusIcons = {
   "In Transit": Plane,
   Processing: Package,
   Pending: Clock,
-};
+}
 
 export const columns: ColumnDef<InvoiceType>[] = [
   {
@@ -51,9 +51,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Invoice ID" />
     ),
     cell: ({ row }) => {
-      const invoiceId = row.getValue("invoiceId") as string;
+      const invoiceId = row.getValue("invoiceId") as string
 
-      return <span className="text-primary">#{invoiceId}</span>;
+      return <span className="text-primary">#{invoiceId}</span>
     },
   },
   {
@@ -62,13 +62,13 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Customer" />
     ),
     cell: ({ row }) => {
-      const customerName = row.getValue("customerName") as string;
+      const customerName = row.getValue("customerName") as string
 
       return (
         <span className="inline-block max-w-44 break-all truncate">
           {customerName}
         </span>
-      );
+      )
     },
   },
   {
@@ -77,9 +77,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Order Date" />
     ),
     cell: ({ row }) => {
-      const orderDate = row.getValue("orderDate") as string;
+      const orderDate = row.getValue("orderDate") as string
 
-      return formatDate(orderDate);
+      return formatDate(orderDate)
     },
   },
   {
@@ -88,9 +88,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Due Date" />
     ),
     cell: ({ row }) => {
-      const dueDate = row.getValue("dueDate") as string;
+      const dueDate = row.getValue("dueDate") as string
 
-      return <span>{formatDate(dueDate)}</span>;
+      return <span>{formatDate(dueDate)}</span>
     },
   },
   {
@@ -99,9 +99,9 @@ export const columns: ColumnDef<InvoiceType>[] = [
       <DataTableColumnHeader column={column} title="Total Amount" />
     ),
     cell: ({ row }) => {
-      const totalAmount = row.getValue("totalAmount") as number;
+      const totalAmount = row.getValue("totalAmount") as number
 
-      return <span>{formatCurrency(totalAmount)}</span>;
+      return <span>{formatCurrency(totalAmount)}</span>
     },
   },
   {
@@ -112,15 +112,15 @@ export const columns: ColumnDef<InvoiceType>[] = [
     cell: ({ row }) => {
       const deliveryStatus = row.getValue(
         "deliveryStatus"
-      ) as InvoiceType["deliveryStatus"];
-      const Icon = deliveryStatusIcons[deliveryStatus];
+      ) as InvoiceType["deliveryStatus"]
+      const Icon = deliveryStatusIcons[deliveryStatus]
 
       return (
         <Badge>
           <Icon className="me-2 h-4 w-4" />
           <span>{deliveryStatus}</span>
         </Badge>
-      );
+      )
     },
   },
   {
@@ -128,4 +128,4 @@ export const columns: ColumnDef<InvoiceType>[] = [
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => <InvoiceTableRowActions row={row} />,
   },
-];
+]

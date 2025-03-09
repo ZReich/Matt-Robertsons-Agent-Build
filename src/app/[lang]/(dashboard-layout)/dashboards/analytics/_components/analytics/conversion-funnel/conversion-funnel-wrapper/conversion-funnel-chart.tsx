@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import { Funnel, FunnelChart } from "recharts";
+import { Funnel, FunnelChart } from "recharts"
 
-import type { ConversionFunnelType } from "../../../../types";
+import type { ConversionFunnelType } from "../../../../types"
 
-import { ChartContainer } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart"
 
 export function ConversionFunnelChart({
   data,
   chartRef,
 }: {
-  data: ConversionFunnelType["funnelSteps"];
-  chartRef: React.RefObject<HTMLDivElement>;
+  data: ConversionFunnelType["funnelSteps"]
+  chartRef: React.RefObject<HTMLDivElement>
 }) {
   return (
     <ChartContainer
@@ -29,5 +29,5 @@ export function ConversionFunnelChart({
         />
       </FunnelChart>
     </ChartContainer>
-  );
+  )
 }

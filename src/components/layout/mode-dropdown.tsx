@@ -1,18 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams } from "next/navigation";
-import { MoonStar, Sun, SunMoon } from "lucide-react";
+import * as React from "react"
+import { useParams } from "next/navigation"
+import { MoonStar, Sun, SunMoon } from "lucide-react"
 
-import { i18n } from "@/configs/i18n";
+import type { DictionaryType } from "@/lib/get-dictionary"
+import type { LocaleType, ModeType } from "@/types"
 
-import type { LocaleType } from "@/types";
-import type { DictionaryType } from "@/lib/get-dictionary";
-import type { ModeType } from "@/types";
+import { i18n } from "@/configs/i18n"
 
-import { useSettings } from "@/hooks/use-settings";
-
-import { Button } from "@/components/ui/button";
+import { useSettings } from "@/hooks/use-settings"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,29 +19,29 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 const modeIcons = {
   light: Sun,
   dark: MoonStar,
   system: SunMoon,
-};
+}
 
 export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
-  const { settings, updateSettings } = useSettings();
-  const params = useParams();
+  const { settings, updateSettings } = useSettings()
+  const params = useParams()
 
-  const locale = params.lang as LocaleType;
-  const direction = i18n.localeDirection[locale];
-  const mode = settings.mode;
-  const ModeIcon = modeIcons[mode];
+  const locale = params.lang as LocaleType
+  const direction = i18n.localeDirection[locale]
+  const mode = settings.mode
+  const ModeIcon = modeIcons[mode]
 
   const setMode = React.useCallback(
     (modeName: ModeType) => {
-      updateSettings({ ...settings, mode: modeName });
+      updateSettings({ ...settings, mode: modeName })
     },
     [settings, updateSettings]
-  );
+  )
 
   return (
     <DropdownMenu dir={direction}>
@@ -71,5 +69,5 @@ export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

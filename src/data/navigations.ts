@@ -1,4 +1,4 @@
-import type { NavigationType } from "@/types";
+import type { NavigationType } from "@/types"
 
 export const navigationsData: NavigationType[] = [
   {
@@ -501,4 +501,4 @@ export const navigationsData: NavigationType[] = [
       },
     ],
   },
-];
+]

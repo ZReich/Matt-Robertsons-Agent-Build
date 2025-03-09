@@ -1,20 +1,19 @@
-"use client";
+"use client"
 
-import { Menu } from "lucide-react";
+import { Menu } from "lucide-react"
 
-import { useChatContext } from "../hooks/use-chat-context";
-
-import { Button, ButtonProps } from "@/components/ui/button";
+import { useChatContext } from "../hooks/use-chat-context"
+import { Button, ButtonProps } from "@/components/ui/button"
 
 interface ChatMenuButtonProps extends ButtonProps {
-  isIcon?: boolean;
+  isIcon?: boolean
 }
 
 export function ChatMenuButton({
   isIcon = false,
   ...props
 }: ChatMenuButtonProps) {
-  const { setIsChatSidebarOpen } = useChatContext();
+  const { setIsChatSidebarOpen } = useChatContext()
 
   if (isIcon) {
     return (
@@ -28,7 +27,7 @@ export function ChatMenuButton({
       >
         <Menu className="h-4 w-4" />
       </Button>
-    );
+    )
   }
 
   return (
@@ -40,5 +39,5 @@ export function ChatMenuButton({
     >
       Menu
     </Button>
-  );
+  )
 }

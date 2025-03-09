@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { avatarsData } from "../_data/avatars";
+import { avatarsData } from "../_data/avatars"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AvatarStack } from "@/components/ui/avatar";
+import { AvatarStack } from "@/components/ui/avatar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function AvatarStackSize() {
   return (
@@ -28,5 +28,5 @@ export function AvatarStackSize() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

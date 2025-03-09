@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 import {
   flexRender,
   getCoreRowModel,
@@ -8,16 +8,25 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 
-import { invoicesData } from "../../../_data/invoices";
+import { invoicesData } from "../../../_data/invoices"
 
 import type {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Table,
   TableBody,
@@ -25,27 +34,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { InvoiceTableToolbar } from "./data-table-toolbar";
-import { columns } from "./columns";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@/components/ui/table"
+import { columns } from "./columns"
+import { InvoiceTableToolbar } from "./data-table-toolbar"
 
 export function DataTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  );
+  )
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+    React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
     data: invoicesData,
@@ -64,7 +64,7 @@ export function DataTable() {
       columnVisibility,
       rowSelection,
     },
-  });
+  })
 
   return (
     <Card>
@@ -129,5 +129,5 @@ export function DataTable() {
         <DataTablePagination table={table} />
       </CardFooter>
     </Card>
-  );
+  )
 }

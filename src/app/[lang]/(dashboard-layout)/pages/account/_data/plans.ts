@@ -1,4 +1,4 @@
-import type { PlanType } from "../types";
+import type { PlanType } from "../types"
 
 export const plansData: PlanType[] = [
   {
@@ -43,4 +43,4 @@ export const plansData: PlanType[] = [
       "On-premise deployment option",
     ],
   },
-];
+]

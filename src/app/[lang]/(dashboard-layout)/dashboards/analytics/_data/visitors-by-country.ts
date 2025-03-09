@@ -1,4 +1,4 @@
-import type { VisitorsByCountryDataType } from "../types";
+import type { VisitorsByCountryDataType } from "../types"
 
 export const visitorsByCountryData: VisitorsByCountryDataType = {
   summary: {
@@ -42,4 +42,4 @@ export const visitorsByCountryData: VisitorsByCountryDataType = {
       percentageChange: -0.04,
     },
   ],
-};
+}

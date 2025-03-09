@@ -1,12 +1,15 @@
-import { OverviewType } from "../../../../types";
+import { OverviewType } from "../../../../types"
 
-import { DashboardCardActionsDropdown, DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
-import { AverageSessionDurationChart } from "./average-session-duration-chart";
+import {
+  DashboardCardActionsDropdown,
+  DashboardOverviewCardV3,
+} from "@/components/dashboards/dashboard-card"
+import { AverageSessionDurationChart } from "./average-session-duration-chart"
 
 export function AverageSessionDuration({
   data,
 }: {
-  data: OverviewType["averageSessionDuration"];
+  data: OverviewType["averageSessionDuration"]
 }) {
   return (
     <DashboardOverviewCardV3
@@ -19,5 +22,5 @@ export function AverageSessionDuration({
       chart={<AverageSessionDurationChart data={data.perMonth} />}
       formatStyle="duration"
     />
-  );
+  )
 }

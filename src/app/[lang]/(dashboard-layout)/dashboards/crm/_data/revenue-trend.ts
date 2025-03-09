@@ -1,4 +1,4 @@
-import type { RevenueTrendType } from "../types";
+import type { RevenueTrendType } from "../types"
 
 export const revenueTrendData: RevenueTrendType = {
   period: "2024",
@@ -20,4 +20,4 @@ export const revenueTrendData: RevenueTrendType = {
     { month: "November", revenue: 7000 },
     { month: "December", revenue: 8000 },
   ],
-};
+}

@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { PanelLeft } from "lucide-react";
+import { PanelLeft } from "lucide-react"
 
-import { useSidebar } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { useSidebar } from "@/components/ui/sidebar"
 
 export function ToggleMobileSidebar() {
-  const { isMobile, openMobile, setOpenMobile } = useSidebar();
+  const { isMobile, openMobile, setOpenMobile } = useSidebar()
 
   if (isMobile) {
     return (
@@ -19,6 +19,6 @@ export function ToggleMobileSidebar() {
       >
         <PanelLeft className="h-4 w-4" />
       </Button>
-    );
+    )
   }
 }

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const NewPasswordSchema = z
   .object({
@@ -12,4 +12,4 @@ export const NewPasswordSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords must match",
     path: ["confirmPassword"],
-  });
+  })

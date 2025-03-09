@@ -1,11 +1,11 @@
-import { Overview } from "./overview";
-import { TrafficSources } from "./traffic-sources";
-import { EngagementByDevice } from "./engagement-by-device";
-import { ConversionFunnel } from "./conversion-funnel";
-import { PerformanceOverTime } from "./performance-over-time";
-import { NewVsReturningVisitors } from "./new-vs-returning-visitors";
-import { GenderDistribution } from "./gender-distribution";
-import { VisitorsByCountry } from "./visitors-by-country";
+import { ConversionFunnel } from "./conversion-funnel"
+import { EngagementByDevice } from "./engagement-by-device"
+import { GenderDistribution } from "./gender-distribution"
+import { NewVsReturningVisitors } from "./new-vs-returning-visitors"
+import { Overview } from "./overview"
+import { PerformanceOverTime } from "./performance-over-time"
+import { TrafficSources } from "./traffic-sources"
+import { VisitorsByCountry } from "./visitors-by-country"
 
 export function Analytics() {
   return (
@@ -23,5 +23,5 @@ export function Analytics() {
       <VisitorsByCountry />
       <EngagementByDevice />
     </section>
-  );
+  )
 }

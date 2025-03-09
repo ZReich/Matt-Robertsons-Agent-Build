@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
-import { Earth } from "lucide-react";
+import * as React from "react"
+import Link from "next/link"
+import { useParams, usePathname } from "next/navigation"
+import { Earth } from "lucide-react"
 
-import { i18n } from "@/configs/i18n";
+import type { DictionaryType } from "@/lib/get-dictionary"
+import type { LocaleType } from "@/types"
 
-import { relocalizePathname } from "@/lib/i18n";
+import { i18n } from "@/configs/i18n"
+import { relocalizePathname } from "@/lib/i18n"
+import { getDictionaryValue } from "@/lib/utils"
 
-import type { LocaleType } from "@/types";
-import type { DictionaryType } from "@/lib/get-dictionary";
-
-import { useSettings } from "@/hooks/use-settings";
-
+import { useSettings } from "@/hooks/use-settings"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,28 +22,26 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { getDictionaryValue } from "@/lib/utils";
+} from "@/components/ui/dropdown-menu"
 
 export function LanguageDropdown({
   dictionary,
 }: {
-  dictionary: DictionaryType;
+  dictionary: DictionaryType
 }) {
-  const pathname = usePathname();
-  const params = useParams();
-  const { settings, updateSettings } = useSettings();
+  const pathname = usePathname()
+  const params = useParams()
+  const { settings, updateSettings } = useSettings()
 
-  const locale = params.lang as LocaleType;
-  const direction = i18n.localeDirection[locale];
+  const locale = params.lang as LocaleType
+  const direction = i18n.localeDirection[locale]
 
   const setLocale = React.useCallback(
     (localeName: LocaleType) => {
-      updateSettings({ ...settings, locale: localeName });
+      updateSettings({ ...settings, locale: localeName })
     },
     [settings, updateSettings]
-  );
+  )
 
   return (
     <DropdownMenu dir={direction}>
@@ -59,11 +57,11 @@ export function LanguageDropdown({
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={locale}>
           {i18n.locales.map((locale) => {
-            const localeName = i18n.localeNames[locale];
+            const localeName = i18n.localeNames[locale]
             const localizedLocaleName = getDictionaryValue(
               localeName,
               dictionary.navigation.language
-            );
+            )
 
             return (
               <Link
@@ -75,10 +73,10 @@ export function LanguageDropdown({
                   {localizedLocaleName}
                 </DropdownMenuRadioItem>
               </Link>
-            );
+            )
           })}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

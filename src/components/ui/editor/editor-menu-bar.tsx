@@ -1,43 +1,36 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import {
-  ImageIcon,
-  LinkIcon,
-  Palette,
-  Type,
-  Unlink,
-  Check,
-} from "lucide-react";
+import * as React from "react"
+import { Check, ImageIcon, LinkIcon, Palette, Type, Unlink } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { DynamicIconNameType } from "@/types"
+import type { ChainedCommands, Editor } from "@tiptap/react"
 
-import type { ChainedCommands, Editor } from "@tiptap/react";
-import type { DynamicIconNameType } from "@/types";
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { InputFile } from "@/components/ui/input-file"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { InputFile } from "@/components/ui/input-file";
-import { DynamicIcon } from "@/components/dynamic-icon";
+} from "@/components/ui/popover"
+import { Separator } from "@/components/ui/separator"
+import { Toggle } from "@/components/ui/toggle"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface SizeType {
-  label: string;
-  level: 1 | 2 | 3;
-  textSize: `text-${string}`;
+  label: string
+  level: 1 | 2 | 3
+  textSize: `text-${string}`
 }
 
 const sizes: SizeType[] = [
   { label: "Normal", level: 3, textSize: "text-lg" },
   { label: "Large", level: 2, textSize: "text-xl" },
   { label: "Extra Large", level: 1, textSize: "text-2xl" },
-];
+]
 
 function SizeHandler({ editor }: { editor: Editor }) {
   return (
@@ -87,12 +80,12 @@ function SizeHandler({ editor }: { editor: Editor }) {
         </div>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 interface FormatType {
-  format: string;
-  iconName: DynamicIconNameType;
+  format: string
+  iconName: DynamicIconNameType
 }
 
 const formats: FormatType[] = [
@@ -112,29 +105,29 @@ const formats: FormatType[] = [
     format: "strike",
     iconName: "Strikethrough",
   },
-];
+]
 
 function FormatHandler({
   editor,
   format,
   iconName,
 }: {
-  editor: Editor;
-  format: string;
-  iconName: DynamicIconNameType;
+  editor: Editor
+  format: string
+  iconName: DynamicIconNameType
 }) {
   const toggleCommands: Record<string, () => ChainedCommands> = {
     bold: () => editor.chain().focus().toggleBold(),
     italic: () => editor.chain().focus().toggleItalic(),
     underline: () => editor.chain().focus().toggleUnderline(),
     strike: () => editor.chain().focus().toggleStrike(),
-  };
+  }
 
   function handlePressChange() {
-    const command = toggleCommands[format];
+    const command = toggleCommands[format]
 
     if (command) {
-      command().run();
+      command().run()
     }
   }
 
@@ -147,12 +140,12 @@ function FormatHandler({
     >
       <DynamicIcon name={iconName} className="h-4 w-4" />
     </Toggle>
-  );
+  )
 }
 
 interface AlignmentType {
-  alignment: string;
-  iconName: DynamicIconNameType;
+  alignment: string
+  iconName: DynamicIconNameType
 }
 
 const alignments: AlignmentType[] = [
@@ -160,16 +153,16 @@ const alignments: AlignmentType[] = [
   { alignment: "center", iconName: "AlignCenter" },
   { alignment: "right", iconName: "AlignRight" },
   { alignment: "justify", iconName: "AlignJustify" },
-];
+]
 
 function AlignmentHandler({
   editor,
   alignment,
   iconName,
 }: {
-  editor: Editor;
-  alignment: string;
-  iconName: DynamicIconNameType;
+  editor: Editor
+  alignment: string
+  iconName: DynamicIconNameType
 }) {
   return (
     <Toggle
@@ -182,23 +175,23 @@ function AlignmentHandler({
     >
       <DynamicIcon name={iconName} className="h-4 w-4" />
     </Toggle>
-  );
+  )
 }
 
 function ImageHandler({ editor }: { editor: Editor }) {
-  const [imageSrc, setImageSrc] = React.useState<string | null>(null);
+  const [imageSrc, setImageSrc] = React.useState<string | null>(null)
 
   function handleFileChange(files: FileList) {
-    if (files.length < 1) return;
-    const objectURL = URL.createObjectURL(files[0]);
-    setImageSrc(objectURL);
+    if (files.length < 1) return
+    const objectURL = URL.createObjectURL(files[0])
+    setImageSrc(objectURL)
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+    e.preventDefault()
     if (editor && imageSrc) {
-      editor.chain().focus().setImage({ src: imageSrc }).run();
-      setImageSrc(null);
+      editor.chain().focus().setImage({ src: imageSrc }).run()
+      setImageSrc(null)
     }
   }
 
@@ -218,8 +211,8 @@ function ImageHandler({ editor }: { editor: Editor }) {
       <PopoverContent>
         <form
           onSubmit={(e) => {
-            e.stopPropagation();
-            handleSubmit(e);
+            e.stopPropagation()
+            handleSubmit(e)
           }}
           className="flex justify-center items-center gap-2"
         >
@@ -236,11 +229,11 @@ function ImageHandler({ editor }: { editor: Editor }) {
         </form>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 function LinkHandler({ editor }: { editor: Editor }) {
-  const isLinkActive = editor.isActive("link");
+  const isLinkActive = editor.isActive("link")
 
   return isLinkActive ? (
     <Button
@@ -280,7 +273,7 @@ function LinkHandler({ editor }: { editor: Editor }) {
                 .setLink({
                   href: (e.target as HTMLInputElement).value,
                 })
-                .run();
+                .run()
             }
           }}
         />
@@ -296,7 +289,7 @@ function LinkHandler({ editor }: { editor: Editor }) {
               .setLink({
                 href: (e.target as HTMLInputElement).value,
               })
-              .run();
+              .run()
           }}
           aria-label="Submit"
         >
@@ -304,12 +297,12 @@ function LinkHandler({ editor }: { editor: Editor }) {
         </Button>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 function ColorHandler({ editor }: { editor: Editor }) {
-  const selectedColor = editor.getAttributes("textStyle").color;
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const selectedColor = editor.getAttributes("textStyle").color
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
   return (
     <Button
@@ -336,7 +329,7 @@ function ColorHandler({ editor }: { editor: Editor }) {
         tabIndex={-1}
       />
     </Button>
-  );
+  )
 }
 
 export function EditorMenuBar({ editor }: { editor: Editor }) {
@@ -375,5 +368,5 @@ export function EditorMenuBar({ editor }: { editor: Editor }) {
       <ImageHandler editor={editor} />
       <LinkHandler editor={editor} />
     </div>
-  );
+  )
 }

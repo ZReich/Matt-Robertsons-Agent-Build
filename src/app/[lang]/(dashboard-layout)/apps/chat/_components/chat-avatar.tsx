@@ -1,12 +1,11 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils"
 
-import { cn } from "@/lib/utils";
-
-import { UserStatusIcon } from "./user-status-icon";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserStatusIcon } from "./user-status-icon"
 
 const ChatAvatar = React.memo(
   ({
@@ -16,11 +15,11 @@ const ChatAvatar = React.memo(
     size = 2,
     className,
   }: {
-    src?: string;
-    fallback: string;
-    status?: string;
-    size: number;
-    className?: string;
+    src?: string
+    fallback: string
+    status?: string
+    size: number
+    className?: string
   }) => {
     return (
       <div
@@ -54,9 +53,9 @@ const ChatAvatar = React.memo(
           </div>
         )}
       </div>
-    );
+    )
   }
-);
-ChatAvatar.displayName = "ChatAvatar";
+)
+ChatAvatar.displayName = "ChatAvatar"
 
-export { ChatAvatar };
+export { ChatAvatar }

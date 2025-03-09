@@ -1,23 +1,24 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Search } from "lucide-react";
-import { useMedia } from "react-use";
+import * as React from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useMedia } from "react-use"
+import { ChevronDown, Search } from "lucide-react"
 
-import { sidebarNavigationData } from "../_data/sidebar-navigation";
+import { sidebarNavigationData } from "../_data/sidebar-navigation"
 
-import { cn, isActivePathname } from "@/lib/utils";
+import type { NavigationNestedItem, NavigationRootItem } from "@/types"
+import type { DialogProps } from "@radix-ui/react-dialog"
 
-import type {
-  LocaleType,
-  NavigationNestedItem,
-  NavigationRootItem,
-} from "@/types";
-import type { DialogProps } from "@radix-ui/react-dialog";
+import { cn, isActivePathname } from "@/lib/utils"
 
-import { DynamicIcon } from "@/components/dynamic-icon";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   CommandDialog,
   CommandEmpty,
@@ -25,32 +26,24 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Keyboard } from "@/components/ui/keyboard";
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@/components/ui/command"
+import { DialogTitle } from "@/components/ui/dialog"
+import { Keyboard } from "@/components/ui/keyboard"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface DocsCommandMenuProps extends DialogProps {
-  buttonClassName?: string;
+  buttonClassName?: string
 }
 
 export function DocsCommandMenu({
   buttonClassName,
   ...props
 }: DocsCommandMenuProps) {
-  const [open, setOpen] = React.useState(false);
-  const pathname = usePathname();
-  const params = useParams();
-  const router = useRouter();
-  const isLargeOrLarger = useMedia("(min-width: 1024px)");
-
-  const locale = params.lang as LocaleType;
+  const [open, setOpen] = React.useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const isLargeOrLarger = useMedia("(min-width: 1024px)")
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -61,26 +54,26 @@ export function DocsCommandMenu({
           e.target instanceof HTMLTextAreaElement ||
           e.target instanceof HTMLSelectElement
         ) {
-          return;
+          return
         }
 
-        e.preventDefault();
-        setOpen((open) => !open);
+        e.preventDefault()
+        setOpen((open) => !open)
       }
-    };
+    }
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+    document.addEventListener("keydown", down)
+    return () => document.removeEventListener("keydown", down)
+  }, [])
 
   const runCommand = React.useCallback((command: () => unknown) => {
-    setOpen(false);
-    command();
-  }, []);
+    setOpen(false)
+    command()
+  }, [])
 
   const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
-    const title = item.title;
-    const label = item.label;
+    const title = item.title
+    const label = item.label
 
     // If the item has nested items, render it with a collapsible dropdown.
     if (item.items) {
@@ -104,12 +97,12 @@ export function DocsCommandMenu({
             )}
           </CollapsibleContent>
         </Collapsible>
-      );
+      )
     }
 
     // Otherwise, render the item with a link.
     if ("href" in item) {
-      const isActive = isActivePathname(item.href, pathname);
+      const isActive = isActivePathname(item.href, pathname)
 
       return (
         <CommandItem
@@ -128,9 +121,9 @@ export function DocsCommandMenu({
           <span>{title}</span>
           {label && <Badge variant="secondary">{label}</Badge>}
         </CommandItem>
-      );
+      )
     }
-  };
+  }
 
   return (
     <>
@@ -167,7 +160,7 @@ export function DocsCommandMenu({
           <CommandEmpty>No results found.</CommandEmpty>
           <ScrollArea className="h-[300px] max-h-[300px]">
             {sidebarNavigationData.map((nav) => {
-              const title = nav.title;
+              const title = nav.title
 
               return (
                 <CommandGroup
@@ -181,11 +174,11 @@ export function DocsCommandMenu({
                     </React.Fragment>
                   ))}
                 </CommandGroup>
-              );
+              )
             })}
           </ScrollArea>
         </CommandList>
       </CommandDialog>
     </>
-  );
+  )
 }

@@ -1,8 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from "next/image"
+import Link from "next/link"
 
-import { buttonVariants } from "@/components/ui/button";
-import { TypeWriterEffect } from "../../_components/type-writer-effect";
+import { buttonVariants } from "@/components/ui/button"
+import { TypeWriterEffect } from "../../_components/type-writer-effect"
 
 const words = [
   "Accessible",
@@ -13,7 +13,7 @@ const words = [
   "Efficient",
   "Responsive",
   "Well-Documented",
-];
+]
 
 export function Hero() {
   return (
@@ -86,5 +86,5 @@ export function Hero() {
         />
       </div>
     </section>
-  );
+  )
 }

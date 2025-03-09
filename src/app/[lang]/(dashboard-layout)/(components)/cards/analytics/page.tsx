@@ -1,19 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { ConversionFunnel } from "../../../dashboards/analytics/_components/analytics/conversion-funnel";
-import { PerformanceOverTime } from "../../../dashboards/analytics/_components/analytics/performance-over-time";
-import { TrafficSources } from "../../../dashboards/analytics/_components/analytics/traffic-sources";
-import { SalesTrend as SalesTrendV2 } from "../../../dashboards/ecommerce/_components/ecommerce/sales-trend";
-import { SalesByCountry } from "../../../dashboards/crm/_components/crm/sales-by-country";
-import { SalesTrend } from "../../../dashboards/crm/_components/crm/sales-trend";
-import { ChurnRate } from "../../../dashboards/ecommerce/_components/ecommerce/churn-rate";
-import { RevenueBySource } from "../../../dashboards/ecommerce/_components/ecommerce/revenue-by-source";
+import { ConversionFunnel } from "../../../dashboards/analytics/_components/analytics/conversion-funnel"
+import { PerformanceOverTime } from "../../../dashboards/analytics/_components/analytics/performance-over-time"
+import { TrafficSources } from "../../../dashboards/analytics/_components/analytics/traffic-sources"
+import { SalesByCountry } from "../../../dashboards/crm/_components/crm/sales-by-country"
+import { SalesTrend } from "../../../dashboards/crm/_components/crm/sales-trend"
+import { ChurnRate } from "../../../dashboards/ecommerce/_components/ecommerce/churn-rate"
+import { RevenueBySource } from "../../../dashboards/ecommerce/_components/ecommerce/revenue-by-source"
+import { SalesTrend as SalesTrendV2 } from "../../../dashboards/ecommerce/_components/ecommerce/sales-trend"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Analytics Cards",
-};
+}
 
 export default function AnalyticsCardsPage() {
   return (
@@ -29,5 +29,5 @@ export default function AnalyticsCardsPage() {
       <RevenueBySource />
       <ConversionFunnel />
     </section>
-  );
+  )
 }

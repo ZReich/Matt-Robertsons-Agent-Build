@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Circle, CircleMinus, Moon } from "lucide-react";
+import * as React from "react"
+import { Circle, CircleMinus, Moon } from "lucide-react"
 
 export const UserStatusIcon = React.memo(
   ({ status, size }: { status: string; size: number | string }) => {
@@ -13,7 +13,7 @@ export const UserStatusIcon = React.memo(
             size={size}
             aria-label={status}
           />
-        );
+        )
       case "IDLE":
         return (
           <Moon
@@ -21,7 +21,7 @@ export const UserStatusIcon = React.memo(
             size={size}
             aria-label={status}
           />
-        );
+        )
       case "DO_NOT_DISTURB":
         return (
           <CircleMinus
@@ -29,7 +29,7 @@ export const UserStatusIcon = React.memo(
             size={size}
             aria-label={status.replace("_", " ")}
           />
-        );
+        )
       default:
         return (
           <Circle
@@ -37,8 +37,8 @@ export const UserStatusIcon = React.memo(
             size={size}
             aria-label="OFFLINE"
           />
-        );
+        )
     }
   }
-);
-UserStatusIcon.displayName = "UserStatusIcon";
+)
+UserStatusIcon.displayName = "UserStatusIcon"

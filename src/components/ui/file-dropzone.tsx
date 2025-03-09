@@ -1,36 +1,34 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Image from "next/image";
-import { useDropzone } from "react-dropzone";
-import { Loader2, UploadCloud, X } from "lucide-react";
+import * as React from "react"
+import Image from "next/image"
+import { useDropzone } from "react-dropzone"
+import { Loader2, UploadCloud, X } from "lucide-react"
 
-import { cn, formatFileSize, wait } from "@/lib/utils";
+import type { FileType } from "@/types"
+import type { DropzoneOptions } from "react-dropzone"
 
-import type { DropzoneOptions } from "react-dropzone";
-import type { FileType } from "@/types";
+import { cn, formatFileSize, wait } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
-import { FileThumbnail } from "../file-thumbnail";
-import { ScrollArea } from "./scroll-area";
+import { Button } from "@/components/ui/button"
+import { FileThumbnail } from "../file-thumbnail"
+import { ScrollArea } from "./scroll-area"
 
 export interface FileDropzoneProps extends Partial<DropzoneOptions> {
-  className?: string;
-  value?: FileType[];
-  onFilesChange?: (files: FileType[]) => void;
+  className?: string
+  value?: FileType[]
+  onFilesChange?: (files: FileType[]) => void
 }
 
 export const FileDropzone = React.forwardRef<
   HTMLInputElement,
   FileDropzoneProps
 >(({ className, value, onFilesChange, ...props }, ref) => {
-  const [files, setFiles] = React.useState<FileType[]>(value || []);
-  const [loadingFiles, setLoadingFiles] = React.useState<Set<string>>(
-    new Set()
-  );
+  const [files, setFiles] = React.useState<FileType[]>(value || [])
+  const [loadingFiles, setLoadingFiles] = React.useState<Set<string>>(new Set())
 
-  const maxFiles = props.multiple ? props.maxFiles : 1;
-  const isDisabled = maxFiles === files.length;
+  const maxFiles = props.multiple ? props.maxFiles : 1
+  const isDisabled = maxFiles === files.length
 
   const onDrop = React.useCallback(
     async (acceptedFiles: File[]) => {
@@ -40,52 +38,52 @@ export const FileDropzone = React.forwardRef<
         size: file.size,
         type: file.type,
         url: URL.createObjectURL(file),
-      }));
+      }))
 
-      const updatedFiles = [...files, ...newFiles];
-      setFiles(updatedFiles);
-      onFilesChange?.(updatedFiles);
-      setLoadingFiles(new Set(newFiles.map((file) => file.id)));
+      const updatedFiles = [...files, ...newFiles]
+      setFiles(updatedFiles)
+      onFilesChange?.(updatedFiles)
+      setLoadingFiles(new Set(newFiles.map((file) => file.id)))
 
       // Simulate file processing
       for (const file of newFiles) {
-        await wait(2000); // Simulate 2 seconds of processing
+        await wait(2000) // Simulate 2 seconds of processing
         setLoadingFiles((prev) => {
-          const newLoadingFiles = new Set(prev);
-          newLoadingFiles.delete(file.id);
-          return newLoadingFiles;
-        });
+          const newLoadingFiles = new Set(prev)
+          newLoadingFiles.delete(file.id)
+          return newLoadingFiles
+        })
       }
     },
     [files, onFilesChange]
-  );
+  )
 
   React.useEffect(() => {
     if (value) {
-      setFiles(value);
+      setFiles(value)
     }
-  }, [value]);
+  }, [value])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     disabled: isDisabled,
     ...props,
     maxFiles,
-  });
+  })
 
   const removeFile = (fileId: string) => {
     const updatedFiles = files.filter((file) => {
       if (file.id === fileId) {
-        URL.revokeObjectURL(file.url);
-        return false;
+        URL.revokeObjectURL(file.url)
+        return false
       }
 
-      return true;
-    });
+      return true
+    })
 
-    setFiles(updatedFiles);
-    onFilesChange?.(updatedFiles);
-  };
+    setFiles(updatedFiles)
+    onFilesChange?.(updatedFiles)
+  }
 
   return (
     <div
@@ -136,8 +134,8 @@ export const FileDropzone = React.forwardRef<
                   size="icon"
                   className="absolute end-1 top-1 h-4 w-4"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    removeFile(file.id);
+                    e.stopPropagation()
+                    removeFile(file.id)
                   }}
                   aria-label="Remove"
                 >
@@ -156,6 +154,6 @@ export const FileDropzone = React.forwardRef<
         )}
       </ScrollArea>
     </div>
-  );
-});
-FileDropzone.displayName = "FileDropzone";
+  )
+})
+FileDropzone.displayName = "FileDropzone"

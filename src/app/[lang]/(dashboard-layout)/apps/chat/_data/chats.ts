@@ -1,4 +1,4 @@
-import { ChatType } from "../types";
+import { ChatType } from "../types"
 
 export const chatsData: ChatType[] = [
   {
@@ -311,4 +311,4 @@ export const chatsData: ChatType[] = [
     ],
     typingUsers: [],
   },
-];
+]

@@ -1,13 +1,13 @@
-import { Phone, Video, EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Phone, Video } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 export function ChatHeaderActions() {
   return (
@@ -41,5 +41,5 @@ export function ChatHeaderActions() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
+  )
 }

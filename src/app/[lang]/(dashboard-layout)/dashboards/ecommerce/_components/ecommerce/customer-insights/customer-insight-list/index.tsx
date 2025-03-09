@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { Users, UserPlus, Crown, UserCheck } from "lucide-react";
+import { Crown, UserCheck, UserPlus, Users } from "lucide-react"
 
-import type { CustomerInsightsType } from "../../../../types";
+import type { CustomerInsightsType } from "../../../../types"
 
-import { CustomerInsightItem } from "./customer-insight-item";
+import { CustomerInsightItem } from "./customer-insight-item"
 
 export function CustomerInsightList({ data }: { data: CustomerInsightsType }) {
   return (
@@ -34,5 +34,5 @@ export function CustomerInsightList({ data }: { data: CustomerInsightsType }) {
         color="hsl(var(--chart-4))"
       />
     </ul>
-  );
+  )
 }

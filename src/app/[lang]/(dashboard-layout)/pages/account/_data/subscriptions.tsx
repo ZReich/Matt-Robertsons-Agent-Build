@@ -1,4 +1,4 @@
-import type { SubscriptionType } from "../types";
+import type { SubscriptionType } from "../types"
 
 export const subscriptionsData: SubscriptionType[] = [
   {
@@ -29,4 +29,4 @@ export const subscriptionsData: SubscriptionType[] = [
     createdAt: "2023-09-01T11:30:00.000Z",
     updatedAt: "2024-09-01T11:30:00.000Z",
   },
-];
+]

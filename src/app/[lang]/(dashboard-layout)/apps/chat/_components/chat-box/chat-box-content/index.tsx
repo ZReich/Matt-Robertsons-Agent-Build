@@ -1,22 +1,22 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import type { ChatType, UserType } from "../../../types";
+import type { ChatType, UserType } from "../../../types"
 
-import { CardContent } from "@/components/ui/card";
-import { ChatBoxContentList } from "./chat-box-content-list/chat-box-content-list";
+import { CardContent } from "@/components/ui/card"
+import { ChatBoxContentList } from "./chat-box-content-list/chat-box-content-list"
 
 export function ChatBoxContent({
   user,
   chat,
 }: {
-  user: UserType;
-  chat: ChatType;
+  user: UserType
+  chat: ChatType
 }) {
   return (
     <CardContent className="p-0">
       <ChatBoxContentList user={user} chat={chat} />
     </CardContent>
-  );
+  )
 }

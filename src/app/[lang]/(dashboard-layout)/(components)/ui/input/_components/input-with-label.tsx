@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export function InputWithLabel() {
   return (
@@ -19,5 +19,5 @@ export function InputWithLabel() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

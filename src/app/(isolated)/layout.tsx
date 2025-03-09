@@ -1,12 +1,12 @@
-import { Lato } from "next/font/google";
+import { Lato } from "next/font/google"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-import "../globals.css";
+import "../globals.css"
 
-import type { Metadata } from "next";
+import { Providers } from "@/providers"
 
-import { Providers } from "@/providers";
+import type { Metadata } from "next"
 
 // Define metadata for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   },
   description: "",
   metadataBase: new URL(process.env.BASE_URL as string),
-};
+}
 
 // Define fonts for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
@@ -26,12 +26,12 @@ const latoFont = Lato({
   weight: ["100", "300", "400", "700", "900"],
   style: ["normal", "italic"],
   variable: "--font-lato",
-});
+})
 
 export default async function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -47,5 +47,5 @@ export default async function RootLayout({
         </Providers>
       </body>
     </html>
-  );
+  )
 }

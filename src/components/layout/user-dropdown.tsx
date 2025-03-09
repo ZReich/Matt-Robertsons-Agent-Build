@@ -1,17 +1,17 @@
-import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { LogOut, User, UserCog } from "lucide-react";
+import Link from "next/link"
+import { signOut } from "next-auth/react"
+import { LogOut, User, UserCog } from "lucide-react"
 
-import { userData } from "@/data/user";
+import { userData } from "@/data/user"
 
-import { cn, getInitials } from "@/lib/utils";
-import { ensureLocalizedPathname } from "@/lib/i18n";
+import type { DictionaryType } from "@/lib/get-dictionary"
+import type { LocaleType } from "@/types"
 
-import type { DictionaryType } from "@/lib/get-dictionary";
-import type { LocaleType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { getInitials } from "@/lib/utils"
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,14 +20,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 export function UserDropdown({
   dictionary,
   locale,
 }: {
-  dictionary: DictionaryType;
-  locale: LocaleType;
+  dictionary: DictionaryType
+  locale: LocaleType
 }) {
   return (
     <DropdownMenu>
@@ -97,5 +97,5 @@ export function UserDropdown({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

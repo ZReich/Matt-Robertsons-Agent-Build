@@ -1,4 +1,4 @@
-import type { NotificationType } from "@/types";
+import type { NotificationType } from "@/types"
 
 export const notificationData: NotificationType = {
   unreadCount: 100,
@@ -28,4 +28,4 @@ export const notificationData: NotificationType = {
       isRead: true,
     },
   ],
-};
+}

@@ -1,7 +1,7 @@
-import { MailX } from "lucide-react";
+import { MailX } from "lucide-react"
 
-import { Card, CardContent } from "@/components/ui/card";
-import { EmailMenuButton } from "./email-menu-button";
+import { Card, CardContent } from "@/components/ui/card"
+import { EmailMenuButton } from "./email-menu-button"
 
 export function EmailNotFound() {
   return (
@@ -15,5 +15,5 @@ export function EmailNotFound() {
         <EmailMenuButton />
       </CardContent>
     </Card>
-  );
+  )
 }

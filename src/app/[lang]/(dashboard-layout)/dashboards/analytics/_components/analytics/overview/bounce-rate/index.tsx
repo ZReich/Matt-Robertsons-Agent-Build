@@ -1,7 +1,10 @@
-import { OverviewType } from "../../../../types";
+import { OverviewType } from "../../../../types"
 
-import { DashboardCardActionsDropdown, DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
-import { BounceRateChart } from "./bounce-rate-chart";
+import {
+  DashboardCardActionsDropdown,
+  DashboardOverviewCardV3,
+} from "@/components/dashboards/dashboard-card"
+import { BounceRateChart } from "./bounce-rate-chart"
 
 export function BounceRate({ data }: { data: OverviewType["bounceRate"] }) {
   return (
@@ -15,5 +18,5 @@ export function BounceRate({ data }: { data: OverviewType["bounceRate"] }) {
       chart={<BounceRateChart data={data.perMonth} />}
       formatStyle="percent"
     />
-  );
+  )
 }

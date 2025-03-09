@@ -1,5 +1,5 @@
 export interface DocNav {
-  title: string;
-  items?: DocNav[];
-  href?: string;
+  title: string
+  items?: DocNav[]
+  href?: string
 }

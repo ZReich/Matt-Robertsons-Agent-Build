@@ -691,4 +691,4 @@ export const baseColors = [
       },
     },
   },
-] as const;
+] as const

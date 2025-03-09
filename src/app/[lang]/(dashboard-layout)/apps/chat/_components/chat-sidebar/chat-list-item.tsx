@@ -1,29 +1,28 @@
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import Link from "next/link"
+import { useParams } from "next/navigation"
 
-import { cn, getInitials, formatDistance } from "@/lib/utils";
-import { ensureLocalizedPathname } from "@/lib/i18n";
+import type { LocaleType } from "@/types"
+import type { ChatType } from "../../types"
 
-import type { ChatType } from "../../types";
-import type { LocaleType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { cn, formatDistance, getInitials } from "@/lib/utils"
 
-import { useChatContext } from "../../hooks/use-chat-context";
-
-import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ChatAvatar } from "../chat-avatar";
+import { useChatContext } from "../../hooks/use-chat-context"
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
+import { ChatAvatar } from "../chat-avatar"
 
 export function ChatListItem({ chat }: { chat: ChatType }) {
-  const { setIsChatSidebarOpen } = useChatContext();
-  const params = useParams();
+  const { setIsChatSidebarOpen } = useChatContext()
+  const params = useParams()
 
-  const chatIdParam = params.id?.[0];
-  const locale = params.lang as LocaleType;
+  const chatIdParam = params.id?.[0]
+  const locale = params.lang as LocaleType
 
   const handleOnCLick = () => {
     // Close the sidebar when a chat is selected
-    setIsChatSidebarOpen(false);
-  };
+    setIsChatSidebarOpen(false)
+  }
 
   return (
     <Link
@@ -64,5 +63,5 @@ export function ChatListItem({ chat }: { chat: ChatType }) {
         </div>
       </li>
     </Link>
-  );
+  )
 }

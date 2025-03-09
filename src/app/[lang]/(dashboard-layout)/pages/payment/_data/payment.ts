@@ -1,4 +1,4 @@
-import { PaymentType } from "../types";
+import { PaymentType } from "../types"
 
 export const paymentData: PaymentType = {
   summary: {
@@ -35,4 +35,4 @@ export const paymentData: PaymentType = {
       last4: "4123",
     },
   ],
-};
+}

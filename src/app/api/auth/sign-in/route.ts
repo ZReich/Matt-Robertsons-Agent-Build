@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
-import { userData } from "@/data/user";
+import { userData } from "@/data/user"
 
-import { SignInSchema } from "@/schemas/sign-in-schema";
+import { SignInSchema } from "@/schemas/sign-in-schema"
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const parsedData = SignInSchema.safeParse(body);
+  const body = await req.json()
+  const parsedData = SignInSchema.safeParse(body)
 
   // If validation fails, return an error response with a 400 status
   if (!parsedData.success) {
-    return NextResponse.json(parsedData.error, { status: 400 });
+    return NextResponse.json(parsedData.error, { status: 400 })
   }
 
-  const { email, password } = parsedData.data;
+  const { email, password } = parsedData.data
 
   try {
     // If provided email and password match the stored user data
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { message: "Invalid email or password", email },
         { status: 401 }
-      );
+      )
     }
 
     // Return success response with user data if credentials are correct
@@ -34,9 +34,9 @@ export async function POST(req: Request) {
         status: userData.status,
       },
       { status: 200 }
-    );
+    )
   } catch (e) {
-    console.error("Error signing in:", e);
-    return NextResponse.json({ error: "Error signing in" }, { status: 500 });
+    console.error("Error signing in:", e)
+    return NextResponse.json({ error: "Error signing in" }, { status: 500 })
   }
 }

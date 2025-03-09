@@ -1,22 +1,21 @@
 // Refer to FullCalendar documentation for more details https://fullcalendar.io/docs
-"use client";
+"use client"
 
-import * as React from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import listPlugin from "@fullcalendar/list";
-import { useDirection } from "@radix-ui/react-direction";
+import * as React from "react"
+import dayGridPlugin from "@fullcalendar/daygrid"
+import interactionPlugin from "@fullcalendar/interaction"
+import listPlugin from "@fullcalendar/list"
+import FullCalendar from "@fullcalendar/react"
+import timeGridPlugin from "@fullcalendar/timegrid"
+import { useDirection } from "@radix-ui/react-direction"
 
-import { INITIAL_VIEW } from "../../constants";
+import type { DateInput, EventSourceInput } from "@fullcalendar/core/index.js"
+import type { EventImpl } from "@fullcalendar/core/internal"
+import type { CategoryType, EventType } from "../../types"
 
-import type { DateInput, EventSourceInput } from "@fullcalendar/core/index.js";
-import type { EventImpl } from "@fullcalendar/core/internal";
-import type { CategoryType, EventType } from "../../types";
-
-import { useCalendarContext } from "../../hooks/calendar-context";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useCalendarContext } from "../../hooks/calendar-context"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { INITIAL_VIEW } from "../../constants"
 
 const eventColors: Record<CategoryType, string> = {
   Business: "hsl(var(--chart-1))",
@@ -25,11 +24,11 @@ const eventColors: Record<CategoryType, string> = {
   Holiday: "hsl(var(--chart-4))",
   Health: "hsl(var(--chart-5))",
   Miscellaneous: "hsl(var(--primary))",
-};
+}
 
 export function CalendarContent() {
-  const isMobile = useIsMobile();
-  const direction = useDirection();
+  const isMobile = useIsMobile()
+  const direction = useDirection()
   const {
     calendarState,
     calendarApi,
@@ -37,16 +36,16 @@ export function CalendarContent() {
     handleSelectEvent,
     handleUpdateEvent,
     setEventSidebarIsOpen,
-  } = useCalendarContext();
+  } = useCalendarContext()
 
-  const calendarRef = React.useRef<null | FullCalendar>(null);
+  const calendarRef = React.useRef<null | FullCalendar>(null)
 
   // Initialize the calendar API when the component mounts or when `calendarApi` is not already set
   React.useEffect(() => {
     if (!calendarApi && calendarRef.current) {
-      setCalendarApi(calendarRef.current.getApi());
+      setCalendarApi(calendarRef.current.getApi())
     }
-  }, [calendarApi, setCalendarApi]);
+  }, [calendarApi, setCalendarApi])
 
   // Function to parse and transform an event from FullCalendar's internal event representation to a structured format
   const parseEvent = (event: EventImpl): EventType => {
@@ -63,35 +62,35 @@ export function CalendarContent() {
           description: event.extendedProps.description,
         }), // Include description if it exists in the extended properties
       },
-    };
-  };
+    }
+  }
 
   const handleDateClick = (date: DateInput) => {
     if (calendarApi) {
-      calendarApi.changeView("timeGridDay", date);
+      calendarApi.changeView("timeGridDay", date)
     }
-  };
+  }
 
   const handleEventDrop = ({ event }: { event: EventImpl }) => {
-    return handleUpdateEvent(parseEvent(event));
-  };
+    return handleUpdateEvent(parseEvent(event))
+  }
 
   const handleEventResize = ({ event }: { event: EventImpl }) => {
-    return handleUpdateEvent(parseEvent(event));
-  };
+    return handleUpdateEvent(parseEvent(event))
+  }
 
   const handleEventClick = ({
     event,
     jsEvent,
   }: {
-    event: EventImpl;
-    jsEvent: MouseEvent;
+    event: EventImpl
+    jsEvent: MouseEvent
   }) => {
-    jsEvent.preventDefault(); // Prevent default behavior like following a link
+    jsEvent.preventDefault() // Prevent default behavior like following a link
 
-    handleSelectEvent(parseEvent(event));
-    setEventSidebarIsOpen(true);
-  };
+    handleSelectEvent(parseEvent(event))
+    setEventSidebarIsOpen(true)
+  }
 
   // Map events from the state and assign a color based on their category
   const events = calendarState.events.map(
@@ -100,13 +99,13 @@ export function CalendarContent() {
       // @ts-ignore
       color: eventColors[event.extendedProps.category], // Set color based on event category
     })
-  );
+  )
 
   // Custom class names for event styling
   const eventClassNames = () => [
     "h-[1.62rem] pt-px px-1 rounded-md",
     "[&_td]:hover:!bg-accent/60", // Styling for hover state on table cells
-  ];
+  ]
 
   return (
     <FullCalendar
@@ -129,5 +128,5 @@ export function CalendarContent() {
       eventResize={handleEventResize}
       eventClick={handleEventClick}
     />
-  );
+  )
 }

@@ -1,15 +1,15 @@
-import type { DictionaryType } from "@/lib/get-dictionary";
+import type { DictionaryType } from "@/lib/get-dictionary"
 
-import { Sidebar } from "../sidebar";
-import { Footer } from "../footer";
-import { VerticalLayoutHeader } from "./vertical-layout-header";
+import { Footer } from "../footer"
+import { Sidebar } from "../sidebar"
+import { VerticalLayoutHeader } from "./vertical-layout-header"
 
 export function VerticalLayout({
   children,
   dictionary,
 }: {
-  children: React.ReactNode;
-  dictionary: DictionaryType;
+  children: React.ReactNode
+  dictionary: DictionaryType
 }) {
   return (
     <>
@@ -24,5 +24,5 @@ export function VerticalLayout({
         </div>
       </div>
     </>
-  );
+  )
 }

@@ -1,5 +1,6 @@
-import { formatPercent } from "@/lib/utils";
-import type { ChurnRateType } from "../../../types";
+import type { ChurnRateType } from "../../../types"
+
+import { formatPercent } from "@/lib/utils"
 
 export function ChurnRateSummary({ data }: { data: ChurnRateType["summary"] }) {
   return (
@@ -32,5 +33,5 @@ export function ChurnRateSummary({ data }: { data: ChurnRateType["summary"] }) {
         </p>
       </div>
     </div>
-  );
+  )
 }

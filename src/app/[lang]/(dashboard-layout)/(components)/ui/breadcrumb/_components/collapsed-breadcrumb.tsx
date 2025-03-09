@@ -1,6 +1,5 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -9,7 +8,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function CollapsedBreadcrumb() {
   return (
@@ -43,5 +43,5 @@ export function CollapsedBreadcrumb() {
         </Breadcrumb>
       </CardContent>
     </Card>
-  );
+  )
 }

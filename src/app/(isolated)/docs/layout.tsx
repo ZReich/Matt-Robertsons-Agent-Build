@@ -1,23 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { DocsBreadcrumb } from "./_components/docs-breadcrumb";
-import { Toc } from "./_components/toc";
-import { DocsSidebar } from "./_components/docs-sidebar";
-import { DocsPagination } from "./_components/docs-pagination";
-import { Header } from "./_components/header";
-import { Footer } from "./_components/footer";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/components/ui/separator"
+import { DocsBreadcrumb } from "./_components/docs-breadcrumb"
+import { DocsPagination } from "./_components/docs-pagination"
+import { DocsSidebar } from "./_components/docs-sidebar"
+import { Footer } from "./_components/footer"
+import { Header } from "./_components/header"
+import { Toc } from "./_components/toc"
 
 // Define metadata for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Documentation",
-};
+}
 
 export default async function DocsLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <div className="w-screen">
@@ -41,5 +41,5 @@ export default async function DocsLayout({
       </div>
       <Footer />
     </div>
-  );
+  )
 }

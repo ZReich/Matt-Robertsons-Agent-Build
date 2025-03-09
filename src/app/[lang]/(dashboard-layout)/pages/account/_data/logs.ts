@@ -41,4 +41,4 @@ export const logsData = [
     createdAt: "2024-09-04T22:10:00Z",
     userAgent: "Chrome on Android",
   },
-] as const;
+] as const

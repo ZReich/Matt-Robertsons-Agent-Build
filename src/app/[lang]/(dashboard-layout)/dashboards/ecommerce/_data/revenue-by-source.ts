@@ -1,4 +1,4 @@
-import type { RevenueBySourceType } from "../types";
+import type { RevenueBySourceType } from "../types"
 
 export const revenueBySourceData: RevenueBySourceType = {
   period: "Last year",
@@ -44,4 +44,4 @@ export const revenueBySourceData: RevenueBySourceType = {
       fill: "hsl(var(--muted-foreground))",
     },
   ],
-};
+}

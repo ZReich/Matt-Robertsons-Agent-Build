@@ -1,30 +1,35 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Search } from "lucide-react";
-import { useMedia } from "react-use";
+import * as React from "react"
+import { useParams, usePathname, useRouter } from "next/navigation"
+import { useMedia } from "react-use"
+import { ChevronDown, Search } from "lucide-react"
 
-import { navigationsData } from "@/data/navigations";
+import { navigationsData } from "@/data/navigations"
 
+import type { DictionaryType } from "@/lib/get-dictionary"
+import type {
+  LocaleType,
+  NavigationNestedItem,
+  NavigationRootItem,
+} from "@/types"
+import type { DialogProps } from "@radix-ui/react-dialog"
+
+import { ensureLocalizedPathname } from "@/lib/i18n"
 import {
   cn,
   getDictionaryValue,
   isActivePathname,
   titleCaseToCamelCase,
-} from "@/lib/utils";
-import { ensureLocalizedPathname } from "@/lib/i18n";
+} from "@/lib/utils"
 
-import type {
-  LocaleType,
-  NavigationNestedItem,
-  NavigationRootItem,
-} from "@/types";
-import type { DictionaryType } from "@/lib/get-dictionary";
-import type { DialogProps } from "@radix-ui/react-dialog";
-
-import { DynamicIcon } from "@/components/dynamic-icon";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   CommandDialog,
   CommandEmpty,
@@ -32,20 +37,15 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Keyboard } from "@/components/ui/keyboard";
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@/components/ui/command"
+import { DialogTitle } from "@/components/ui/dialog"
+import { Keyboard } from "@/components/ui/keyboard"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface CommandMenuProps extends DialogProps {
-  dictionary: DictionaryType;
-  buttonClassName?: string;
+  dictionary: DictionaryType
+  buttonClassName?: string
 }
 
 export function CommandMenu({
@@ -53,13 +53,13 @@ export function CommandMenu({
   dictionary,
   ...props
 }: CommandMenuProps) {
-  const [open, setOpen] = React.useState(false);
-  const pathname = usePathname();
-  const params = useParams();
-  const router = useRouter();
-  const isLargeOrLarger = useMedia("(min-width: 1024px)");
+  const [open, setOpen] = React.useState(false)
+  const pathname = usePathname()
+  const params = useParams()
+  const router = useRouter()
+  const isLargeOrLarger = useMedia("(min-width: 1024px)")
 
-  const locale = params.lang as LocaleType;
+  const locale = params.lang as LocaleType
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -70,31 +70,31 @@ export function CommandMenu({
           e.target instanceof HTMLTextAreaElement ||
           e.target instanceof HTMLSelectElement
         ) {
-          return;
+          return
         }
 
-        e.preventDefault();
-        setOpen((open) => !open);
+        e.preventDefault()
+        setOpen((open) => !open)
       }
-    };
+    }
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+    document.addEventListener("keydown", down)
+    return () => document.removeEventListener("keydown", down)
+  }, [])
 
   const runCommand = React.useCallback((command: () => unknown) => {
-    setOpen(false);
-    command();
-  }, []);
+    setOpen(false)
+    command()
+  }, [])
 
   const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
     const title = getDictionaryValue(
       titleCaseToCamelCase(item.title),
       dictionary.navigation
-    );
+    )
     const label =
       item.label &&
-      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label);
+      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label)
 
     // If the item has nested items, render it with a collapsible dropdown.
     if (item.items) {
@@ -118,13 +118,13 @@ export function CommandMenu({
             )}
           </CollapsibleContent>
         </Collapsible>
-      );
+      )
     }
 
     // Otherwise, render the item with a link.
     if ("href" in item) {
-      const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = isActivePathname(localizedPathname, pathname);
+      const localizedPathname = ensureLocalizedPathname(item.href, locale)
+      const isActive = isActivePathname(localizedPathname, pathname)
 
       return (
         <CommandItem
@@ -143,9 +143,9 @@ export function CommandMenu({
           <span>{title}</span>
           {label && <Badge variant="secondary">{label}</Badge>}
         </CommandItem>
-      );
+      )
     }
-  };
+  }
 
   return (
     <>
@@ -185,7 +185,7 @@ export function CommandMenu({
               const title = getDictionaryValue(
                 titleCaseToCamelCase(nav.title),
                 dictionary.navigation
-              );
+              )
 
               return (
                 <CommandGroup
@@ -199,11 +199,11 @@ export function CommandMenu({
                     </React.Fragment>
                   ))}
                 </CommandGroup>
-              );
+              )
             })}
           </ScrollArea>
         </CommandList>
       </CommandDialog>
     </>
-  );
+  )
 }

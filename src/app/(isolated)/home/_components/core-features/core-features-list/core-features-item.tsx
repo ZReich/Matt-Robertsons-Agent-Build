@@ -1,4 +1,4 @@
-import type { CoreFeatureType } from "../../../types";
+import type { CoreFeatureType } from "../../../types"
 
 export function CoreFeaturesItem({ item }: { item: CoreFeatureType }) {
   return (
@@ -9,5 +9,5 @@ export function CoreFeaturesItem({ item }: { item: CoreFeatureType }) {
       </div>
       <p className="text-sm p-6">{item.description}</p>
     </li>
-  );
+  )
 }

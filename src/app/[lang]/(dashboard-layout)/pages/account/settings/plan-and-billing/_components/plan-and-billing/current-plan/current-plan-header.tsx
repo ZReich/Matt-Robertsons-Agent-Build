@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function CurrentPlanHeader() {
   return (
@@ -9,5 +9,5 @@ export function CurrentPlanHeader() {
         options.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

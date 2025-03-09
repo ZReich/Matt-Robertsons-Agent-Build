@@ -1,7 +1,10 @@
-import { customerInsightsData } from "../../../_data/customer-insights";
+import { customerInsightsData } from "../../../_data/customer-insights"
 
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
-import { CustomerInsightList } from "./customer-insight-list";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { CustomerInsightList } from "./customer-insight-list"
 
 export async function CustomerInsights() {
   return (
@@ -13,5 +16,5 @@ export async function CustomerInsights() {
     >
       <CustomerInsightList data={customerInsightsData} />
     </DashboardCard>
-  );
+  )
 }

@@ -1,23 +1,22 @@
-"use client";
+"use client"
 
-import { useMedia } from "react-use";
+import { useMedia } from "react-use"
 
-import { useChatContext } from "../../hooks/use-chat-context";
-
+import { useChatContext } from "../../hooks/use-chat-context"
+import { Card } from "@/components/ui/card"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { Card } from "@/components/ui/card";
-import { ChatSidebarHeader } from "./chat-sidebar-header";
-import { ChatList } from "./chat-list";
+} from "@/components/ui/sheet"
+import { ChatList } from "./chat-list"
+import { ChatSidebarHeader } from "./chat-sidebar-header"
 
 export function ChatSidebar() {
-  const { isChatSidebarOpen, setIsChatSidebarOpen } = useChatContext();
-  const isMediumOrSmaller = useMedia("(max-width: 767px)");
+  const { isChatSidebarOpen, setIsChatSidebarOpen } = useChatContext()
+  const isMediumOrSmaller = useMedia("(max-width: 767px)")
 
   // Content to display in the chat sidebar
   const content = (
@@ -25,7 +24,7 @@ export function ChatSidebar() {
       <ChatSidebarHeader />
       <ChatList />
     </div>
-  );
+  )
 
   // Render a persistent sidebar for larger screens
   if (!isMediumOrSmaller) {
@@ -33,7 +32,7 @@ export function ChatSidebar() {
       <aside>
         <Card>{content}</Card>
       </aside>
-    );
+    )
   }
 
   // Render a sheet sidebar for smaller screens
@@ -50,5 +49,5 @@ export function ChatSidebar() {
         {content}
       </SheetContent>
     </Sheet>
-  );
+  )
 }

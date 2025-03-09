@@ -1,34 +1,33 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import Color from "@tiptap/extension-color";
-import TextStyle from "@tiptap/extension-text-style";
-import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
-import Typography from "@tiptap/extension-typography";
-import { useDirection } from "@radix-ui/react-direction";
+import * as React from "react"
+import { useDirection } from "@radix-ui/react-direction"
+import Color from "@tiptap/extension-color"
+import Image from "@tiptap/extension-image"
+import Link from "@tiptap/extension-link"
+import Placeholder from "@tiptap/extension-placeholder"
+import TextAlign from "@tiptap/extension-text-align"
+import TextStyle from "@tiptap/extension-text-style"
+import Typography from "@tiptap/extension-typography"
+import Underline from "@tiptap/extension-underline"
+import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
 
-import { cn } from "@/lib/utils";
+import type { UseEditorOptions } from "@tiptap/react"
 
-import type { UseEditorOptions } from "@tiptap/react";
+import { cn } from "@/lib/utils"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { EditorMenuBar } from "./editor-menu-bar";
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { Card } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { EditorMenuBar } from "./editor-menu-bar"
 
 interface EditorProps extends UseEditorOptions {
-  value?: string;
-  onValueChange?: (value: string) => void;
-  bubbleMenu?: boolean;
-  placeholder?: string;
-  className?: string;
+  value?: string
+  onValueChange?: (value: string) => void
+  bubbleMenu?: boolean
+  placeholder?: string
+  className?: string
 }
 
 export function Editor({
@@ -39,8 +38,8 @@ export function Editor({
   className,
   ...props
 }: EditorProps) {
-  const direction = useDirection();
-  const isRtl = useIsRtl();
+  const direction = useDirection()
+  const isRtl = useIsRtl()
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -77,13 +76,13 @@ export function Editor({
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      onValueChange?.(editor.getHTML());
+      onValueChange?.(editor.getHTML())
     },
     ...props,
-  });
+  })
 
   if (!editor) {
-    return null;
+    return null
   }
 
   return (
@@ -128,5 +127,5 @@ export function Editor({
         />
       </ScrollArea>
     </Card>
-  );
+  )
 }

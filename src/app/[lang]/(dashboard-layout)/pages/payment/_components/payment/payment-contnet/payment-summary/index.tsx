@@ -1,9 +1,9 @@
-import type { PaymentType } from "../../../../types";
+import type { PaymentType } from "../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { PaymentSummaryRow } from "./payment-summary-row";
-import { PaymentSummaryLogos } from "./payment-summary-logos";
+import { Card } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { PaymentSummaryLogos } from "./payment-summary-logos"
+import { PaymentSummaryRow } from "./payment-summary-row"
 
 export function PaymentSummary({ data }: { data: PaymentType["summary"] }) {
   return (
@@ -31,5 +31,5 @@ export function PaymentSummary({ data }: { data: PaymentType["summary"] }) {
       </Card>
       <PaymentSummaryLogos />
     </div>
-  );
+  )
 }

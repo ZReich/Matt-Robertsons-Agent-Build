@@ -1,21 +1,21 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { EventSidebarSchema } from "./_schemas/event-sidebar-schema";
+import { EventSidebarSchema } from "./_schemas/event-sidebar-schema"
 
-import type { CalendarApi } from "@fullcalendar/core/index.js";
+import type { CalendarApi } from "@fullcalendar/core/index.js"
 
 export interface CalendarContextType {
-  calendarState: CalendarStateType;
-  calendarApi: CalendarApi | null;
-  setCalendarApi: (val: CalendarApi) => void;
-  eventSidebarIsOpen: boolean;
-  setEventSidebarIsOpen: (val: boolean) => void;
-  handleAddEvent: (event: EventWithoutIdType) => void;
-  handleUpdateEvent: (event: EventType) => void;
-  handleDeleteEvent: (eventId: EventType["id"]) => void;
-  handleSelectEvent: (event?: EventType) => void;
-  handleSelectCategory: (category: CategoryType) => void;
-  handleSelectAllCategories: (isSelectAllCategories: boolean) => void;
+  calendarState: CalendarStateType
+  calendarApi: CalendarApi | null
+  setCalendarApi: (val: CalendarApi) => void
+  eventSidebarIsOpen: boolean
+  setEventSidebarIsOpen: (val: boolean) => void
+  handleAddEvent: (event: EventWithoutIdType) => void
+  handleUpdateEvent: (event: EventType) => void
+  handleDeleteEvent: (eventId: EventType["id"]) => void
+  handleSelectEvent: (event?: EventType) => void
+  handleSelectCategory: (category: CategoryType) => void
+  handleSelectAllCategories: (isSelectAllCategories: boolean) => void
 }
 
 export type CategoryType =
@@ -24,29 +24,29 @@ export type CategoryType =
   | "Family"
   | "Holiday"
   | "Health"
-  | "Miscellaneous";
+  | "Miscellaneous"
 
 export type EventType = {
-  id: string;
-  url?: string;
-  title: string;
-  allDay: boolean;
-  end: Date;
-  start: Date;
+  id: string
+  url?: string
+  title: string
+  allDay: boolean
+  end: Date
+  start: Date
   extendedProps: {
-    category: CategoryType;
-    description?: string;
-  };
-};
+    category: CategoryType
+    description?: string
+  }
+}
 
-export type EventWithoutIdType = Omit<EventType, "id">;
+export type EventWithoutIdType = Omit<EventType, "id">
 
 export type CalendarStateType = {
-  initalEvents: EventType[];
-  events: EventType[];
-  selectedEvent?: EventType;
-  selectedCategories: CategoryType[];
-};
+  initalEvents: EventType[]
+  events: EventType[]
+  selectedEvent?: EventType
+  selectedCategories: CategoryType[]
+}
 
 export type CalendarActionType = {
   type:
@@ -55,11 +55,11 @@ export type CalendarActionType = {
     | "deleteEvent"
     | "selectEvent"
     | "selectCategory"
-    | "selectAllCategories";
-  event?: EventType;
-  category?: CategoryType;
-  eventId?: string;
-  isSelectAllCategories?: boolean;
-};
+    | "selectAllCategories"
+  event?: EventType
+  category?: CategoryType
+  eventId?: string
+  isSelectAllCategories?: boolean
+}
 
-export type EventSidebarFormType = z.infer<typeof EventSidebarSchema>;
+export type EventSidebarFormType = z.infer<typeof EventSidebarSchema>

@@ -1,6 +1,6 @@
-import { socialLinksData } from "@/data/social-links";
+import { socialLinksData } from "@/data/social-links"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export function SocialMediaLinks() {
   return (
@@ -18,5 +18,5 @@ export function SocialMediaLinks() {
         </Button>
       ))}
     </div>
-  );
+  )
 }

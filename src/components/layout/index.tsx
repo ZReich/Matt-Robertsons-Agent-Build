@@ -1,24 +1,23 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { useSettings } from "@/hooks/use-settings";
+import type { DictionaryType } from "@/lib/get-dictionary"
 
-import type { DictionaryType } from "@/lib/get-dictionary";
-
-import { VerticalLayout } from "./vertical-layout";
-import { HorizontalLayout } from "./horizontal-layout";
-import { Customizer } from "./customizer";
+import { useSettings } from "@/hooks/use-settings"
+import { Customizer } from "./customizer"
+import { HorizontalLayout } from "./horizontal-layout"
+import { VerticalLayout } from "./vertical-layout"
 
 export function Layout({
   children,
   dictionary,
 }: {
-  children: React.ReactNode;
-  dictionary: DictionaryType;
+  children: React.ReactNode
+  dictionary: DictionaryType
 }) {
-  const { settings } = useSettings();
-  const isVertical = settings.layout === "vertical";
+  const { settings } = useSettings()
+  const isVertical = settings.layout === "vertical"
 
   return (
     <>
@@ -30,5 +29,5 @@ export function Layout({
         <HorizontalLayout dictionary={dictionary}>{children}</HorizontalLayout>
       )}
     </>
-  );
+  )
 }

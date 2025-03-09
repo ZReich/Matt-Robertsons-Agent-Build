@@ -1,8 +1,8 @@
-import type { UserType } from "../../../../../types";
+import type { UserType } from "../../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { AccountRecoveryOptionsHeader } from "./account-recovery-options-header";
-import { AccountRecoveryOptionsContent } from "./account-recovery-options-content";
+import { Card } from "@/components/ui/card"
+import { AccountRecoveryOptionsContent } from "./account-recovery-options-content"
+import { AccountRecoveryOptionsHeader } from "./account-recovery-options-header"
 
 export function AccountRecoveryOptions({ user }: { user: UserType }) {
   return (
@@ -10,5 +10,5 @@ export function AccountRecoveryOptions({ user }: { user: UserType }) {
       <AccountRecoveryOptionsHeader />
       <AccountRecoveryOptionsContent user={user} />
     </Card>
-  );
+  )
 }

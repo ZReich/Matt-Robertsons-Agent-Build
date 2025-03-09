@@ -1,7 +1,10 @@
-import { topProductsData } from "../../../_data/top-products";
+import { topProductsData } from "../../../_data/top-products"
 
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
-import { TopProductsList } from "./top-products-list";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { TopProductsList } from "./top-products-list"
 
 export async function TopProducts() {
   return (
@@ -12,5 +15,5 @@ export async function TopProducts() {
     >
       <TopProductsList data={topProductsData.products} />
     </DashboardCard>
-  );
+  )
 }

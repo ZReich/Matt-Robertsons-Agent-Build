@@ -1,15 +1,15 @@
-"use client";
+"use client"
 
-import { RadialBarChart, Label, PolarRadiusAxis, RadialBar } from "recharts";
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
 
-import type { LeadSourceType } from "../../../types";
-import type { ChartConfig } from "@/components/ui/chart";
+import type { ChartConfig } from "@/components/ui/chart"
+import type { LeadSourceType } from "../../../types"
 
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const chartConfig = {
   socialMedia: {
@@ -32,12 +32,12 @@ const chartConfig = {
     label: "Other",
     color: "hsl(var(--chart-5))",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export function LeadSourcesChart({
   data,
 }: {
-  data: Pick<LeadSourceType, "leads" | "summary">;
+  data: Pick<LeadSourceType, "leads" | "summary">
 }) {
   return (
     <ChartContainer
@@ -75,7 +75,7 @@ export function LeadSourcesChart({
                       Leads
                     </tspan>
                   </text>
-                );
+                )
               }
             }}
           />
@@ -106,5 +106,5 @@ export function LeadSourcesChart({
         />
       </RadialBarChart>
     </ChartContainer>
-  );
+  )
 }

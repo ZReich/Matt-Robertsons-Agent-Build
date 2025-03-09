@@ -1,48 +1,47 @@
-"use client";
+"use client"
 
-import { useForm } from "react-hook-form";
-import { useParams } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, Send } from "lucide-react";
+import { useParams } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle, Send } from "lucide-react"
 
-import { TextMessageSchema } from "../../../_schemas/text-message-schema";
+import { TextMessageSchema } from "../../../_schemas/text-message-schema"
 
-import type { TextMessageFormType } from "../../../types";
-import type { LocaleType } from "@/types";
+import type { LocaleType } from "@/types"
+import type { TextMessageFormType } from "../../../types"
 
-import { useChatContext } from "../../../hooks/use-chat-context";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useChatContext } from "../../../hooks/use-chat-context"
+import { Button } from "@/components/ui/button"
+import { EmojiPicker } from "@/components/ui/emoji-picker"
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
 export function TextMessageForm() {
-  const params = useParams();
-  const { handleAddTextMessage } = useChatContext();
+  const params = useParams()
+  const { handleAddTextMessage } = useChatContext()
   const form = useForm<TextMessageFormType>({
     resolver: zodResolver(TextMessageSchema),
     defaultValues: {
       text: "",
     },
-  });
+  })
 
-  const text = form.watch("text");
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
-  const locale = params.lang as LocaleType;
+  const text = form.watch("text")
+  const { isSubmitting, isValid } = form.formState
+  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
+  const locale = params.lang as LocaleType
 
   const onSubmit = async (data: TextMessageFormType) => {
-    handleAddTextMessage(data.text);
+    handleAddTextMessage(data.text)
 
-    form.reset(); // Reset the form to the initial state
-  };
+    form.reset() // Reset the form to the initial state
+  }
 
   return (
     <Form {...form}>
@@ -53,8 +52,8 @@ export function TextMessageForm() {
         <EmojiPicker
           locale={locale}
           onEmojiSelect={(e) => {
-            form.setValue("text", text + e.native);
-            form.trigger();
+            form.setValue("text", text + e.native)
+            form.trigger()
           }}
         />
 
@@ -93,5 +92,5 @@ export function TextMessageForm() {
         </Button>
       </form>
     </Form>
-  );
+  )
 }

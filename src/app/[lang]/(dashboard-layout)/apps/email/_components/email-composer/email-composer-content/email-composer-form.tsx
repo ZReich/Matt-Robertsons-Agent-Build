@@ -1,36 +1,36 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { MoreVertical, ListRestart, Send } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { ListRestart, MoreVertical, Send } from "lucide-react"
 
-import { EmailComposerSchema } from "../../../_schemas/email-composer-schema";
+import { EmailComposerSchema } from "../../../_schemas/email-composer-schema"
 
-import type { EmailComposerFormType } from "../../../types";
+import type { EmailComposerFormType } from "../../../types"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Editor } from "@/components/ui/editor"
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { Toggle } from "@/components/ui/toggle";
-import { Editor } from "@/components/ui/editor";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { Toggle } from "@/components/ui/toggle"
 
 export function EmailComposerForm() {
-  const [showCc, setShowCc] = React.useState(false);
-  const [showBcc, setShowBcc] = React.useState(false);
+  const [showCc, setShowCc] = React.useState(false)
+  const [showBcc, setShowBcc] = React.useState(false)
 
   const form = useForm<EmailComposerFormType>({
     resolver: zodResolver(EmailComposerSchema),
@@ -41,9 +41,9 @@ export function EmailComposerForm() {
       subject: "",
       content: "",
     },
-  });
+  })
 
-  function onSubmit(data: EmailComposerFormType) {}
+  function onSubmit(_data: EmailComposerFormType) {}
 
   return (
     <Form {...form}>
@@ -167,5 +167,5 @@ export function EmailComposerForm() {
         </div>
       </form>
     </Form>
-  );
+  )
 }

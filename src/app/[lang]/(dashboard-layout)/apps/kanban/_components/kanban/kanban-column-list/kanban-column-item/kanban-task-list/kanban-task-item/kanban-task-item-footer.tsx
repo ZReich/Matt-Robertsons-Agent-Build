@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { MessageCircleMore, Paperclip } from "lucide-react";
+import * as React from "react"
+import { MessageCircleMore, Paperclip } from "lucide-react"
 
-import type { TaskType } from "../../../../../../types";
+import type { TaskType } from "../../../../../../types"
 
-import { Button } from "@/components/ui/button";
-import { CardFooter } from "@/components/ui/card";
-import { AvatarStack } from "@/components/ui/avatar";
+import { AvatarStack } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { CardFooter } from "@/components/ui/card"
 
 interface KanbanTaskItemFooterProps {
-  task: TaskType;
+  task: TaskType
 }
 
 export function KanbanTaskItemFooter({ task }: KanbanTaskItemFooterProps) {
@@ -19,8 +19,8 @@ export function KanbanTaskItemFooter({ task }: KanbanTaskItemFooterProps) {
       src: member.avatar,
       alt: member.name,
       href: "/", // Replace with the correct link to the member's profile, e.g., `/profile/${member.username}`
-    }));
-  }, [task.assigned]);
+    }))
+  }, [task.assigned])
 
   return (
     <CardFooter className="justify-between gap-2 pe-3 ps-5">
@@ -36,5 +36,5 @@ export function KanbanTaskItemFooter({ task }: KanbanTaskItemFooterProps) {
         </Button>
       </div>
     </CardFooter>
-  );
+  )
 }

@@ -1,16 +1,15 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { useEmailContext } from "../../hooks/use-email-context";
-
-import { CardFooter } from "@/components/ui/card";
+import { useEmailContext } from "../../hooks/use-email-context"
+import { CardFooter } from "@/components/ui/card"
 
 export function EmailListFooter() {
-  const { emailState } = useEmailContext();
+  const { emailState } = useEmailContext()
 
-  const emailCount = emailState.emails.length; // Count of emails currently displayed.
-  const totalEmails = emailState.totalEmails.toLocaleString();
+  const emailCount = emailState.emails.length // Count of emails currently displayed.
+  const totalEmails = emailState.totalEmails.toLocaleString()
 
   return (
     <CardFooter className="justify-center py-3 border-t border-border">
@@ -21,5 +20,5 @@ export function EmailListFooter() {
           : "No emails available"}
       </p>
     </CardFooter>
-  );
+  )
 }

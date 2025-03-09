@@ -1,14 +1,21 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { LoaderCircle } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, UseFormReturn, FieldPath } from "react-hook-form";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { FieldPath, UseFormReturn, useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { NotificationPreferencesSchema } from "../../../_schemas/notifications-preferenes-schema";
+import { NotificationPreferencesSchema } from "../../../_schemas/notifications-preferenes-schema"
 
-import type { NotificationPreferencesFormType } from "../../../../../types";
+import type { NotificationPreferencesFormType } from "../../../../../types"
 
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Form,
   FormControl,
@@ -16,14 +23,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/form"
 
 export function NotificationPreferencesForm() {
   const form = useForm<NotificationPreferencesFormType>({
@@ -45,12 +45,12 @@ export function NotificationPreferencesForm() {
         sms: false,
       },
     },
-  });
+  })
 
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: NotificationPreferencesFormType) {}
+  function onSubmit(_data: NotificationPreferencesFormType) {}
 
   return (
     <Form {...form}>
@@ -120,15 +120,15 @@ export function NotificationPreferencesForm() {
         </Button>
       </form>
     </Form>
-  );
+  )
 }
 
 interface ChangeButtonProps {
-  form: UseFormReturn<NotificationPreferencesFormType>;
+  form: UseFormReturn<NotificationPreferencesFormType>
   field: {
-    name: FieldPath<NotificationPreferencesFormType>;
-    value: { email: boolean; browser: boolean; sms: boolean };
-  };
+    name: FieldPath<NotificationPreferencesFormType>
+    value: { email: boolean; browser: boolean; sms: boolean }
+  }
 }
 
 function ChangeButton({ form, field }: ChangeButtonProps) {
@@ -185,5 +185,5 @@ function ChangeButton({ form, field }: ChangeButtonProps) {
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

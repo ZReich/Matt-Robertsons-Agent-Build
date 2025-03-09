@@ -1,17 +1,17 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { OAuthLinks } from "@/components/auth/oauth-links";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { SeparatorWithText } from "@/components/ui/separator";
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { SeparatorWithText } from "@/components/ui/separator"
+import { OAuthLinks } from "@/components/auth/oauth-links"
 
 export function PreviewSignIn() {
   return (
@@ -41,5 +41,5 @@ export function PreviewSignIn() {
         <OAuthLinks />
       </CardContent>
     </Card>
-  );
+  )
 }

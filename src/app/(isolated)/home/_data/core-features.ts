@@ -8,10 +8,10 @@ import {
   PanelsTopLeft,
   PencilRuler,
   Shield,
-} from "lucide-react";
-import { SiRadixui, SiNextdotjs, SiReact, SiTailwindcss } from "react-icons/si";
+} from "lucide-react"
+import { SiNextdotjs, SiRadixui, SiReact, SiTailwindcss } from "react-icons/si"
 
-import type { CoreFeatureType } from "../types";
+import type { CoreFeatureType } from "../types"
 
 export const coreFeaturesData: CoreFeatureType[] = [
   {
@@ -91,4 +91,4 @@ export const coreFeaturesData: CoreFeatureType[] = [
       "Comprehensive documentation for easy integration and customization.",
     icon: BookCheck,
   },
-];
+]

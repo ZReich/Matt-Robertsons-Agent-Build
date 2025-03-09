@@ -1,17 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Grid2x2Plus } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { Grid2x2Plus } from "lucide-react"
 
-import { KanbanColumnSchema } from "../../_schemas/kanban-column-schema";
+import { KanbanColumnSchema } from "../../_schemas/kanban-column-schema"
 
-import type { KanbanColumnFormType } from "../../types";
+import type { KanbanColumnFormType } from "../../types"
 
-import { useKanbanContext } from "../../hooks/use-kanban-context";
-
-import { Button } from "@/components/ui/button";
+import { useKanbanContext } from "../../hooks/use-kanban-context"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -19,20 +18,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@/components/ui/sheet"
 
 const defaultValues = {
   title: "",
-};
+}
 
 export function KanbanUpdateColumnSidebar() {
   const {
@@ -41,22 +40,22 @@ export function KanbanUpdateColumnSidebar() {
     setKanbanUpdateColumnSidebarIsOpen,
     handleUpdateColumn,
     handleSelectColumn,
-  } = useKanbanContext();
+  } = useKanbanContext()
 
   const form = useForm<KanbanColumnFormType>({
     resolver: zodResolver(KanbanColumnSchema),
-  });
+  })
 
-  const selectedColumn = kanbanState.selectedColumn;
+  const selectedColumn = kanbanState.selectedColumn
 
   // Reset the form with the current selected column's values whenever `selectedColumn` changes
   React.useEffect(() => {
     if (selectedColumn) {
       form.reset({
         title: selectedColumn?.title,
-      });
+      })
     }
-  }, [selectedColumn, form]);
+  }, [selectedColumn, form])
 
   function onSubmit(data: KanbanColumnFormType) {
     if (selectedColumn) {
@@ -65,17 +64,17 @@ export function KanbanUpdateColumnSidebar() {
         id: selectedColumn.id,
         order: selectedColumn.order,
         tasks: selectedColumn.tasks,
-      });
+      })
     }
 
-    handleSidebarClose();
+    handleSidebarClose()
   }
 
   const handleSidebarClose = () => {
-    form.reset(defaultValues); // Reset the form to the initial values
-    handleSelectColumn(undefined); // Unselect the current column
-    setKanbanUpdateColumnSidebarIsOpen(false); // Close the sidebar
-  };
+    form.reset(defaultValues) // Reset the form to the initial values
+    handleSelectColumn(undefined) // Unselect the current column
+    setKanbanUpdateColumnSidebarIsOpen(false) // Close the sidebar
+  }
 
   return (
     <Sheet
@@ -117,5 +116,5 @@ export function KanbanUpdateColumnSidebar() {
         </ScrollArea>
       </SheetContent>
     </Sheet>
-  );
+  )
 }

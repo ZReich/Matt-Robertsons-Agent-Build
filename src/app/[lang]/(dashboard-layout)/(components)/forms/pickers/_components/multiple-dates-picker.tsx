@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { MultipleDatesPicker as MultipleDatesPickerComponent } from "@/components/multiple-date-picker";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MultipleDatesPicker as MultipleDatesPickerComponent } from "@/components/multiple-date-picker"
 
 export function MultipleDatesPicker() {
-  const [dates, setDates] = React.useState<Date[] | undefined>([]);
+  const [dates, setDates] = React.useState<Date[] | undefined>([])
 
   return (
     <Card>
@@ -17,5 +17,5 @@ export function MultipleDatesPicker() {
         <MultipleDatesPickerComponent value={dates} onValueChange={setDates} />
       </CardContent>
     </Card>
-  );
+  )
 }

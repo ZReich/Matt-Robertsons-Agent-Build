@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import type { ActiveProjectType } from "../../../types";
+import type { ActiveProjectType } from "../../../types"
 
-import { ActiveProjectsItem } from "./active-projects-item";
+import { ActiveProjectsItem } from "./active-projects-item"
 
 export function ActiveProjectsList({ data }: { data: ActiveProjectType[] }) {
   return (
@@ -11,5 +11,5 @@ export function ActiveProjectsList({ data }: { data: ActiveProjectType[] }) {
         <ActiveProjectsItem key={project.name + index} project={project} />
       ))}
     </ul>
-  );
+  )
 }

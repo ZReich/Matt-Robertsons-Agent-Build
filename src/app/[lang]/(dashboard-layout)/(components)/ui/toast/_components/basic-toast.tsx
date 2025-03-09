@@ -1,14 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { useToast } from "@/hooks/use-toast";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function BasicToast() {
-  const { toast } = useToast();
+  const { toast } = useToast()
 
   return (
     <Card>
@@ -21,12 +20,12 @@ export function BasicToast() {
           onClick={() => {
             toast({
               description: "Your message has been sent.",
-            });
+            })
           }}
         >
           Show Toast
         </Button>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,15 +1,15 @@
-import type { SalesRepresentativeType } from "../../../../types";
+import type { SalesRepresentativeType } from "../../../../types"
 
-import { TopSalesRepresentativesTop3Item } from "./top-sales-representatives-top-3-item";
-import { TopSalesRepresentativesOthersItem } from "./top-sales-representatives-others-item";
+import { TopSalesRepresentativesOthersItem } from "./top-sales-representatives-others-item"
+import { TopSalesRepresentativesTop3Item } from "./top-sales-representatives-top-3-item"
 
 export function TopSalesRepresentativesList({
   data,
 }: {
-  data: SalesRepresentativeType["representatives"];
+  data: SalesRepresentativeType["representatives"]
 }) {
-  const top3 = data.slice(0, 3);
-  const others = data.slice(3);
+  const top3 = data.slice(0, 3)
+  const others = data.slice(3)
 
   return (
     <ul className="space-y-3">
@@ -29,5 +29,5 @@ export function TopSalesRepresentativesList({
         />
       ))}
     </ul>
-  );
+  )
 }

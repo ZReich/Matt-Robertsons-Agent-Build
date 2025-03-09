@@ -1,23 +1,22 @@
-"use client";
+"use client"
 
-import Link from "next/link";
+import Link from "next/link"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn, formatUnreadCount } from "@/lib/utils";
+import type { LocaleType } from "@/types"
+import type { EmailSidebarItemType } from "../../types"
 
-import type { LocaleType } from "@/types";
-import type { EmailSidebarItemType } from "../../types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { cn, formatUnreadCount } from "@/lib/utils"
 
-import { useEmailContext } from "../../hooks/use-email-context";
-
-import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DynamicIcon } from "@/components/dynamic-icon";
+import { useEmailContext } from "../../hooks/use-email-context"
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface EmailSidebarItemProps {
-  item: EmailSidebarItemType;
-  segmentParam: string | string[];
-  locale: LocaleType;
+  item: EmailSidebarItemType
+  segmentParam: string | string[]
+  locale: LocaleType
 }
 
 export function EmailSidebarItem({
@@ -25,9 +24,9 @@ export function EmailSidebarItem({
   segmentParam,
   locale,
 }: EmailSidebarItemProps) {
-  const { setIsEmailSidebarOpen } = useEmailContext();
+  const { setIsEmailSidebarOpen } = useEmailContext()
 
-  const unreadCount = formatUnreadCount(item.unreadCount);
+  const unreadCount = formatUnreadCount(item.unreadCount)
 
   return (
     <li>
@@ -47,5 +46,5 @@ export function EmailSidebarItem({
         {!!unreadCount && <Badge className="ms-auto">{unreadCount}</Badge>}
       </Link>
     </li>
-  );
+  )
 }

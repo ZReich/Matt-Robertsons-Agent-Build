@@ -1,10 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/components/ui/accordion"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function BasicAccordion() {
   return (
@@ -37,5 +37,5 @@ export function BasicAccordion() {
         </Accordion>
       </CardContent>
     </Card>
-  );
+  )
 }

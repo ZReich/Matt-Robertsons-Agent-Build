@@ -1,24 +1,24 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { signIn } from "next-auth/react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { LoaderCircle } from "lucide-react";
+import * as React from "react"
+import Link from "next/link"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { signIn } from "next-auth/react"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { userData } from "@/data/user";
+import { userData } from "@/data/user"
 
-import { SignInSchema } from "@/schemas/sign-in-schema";
+import { SignInSchema } from "@/schemas/sign-in-schema"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-import { ensureRedirectPathname } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import type { LocaleType, SignInFormType } from "@/types"
 
-import type { LocaleType, SignInFormType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { ensureRedirectPathname } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -26,17 +26,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { SeparatorWithText } from "@/components/ui/separator";
-import { OAuthLinks } from "../oauth-links";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { SeparatorWithText } from "@/components/ui/separator"
+import { OAuthLinks } from "../oauth-links"
 
 export function SignInForm() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const params = useParams()
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
-  const redirectPathname = searchParams.get("redirectTo");
+  const redirectPathname = searchParams.get("redirectTo")
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInSchema),
@@ -44,33 +44,33 @@ export function SignInForm() {
       email: userData.email,
       password: userData.password,
     },
-  });
+  })
 
-  const locale = params.lang as LocaleType;
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
+  const locale = params.lang as LocaleType
+  const { isSubmitting, isValid } = form.formState
+  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid, or submitting
 
   async function onSubmit(data: SignInFormType) {
-    const { email, password } = data;
+    const { email, password } = data
 
     try {
       const result = await signIn("credentials", {
         redirect: false,
         email,
         password,
-      });
+      })
 
       if (result && result.error) {
-        throw new Error(result.error);
+        throw new Error(result.error)
       }
 
-      router.push(redirectPathname || "/");
+      router.push(redirectPathname || "/")
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Sign In Failed",
         description: error instanceof Error ? error.message : undefined,
-      });
+      })
     }
   }
 
@@ -154,5 +154,5 @@ export function SignInForm() {
         <OAuthLinks />
       </form>
     </Form>
-  );
+  )
 }

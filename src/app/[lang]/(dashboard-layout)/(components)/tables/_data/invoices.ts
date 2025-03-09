@@ -1,4 +1,4 @@
-import type { InvoiceType } from "../types";
+import type { InvoiceType } from "../types"
 
 export const invoicesData: InvoiceType[] = [
   { id: "INV001", status: "Paid", method: "Credit Card", amount: "$250.00" },
@@ -9,4 +9,4 @@ export const invoicesData: InvoiceType[] = [
     method: "Bank Transfer",
     amount: "$300.00",
   },
-];
+]

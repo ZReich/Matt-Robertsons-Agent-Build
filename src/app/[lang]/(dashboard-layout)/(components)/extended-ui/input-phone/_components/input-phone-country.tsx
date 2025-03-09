@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { InputPhone } from "@/components/ui/input-phone";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { InputPhone } from "@/components/ui/input-phone"
 
 export function BasicInputPhoneCountry() {
   return (
@@ -22,5 +22,5 @@ export function BasicInputPhoneCountry() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import type { RouteType } from "@/types";
+import type { RouteType } from "@/types"
 
 export const routeMap = new Map<string, RouteType>([
   ["/sign-in", { type: "guest" }],
@@ -8,4 +8,4 @@ export const routeMap = new Map<string, RouteType>([
   ["/new-password", { type: "guest" }],
   ["/home", { type: "public" }],
   ["/docs", { type: "public" }],
-]);
+])

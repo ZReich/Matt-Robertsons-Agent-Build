@@ -1,15 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Sun, MoonStar, SunMoon, RotateCcw } from "lucide-react";
+import * as React from "react"
+import { MoonStar, RotateCcw, Sun, SunMoon } from "lucide-react"
 
-import { baseColors } from "@/configs/base-colors";
+import type { ModeType } from "@/types"
 
-import type { ModeType } from "@/types";
+import { baseColors } from "@/configs/base-colors"
 
-import { useTheme } from "./hooks/use-theme";
-
-import { Button } from "@/components/ui/button";
+import { useTheme } from "./hooks/use-theme"
+import { Button } from "@/components/ui/button"
 
 const themes = {
   zinc: {
@@ -110,19 +109,19 @@ const themes = {
       foreground: "210 20% 98%",
     },
   },
-};
+}
 
-const radiusSizes = ["0", "0.3", "0.5", "0.75", "1.0"];
+const radiusSizes = ["0", "0.3", "0.5", "0.75", "1.0"]
 
 export function ThemeCustomizer() {
-  const { theme, updateTheme, resetTheme } = useTheme();
+  const { theme, updateTheme, resetTheme } = useTheme()
 
   const setMode = React.useCallback(
     (modeName: ModeType) => {
-      updateTheme({ ...theme, mode: modeName });
+      updateTheme({ ...theme, mode: modeName })
     },
     [theme, updateTheme]
-  );
+  )
 
   return (
     <div className="space-y-4">
@@ -136,7 +135,7 @@ export function ThemeCustomizer() {
         <p className="text-sm">Color</p>
         <div className="grid grid-cols-3 gap-2">
           {baseColors.map((color) => {
-            const isActive = theme.theme === color.name;
+            const isActive = theme.theme === color.name
 
             return (
               <Button
@@ -156,12 +155,12 @@ export function ThemeCustomizer() {
                   updateTheme({
                     ...theme,
                     theme: color.name,
-                  });
+                  })
                 }}
               >
                 <span>{themes[color.name].label}</span>
               </Button>
-            );
+            )
           })}
         </div>
       </div>
@@ -179,12 +178,12 @@ export function ThemeCustomizer() {
                   updateTheme({
                     ...theme,
                     radius: parseFloat(value),
-                  });
+                  })
                 }}
               >
                 {value}
               </Button>
-            );
+            )
           })}
         </div>
       </div>
@@ -219,13 +218,13 @@ export function ThemeCustomizer() {
         variant="outline"
         className="w-full"
         onClick={() => {
-          setMode("system");
-          resetTheme();
+          setMode("system")
+          resetTheme()
         }}
       >
         <RotateCcw className="size-4 me-1 -translate-x-1" />
         Reset
       </Button>
     </div>
-  );
+  )
 }

@@ -1,24 +1,24 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
+import type { ButtonProps } from "@/components/ui/button"
 
-import type { ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export interface InputFileProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     "value" | "onChange"
   > {
-  containerClassName?: string;
-  buttonVariant?: ButtonProps["variant"];
-  buttonLabel?: string;
-  placeholder?: string;
-  value?: FileList;
-  onValueChange?: (value: FileList) => void;
+  containerClassName?: string
+  buttonVariant?: ButtonProps["variant"]
+  buttonLabel?: string
+  placeholder?: string
+  value?: FileList
+  onValueChange?: (value: FileList) => void
 }
 
 const InputFile = React.forwardRef<HTMLInputElement, InputFileProps>(
@@ -35,43 +35,43 @@ const InputFile = React.forwardRef<HTMLInputElement, InputFileProps>(
     },
     ref
   ) => {
-    const [fileName, setFileName] = React.useState<string>(placeholder);
-    const inputRef = React.useRef<HTMLInputElement>(null);
+    const [fileName, setFileName] = React.useState<string>(placeholder)
+    const inputRef = React.useRef<HTMLInputElement>(null)
 
     // Forward the ref to the internal ref
-    React.useImperativeHandle(ref, () => inputRef.current!);
+    React.useImperativeHandle(ref, () => inputRef.current!)
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
+      const files = event.target.files
 
       if (files) {
         if (files.length > 1) {
-          setFileName(`${files.length} Files`);
+          setFileName(`${files.length} Files`)
         } else if (files.length === 1) {
-          setFileName(files[0].name);
+          setFileName(files[0].name)
         } else {
-          setFileName(placeholder);
+          setFileName(placeholder)
         }
 
-        onValueChange?.(files);
+        onValueChange?.(files)
       }
-    };
+    }
 
     const handleClick = () => {
-      inputRef.current?.click();
-    };
+      inputRef.current?.click()
+    }
 
     React.useEffect(() => {
       if (value) {
         if (value.length > 1) {
-          setFileName(`${value.length} Files`);
+          setFileName(`${value.length} Files`)
         } else {
-          setFileName(value[0].name);
+          setFileName(value[0].name)
         }
       } else {
-        setFileName(placeholder);
+        setFileName(placeholder)
       }
-    }, [value, placeholder]);
+    }, [value, placeholder])
 
     return (
       <div
@@ -101,9 +101,9 @@ const InputFile = React.forwardRef<HTMLInputElement, InputFileProps>(
           onChange={handleFileChange}
         />
       </div>
-    );
+    )
   }
-);
-InputFile.displayName = "InputFile";
+)
+InputFile.displayName = "InputFile"
 
-export { InputFile };
+export { InputFile }

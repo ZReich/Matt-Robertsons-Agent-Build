@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,7 +5,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function BasicBreadcrumb() {
   return (
@@ -32,5 +32,5 @@ export function BasicBreadcrumb() {
         </Breadcrumb>
       </CardContent>
     </Card>
-  );
+  )
 }

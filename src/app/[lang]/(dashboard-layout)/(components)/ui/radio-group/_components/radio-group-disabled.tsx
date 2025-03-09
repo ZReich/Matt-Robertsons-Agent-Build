@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export function RadioGroupDisabled() {
   return (
@@ -32,5 +32,5 @@ export function RadioGroupDisabled() {
         </RadioGroup>
       </CardContent>
     </Card>
-  );
+  )
 }

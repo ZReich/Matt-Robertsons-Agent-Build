@@ -1,17 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { CardWithTabs } from "./_components/card-with-tabs";
-import { CardWithImage } from "./_components/card-with-image";
-import { CardWithFilledImage } from "./_components/card-with-filled-image";
-import { CardOverlay } from "./_components/card-overlay";
-import { CardWithImageHorizontal } from "./_components/card-with-image-horizontal";
-import { CardWithFilledImageHorizontal } from "./_components/card-with-filled-image-horizontal copy";
+import { CardOverlay } from "./_components/card-overlay"
+import { CardWithFilledImage } from "./_components/card-with-filled-image"
+import { CardWithFilledImageHorizontal } from "./_components/card-with-filled-image-horizontal copy"
+import { CardWithImage } from "./_components/card-with-image"
+import { CardWithImageHorizontal } from "./_components/card-with-image-horizontal"
+import { CardWithTabs } from "./_components/card-with-tabs"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Basic Cards",
-};
+}
 
 export default function BasicCardsPage() {
   return (
@@ -25,5 +25,5 @@ export default function BasicCardsPage() {
       </div>
       <CardWithTabs />
     </section>
-  );
+  )
 }

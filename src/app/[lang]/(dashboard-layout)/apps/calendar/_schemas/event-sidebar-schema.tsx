@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { categoriesData } from "../_data/categories";
+import { categoriesData } from "../_data/categories"
 
-import type { CategoryType } from "../types";
+import type { CategoryType } from "../types"
 
 export const EventSidebarSchema = z.object({
   url: z.string().url({ message: "Invalid url" }).optional().or(z.literal("")),
@@ -23,4 +23,4 @@ export const EventSidebarSchema = z.object({
     (value) => categoriesData.some((category) => category === value),
     { message: "Invalid label" }
   ),
-});
+})

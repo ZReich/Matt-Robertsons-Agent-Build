@@ -1,8 +1,8 @@
-import { invoicesData } from "../../_data/invoices";
+import { invoicesData } from "../../_data/invoices"
 
-import { isEven } from "@/lib/utils";
+import { isEven } from "@/lib/utils"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
 export default function TableWithCaption() {
   return (
@@ -48,5 +48,5 @@ export default function TableWithCaption() {
         </Table>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils"
 
 interface PaymentSummaryRowProps {
-  label: string;
-  value: number;
-  valueClassName?: string;
+  label: string
+  value: number
+  valueClassName?: string
 }
 
 export function PaymentSummaryRow({
@@ -22,5 +22,5 @@ export function PaymentSummaryRow({
         {formatCurrency(value)}
       </dd>
     </dl>
-  );
+  )
 }

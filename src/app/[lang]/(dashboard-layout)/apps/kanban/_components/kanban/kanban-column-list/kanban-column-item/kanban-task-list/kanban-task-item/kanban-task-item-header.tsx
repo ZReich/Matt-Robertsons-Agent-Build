@@ -1,21 +1,21 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { DraggableProvided } from "@hello-pangea/dnd";
-import { GripVertical } from "lucide-react";
+import * as React from "react"
+import { DraggableProvided } from "@hello-pangea/dnd"
+import { GripVertical } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { TaskType } from "../../../../../../types"
 
-import type { TaskType } from "../../../../../../types";
+import { cn } from "@/lib/utils"
 
-import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CardHeader } from "@/components/ui/card";
-import { KanbanTaskItemActions } from "./kanban-task-item-actions";
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
+import { CardHeader } from "@/components/ui/card"
+import { KanbanTaskItemActions } from "./kanban-task-item-actions"
 
 interface KanbanTaskItemHeaderProps {
-  task: TaskType;
-  provided: DraggableProvided;
+  task: TaskType
+  provided: DraggableProvided
 }
 
 export function KanbanTaskItemHeader({
@@ -40,5 +40,5 @@ export function KanbanTaskItemHeader({
       <Badge>{task.label}</Badge>
       <KanbanTaskItemActions task={task} />
     </CardHeader>
-  );
+  )
 }

@@ -64,11 +64,11 @@ Delete any imports related to i18n:
 
 ```js
 import {
-  isPathnameMissingLocale,
+  ensureLocalizedPathname,
   getLocaleFromPathname,
   getPreferredLocale,
-  ensureLocalizedPathname,
-} from "@/lib/i18n";
+  isPathnameMissingLocale,
+} from "@/lib/i18n"
 ```
 
 ### 4.2. Simplify the `redirect` Function
@@ -77,8 +77,8 @@ Update the `redirect` function to focus solely on redirecting to the given pathn
 
 ```ts
 function redirect(pathname: string, request: NextRequestWithAuth) {
-  const redirectUrl = new URL(pathname, request.url).toString();
-  return NextResponse.redirect(redirectUrl);
+  const redirectUrl = new URL(pathname, request.url).toString()
+  return NextResponse.redirect(redirectUrl)
 }
 ```
 
@@ -87,13 +87,13 @@ function redirect(pathname: string, request: NextRequestWithAuth) {
 Inside the `middleware` function, remove these blocks:
 
 ```ts
-const locale = getLocaleFromPathname(pathname);
-const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`);
+const locale = getLocaleFromPathname(pathname)
+const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`)
 ```
 
 ```ts
 if (!locale) {
-  return redirect(pathname, request);
+  return redirect(pathname, request)
 }
 ```
 
@@ -150,7 +150,7 @@ To ensure that specific routes in your Next.js application are only accessible t
 In order to configure route protection, you’ll define the access control rules in the `src/configs/auth-routes.ts` file. Below is an example configuration:
 
 ```ts
-import type { RouteType } from "@/types";
+import type { RouteType } from "@/types"
 
 export const routeMap = new Map<string, RouteType>([
   ["/sign-in", { type: "guest" }], // Only unauthenticated users can access sign-in
@@ -160,7 +160,7 @@ export const routeMap = new Map<string, RouteType>([
   ["/new-password", { type: "guest" }], // Only unauthenticated users can access new-password
   ["/home", { type: "public", exceptions: ["/home/items"] }], // Home is public, but /home/items is protected
   ["/docs", { type: "public" }], // Docs page is public
-]);
+])
 ```
 
 Each route in the `routeMap` follows the structure:

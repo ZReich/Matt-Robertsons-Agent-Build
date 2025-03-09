@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { DatePicker } from "@/components/date-picker";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DatePicker } from "@/components/date-picker"
 
 export function HumanFriendlyDatePicker() {
-  const [date, setDate] = React.useState<Date | undefined>();
+  const [date, setDate] = React.useState<Date | undefined>()
 
   return (
     <Card>
@@ -17,5 +17,5 @@ export function HumanFriendlyDatePicker() {
         <DatePicker formatStr="PPP" value={date} onValueChange={setDate} />
       </CardContent>
     </Card>
-  );
+  )
 }

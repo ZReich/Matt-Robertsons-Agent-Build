@@ -1,7 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Drawer,
   DrawerClose,
@@ -11,9 +13,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/drawer"
 
 export function BasicDrawer() {
   return (
@@ -41,5 +41,5 @@ export function BasicDrawer() {
         </Drawer>
       </CardContent>
     </Card>
-  );
+  )
 }

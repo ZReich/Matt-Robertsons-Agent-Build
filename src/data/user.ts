@@ -22,4 +22,4 @@ export const userData = {
   twoFactorAuth: false,
   loginAlerts: true,
   accountReoveryOption: "email",
-} as const;
+} as const

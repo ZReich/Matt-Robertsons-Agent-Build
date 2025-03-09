@@ -1,13 +1,13 @@
-import * as React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { cva } from "class-variance-authority";
+import * as React from "react"
+import { cva } from "class-variance-authority"
+import { TrendingDown, TrendingUp } from "lucide-react"
 
-import { cn, formatPercent, isNonNegative } from "@/lib/utils";
+import type { BadgeProps } from "@/components/ui/badge"
+import type { VariantProps } from "class-variance-authority"
 
-import type { BadgeProps } from "@/components/ui/badge";
-import type { VariantProps } from "class-variance-authority";
+import { cn, formatPercent, isNonNegative } from "@/lib/utils"
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
 
 const percentageChangeBadgeVariants = cva("justify-center", {
   variants: {
@@ -21,12 +21,12 @@ const percentageChangeBadgeVariants = cva("justify-center", {
   defaultVariants: {
     variant: "default",
   },
-});
+})
 
 export interface PercentageChangeBadgeProps
   extends Omit<BadgeProps, "variant">,
     VariantProps<typeof percentageChangeBadgeVariants> {
-  value: number;
+  value: number
 }
 
 export function PercentageChangeBadge({
@@ -35,7 +35,7 @@ export function PercentageChangeBadge({
   variant,
   ...props
 }: PercentageChangeBadgeProps) {
-  const isNonNegativeChange = isNonNegative(value);
+  const isNonNegativeChange = isNonNegative(value)
 
   return (
     <Badge
@@ -54,5 +54,5 @@ export function PercentageChangeBadge({
         )}
       </span>
     </Badge>
-  );
+  )
 }

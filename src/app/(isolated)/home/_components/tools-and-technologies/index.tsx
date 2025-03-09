@@ -1,4 +1,4 @@
-import { ToolsAndTechnologiesList } from "./tools-and-technologies-list";
+import { ToolsAndTechnologiesList } from "./tools-and-technologies-list"
 
 export function ToolsAndTechnologies() {
   return (
@@ -15,5 +15,5 @@ export function ToolsAndTechnologies() {
       </div>
       <ToolsAndTechnologiesList />
     </section>
-  );
+  )
 }

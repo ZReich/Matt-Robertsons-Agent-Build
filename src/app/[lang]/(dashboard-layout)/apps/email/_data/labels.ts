@@ -1,1 +1,1 @@
-export const labelsData = ["inbox", "sent", "draft", "starred", "spam", "trash"];
+export const labelsData = ["inbox", "sent", "draft", "starred", "spam", "trash"]

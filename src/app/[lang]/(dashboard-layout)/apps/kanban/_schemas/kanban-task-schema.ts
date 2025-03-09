@@ -1,10 +1,9 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { labelsData } from "../_data/labels";
+import { labelsData } from "../_data/labels"
 
-import { UserSchema } from "./user-schema";
-
-import { MAX_SIZE } from "../constants";
+import { MAX_SIZE } from "../constants"
+import { UserSchema } from "./user-schema"
 
 const CommentSchema = z.object({
   id: z.string(),
@@ -15,7 +14,7 @@ const CommentSchema = z.object({
     .min(2, { message: "Comment must contain at least 2 characters." })
     .max(250, { message: "Comment must contain at most 250 characters." }),
   createdAt: z.date(),
-});
+})
 
 const FileSchema = z.object({
   id: z.string(),
@@ -25,7 +24,7 @@ const FileSchema = z.object({
     message: "File size must be less than or equal to 50 MB.",
   }),
   type: z.string(),
-});
+})
 
 export const KanbanTaskSchema = z.object({
   title: z
@@ -55,4 +54,4 @@ export const KanbanTaskSchema = z.object({
   attachments: z.array(FileSchema).max(10, {
     message: "At most you can attach a maximum of 10 files.",
   }),
-});
+})

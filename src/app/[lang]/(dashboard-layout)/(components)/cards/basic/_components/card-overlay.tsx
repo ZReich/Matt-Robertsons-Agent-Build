@@ -1,13 +1,13 @@
-import Image from "next/image";
+import Image from "next/image"
 
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/card"
 
 export function CardOverlay() {
   return (
@@ -33,5 +33,5 @@ export function CardOverlay() {
         </CardFooter>
       </div>
     </Card>
-  );
+  )
 }

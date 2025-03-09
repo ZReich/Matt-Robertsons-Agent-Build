@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize } from "@/lib/utils"
 
-import { MAX_FILES, MAX_FILE_SIZE } from "../constants";
+import { MAX_FILES, MAX_FILE_SIZE } from "../constants"
 
-export const formattedFileSize = formatFileSize(MAX_FILE_SIZE);
+export const formattedFileSize = formatFileSize(MAX_FILE_SIZE)
 
 export const FileSchema = z.object({
   id: z.string(),
@@ -14,7 +14,7 @@ export const FileSchema = z.object({
     message: `File size must be less than or equal to ${formattedFileSize}.`,
   }),
   type: z.string(),
-});
+})
 
 export const FilesUploaderSchema = z.object({
   files: z
@@ -25,4 +25,4 @@ export const FilesUploaderSchema = z.object({
         MAX_FILES > 1 ? "s" : ""
       }.`,
     }),
-});
+})

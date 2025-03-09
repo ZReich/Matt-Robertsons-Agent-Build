@@ -1,38 +1,37 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { EllipsisVertical } from "lucide-react";
+import * as React from "react"
+import { EllipsisVertical } from "lucide-react"
 
-import { useEmailContext } from "../../../hooks/use-email-context";
+import type { CheckedState } from "@radix-ui/react-checkbox"
 
-import type { CheckedState } from "@radix-ui/react-checkbox";
-
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useEmailContext } from "../../../hooks/use-email-context"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 export function EmailListContentHeader() {
-  const { emailState, handleToggleSelectAllEmails } = useEmailContext();
+  const { emailState, handleToggleSelectAllEmails } = useEmailContext()
 
-  const hasSelectedEmails = !emailState.selectedEmails.length;
-  let isCheckboxChecked: CheckedState;
+  const hasSelectedEmails = !emailState.selectedEmails.length
+  let isCheckboxChecked: CheckedState
 
   // If the number of selected emails equals the total number of emails
   if (emailState.selectedEmails.length === emailState.emails.length) {
-    isCheckboxChecked = true;
+    isCheckboxChecked = true
 
     // If there are any selected emails but not all of them
   } else if (emailState.selectedEmails.length > 0) {
-    isCheckboxChecked = "indeterminate";
-    
+    isCheckboxChecked = "indeterminate"
+
     // No emails are selected
   } else {
-    isCheckboxChecked = false;
+    isCheckboxChecked = false
   }
 
   return (
@@ -61,5 +60,5 @@ export function EmailListContentHeader() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
+  )
 }

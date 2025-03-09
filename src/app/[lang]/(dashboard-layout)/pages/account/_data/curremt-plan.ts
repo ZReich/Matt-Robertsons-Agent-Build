@@ -1,4 +1,4 @@
-import type { CurrentPlanType } from "../types";
+import type { CurrentPlanType } from "../types"
 
 export const currentPlanData: CurrentPlanType = {
   plan: {
@@ -49,4 +49,4 @@ export const currentPlanData: CurrentPlanType = {
     nextBillingDate: new Date(new Date().setDate(new Date().getDate() + 2)), // 2 days from the current date
     amountDue: 49,
   },
-};
+}

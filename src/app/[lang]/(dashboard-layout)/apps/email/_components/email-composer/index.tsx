@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { Card } from "@/components/ui/card";
-import { EmailComposerHeader } from "./email-composer-header";
-import { EmailComposerContent } from "./email-composer-content";
+import { Card } from "@/components/ui/card"
+import { EmailComposerContent } from "./email-composer-content"
+import { EmailComposerHeader } from "./email-composer-header"
 
 export function EmailComposer() {
   return (
@@ -10,5 +10,5 @@ export function EmailComposer() {
       <EmailComposerHeader />
       <EmailComposerContent />
     </Card>
-  );
+  )
 }

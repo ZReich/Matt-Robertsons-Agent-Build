@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import type { IconType } from "@/types";
+import type { IconType } from "@/types"
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
 
 export function CustomerInsightItem({
   title,
@@ -10,10 +10,10 @@ export function CustomerInsightItem({
   icon: Icon,
   color,
 }: {
-  title: string;
-  value: number;
-  icon: IconType;
-  color: string;
+  title: string
+  value: number
+  icon: IconType
+  color: string
 }) {
   return (
     <li className="flex gap-x-2">
@@ -31,5 +31,5 @@ export function CustomerInsightItem({
         <p className="text-2xl">{value.toLocaleString()}</p>
       </div>
     </li>
-  );
+  )
 }

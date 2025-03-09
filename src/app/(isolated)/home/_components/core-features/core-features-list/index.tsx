@@ -1,6 +1,6 @@
-import { coreFeaturesData } from "../../../_data/core-features";
+import { coreFeaturesData } from "../../../_data/core-features"
 
-import { CoreFeaturesItem } from "./core-features-item";
+import { CoreFeaturesItem } from "./core-features-item"
 
 export function CoreFeaturesList() {
   return (
@@ -9,5 +9,5 @@ export function CoreFeaturesList() {
         <CoreFeaturesItem key={item.title} item={item} />
       ))}
     </ul>
-  );
+  )
 }

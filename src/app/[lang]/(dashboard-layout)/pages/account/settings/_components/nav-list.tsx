@@ -1,25 +1,25 @@
-"use client";
+"use client"
 
-import { useParams, usePathname } from "next/navigation";
-import Link from "next/link";
+import Link from "next/link"
+import { useParams, usePathname } from "next/navigation"
 
-import { linksData } from "../../_data/nav-list-links";
+import { linksData } from "../../_data/nav-list-links"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import type { LocaleType } from "@/types"
 
-import type { LocaleType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { cn } from "@/lib/utils"
 
 export function NavList() {
-  const params = useParams();
-  const pathname = usePathname();
+  const params = useParams()
+  const pathname = usePathname()
 
-  const locale = params.lang as LocaleType;
+  const locale = params.lang as LocaleType
 
   return (
     <nav className="flex flex-wrap gap-4 text-sm text-muted-foreground md:flex-col">
       {linksData.map((link) => {
-        const localizedPathname = ensureLocalizedPathname(link.href, locale);
+        const localizedPathname = ensureLocalizedPathname(link.href, locale)
 
         return (
           <Link
@@ -32,8 +32,8 @@ export function NavList() {
           >
             {link.title}
           </Link>
-        );
+        )
       })}
     </nav>
-  );
+  )
 }

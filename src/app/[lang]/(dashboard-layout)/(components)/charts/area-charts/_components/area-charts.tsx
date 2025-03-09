@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const areaChartsData = [
   { name: "Page A", uv: 4000, pv: 2400, amt: 2400 },
@@ -17,7 +17,7 @@ const areaChartsData = [
   { name: "Page E", uv: 1890, pv: 4800, amt: 2181 },
   { name: "Page F", uv: 2390, pv: 3800, amt: 2500 },
   { name: "Page G", uv: 3490, pv: 4300, amt: 2100 },
-];
+]
 
 export function AreaCharts() {
   return (
@@ -261,5 +261,5 @@ export function AreaCharts() {
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }

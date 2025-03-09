@@ -1,17 +1,17 @@
-import { getInitials } from "@/lib/utils";
+import type { SalesRepresentativeType } from "../../../../types"
 
-import type { SalesRepresentativeType } from "../../../../types";
+import { getInitials } from "@/lib/utils"
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 
 export function TopSalesRepresentativesOthersItem({
   representative,
   index,
 }: {
-  representative: SalesRepresentativeType["representatives"][0];
-  index: number;
+  representative: SalesRepresentativeType["representatives"][0]
+  index: number
 }) {
   return (
     <li key={representative.name}>
@@ -42,5 +42,5 @@ export function TopSalesRepresentativesOthersItem({
         </CardContent>
       </Card>
     </li>
-  );
+  )
 }

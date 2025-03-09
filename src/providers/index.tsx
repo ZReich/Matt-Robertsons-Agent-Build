@@ -1,12 +1,12 @@
-import type { Session } from "next-auth";
-import type { DirectionType, LocaleType } from "@/types";
+import type { DirectionType, LocaleType } from "@/types"
+import type { Session } from "next-auth"
 
-import { SettingsProvider } from "@/contexts/settings-context";
-import { ModeProvider } from "./mode-provider";
-import { ThemeProvider } from "./theme-provider";
-import { NextAuthProvider } from "./next-auth-provider";
-import { DirectionProvider } from "./direction-provider";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SettingsProvider } from "@/contexts/settings-context"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { DirectionProvider } from "./direction-provider"
+import { ModeProvider } from "./mode-provider"
+import { NextAuthProvider } from "./next-auth-provider"
+import { ThemeProvider } from "./theme-provider"
 
 export function Providers({
   session,
@@ -14,10 +14,10 @@ export function Providers({
   direction,
   children,
 }: Readonly<{
-  session: Session | null;
-  locale: LocaleType;
-  direction: DirectionType;
-  children: React.ReactNode;
+  session: Session | null
+  locale: LocaleType
+  direction: DirectionType
+  children: React.ReactNode
 }>) {
   return (
     <SettingsProvider locale={locale}>
@@ -31,5 +31,5 @@ export function Providers({
         </ThemeProvider>
       </ModeProvider>
     </SettingsProvider>
-  );
+  )
 }

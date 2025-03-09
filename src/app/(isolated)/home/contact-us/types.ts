@@ -1,5 +1,5 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { ContactUsSchema } from "./_schemas/contact-us-schema";
+import { ContactUsSchema } from "./_schemas/contact-us-schema"
 
-export type ContactUsType = z.infer<typeof ContactUsSchema>;
+export type ContactUsType = z.infer<typeof ContactUsSchema>

@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { formatDate, getInitials } from "@/lib/utils";
+import type { EmailType } from "../../../types"
 
-import type { EmailType } from "../../../types";
+import { formatDate, getInitials } from "@/lib/utils"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 
 export function EmailViewContentHeader({ email }: { email: EmailType }) {
   return (
@@ -29,5 +29,5 @@ export function EmailViewContentHeader({ email }: { email: EmailType }) {
         </CardDescription>
       </CardHeader>
     </Card>
-  );
+  )
 }

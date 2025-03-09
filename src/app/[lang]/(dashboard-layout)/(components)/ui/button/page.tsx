@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { ButtonVariants } from "./_components/button-variants";
-import { ButtonSizes } from "./_components/button-sizes";
-import { ButtonMisc } from "./_components/button-misc";
+import { ButtonMisc } from "./_components/button-misc"
+import { ButtonSizes } from "./_components/button-sizes"
+import { ButtonVariants } from "./_components/button-variants"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Button",
-};
+}
 
 export default function ButtonPage() {
   return (
@@ -17,5 +17,5 @@ export default function ButtonPage() {
       <ButtonSizes />
       <ButtonMisc />
     </section>
-  );
+  )
 }

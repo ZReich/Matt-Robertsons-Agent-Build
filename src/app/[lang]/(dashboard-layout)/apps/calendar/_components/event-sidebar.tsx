@@ -1,17 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarCheck2, CalendarMinus } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { CalendarCheck2, CalendarMinus } from "lucide-react"
 
-import { EventSidebarSchema } from "../_schemas/event-sidebar-schema";
+import { EventSidebarSchema } from "../_schemas/event-sidebar-schema"
 
-import { useCalendarContext } from "../hooks/calendar-context";
+import type { EventSidebarFormType, EventWithoutIdType } from "../types"
 
-import type { EventWithoutIdType, EventSidebarFormType } from "../types";
-
-import { Button } from "@/components/ui/button";
+import { useCalendarContext } from "../hooks/calendar-context"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -20,26 +19,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/ui/select"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { DatePicker } from "@/components/date-picker";
+} from "@/components/ui/sheet"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
+import { DatePicker } from "@/components/date-picker"
 
 export function EventSidebar() {
   const {
@@ -51,7 +50,7 @@ export function EventSidebar() {
     handleSelectEvent,
     eventSidebarIsOpen,
     setEventSidebarIsOpen,
-  } = useCalendarContext();
+  } = useCalendarContext()
 
   const form = useForm<EventSidebarFormType>({
     resolver: zodResolver(EventSidebarSchema),
@@ -64,16 +63,16 @@ export function EventSidebar() {
       end: new Date(),
       category: "Miscellaneous",
     },
-  });
+  })
 
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
-  const selectedEvent = calendarState.selectedEvent;
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const selectedEvent = calendarState.selectedEvent
 
   // Reset the form with the current selected event's values if it exists; otherwise reset to the default state. This runs whenever `selectedEvent` or `eventSidebarIsOpen` changes
   React.useEffect(() => {
     if (selectedEvent) {
-      const { extendedProps, ...eventProps } = selectedEvent;
+      const { extendedProps, ...eventProps } = selectedEvent
 
       form.reset({
         title: eventProps.title || "",
@@ -83,7 +82,7 @@ export function EventSidebar() {
         start: eventProps.start || new Date(),
         end: eventProps.end || new Date(),
         allDay: eventProps.allDay ?? true,
-      });
+      })
     } else {
       form.reset({
         url: "",
@@ -93,17 +92,17 @@ export function EventSidebar() {
         start: new Date(),
         end: new Date(),
         category: "Miscellaneous",
-      });
+      })
     }
-  }, [eventSidebarIsOpen, selectedEvent, form]);
+  }, [eventSidebarIsOpen, selectedEvent, form])
 
   const handleSidebarClose = () => {
-    handleSelectEvent(undefined); // Unselect the current event
-    setEventSidebarIsOpen(false); // Close the sidebar
-  };
+    handleSelectEvent(undefined) // Unselect the current event
+    setEventSidebarIsOpen(false) // Close the sidebar
+  }
 
   function onSubmit(data: EventSidebarFormType) {
-    if (!calendarApi) return; // Ensure the calendar API is available before proceeding
+    if (!calendarApi) return // Ensure the calendar API is available before proceeding
 
     const event: EventWithoutIdType = {
       ...(data.url && { url: data.url }), // Optional URL
@@ -115,32 +114,32 @@ export function EventSidebar() {
         description: data.description,
         category: data.category,
       },
-    };
+    }
 
     if (selectedEvent) {
       handleUpdateEvent({
         id: selectedEvent.id, // Use the ID of the currently selected event
         ...event,
-      });
+      })
     } else {
-      handleAddEvent(event);
+      handleAddEvent(event)
     }
 
     // Refresh the calendar and close the sidebar
-    calendarApi.refetchEvents();
-    handleSidebarClose();
+    calendarApi.refetchEvents()
+    handleSidebarClose()
   }
 
   function handleOnDeleteEvent() {
-    if (!calendarApi) return; // Ensure the calendar API is available before proceeding
+    if (!calendarApi) return // Ensure the calendar API is available before proceeding
 
     // Check if an event is currently selected
     if (selectedEvent) {
-      handleDeleteEvent(selectedEvent.id); // Delete the event
+      handleDeleteEvent(selectedEvent.id) // Delete the event
 
       // Refresh the calendar and close the sidebar
-      calendarApi.refetchEvents();
-      handleSidebarClose();
+      calendarApi.refetchEvents()
+      handleSidebarClose()
     }
   }
 
@@ -312,5 +311,5 @@ export function EventSidebar() {
         </ScrollArea>
       </SheetContent>
     </Sheet>
-  );
+  )
 }

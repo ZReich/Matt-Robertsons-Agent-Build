@@ -1,21 +1,21 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { SquarePen, ListFilter, MoreVertical } from "lucide-react";
+import * as React from "react"
+import { ListFilter, MoreVertical, SquarePen } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { StatusDropdown } from "./status-dropdown";
-import { NotificationDropdown } from "./notification-dropdown";
+} from "@/components/ui/dropdown-menu"
+import { NotificationDropdown } from "./notification-dropdown"
+import { StatusDropdown } from "./status-dropdown"
 
 export function ActionButtons() {
   const [notifications, setNotifications] =
-    React.useState<string>("ALL_MESSAGES");
-  const [status, setStatus] = React.useState<string>("ONLINE");
+    React.useState<string>("ALL_MESSAGES")
+  const [status, setStatus] = React.useState<string>("ONLINE")
 
   return (
     <div className="flex gap-1">
@@ -42,5 +42,5 @@ export function ActionButtons() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
+  )
 }

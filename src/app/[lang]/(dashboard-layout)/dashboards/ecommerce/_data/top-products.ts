@@ -1,4 +1,4 @@
-import type { TopProductType } from "../types";
+import type { TopProductType } from "../types"
 
 export const topProductsData: TopProductType = {
   period: "Last month",
@@ -44,4 +44,4 @@ export const topProductsData: TopProductType = {
       image: "/images/portable-charger.jpeg",
     },
   ],
-};
+}

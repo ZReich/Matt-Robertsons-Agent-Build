@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 
 export function TextareaDisabled() {
   return (
@@ -15,5 +15,5 @@ export function TextareaDisabled() {
         <Textarea placeholder="Type your message here." disabled />
       </CardContent>
     </Card>
-  );
+  )
 }

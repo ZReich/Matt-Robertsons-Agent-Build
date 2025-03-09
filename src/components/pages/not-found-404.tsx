@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { Frown } from "lucide-react";
+import Link from "next/link"
+import { Frown } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export function NotFound404() {
   return (
@@ -17,5 +17,5 @@ export function NotFound404() {
         <Link href="/">Home Page</Link>
       </Button>
     </div>
-  );
+  )
 }

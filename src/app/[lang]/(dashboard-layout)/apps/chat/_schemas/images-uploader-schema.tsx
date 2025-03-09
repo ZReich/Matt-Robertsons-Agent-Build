@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize } from "@/lib/utils"
 
-import { MAX_IMAGE_SIZE, MAX_IMAGES } from "../constants";
+import { MAX_IMAGES, MAX_IMAGE_SIZE } from "../constants"
 
-const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE);
+const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE)
 
 export const ImageSchema = z.object({
   id: z.string(),
@@ -14,7 +14,7 @@ export const ImageSchema = z.object({
     message: `Image size must be less than or equal to ${formattedImageSize}.`,
   }),
   type: z.string(),
-});
+})
 
 export const ImagesUploaderSchema = z.object({
   images: z
@@ -25,4 +25,4 @@ export const ImagesUploaderSchema = z.object({
         MAX_IMAGES > 1 ? "s" : ""
       }.`,
     }),
-});
+})

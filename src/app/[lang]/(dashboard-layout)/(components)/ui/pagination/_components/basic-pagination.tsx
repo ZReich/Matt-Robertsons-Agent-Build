@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Pagination,
   PaginationContent,
@@ -10,8 +11,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/pagination"
 
 export function BasicPagination() {
   return (
@@ -38,5 +38,5 @@ export function BasicPagination() {
         </Pagination>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import type { UserType } from "../../../types";
+import type { UserType } from "../../../types"
 
-import { ProfileInfo } from "./profile-info";
-import { DangerousZone } from "./dangerous-zone";
+import { DangerousZone } from "./dangerous-zone"
+import { ProfileInfo } from "./profile-info"
 
 export function General({ user }: { user: UserType }) {
   return (
@@ -9,5 +9,5 @@ export function General({ user }: { user: UserType }) {
       <ProfileInfo user={user} />
       <DangerousZone user={user} />
     </div>
-  );
+  )
 }

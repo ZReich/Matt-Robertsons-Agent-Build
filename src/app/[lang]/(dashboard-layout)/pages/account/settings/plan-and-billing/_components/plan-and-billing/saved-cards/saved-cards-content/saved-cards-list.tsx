@@ -1,22 +1,22 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { z } from "zod";
-import { EllipsisVertical } from "lucide-react";
+import * as React from "react"
+import { z } from "zod"
+import { EllipsisVertical } from "lucide-react"
 
-import { cardSchema } from "../../../../_schemas/card-schema";
+import { cardSchema } from "../../../../_schemas/card-schema"
 
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
-  DropdownMenuItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/dropdown-menu"
+import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon"
 
-type CardType = z.infer<typeof cardSchema>;
+type CardType = z.infer<typeof cardSchema>
 
 export function SavedCardsList({ savedCards }: { savedCards: CardType[] }) {
   return (
@@ -40,9 +40,7 @@ export function SavedCardsList({ savedCards }: { savedCards: CardType[] }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem
-                  disabled={card.default}
-                >
+                <DropdownMenuItem disabled={card.default}>
                   Set Default
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-destructive focus:text-destructive">
@@ -54,5 +52,5 @@ export function SavedCardsList({ savedCards }: { savedCards: CardType[] }) {
         </li>
       ))}
     </ul>
-  );
+  )
 }

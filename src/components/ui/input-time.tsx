@@ -1,28 +1,28 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-import { Input } from "./input";
+import { Input } from "./input"
 
 export interface InputTimeProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  onValueChange?: (value?: string) => void;
+  onValueChange?: (value?: string) => void
 }
 
 const InputTime = React.forwardRef<HTMLInputElement, InputTimeProps>(
   ({ className, onValueChange, ...props }, ref) => {
     const [isEmpty, setIsEmpty] = React.useState(
       !props.defaultValue && !props.value
-    );
+    )
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
+      const value = e.target.value
 
-      setIsEmpty(!value);
-      onValueChange?.(value);
-    };
+      setIsEmpty(!value)
+      onValueChange?.(value)
+    }
 
     return (
       <Input
@@ -36,9 +36,9 @@ const InputTime = React.forwardRef<HTMLInputElement, InputTimeProps>(
         type="time"
         onChange={handleChange}
       />
-    );
+    )
   }
-);
-InputTime.displayName = "InputTime";
+)
+InputTime.displayName = "InputTime"
 
-export { InputTime };
+export { InputTime }

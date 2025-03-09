@@ -1,74 +1,72 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import Image from "next/image"
+import Link from "next/link"
+import { useParams, usePathname } from "next/navigation"
+import { ChevronDown } from "lucide-react"
 
-import { navigationsData } from "@/data/navigations";
+import { navigationsData } from "@/data/navigations"
 
-import { i18n } from "@/configs/i18n";
+import type { DictionaryType } from "@/lib/get-dictionary"
+import type {
+  LocaleType,
+  NavigationNestedItem,
+  NavigationRootItem,
+} from "@/types"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
+import { i18n } from "@/configs/i18n"
+import { ensureLocalizedPathname } from "@/lib/i18n"
 import {
   getDictionaryValue,
   isActivePathname,
   titleCaseToCamelCase,
-} from "@/lib/utils";
+} from "@/lib/utils"
 
-import type {
-  LocaleType,
-  NavigationRootItem,
-  NavigationNestedItem,
-} from "@/types";
-import type { DictionaryType } from "@/lib/get-dictionary";
-
-import { useSettings } from "@/hooks/use-settings";
-
-import {
-  Sidebar as SidebarWrapper,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarHeader,
-  SidebarMenuSub,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import { DynamicIcon } from "@/components/dynamic-icon";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSettings } from "@/hooks/use-settings"
+import { Badge } from "@/components/ui/badge"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@/components/ui/collapsible"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  Sidebar as SidebarWrapper,
+  useSidebar,
+} from "@/components/ui/sidebar"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
-  const pathname = usePathname();
-  const params = useParams();
-  const { openMobile, setOpenMobile, isMobile } = useSidebar();
-  const { settings } = useSettings();
+  const pathname = usePathname()
+  const params = useParams()
+  const { openMobile, setOpenMobile, isMobile } = useSidebar()
+  const { settings } = useSettings()
 
-  const locale = params.lang as LocaleType;
-  const direction = i18n.localeDirection[locale];
-  const isRTL = direction === "rtl";
-  const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile;
+  const locale = params.lang as LocaleType
+  const direction = i18n.localeDirection[locale]
+  const isRTL = direction === "rtl"
+  const isHoizontalAndDesktop = settings.layout === "horizontal" && !isMobile
 
   // If the layout is horizontal and not on mobile, don't render the sidebar. (We use a menubar for horizontal layout navigation.)
-  if (isHoizontalAndDesktop) return null;
+  if (isHoizontalAndDesktop) return null
 
   const renderMenuItem = (item: NavigationRootItem | NavigationNestedItem) => {
     const title = getDictionaryValue(
       titleCaseToCamelCase(item.title),
       dictionary.navigation
-    );
+    )
     const label =
       item.label &&
-      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label);
+      getDictionaryValue(titleCaseToCamelCase(item.label), dictionary.label)
 
     // If the item has nested items, render it with a collapsible dropdown.
     if (item.items) {
@@ -100,13 +98,13 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
             </SidebarMenuSub>
           </CollapsibleContent>
         </Collapsible>
-      );
+      )
     }
 
     // Otherwise, render the item with a link.
     if ("href" in item) {
-      const localizedPathname = ensureLocalizedPathname(item.href, locale);
-      const isActive = isActivePathname(localizedPathname, pathname);
+      const localizedPathname = ensureLocalizedPathname(item.href, locale)
+      const isActive = isActivePathname(localizedPathname, pathname)
 
       return (
         <SidebarMenuButton
@@ -122,9 +120,9 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
           </Link>
         </SidebarMenuButton>
-      );
+      )
     }
-  };
+  }
 
   return (
     <SidebarWrapper
@@ -154,7 +152,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
             const title = getDictionaryValue(
               titleCaseToCamelCase(nav.title),
               dictionary.navigation
-            );
+            )
 
             return (
               <SidebarGroup key={nav.title}>
@@ -169,10 +167,10 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
                   </SidebarMenu>
                 </SidebarGroupContent>
               </SidebarGroup>
-            );
+            )
           })}
         </SidebarContent>
       </ScrollArea>
     </SidebarWrapper>
-  );
+  )
 }

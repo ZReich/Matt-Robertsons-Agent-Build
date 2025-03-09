@@ -1,23 +1,22 @@
-"use client";
+"use client"
 
-import { useMedia } from "react-use";
+import { useMedia } from "react-use"
 
-import { useEmailContext } from "../../hooks/use-email-context";
-
-import { Card } from "@/components/ui/card";
+import { useEmailContext } from "../../hooks/use-email-context"
+import { Card } from "@/components/ui/card"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { EmailSidebarHeader } from "./email-sidebar-header";
-import { EmailSidebarList } from "./email-sidebar-list";
+} from "@/components/ui/sheet"
+import { EmailSidebarHeader } from "./email-sidebar-header"
+import { EmailSidebarList } from "./email-sidebar-list"
 
 export function EmailSidebar() {
-  const { isEmailSidebarOpen, setIsEmailSidebarOpen } = useEmailContext();
-  const isMediumOrSmaller = useMedia("(max-width: 767px)");
+  const { isEmailSidebarOpen, setIsEmailSidebarOpen } = useEmailContext()
+  const isMediumOrSmaller = useMedia("(max-width: 767px)")
 
   // Content to display in the chat sidebar
   const content = (
@@ -25,7 +24,7 @@ export function EmailSidebar() {
       <EmailSidebarHeader />
       <EmailSidebarList />
     </>
-  );
+  )
 
   // Render a persistent sidebar for larger screens
   if (!isMediumOrSmaller) {
@@ -35,7 +34,7 @@ export function EmailSidebar() {
           {content}
         </Card>
       </aside>
-    );
+    )
   }
 
   // Render a sheet sidebar for smaller screens
@@ -52,5 +51,5 @@ export function EmailSidebar() {
         {content}
       </SheetContent>
     </Sheet>
-  );
+  )
 }

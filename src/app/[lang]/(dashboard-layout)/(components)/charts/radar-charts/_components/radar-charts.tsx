@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   PolarAngleAxis,
@@ -6,15 +6,15 @@ import {
   PolarRadiusAxis,
   Radar,
   RadarChart,
-} from "recharts";
+} from "recharts"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartLegend,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const radarChartsData = [
   { subject: "Math", A: 120, B: 110, fullMark: 150 },
@@ -23,7 +23,7 @@ const radarChartsData = [
   { subject: "Geography", A: 99, B: 100, fullMark: 150 },
   { subject: "Physics", A: 85, B: 90, fullMark: 150 },
   { subject: "History", A: 65, B: 85, fullMark: 150 },
-];
+]
 
 export function RadarCharts() {
   return (
@@ -91,5 +91,5 @@ export function RadarCharts() {
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }

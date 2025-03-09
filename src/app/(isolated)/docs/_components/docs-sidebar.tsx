@@ -1,33 +1,33 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
-import { sidebarNavigationData } from "../_data/sidebar-navigation";
+import { sidebarNavigationData } from "../_data/sidebar-navigation"
 
-import { isActivePathname } from "@/lib/utils";
+import type { NavigationRootItem } from "@/types"
 
-import type { NavigationRootItem } from "@/types";
+import { isActivePathname } from "@/lib/utils"
 
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
-  Sidebar as SidebarWrapper,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  useSidebar,
   SidebarHeader,
-} from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  Sidebar as SidebarWrapper,
+  useSidebar,
+} from "@/components/ui/sidebar"
 
 export function DocsSidebar() {
-  const pathname = usePathname();
-  const { openMobile, setOpenMobile, isMobile } = useSidebar();
+  const pathname = usePathname()
+  const { openMobile, setOpenMobile, isMobile } = useSidebar()
 
   return (
     <SidebarWrapper className="sticky top-[4.25rem] h-svh" collapsible="none">
@@ -56,7 +56,7 @@ export function DocsSidebar() {
                 <SidebarMenu>
                   {nav.items.map((item: NavigationRootItem) => {
                     if (item.href) {
-                      const isActive = isActivePathname(item.href, pathname);
+                      const isActive = isActivePathname(item.href, pathname)
 
                       return (
                         <SidebarMenuItem key={item.title}>
@@ -73,7 +73,7 @@ export function DocsSidebar() {
                             </Link>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
-                      );
+                      )
                     }
                   })}
                 </SidebarMenu>
@@ -83,5 +83,5 @@ export function DocsSidebar() {
         </SidebarContent>
       </ScrollArea>
     </SidebarWrapper>
-  );
+  )
 }

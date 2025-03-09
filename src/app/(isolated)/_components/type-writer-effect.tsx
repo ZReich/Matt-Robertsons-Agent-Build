@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 export interface TypeWriterEffectProps {
-  textArray: string[];
-  typingSpeed?: number;
-  deletingSpeed?: number;
-  delayBeforeDeleting?: number;
+  textArray: string[]
+  typingSpeed?: number
+  deletingSpeed?: number
+  delayBeforeDeleting?: number
 }
 
 export function TypeWriterEffect({
@@ -22,25 +22,25 @@ export function TypeWriterEffect({
     isDeleting: false,
     text: "",
     isWaiting: false,
-  });
+  })
 
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   React.useEffect(() => {
-    const { index, isDeleting, text, isWaiting } = state;
-    const fullText = textArray[index];
-    let delay = isDeleting ? deletingSpeed : typingSpeed;
+    const { index, isDeleting, text, isWaiting } = state
+    const fullText = textArray[index]
+    let delay = isDeleting ? deletingSpeed : typingSpeed
 
     // When text is fully typed, wait before starting deletion
     if (!isDeleting && text === fullText) {
       if (!isWaiting) {
-        setState((prev) => ({ ...prev, isWaiting: true })); // Set isWaiting to true when finished typing
+        setState((prev) => ({ ...prev, isWaiting: true })) // Set isWaiting to true when finished typing
       }
-      delay = delayBeforeDeleting;
+      delay = delayBeforeDeleting
       timeoutRef.current = setTimeout(() => {
-        setState((prev) => ({ ...prev, isDeleting: true, isWaiting: false }));
-      }, delay);
-      return () => clearTimeout(timeoutRef.current!);
+        setState((prev) => ({ ...prev, isDeleting: true, isWaiting: false }))
+      }, delay)
+      return () => clearTimeout(timeoutRef.current!)
     }
 
     // When text is fully deleted, move to the next text
@@ -51,9 +51,9 @@ export function TypeWriterEffect({
           isDeleting: false,
           text: "",
           isWaiting: false, // Reset isWaiting when starting a new text
-        });
-      }, typingSpeed);
-      return () => clearTimeout(timeoutRef.current!);
+        })
+      }, typingSpeed)
+      return () => clearTimeout(timeoutRef.current!)
     }
 
     // Continue typing or deleting one character at a time
@@ -61,13 +61,13 @@ export function TypeWriterEffect({
       setState((prev) => {
         const updatedText = isDeleting
           ? fullText.substring(0, prev.text.length - 1)
-          : fullText.substring(0, prev.text.length + 1);
-        return { ...prev, text: updatedText };
-      });
-    }, delay);
+          : fullText.substring(0, prev.text.length + 1)
+        return { ...prev, text: updatedText }
+      })
+    }, delay)
 
-    return () => clearTimeout(timeoutRef.current!);
-  }, [state, textArray, typingSpeed, deletingSpeed, delayBeforeDeleting]);
+    return () => clearTimeout(timeoutRef.current!)
+  }, [state, textArray, typingSpeed, deletingSpeed, delayBeforeDeleting])
 
   return (
     <>
@@ -76,5 +76,5 @@ export function TypeWriterEffect({
         |
       </span>
     </>
-  );
+  )
 }

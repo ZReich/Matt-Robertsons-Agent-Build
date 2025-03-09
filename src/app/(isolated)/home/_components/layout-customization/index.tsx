@@ -1,4 +1,4 @@
-import { LayoutCustomizationList } from "./layout-customization-list";
+import { LayoutCustomizationList } from "./layout-customization-list"
 
 export function LayoutCustomization() {
   return (
@@ -16,5 +16,5 @@ export function LayoutCustomization() {
       </div>
       <LayoutCustomizationList />
     </section>
-  );
+  )
 }

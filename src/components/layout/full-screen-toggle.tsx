@@ -1,60 +1,60 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Button } from "@/components/ui/button";
-import { DynamicIcon } from "@/components/dynamic-icon";
+import { Button } from "@/components/ui/button"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 // Extend the global `Document` and `HTMLElement` interfaces to handle fullscreen API variations across browsers
 declare global {
   interface Document {
-    webkitExitFullscreen?: () => Promise<void>;
-    msExitFullscreen?: () => Promise<void>;
-    webkitFullscreenElement?: Element | null;
-    msFullscreenElement?: Element | null;
+    webkitExitFullscreen?: () => Promise<void>
+    msExitFullscreen?: () => Promise<void>
+    webkitFullscreenElement?: Element | null
+    msFullscreenElement?: Element | null
   }
 
   interface HTMLElement {
-    webkitRequestFullscreen?: () => Promise<void>;
-    msRequestFullscreen?: () => Promise<void>;
+    webkitRequestFullscreen?: () => Promise<void>
+    msRequestFullscreen?: () => Promise<void>
   }
 }
 
 export function FullscreenToggle() {
-  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [isFullscreen, setIsFullscreen] = React.useState(false)
 
   const toggleFullscreen = () => {
-    const element = document.documentElement;
+    const element = document.documentElement
 
     // If fullscreen mode is not active, activate it
     if (!isFullscreen) {
       if (element.requestFullscreen) {
         // Standard fullscreen API
-        element.requestFullscreen();
+        element.requestFullscreen()
       } else if (element.webkitRequestFullscreen) {
         // For Safari
-        element.webkitRequestFullscreen();
+        element.webkitRequestFullscreen()
       } else if (element.msRequestFullscreen) {
         // For IE/Edge
-        element.msRequestFullscreen();
+        element.msRequestFullscreen()
       } else {
-        alert("Fullscreen mode is not supported in this browser.");
+        alert("Fullscreen mode is not supported in this browser.")
       }
 
       // If fullscreen mode is active, deactivate it
     } else {
       if (document.exitFullscreen) {
         // Standard fullscreen API
-        document.exitFullscreen();
+        document.exitFullscreen()
       } else if (document.webkitExitFullscreen) {
         // For Safari
-        document.webkitExitFullscreen();
+        document.webkitExitFullscreen()
       } else if (document.msExitFullscreen) {
         // For IE/Edge
-        document.msExitFullscreen();
+        document.msExitFullscreen()
       }
     }
-  };
+  }
 
   const handleFullscreenChange = () => {
     // Update the fullscreen state when fullscreen changes
@@ -62,28 +62,25 @@ export function FullscreenToggle() {
       !!document.fullscreenElement ||
         !!document.webkitFullscreenElement ||
         !!document.msFullscreenElement
-    );
-  };
+    )
+  }
 
   React.useEffect(() => {
     // Add event listeners for fullscreen changes across various browsers
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-    document.addEventListener("msfullscreenchange", handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange)
+    document.addEventListener("msfullscreenchange", handleFullscreenChange)
 
     // Cleanup event listeners to avoid memory leaks
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange)
       document.removeEventListener(
         "webkitfullscreenchange",
         handleFullscreenChange
-      );
-      document.removeEventListener(
-        "msfullscreenchange",
-        handleFullscreenChange
-      );
-    };
-  }, []);
+      )
+      document.removeEventListener("msfullscreenchange", handleFullscreenChange)
+    }
+  }, [])
 
   return (
     <Button
@@ -98,5 +95,5 @@ export function FullscreenToggle() {
         className="size-4"
       />
     </Button>
-  );
+  )
 }

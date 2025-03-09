@@ -1,10 +1,10 @@
-import { Search, Mail, Lock, DollarSign, Link2, AtSign } from "lucide-react";
+import { AtSign, DollarSign, Link2, Lock, Mail, Search } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { InputGroup, InputGroupText } from "@/components/ui/input-group";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { InputGroup, InputGroupText } from "@/components/ui/input-group"
+import { Textarea } from "@/components/ui/textarea"
 
 export function BasicInputGroup() {
   return (
@@ -66,5 +66,5 @@ export function BasicInputGroup() {
         </InputGroup>
       </CardContent>
     </Card>
-  );
+  )
 }

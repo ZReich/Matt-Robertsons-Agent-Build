@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { TimePicker as TimePickerComponent } from "@/components/time-picker";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { TimePicker as TimePickerComponent } from "@/components/time-picker"
 
 export function TimePicker() {
-  const [time, setTime] = React.useState<string | undefined>();
+  const [time, setTime] = React.useState<string | undefined>()
 
   return (
     <Card>
@@ -17,5 +17,5 @@ export function TimePicker() {
         <TimePickerComponent value={time} onValueChange={setTime} />
       </CardContent>
     </Card>
-  );
+  )
 }

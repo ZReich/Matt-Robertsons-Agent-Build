@@ -1,4 +1,4 @@
-import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function PaymentMethodHeader() {
   return (
@@ -8,5 +8,5 @@ export function PaymentMethodHeader() {
         Choose your payment method and enter your details.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

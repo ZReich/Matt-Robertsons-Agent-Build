@@ -1,4 +1,4 @@
-import type { SalesByCountryType } from "../types";
+import type { SalesByCountryType } from "../types"
 
 export const salesByCountryData: SalesByCountryType = {
   period: "Last month",
@@ -14,4 +14,4 @@ export const salesByCountryData: SalesByCountryType = {
     { countryName: "Japan", countryCode: "JP", sales: 3280 },
     { countryName: "South Korea", countryCode: "KR", sales: 2920 },
   ],
-};
+}

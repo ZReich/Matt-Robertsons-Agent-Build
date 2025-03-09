@@ -1,24 +1,23 @@
-import { useRouter, usePathname } from "next/navigation";
-import { Star, EllipsisVertical } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation"
+import { EllipsisVertical, Star } from "lucide-react"
 
-import { cn, ensureWithSuffix, formatDate } from "@/lib/utils";
+import type { EmailType } from "../../../../types"
 
-import type { EmailType } from "../../../../types";
+import { cn, ensureWithSuffix, formatDate } from "@/lib/utils"
 
-import { useEmailContext } from "../../../../hooks/use-email-context";
-
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { useEmailContext } from "../../../../hooks/use-email-context"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface EmailListContentItemMoblieProps {
-  email: EmailType;
-  isSelected: boolean;
+  email: EmailType
+  isSelected: boolean
 }
 
 export function EmailListContentItemMoblie({
@@ -26,22 +25,22 @@ export function EmailListContentItemMoblie({
   isSelected,
 }: EmailListContentItemMoblieProps) {
   const { handleToggleSelectEmail, handleToggleStarEmail, handleSetRead } =
-    useEmailContext();
-  const router = useRouter();
-  const pathname = usePathname();
+    useEmailContext()
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const isStarred = email.starred;
+  const isStarred = email.starred
 
   function handleOnKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" || e.key === " ") {
-      handleSetRead(email);
-      router.push(ensureWithSuffix(pathname, "/") + email.id);
+      handleSetRead(email)
+      router.push(ensureWithSuffix(pathname, "/") + email.id)
     }
   }
 
   function handleOnClick() {
-    handleSetRead(email);
-    router.push(ensureWithSuffix(pathname, "/") + email.id);
+    handleSetRead(email)
+    router.push(ensureWithSuffix(pathname, "/") + email.id)
   }
 
   return (
@@ -78,8 +77,8 @@ export function EmailListContentItemMoblie({
         size="icon"
         className="h-4 w-4"
         onClick={(e) => {
-          e.stopPropagation();
-          handleToggleStarEmail(email);
+          e.stopPropagation()
+          handleToggleStarEmail(email)
         }}
         aria-label={isStarred ? `Unstar email` : `Star email`}
         aria-live="polite"
@@ -110,5 +109,5 @@ export function EmailListContentItemMoblie({
         </DropdownMenuContent>
       </DropdownMenu>
     </li>
-  );
+  )
 }

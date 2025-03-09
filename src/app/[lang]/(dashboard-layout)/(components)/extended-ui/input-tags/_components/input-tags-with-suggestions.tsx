@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { suggestionsData } from "../_data/suggestions";
+import { suggestionsData } from "../_data/suggestions"
 
-import { InputTagsWithSuggestions } from "@/components/ui/input-tags";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { InputTagsWithSuggestions } from "@/components/ui/input-tags"
 
 export function InputTagsWithSuggestionsComponent() {
-  const [tags, setTags] = React.useState<string[]>(["React", "TypeScript"]);
+  const [tags, setTags] = React.useState<string[]>(["React", "TypeScript"])
 
   return (
     <Card>
@@ -23,5 +23,5 @@ export function InputTagsWithSuggestionsComponent() {
         />
       </CardContent>
     </Card>
-  );
+  )
 }

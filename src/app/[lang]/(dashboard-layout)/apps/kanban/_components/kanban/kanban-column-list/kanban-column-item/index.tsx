@@ -1,15 +1,15 @@
-"use client";
+"use client"
 
-import { Draggable, DraggableProvided } from "@hello-pangea/dnd";
+import { Draggable, DraggableProvided } from "@hello-pangea/dnd"
 
-import type { ColumnType } from "../../../../types";
+import type { ColumnType } from "../../../../types"
 
-import { KanbanTaskList } from "./kanban-task-list";
-import { KanbanColumnItemHeader } from "./kanban-column-item-header";
+import { KanbanColumnItemHeader } from "./kanban-column-item-header"
+import { KanbanTaskList } from "./kanban-task-list"
 
 interface KanbanColumnProps {
-  column: ColumnType;
-  index: number;
+  column: ColumnType
+  index: number
 }
 
 export function KanbanColumnItem({ column, index }: KanbanColumnProps) {
@@ -31,5 +31,5 @@ export function KanbanColumnItem({ column, index }: KanbanColumnProps) {
         </div>
       )}
     </Draggable>
-  );
+  )
 }

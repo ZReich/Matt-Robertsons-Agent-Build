@@ -1,32 +1,31 @@
-"use client";
+"use client"
 
-import { Scatter, ScatterChart, XAxis, YAxis } from "recharts";
+import { Scatter, ScatterChart, XAxis, YAxis } from "recharts"
 
-import { formatPercent } from "@/lib/utils";
+import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { ScatterPointItem } from "recharts/types/cartesian/Scatter"
+import type { GenderDistributionType } from "../../../types"
 
-import type { GenderDistributionType } from "../../../types";
-import type { ScatterPointItem } from "recharts/types/cartesian/Scatter";
-import type { ChartTooltipContentProps } from "@/components/ui/chart";
+import { formatPercent } from "@/lib/utils"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
+import { useIsRtl } from "@/hooks/use-is-rtl"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 // Function to normalize values to proportional sizes
 const getNormalizedSize = (value: number, min: number, max: number) => {
-  const minSize = 25; // Minimum bubble radius
-  const maxSize = 45; // Maximum bubble radius
-  return minSize + ((value - min) / (max - min)) * (maxSize - minSize);
-};
+  const minSize = 25 // Minimum bubble radius
+  const maxSize = 45 // Maximum bubble radius
+  return minSize + ((value - min) / (max - min)) * (maxSize - minSize)
+}
 
 function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
-  if (!props.payload || props.payload.length === 0) return null;
+  if (!props.payload || props.payload.length === 0) return null
 
-  const item = props.payload[0];
+  const item = props.payload[0]
 
   return (
     <ChartTooltipContent
@@ -39,19 +38,19 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
         },
       ]}
     />
-  );
+  )
 }
 
 export function GenderDistributionChart({
   data,
 }: {
-  data: GenderDistributionType[];
+  data: GenderDistributionType[]
 }) {
-  const isRtl = useIsRtl();
+  const isRtl = useIsRtl()
 
-  const values = data.map((item) => item.value);
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
+  const values = data.map((item) => item.value)
+  const minValue = Math.min(...values)
+  const maxValue = Math.max(...values)
 
   return (
     <ChartContainer config={{}} className="h-[7.5rem] w-full max-w-72 mx-auto">
@@ -73,9 +72,9 @@ export function GenderDistributionChart({
           data={data}
           isAnimationActive
           shape={(props: ScatterPointItem) => {
-            const { cx, cy, payload } = props;
-            const radius = getNormalizedSize(payload.value, minValue, maxValue);
-            const percentage = formatPercent(payload.percentage);
+            const { cx, cy, payload } = props
+            const radius = getNormalizedSize(payload.value, minValue, maxValue)
+            const percentage = formatPercent(payload.percentage)
 
             return (
               <g>
@@ -108,10 +107,10 @@ export function GenderDistributionChart({
                   {percentage}
                 </text>
               </g>
-            );
+            )
           }}
         />
       </ScatterChart>
     </ChartContainer>
-  );
+  )
 }

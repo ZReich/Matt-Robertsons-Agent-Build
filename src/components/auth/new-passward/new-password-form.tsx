@@ -1,20 +1,21 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import * as React from "react"
+import Link from "next/link"
+import { useParams, useSearchParams } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { NewPasswordSchema } from "@/schemas/new-passward-schema";
+import { NewPasswordSchema } from "@/schemas/new-passward-schema"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-import { ensureRedirectPathname } from "@/lib/utils";
+import type { LocaleType, NewPasswordFormType } from "@/types"
 
-import type { LocaleType, NewPasswordFormType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { ensureRedirectPathname } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -22,13 +23,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
 export function NewPasswordForm() {
-  const params = useParams();
-  const searchParams = useSearchParams();
+  const params = useParams()
+  const searchParams = useSearchParams()
 
   const form = useForm<NewPasswordFormType>({
     resolver: zodResolver(NewPasswordSchema),
@@ -36,26 +36,26 @@ export function NewPasswordForm() {
       password: "",
       confirmPassword: "",
     },
-  });
+  })
 
-  const locale = params.lang as LocaleType;
-  const redirectPathname = searchParams.get("redirectTo");
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const locale = params.lang as LocaleType
+  const redirectPathname = searchParams.get("redirectTo")
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: NewPasswordFormType) {
+  async function onSubmit(_data: NewPasswordFormType) {
     try {
       toast({
         title: "Check your email",
         description:
           "We've sent you an email with instructions to reset your password.",
-      });
+      })
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Something went wrong",
         description: error instanceof Error ? error.message : undefined,
-      });
+      })
     }
   }
 
@@ -113,5 +113,5 @@ export function NewPasswordForm() {
         </Link>
       </form>
     </Form>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/popover"
 
 export function BasicPopover() {
   return (
@@ -22,5 +22,5 @@ export function BasicPopover() {
         </Popover>
       </CardContent>
     </Card>
-  );
+  )
 }

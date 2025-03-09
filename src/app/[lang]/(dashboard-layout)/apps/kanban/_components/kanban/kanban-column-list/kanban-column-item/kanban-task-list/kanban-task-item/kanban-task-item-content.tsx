@@ -1,21 +1,21 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Image from "next/image";
+import * as React from "react"
+import Image from "next/image"
 
-import type { TaskType } from "../../../../../../types";
+import type { TaskType } from "../../../../../../types"
 
-import { CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 
 interface KanbanTaskItemContentProps {
-  task: TaskType;
+  task: TaskType
 }
 
 export function KanbanTaskItemContent({ task }: KanbanTaskItemContentProps) {
   // Check for an image attachment
   const imageAttachment = task.attachments.find((attachment) =>
     attachment.type.includes("image")
-  );
+  )
 
   return (
     <CardContent>
@@ -32,5 +32,5 @@ export function KanbanTaskItemContent({ task }: KanbanTaskItemContentProps) {
         />
       )}
     </CardContent>
-  );
+  )
 }

@@ -1,20 +1,20 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
-import Link from "next/link";
-import { cva } from "class-variance-authority";
+import * as React from "react"
+import Link from "next/link"
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import { cva } from "class-variance-authority"
 
-import { cn, getInitials } from "@/lib/utils";
+import type { VariantProps } from "class-variance-authority"
 
-import type { VariantProps } from "class-variance-authority";
+import { cn, getInitials } from "@/lib/utils"
 
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/tooltip"
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
@@ -28,8 +28,8 @@ const Avatar = React.forwardRef<
     )}
     {...props}
   />
-));
-Avatar.displayName = AvatarPrimitive.Root.displayName;
+))
+Avatar.displayName = AvatarPrimitive.Root.displayName
 
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
@@ -40,8 +40,8 @@ const AvatarImage = React.forwardRef<
     className={cn("aspect-square h-full w-full", className)}
     {...props}
   />
-));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
+))
+AvatarImage.displayName = AvatarPrimitive.Image.displayName
 
 const AvatarFallback = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Fallback>,
@@ -55,8 +55,8 @@ const AvatarFallback = React.forwardRef<
     )}
     {...props}
   />
-));
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
+))
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
 
 const avatarStackVariants = cva(
   "transition duration-300 hover:scale-105 hover:z-10",
@@ -72,14 +72,14 @@ const avatarStackVariants = cva(
       size: "default",
     },
   }
-);
+)
 
 export interface AvatarStackProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof avatarStackVariants> {
-  avatars: { src?: string; alt: string; href?: string }[];
-  limit?: number;
-  onMoreButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  avatars: { src?: string; alt: string; href?: string }[]
+  limit?: number
+  onMoreButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 const AvatarStack = React.memo(
@@ -91,8 +91,8 @@ const AvatarStack = React.memo(
     className,
     ...props
   }: AvatarStackProps) => {
-    const limitedAvatars = avatars.slice(0, limit);
-    const remainingCount = avatars.length - limitedAvatars.length;
+    const limitedAvatars = avatars.slice(0, limit)
+    const remainingCount = avatars.length - limitedAvatars.length
 
     return (
       <div className={cn("flex", className)} {...props}>
@@ -138,9 +138,9 @@ const AvatarStack = React.memo(
           </button>
         )}
       </div>
-    );
+    )
   }
-);
-AvatarStack.displayName = "AvatarStack";
+)
+AvatarStack.displayName = "AvatarStack"
 
-export { Avatar, AvatarImage, AvatarFallback, AvatarStack };
+export { Avatar, AvatarImage, AvatarFallback, AvatarStack }

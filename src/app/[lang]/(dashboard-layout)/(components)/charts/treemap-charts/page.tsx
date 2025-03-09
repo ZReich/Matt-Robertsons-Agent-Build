@@ -1,5 +1,5 @@
-import { TreemapCharts } from "./_components/treemap-charts";
+import { TreemapCharts } from "./_components/treemap-charts"
 
 export default function TreemapChartsPage() {
-  return <TreemapCharts />;
+  return <TreemapCharts />
 }

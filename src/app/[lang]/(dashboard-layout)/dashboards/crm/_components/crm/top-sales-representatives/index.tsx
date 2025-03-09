@@ -1,7 +1,10 @@
-import { salesRepresentativeData } from "../../../_data/top-sales-representatives";
+import { salesRepresentativeData } from "../../../_data/top-sales-representatives"
 
-import { TopSalesRepresentativesList } from "./top-sales-representatives-list";
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { TopSalesRepresentativesList } from "./top-sales-representatives-list"
 
 export function TopSalesRepresentatives() {
   return (
@@ -14,5 +17,5 @@ export function TopSalesRepresentatives() {
         data={salesRepresentativeData.representatives}
       />
     </DashboardCard>
-  );
+  )
 }

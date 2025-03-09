@@ -1,51 +1,49 @@
-import * as React from "react";
-import { CalendarPlus, ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react"
+import { CalendarPlus, ChevronLeft, ChevronRight } from "lucide-react"
 
-import { INITIAL_VIEW } from "../../../constants";
-
-import { useCalendarContext } from "../../../hooks/calendar-context";
-
-import { Button } from "@/components/ui/button";
-import { CardHeader } from "@/components/ui/card";
-import { EventFilters } from "./event-filters";
+import { useCalendarContext } from "../../../hooks/calendar-context"
+import { Button } from "@/components/ui/button"
+import { CardHeader } from "@/components/ui/card"
+import { INITIAL_VIEW } from "../../../constants"
+import { EventFilters } from "./event-filters"
 
 export function CalendarHeader() {
-  const { calendarApi, setEventSidebarIsOpen } = useCalendarContext();
-  const [currentView, setCurrentView] = React.useState(INITIAL_VIEW);
-  const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
+  const { calendarApi, setEventSidebarIsOpen } = useCalendarContext()
+  const [currentView, setCurrentView] = React.useState(INITIAL_VIEW)
+  const [currentDate, setCurrentDate] = React.useState<Date>(new Date())
 
   // Function to navigate to a specific date on the calendar and update the current date state
   const handleDateChange = (newDate: Date) => {
     if (calendarApi) {
-      calendarApi.gotoDate(newDate); // Move the calendar to the given date
-      setCurrentDate(newDate); // Update the current date state
+      calendarApi.gotoDate(newDate) // Move the calendar to the given date
+      setCurrentDate(newDate) // Update the current date state
     }
-  };
+  }
 
   // Function to move the calendar view to the previous period (e.g., previous month)
   const handlePrev = () => {
     if (calendarApi) {
-      calendarApi.prev(); // Move to the previous date range
-      handleDateChange(calendarApi.getDate()); // Update the current date state after moving
+      calendarApi.prev() // Move to the previous date range
+      handleDateChange(calendarApi.getDate()) // Update the current date state after moving
     }
-  };
+  }
 
   // Function to move the calendar view to the next period (e.g., next month)
   const handleNext = () => {
     if (calendarApi) {
-      calendarApi.next(); // Move to the next date range
-      handleDateChange(calendarApi.getDate()); // Update the current date state after moving
+      calendarApi.next() // Move to the next date range
+      handleDateChange(calendarApi.getDate()) // Update the current date state after moving
     }
-  };
+  }
 
   // Function to change the view mode (e.g., day, week, month, list) of the calendar
   const handleViewChange = (view: string) => {
     if (calendarApi) {
-      calendarApi.changeView(view); // Change the view mode
-      handleDateChange(calendarApi.getDate()); // Update the current date state after changing views
-      setCurrentView(view); // Update the current view state
+      calendarApi.changeView(view) // Change the view mode
+      handleDateChange(calendarApi.getDate()) // Update the current date state after changing views
+      setCurrentView(view) // Update the current view state
     }
-  };
+  }
 
   // Function to format the title based on the current date and view mode
   const formatTitle = (date: Date, view: string) => {
@@ -54,11 +52,11 @@ export function CalendarHeader() {
       return date.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
-      });
+      })
     } else if (view === "timeGridWeek" || view === "listWeek") {
       // For week view, display the range from the start of the week to the end
-      const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 6); // Calculate the end date (7 days from start)
+      const endDate = new Date(date)
+      endDate.setDate(endDate.getDate() + 6) // Calculate the end date (7 days from start)
       return `${date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -66,7 +64,7 @@ export function CalendarHeader() {
         month: "short",
         day: "numeric",
         year: "numeric",
-      })}`;
+      })}`
     } else {
       // For day view, display the full date (weekday, month, day, year)
       return date.toLocaleDateString("en-US", {
@@ -74,9 +72,9 @@ export function CalendarHeader() {
         year: "numeric",
         month: "long",
         day: "numeric",
-      });
+      })
     }
-  };
+  }
 
   return (
     <CardHeader className="justify-between items-center gap-4 space-y-0 md:flex-row">
@@ -143,5 +141,5 @@ export function CalendarHeader() {
         </Button>
       </div>
     </CardHeader>
-  );
+  )
 }

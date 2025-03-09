@@ -1,11 +1,11 @@
-import Link from "next/link";
-import { Lock } from "lucide-react";
+import Link from "next/link"
+import { Lock } from "lucide-react"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
+import type { LocaleType } from "@/types"
 
-import type { LocaleType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export function Unauthorized401({ locale }: { locale: LocaleType }) {
   return (
@@ -28,5 +28,5 @@ export function Unauthorized401({ locale }: { locale: LocaleType }) {
         </Button>
       </div>
     </div>
-  );
+  )
 }

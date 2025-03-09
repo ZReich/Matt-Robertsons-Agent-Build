@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 export function BasicInput() {
   return (
@@ -15,5 +15,5 @@ export function BasicInput() {
         <Input type="email" placeholder="Email" />
       </CardContent>
     </Card>
-  );
+  )
 }

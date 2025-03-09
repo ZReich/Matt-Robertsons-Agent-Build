@@ -1,38 +1,37 @@
-"use client";
+"use client"
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Search } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { Search } from "lucide-react"
 
-import { EmailListSearchSchema } from "../../_schemas/email-list-search-schema";
+import { EmailListSearchSchema } from "../../_schemas/email-list-search-schema"
 
-import type { EmailListSearchFormType } from "../../types";
+import type { EmailListSearchFormType } from "../../types"
 
-import { useEmailContext } from "../../hooks/use-email-context";
-
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { useEmailContext } from "../../hooks/use-email-context"
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
 interface EmailListSearchFormProps {
-  pageQuery: number;
-  filterParam: string;
+  pageQuery: number
+  filterParam: string
 }
 
 export function EmailListSearchForm({
   pageQuery,
   filterParam,
 }: EmailListSearchFormProps) {
-  const { handleGetFilteredEmailsBySearchTerm } = useEmailContext();
+  const { handleGetFilteredEmailsBySearchTerm } = useEmailContext()
   const form = useForm<EmailListSearchFormType>({
     resolver: zodResolver(EmailListSearchSchema),
     defaultValues: {
       term: "",
     },
-  });
+  })
 
   const onSubmit = async (data: EmailListSearchFormType) => {
-    handleGetFilteredEmailsBySearchTerm(data.term, filterParam, pageQuery);
-  };
+    handleGetFilteredEmailsBySearchTerm(data.term, filterParam, pageQuery)
+  }
 
   return (
     <Form {...form}>
@@ -56,5 +55,5 @@ export function EmailListSearchForm({
         />
       </form>
     </Form>
-  );
+  )
 }

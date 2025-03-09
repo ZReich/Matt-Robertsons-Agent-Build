@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Search, Mail, Lock, DollarSign, Link2, AtSign } from "lucide-react";
+import * as React from "react"
+import { AtSign, DollarSign, Link2, Lock, Mail, Search } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { InputGroup, InputGroupText } from "@/components/ui/input-group";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { InputGroup, InputGroupText } from "@/components/ui/input-group"
+import { Textarea } from "@/components/ui/textarea"
 
 export function InputGroupMerged() {
   return (
@@ -69,5 +69,5 @@ export function InputGroupMerged() {
         </InputGroup>
       </CardContent>
     </Card>
-  );
+  )
 }

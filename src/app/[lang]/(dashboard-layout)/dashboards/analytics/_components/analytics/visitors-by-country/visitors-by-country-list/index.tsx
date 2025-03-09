@@ -1,11 +1,11 @@
-import type { VisitorsByCountryDataType } from "../../../../types";
+import type { VisitorsByCountryDataType } from "../../../../types"
 
-import { VisitorsByCountryItem } from "./visitors-by-country-item";
+import { VisitorsByCountryItem } from "./visitors-by-country-item"
 
 export function VisitorsByCountryList({
   data,
 }: {
-  data: VisitorsByCountryDataType;
+  data: VisitorsByCountryDataType
 }) {
   return (
     <ul className="space-y-4">
@@ -17,5 +17,5 @@ export function VisitorsByCountryList({
         />
       ))}
     </ul>
-  );
+  )
 }

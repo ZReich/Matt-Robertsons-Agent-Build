@@ -4,20 +4,20 @@ import {
   CircleEllipsis,
   Shield,
   TreePalm,
-} from "lucide-react";
+} from "lucide-react"
+import { DiAtom } from "react-icons/di"
 import {
-  SiRadixui,
-  SiReacthookform,
-  SiNextdotjs,
-  SiReact,
-  SiShadcnui,
   SiLucide,
+  SiNextdotjs,
+  SiRadixui,
+  SiReact,
+  SiReacthookform,
+  SiShadcnui,
   SiTailwindcss,
   SiZod,
-} from "react-icons/si";
-import { DiAtom } from "react-icons/di";
+} from "react-icons/si"
 
-import type { ToolAndTechnologieType } from "../types";
+import type { ToolAndTechnologieType } from "../types"
 
 export const toolsAndTechnologiesData: ToolAndTechnologieType[] = [
   {
@@ -95,4 +95,4 @@ export const toolsAndTechnologiesData: ToolAndTechnologieType[] = [
     href: "https://shadboard.vercel.app/docs/miscellaneous/credits",
     icon: CircleEllipsis,
   },
-];
+]

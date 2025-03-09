@@ -15,4 +15,4 @@ export const linksData = [
     href: "/pages/account/settings/notifications",
     title: "Notifications",
   },
-];
+]

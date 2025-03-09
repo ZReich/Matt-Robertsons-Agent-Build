@@ -1,15 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { ComingSoonSchema } from "@/schemas/coming-soon-schema";
+import { ComingSoonSchema } from "@/schemas/coming-soon-schema"
 
-import type { ComingSoonFormType } from "@/types";
+import type { ComingSoonFormType } from "@/types"
 
-import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -17,28 +18,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
-const defaultValues = { email: "" };
+const defaultValues = { email: "" }
 
 export function ComingSoonForm() {
   const form = useForm<ComingSoonFormType>({
     resolver: zodResolver(ComingSoonSchema),
     defaultValues,
-  });
+  })
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
+  const { isSubmitting, isValid } = form.formState
+  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
 
-  async function onSubmit(data: ComingSoonFormType) {
-    form.reset(defaultValues); // Reset the form to the initial state
+  async function onSubmit(_data: ComingSoonFormType) {
+    form.reset(defaultValues) // Reset the form to the initial state
 
     toast({
       title: "Thank you for subscribing!",
       description: "We'll notify you when we launch.",
-    });
+    })
   }
 
   return (
@@ -74,5 +74,5 @@ export function ComingSoonForm() {
         </Button>
       </form>
     </Form>
-  );
+  )
 }

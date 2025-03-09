@@ -1,9 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { MoreHorizontal } from "lucide-react";
+import * as React from "react"
+import { MoreHorizontal } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Command,
   CommandEmpty,
@@ -11,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/components/ui/command"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +25,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/dropdown-menu"
 
 const labels = [
   "feature",
@@ -35,11 +35,11 @@ const labels = [
   "design",
   "question",
   "maintenance",
-];
+]
 
 export function ComboboxDropdownMenu() {
-  const [label, setLabel] = React.useState("feature");
-  const [open, setOpen] = React.useState(false);
+  const [label, setLabel] = React.useState("feature")
+  const [open, setOpen] = React.useState(false)
 
   return (
     <Card>
@@ -83,8 +83,8 @@ export function ComboboxDropdownMenu() {
                               key={label}
                               value={label}
                               onSelect={(value) => {
-                                setLabel(value);
-                                setOpen(false);
+                                setLabel(value)
+                                setOpen(false)
                               }}
                             >
                               {label}
@@ -106,5 +106,5 @@ export function ComboboxDropdownMenu() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import { toolsAndTechnologiesData } from "../../../_data/tools-and-technologies";
+import { toolsAndTechnologiesData } from "../../../_data/tools-and-technologies"
 
-import { ToolsAndTechnologiesItem } from "./tools-and-technologies-item";
+import { ToolsAndTechnologiesItem } from "./tools-and-technologies-item"
 
 export function ToolsAndTechnologiesList() {
   return (
@@ -9,5 +9,5 @@ export function ToolsAndTechnologiesList() {
         <ToolsAndTechnologiesItem key={item.title} item={item} />
       ))}
     </div>
-  );
+  )
 }

@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -10,8 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/table"
 
 export function BasicTable() {
   return (
@@ -41,5 +41,5 @@ export function BasicTable() {
         </Table>
       </CardContent>
     </Card>
-  );
+  )
 }

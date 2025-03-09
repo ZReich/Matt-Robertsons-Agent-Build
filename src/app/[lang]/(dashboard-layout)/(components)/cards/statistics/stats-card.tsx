@@ -1,15 +1,16 @@
-"use client";
+"use client"
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Area, AreaChart, Line, LineChart } from "recharts";
-import { ChartContainer } from "@/components/ui/chart";
+import { Area, AreaChart, Line, LineChart } from "recharts"
 import {
   BadgePercent,
   CreditCard,
   Package,
   ShoppingCart,
   Users,
-} from "lucide-react";
+} from "lucide-react"
+
+import { Card, CardContent } from "@/components/ui/card"
+import { ChartContainer } from "@/components/ui/chart"
 
 // Sample data for charts
 const areaData = [
@@ -19,7 +20,7 @@ const areaData = [
   { value: 45 },
   { value: 35 },
   { value: 50 },
-];
+]
 
 const lineData = [
   { value: 20 },
@@ -28,7 +29,7 @@ const lineData = [
   { value: 50 },
   { value: 35 },
   { value: 45 },
-];
+]
 
 export default function StatsCards() {
   return (
@@ -129,5 +130,5 @@ export default function StatsCards() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

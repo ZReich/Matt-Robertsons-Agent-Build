@@ -1,35 +1,36 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { CreditCard, Landmark } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { CreditCard, Landmark } from "lucide-react"
 
-import { PaymentMethodSchema } from "../../../../_schemas/payment-method-schema";
-import { getCreditCardBrandName } from "@/lib/utils";
+import { PaymentMethodSchema } from "../../../../_schemas/payment-method-schema"
 
-import type { PaymentType, PaymentMethodFormType } from "../../../../types";
+import type { PaymentMethodFormType, PaymentType } from "../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { RadioGroup } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { getCreditCardBrandName } from "@/lib/utils"
+
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from "@/components/ui/form";
-import { SeparatorWithText } from "@/components/ui/separator";
-import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
-import { SavedCard } from "./saved-card";
-import { PaymentOption } from "./payment-option";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup } from "@/components/ui/radio-group"
+import { SeparatorWithText } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
+import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon"
+import { PaymentOption } from "./payment-option"
+import { SavedCard } from "./saved-card"
 
 interface PaymentMethodFormProps {
-  data: PaymentType["savedCards"];
+  data: PaymentType["savedCards"]
 }
 
 export function PaymentMethodForm({
@@ -40,26 +41,26 @@ export function PaymentMethodForm({
     defaultValues: {
       saveCard: false,
     },
-  });
+  })
 
-  const cardNumber = form.watch("cardNumber");
-  const paymentOption = form.watch("paymentOption");
+  const cardNumber = form.watch("cardNumber")
+  const paymentOption = form.watch("paymentOption")
 
-  const creditCardBrandName = getCreditCardBrandName(cardNumber);
+  const creditCardBrandName = getCreditCardBrandName(cardNumber)
 
   const handleSavedCardSelect = (id: PaymentMethodFormType["savedCard"]) => {
-    form.setValue("savedCard", id);
-    form.setValue("paymentOption", undefined);
-  };
+    form.setValue("savedCard", id)
+    form.setValue("paymentOption", undefined)
+  }
 
   const handlePaymentOptionSelect = (
     id: PaymentMethodFormType["paymentOption"]
   ) => {
-    form.setValue("paymentOption", id);
-    form.setValue("savedCard", undefined);
-  };
+    form.setValue("paymentOption", id)
+    form.setValue("savedCard", undefined)
+  }
 
-  function onSubmit(data: PaymentMethodFormType) {}
+  function onSubmit(_data: PaymentMethodFormType) {}
 
   return (
     <Form {...form}>
@@ -254,5 +255,5 @@ export function PaymentMethodForm({
         </form>
       </Card>
     </Form>
-  );
+  )
 }

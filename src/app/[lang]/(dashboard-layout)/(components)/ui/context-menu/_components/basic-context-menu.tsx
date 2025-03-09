@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/context-menu"
 
 export function BasicContextMenu() {
   return (
@@ -28,5 +28,5 @@ export function BasicContextMenu() {
         </ContextMenu>
       </CardContent>
     </Card>
-  );
+  )
 }

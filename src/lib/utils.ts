@@ -1,27 +1,27 @@
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { format, formatDistanceToNow, intervalToDuration } from "date-fns";
-import { z } from "zod";
+import { clsx } from "clsx"
+import { format, formatDistanceToNow, intervalToDuration } from "date-fns"
+import { twMerge } from "tailwind-merge"
+import { z } from "zod"
 
-import type { LocaleType, FormatStyleType } from "@/types";
-import type { ClassValue } from "clsx";
+import type { FormatStyleType, LocaleType } from "@/types"
+import type { ClassValue } from "clsx"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 export function getInitials(fullName: string) {
-  if (fullName.length === 0) return "";
+  if (fullName.length === 0) return ""
 
   // Split the name by spaces
-  const names = fullName.split(" ");
+  const names = fullName.split(" ")
   // Extract the first letter of each name and convert it to uppercase
-  const initials = names.map((name) => name.charAt(0).toUpperCase()).join("");
+  const initials = names.map((name) => name.charAt(0).toUpperCase()).join("")
 
-  return initials;
+  return initials
 }
 
-export const isEven = (num: number) => num % 2 === 0;
+export const isEven = (num: number) => num % 2 === 0
 
 export function getCreditCardBrandName(number: string) {
   const re = {
@@ -29,24 +29,24 @@ export function getCreditCardBrandName(number: string) {
     mastercard: /^5[1-5]/,
     amex: /^3[47]/,
     discover: /^6(?:011|5)/,
-  };
+  }
 
   for (const [type, regex] of Object.entries(re)) {
-    if (regex.test(number)) return type;
+    if (regex.test(number)) return type
   }
-  return "unknown";
+  return "unknown"
 }
 
 export function remToPx(rem: number) {
   // Get the root font size (default is 16px if not set otherwise)
   const rootFontSize = parseFloat(
     getComputedStyle(document.documentElement).fontSize
-  );
-  return rem * rootFontSize;
+  )
+  return rem * rootFontSize
 }
 
 export function isUrl(text: string) {
-  return z.string().url().safeParse(text).success;
+  return z.string().url().safeParse(text).success
 }
 
 export function isActivePathname(
@@ -55,12 +55,12 @@ export function isActivePathname(
   exactMatch: boolean = false
 ) {
   if (typeof basePathname !== "string" || typeof currentPathname !== "string") {
-    throw new Error("Both basePathname and currentPathname must be strings");
+    throw new Error("Both basePathname and currentPathname must be strings")
   }
 
   // Use this when you want a strict comparison, e.g., highlighting a specific page.
   if (exactMatch) {
-    return basePathname === currentPathname;
+    return basePathname === currentPathname
   }
 
   // Allow deeper routes to be considered as active.
@@ -69,27 +69,27 @@ export function isActivePathname(
     currentPathname.startsWith(basePathname) &&
     (currentPathname.length === basePathname.length ||
       currentPathname[basePathname.length] === "/")
-  );
+  )
 }
 
 export function formatFileSize(bytes: number, decimals: number = 2) {
-  if (bytes === 0) return "0 Bytes";
+  if (bytes === 0) return "0 Bytes"
 
-  const k = 1000; // Use 1024 for binary
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB"];
+  const k = 1000 // Use 1024 for binary
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB"]
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
 }
 
 export function formatFileType(type: string) {
-  return type.slice(0, type.lastIndexOf("/"));
+  return type.slice(0, type.lastIndexOf("/"))
 }
 
 export function ratingToPercentage(rating: number, maxRating: number) {
-  return (rating / maxRating) * 100;
+  return (rating / maxRating) * 100
 }
 
 export function formatCurrency(
@@ -101,64 +101,64 @@ export function formatCurrency(
     style: "currency",
     currency,
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(value)
 }
 
 export function formatPercent(value: number, locales: LocaleType = "en") {
   return new Intl.NumberFormat(locales, {
     style: "percent",
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(value)
 }
 
 export function formatDate(value: string | number | Date) {
-  return format(value, "PP");
+  return format(value, "PP")
 }
 
 export function formatRelativeDate(value?: string | number | Date) {
-  if (!value) return "No Date";
+  if (!value) return "No Date"
 
-  const date = new Date(value);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
+  const date = new Date(value)
+  const today = new Date()
+  const yesterday = new Date()
+  yesterday.setDate(today.getDate() - 1)
 
-  if (date.toDateString() === today.toDateString()) return "Today";
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  if (date.toDateString() === today.toDateString()) return "Today"
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday"
 
-  return formatDate(value);
+  return formatDate(value)
 }
 
 export function formatDateWithTime(value: string | number | Date) {
-  return format(value, "PP hh:mm a");
+  return format(value, "PP hh:mm a")
 }
 
 export function formatDateShort(value: string | number | Date) {
-  return format(value, "MMM dd");
+  return format(value, "MMM dd")
 }
 
 export function formatTime(value: string | number | Date) {
-  return format(value, "h:mm a");
+  return format(value, "h:mm a")
 }
 
 export function formatDuration(value: string | number | Date) {
-  const numberValue = Number(value);
-  const isNegative = numberValue < 0;
-  const absoluteValue = Math.abs(numberValue);
+  const numberValue = Number(value)
+  const isNegative = numberValue < 0
+  const absoluteValue = Math.abs(numberValue)
 
-  const duration = intervalToDuration({ start: 0, end: absoluteValue });
+  const duration = intervalToDuration({ start: 0, end: absoluteValue })
 
-  const hours = duration.hours ? `${duration.hours}h` : "";
-  const minutes = duration.minutes ? `${duration.minutes}m` : "";
-  const seconds = duration.seconds ? `${duration.seconds}s` : "";
+  const hours = duration.hours ? `${duration.hours}h` : ""
+  const minutes = duration.minutes ? `${duration.minutes}m` : ""
+  const seconds = duration.seconds ? `${duration.seconds}s` : ""
 
-  let formattedDuration = `${hours} ${minutes} ${seconds}`.trim();
+  const formattedDuration = `${hours} ${minutes} ${seconds}`.trim()
 
-  return isNegative ? `-${formattedDuration}` : formattedDuration;
+  return isNegative ? `-${formattedDuration}` : formattedDuration
 }
 
 export function formatDistance(value: string | number | Date) {
-  const distance = formatDistanceToNow(value, { addSuffix: true });
+  const distance = formatDistanceToNow(value, { addSuffix: true })
 
   const replacements: Record<string, string> = {
     minute: "min",
@@ -171,10 +171,10 @@ export function formatDistance(value: string | number | Date) {
     months: "months",
     year: "year",
     years: "years",
-  };
+  }
 
   if (distance === "less than a minute ago") {
-    return "just now";
+    return "just now"
   }
 
   // Replace phrases based on the mapping
@@ -183,52 +183,52 @@ export function formatDistance(value: string | number | Date) {
       /less than a minute|minute|minutes|hour|hours|day|days|month|months|year|years/g,
       (match) => replacements[match]
     )
-    .replace(/\b(over|almost|about)\b/g, "");
+    .replace(/\b(over|almost|about)\b/g, "")
 }
 
 export function timeToDate(timeString: string, baseDate = new Date()) {
   if (!/^\d{2}:\d{2}$/.test(timeString)) {
-    throw new Error("Invalid time format. Use 'HH:mm'.");
+    throw new Error("Invalid time format. Use 'HH:mm'.")
   }
 
-  const [hours, minutes] = timeString.split(":").map(Number);
-  const date = new Date(baseDate); // Clone base date
+  const [hours, minutes] = timeString.split(":").map(Number)
+  const date = new Date(baseDate) // Clone base date
 
-  date.setHours(hours, minutes, 0, 0); // Set hours and minutes, reset seconds & milliseconds
+  date.setHours(hours, minutes, 0, 0) // Set hours and minutes, reset seconds & milliseconds
 
-  return date;
+  return date
 }
 
 export function camelCaseToTitleCase(camelCaseStr: string) {
   const titleCaseStr = camelCaseStr
     .replace(/([A-Z])/g, " $1") // Insert space before uppercase letters
-    .replace(/^./, (char) => char.toUpperCase()); // Capitalize the first letter
+    .replace(/^./, (char) => char.toUpperCase()) // Capitalize the first letter
 
-  return titleCaseStr;
+  return titleCaseStr
 }
 
 export function titleCaseToCamelCase(titleCaseStr: string) {
   const camelCaseStr = titleCaseStr
     .toLowerCase() // Convert the entire string to lowercase first
-    .replace(/\s+(.)/g, (_, char) => char.toUpperCase()); // Remove spaces and capitalize the following character
+    .replace(/\s+(.)/g, (_, char) => char.toUpperCase()) // Remove spaces and capitalize the following character
 
-  return camelCaseStr;
+  return camelCaseStr
 }
 
 export function ensureWithPrefix(value: string, prefix: string) {
-  return value.startsWith(prefix) ? value : `${prefix}${value}`;
+  return value.startsWith(prefix) ? value : `${prefix}${value}`
 }
 
 export function ensureWithSuffix(value: string, suffix: string) {
-  return value.endsWith(suffix) ? value : `${value}${suffix}`;
+  return value.endsWith(suffix) ? value : `${value}${suffix}`
 }
 
 export function ensureWithoutSuffix(value: string, suffix: string) {
-  return value.endsWith(suffix) ? value.slice(0, -suffix.length) : value;
+  return value.endsWith(suffix) ? value.slice(0, -suffix.length) : value
 }
 
 export function ensureWithoutPrefix(value: string, prefix: string) {
-  return value.startsWith(prefix) ? value.slice(prefix.length) : value;
+  return value.startsWith(prefix) ? value.slice(prefix.length) : value
 }
 
 export function ensureRedirectPathname(
@@ -237,13 +237,13 @@ export function ensureRedirectPathname(
 ) {
   const searchParams = new URLSearchParams({
     redirectTo: ensureWithoutSuffix(redirectPathname, "/"),
-  });
+  })
 
-  return ensureWithSuffix(basePathname, "?" + searchParams.toString());
+  return ensureWithSuffix(basePathname, "?" + searchParams.toString())
 }
 
 export function isNonNegative(num: number) {
-  return num >= 0;
+  return num >= 0
 }
 
 export function getDiscountedPrice(
@@ -253,34 +253,34 @@ export function getDiscountedPrice(
 ) {
   if (isAnnual) {
     // Apply discount to the annual price
-    const annualPrice = price * 12;
-    const discountedAnnualPrice = annualPrice * (1 - discountRate);
+    const annualPrice = price * 12
+    const discountedAnnualPrice = annualPrice * (1 - discountRate)
 
     // Calculate the equivalent monthly price after the discount
-    const monthlyEquivalentPrice = discountedAnnualPrice / 12;
-    return monthlyEquivalentPrice;
+    const monthlyEquivalentPrice = discountedAnnualPrice / 12
+    return monthlyEquivalentPrice
   } else {
     // Apply discount directly to the monthly price
-    const discountedMonthlyPrice = price * (1 - discountRate);
-    return discountedMonthlyPrice;
+    const discountedMonthlyPrice = price * (1 - discountRate)
+    return discountedMonthlyPrice
   }
 }
 
 export function isBeforeToday(date: Date) {
   // Get the start of today
-  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0));
+  const startOfToday = new Date(new Date().setHours(0, 0, 0, 0))
 
   // Compare the dates
-  return date < startOfToday;
+  return date < startOfToday
 }
 
 export function formatUnreadCount(unreadCount: number) {
   // If the unread count is 100 or more, display "+99"; otherwise, display the actual unread count.
-  return unreadCount >= 100 ? "+99" : unreadCount;
+  return unreadCount >= 100 ? "+99" : unreadCount
 }
 
 export function wait(ms: number = 250) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export function formatOverviewCardValue(
@@ -289,15 +289,15 @@ export function formatOverviewCardValue(
 ): string | number {
   switch (formatStyle) {
     case "percent":
-      return formatPercent(value);
+      return formatPercent(value)
     case "duration":
-      return formatDuration(value);
+      return formatDuration(value)
     case "currency":
-      return formatCurrency(value);
+      return formatCurrency(value)
     default:
       return value.toLocaleString("en", {
         maximumFractionDigits: 0,
-      });
+      })
   }
 }
 
@@ -306,11 +306,11 @@ export function getDictionaryValue(
   key: string,
   section: Record<string, unknown>
 ) {
-  const value = section[key];
+  const value = section[key]
 
   if (typeof value !== "string") {
-    throw new Error(`Invalid dictionary value for key: ${key}`);
+    throw new Error(`Invalid dictionary value for key: ${key}`)
   }
 
-  return value;
+  return value
 }

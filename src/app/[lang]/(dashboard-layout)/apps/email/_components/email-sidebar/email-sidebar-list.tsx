@@ -1,19 +1,18 @@
-"use client";
+"use client"
 
-import { useParams } from "next/navigation";
+import { useParams } from "next/navigation"
 
-import type { LocaleType } from "@/types";
+import type { LocaleType } from "@/types"
 
-import { useEmailContext } from "../../hooks/use-email-context";
-
-import { EmailSidebarItem } from "./email-sidebar-item";
+import { useEmailContext } from "../../hooks/use-email-context"
+import { EmailSidebarItem } from "./email-sidebar-item"
 
 export function EmailSidebarList() {
-  const { emailState } = useEmailContext();
-  const params = useParams();
+  const { emailState } = useEmailContext()
+  const params = useParams()
 
-  const locale = params.lang as LocaleType;
-  const segmentParam = params.segment;
+  const locale = params.lang as LocaleType
+  const segmentParam = params.segment
 
   return (
     <ul className="p-3 pt-0">
@@ -40,5 +39,5 @@ export function EmailSidebarList() {
         </div>
       </nav>
     </ul>
-  );
+  )
 }

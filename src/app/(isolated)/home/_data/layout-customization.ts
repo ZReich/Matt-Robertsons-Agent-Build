@@ -1,4 +1,4 @@
-import type { CardDemoProps } from "../_components/card-demo";
+import type { CardDemoProps } from "../_components/card-demo"
 
 export const layoutsData: CardDemoProps[] = [
   {
@@ -41,4 +41,4 @@ export const layoutsData: CardDemoProps[] = [
     href: "https://shadboard.vercel.app/dashboards/analytics?layout=horizontal&radius=1.0&mode=system",
     imgSrc: "/images/layout-ltr-rounded-horizontal.jpg",
   },
-];
+]

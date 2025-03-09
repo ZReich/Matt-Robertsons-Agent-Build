@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Editor } from "@/components/ui/editor";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Editor } from "@/components/ui/editor"
 
 export function EditorBubbleMenu() {
   return (
@@ -15,5 +15,5 @@ export function EditorBubbleMenu() {
         <Editor bubbleMenu className="h-32" />
       </CardContent>
     </Card>
-  );
+  )
 }

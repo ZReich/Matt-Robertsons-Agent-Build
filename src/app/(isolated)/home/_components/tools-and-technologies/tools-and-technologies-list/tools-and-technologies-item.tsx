@@ -1,15 +1,15 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { cn } from "@/lib/utils";
+import type { ToolAndTechnologieType } from "../../../types"
 
-import type { ToolAndTechnologieType } from "../../../types";
+import { cn } from "@/lib/utils"
 
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button"
 
 export function ToolsAndTechnologiesItem({
   item,
 }: {
-  item: ToolAndTechnologieType;
+  item: ToolAndTechnologieType
 }) {
   return (
     <article key={item.title}>
@@ -29,5 +29,5 @@ export function ToolsAndTechnologiesItem({
         <h3 className="font-semibold">{item.title}</h3>
       </Link>
     </article>
-  );
+  )
 }

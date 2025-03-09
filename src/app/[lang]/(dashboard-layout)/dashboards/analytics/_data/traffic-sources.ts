@@ -1,4 +1,4 @@
-import { TrafficSourcesType } from "../types";
+import { TrafficSourcesType } from "../types"
 
 export const trafficSourcesData: TrafficSourcesType = {
   period: "Last month",
@@ -39,4 +39,4 @@ export const trafficSourcesData: TrafficSourcesType = {
       icon: "Mail",
     },
   ],
-};
+}

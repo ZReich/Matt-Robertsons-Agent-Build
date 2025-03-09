@@ -1,20 +1,19 @@
-import { cn } from "@/lib/utils";
+import type { EmailType } from "../../../../types"
 
-import type { EmailType } from "../../../../types";
+import { cn } from "@/lib/utils"
 
-import { useSettings } from "@/hooks/use-settings";
-import { useEmailContext } from "../../../../hooks/use-email-context";
-
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmailListContentItemMoblie } from "./email-list-content-item-mobile";
+import { useEmailContext } from "../../../../hooks/use-email-context"
+import { useSettings } from "@/hooks/use-settings"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { EmailListContentItemMoblie } from "./email-list-content-item-mobile"
 
 export function EmailListContentMobile() {
-  const { emailState } = useEmailContext();
-  const { settings } = useSettings();
+  const { emailState } = useEmailContext()
+  const { settings } = useSettings()
 
   const selectedEmailsSet = new Set(
     emailState.selectedEmails.map((email) => email.id)
-  );
+  )
 
   return (
     <ul>
@@ -25,7 +24,7 @@ export function EmailListContentMobile() {
         )}
       >
         {emailState.emails.map((email: EmailType) => {
-          const isSelected = selectedEmailsSet.has(email.id);
+          const isSelected = selectedEmailsSet.has(email.id)
 
           return (
             <EmailListContentItemMoblie
@@ -33,9 +32,9 @@ export function EmailListContentMobile() {
               email={email}
               isSelected={isSelected}
             />
-          );
+          )
         })}
       </ScrollArea>
     </ul>
-  );
+  )
 }

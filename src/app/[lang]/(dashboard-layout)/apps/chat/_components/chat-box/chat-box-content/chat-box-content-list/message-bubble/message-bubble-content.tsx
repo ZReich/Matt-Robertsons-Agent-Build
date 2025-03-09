@@ -1,34 +1,34 @@
-import { cn } from "@/lib/utils";
+import type { MessageType } from "../../../../../types"
 
-import type { MessageType } from "../../../../../types";
+import { cn } from "@/lib/utils"
 
-import { TextMessageBubbleContent } from "./text-message-bubble-content";
-import { ImagesMessageBubbleContent } from "./images-message-bubble-content";
-import { FilesMessageBubbleContent } from "./files-message-bubble-content";
+import { FilesMessageBubbleContent } from "./files-message-bubble-content"
+import { ImagesMessageBubbleContent } from "./images-message-bubble-content"
+import { TextMessageBubbleContent } from "./text-message-bubble-content"
 
 export function MessageBubbleContent({
   message,
   isByCurrentUser,
 }: {
-  message: MessageType;
-  isByCurrentUser: boolean;
+  message: MessageType
+  isByCurrentUser: boolean
 }) {
-  let content: React.ReactNode;
+  let content: React.ReactNode
 
   // Handle different types of message content
   if (message.text) {
-    content = <TextMessageBubbleContent text={message.text} />;
+    content = <TextMessageBubbleContent text={message.text} />
   } else if (message.images) {
-    content = <ImagesMessageBubbleContent images={message.images} />;
+    content = <ImagesMessageBubbleContent images={message.images} />
   } else if (message.files) {
     content = (
       <FilesMessageBubbleContent
         files={message.files}
         isByCurrentUser={isByCurrentUser}
       />
-    );
+    )
   } else if (message.voiceMessage) {
-    content = <audio controls src={message.voiceMessage.url} />;
+    content = <audio controls src={message.voiceMessage.url} />
   }
 
   return (
@@ -42,5 +42,5 @@ export function MessageBubbleContent({
     >
       {content}
     </div>
-  );
+  )
 }

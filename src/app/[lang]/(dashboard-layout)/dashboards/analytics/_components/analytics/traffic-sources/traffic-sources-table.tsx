@@ -1,32 +1,18 @@
-"use client";
+"use client"
 
-import {
-  Ellipsis,
-  EllipsisVertical,
-  Eye,
-  MousePointer,
-  Square,
-  Timer,
-} from "lucide-react";
+import { Ellipsis } from "lucide-react"
 
-import { cn, formatPercent, formatDuration } from "@/lib/utils";
+import type { TrafficSourcesType } from "../../../types"
 
-import type { TopPagesType } from "../../../types";
+import { formatPercent } from "@/lib/utils"
 
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-
-import type { TrafficSourcesType } from "../../../types";
-
-import { TrendingDown, TrendingUp } from "lucide-react";
-import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge";
-import { Button } from "@/components/ui/button";
-import { DynamicIcon } from "@/components/dynamic-icon";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 export function TrafficSourcesTable({
   data,
 }: {
-  data: TrafficSourcesType["sources"];
+  data: TrafficSourcesType["sources"]
 }) {
   return (
     <Table className="rounded-lg overflow-hidden">
@@ -56,5 +42,5 @@ export function TrafficSourcesTable({
         ))}
       </TableBody>
     </Table>
-  );
+  )
 }

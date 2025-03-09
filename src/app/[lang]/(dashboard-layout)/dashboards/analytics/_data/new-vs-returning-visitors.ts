@@ -1,4 +1,4 @@
-import { NewVsReturningVisitorsType } from "../types";
+import { NewVsReturningVisitorsType } from "../types"
 
 export const newVsReturningVisitors: NewVsReturningVisitorsType = {
   visitors: {
@@ -13,4 +13,4 @@ export const newVsReturningVisitors: NewVsReturningVisitorsType = {
       fill: "hsl(var(--chart-2))",
     },
   },
-};
+}

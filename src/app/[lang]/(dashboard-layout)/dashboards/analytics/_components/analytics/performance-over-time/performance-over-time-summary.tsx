@@ -1,27 +1,27 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { ChevronDown, Eye, RefreshCw } from "lucide-react";
+import * as React from "react"
+import { ChevronDown, Eye, RefreshCw } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { PerformanceOverTimeType } from "../../../types"
 
-import type { PerformanceOverTimeType } from "../../../types";
+import { cn } from "@/lib/utils"
 
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { buttonVariants } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
 
 export function PerformanceOverTimeSummary({
   data,
 }: {
-  data: PerformanceOverTimeType["summary"];
+  data: PerformanceOverTimeType["summary"]
 }) {
   return (
     <div className="flex justify-evenly items-center gap-x-6 py-4">
@@ -77,5 +77,5 @@ export function PerformanceOverTimeSummary({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
+  )
 }

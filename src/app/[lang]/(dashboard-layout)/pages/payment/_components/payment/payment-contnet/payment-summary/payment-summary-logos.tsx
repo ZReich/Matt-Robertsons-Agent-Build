@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "next/image"
 
 const paymentLogos = [
   {
@@ -14,7 +14,7 @@ const paymentLogos = [
     width: 48,
     height: 48,
   },
-];
+]
 
 export function PaymentSummaryLogos() {
   return (
@@ -29,5 +29,5 @@ export function PaymentSummaryLogos() {
         />
       ))}
     </div>
-  );
+  )
 }

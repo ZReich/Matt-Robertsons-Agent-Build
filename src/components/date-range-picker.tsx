@@ -1,36 +1,36 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import * as React from "react"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { ButtonProps } from "@/components/ui/button"
+import type { CalendarProps } from "@/components/ui/calendar"
+import type { DateRange } from "react-day-picker"
 
-import type { DateRange } from "react-day-picker";
-import type { CalendarProps } from "@/components/ui/calendar";
-import type { ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"
 
 export type DateRangePickerProps = Omit<
   CalendarProps,
   "mode" | "selected" | "onSelect"
 > & {
-  value?: DateRange;
-  onValueChange?: (date?: DateRange) => void;
-  formatStr?: string;
-  popoverContentClassName?: string;
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>;
-  buttonClassName?: string;
-  buttonOptions?: ButtonProps;
-  placeholder?: string;
-};
+  value?: DateRange
+  onValueChange?: (date?: DateRange) => void
+  formatStr?: string
+  popoverContentClassName?: string
+  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  buttonClassName?: string
+  buttonOptions?: ButtonProps
+  placeholder?: string
+}
 
 const DateRangePicker = React.forwardRef<
   HTMLButtonElement,
@@ -91,10 +91,10 @@ const DateRangePicker = React.forwardRef<
           />
         </PopoverContent>
       </Popover>
-    );
+    )
   }
-);
+)
 
-DateRangePicker.displayName = "DateRangePicker";
+DateRangePicker.displayName = "DateRangePicker"
 
-export { DateRangePicker };
+export { DateRangePicker }

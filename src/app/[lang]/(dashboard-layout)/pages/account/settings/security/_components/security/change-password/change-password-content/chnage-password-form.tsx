@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { ChangePasswordSchema } from "../../../../_schemas/chnage-password-schema";
+import { ChangePasswordSchema } from "../../../../_schemas/chnage-password-schema"
 
-import { cn } from "@/lib/utils";
+import type { ChangePasswordFormType, UserType } from "../../../../../../types"
 
-import type { UserType, ChangePasswordFormType } from "../../../../../../types";
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -19,17 +19,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 
 interface ChangePasswordFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  user: UserType;
+  user: UserType
 }
 
 export function ChangePasswordForm({
   className,
-  user,
   ...props
 }: ChangePasswordFormProps) {
   const form = useForm<ChangePasswordFormType>({
@@ -39,12 +38,12 @@ export function ChangePasswordForm({
       newPassword: "",
       confirmPassword: "",
     },
-  });
+  })
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
+  const { isSubmitting, isValid } = form.formState
+  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid, or submitting
 
-  async function onSubmit(data: ChangePasswordFormType) {}
+  async function onSubmit(_data: ChangePasswordFormType) {}
 
   return (
     <Form {...form}>
@@ -110,5 +109,5 @@ export function ChangePasswordForm({
         </div>
       </form>
     </Form>
-  );
+  )
 }

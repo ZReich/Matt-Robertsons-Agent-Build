@@ -1,17 +1,18 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { ProfileInfoSchema } from "../../../_schemas/profile-info-form-schema";
+import { ProfileInfoSchema } from "../../../_schemas/profile-info-form-schema"
 
-import { cn, getInitials } from "@/lib/utils";
+import type { ProfileInfoFormType, UserType } from "../../../../types"
 
-import type { UserType, ProfileInfoFormType } from "../../../../types";
+import { cn, getInitials } from "@/lib/utils"
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -19,22 +20,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { InputPhone } from "@/components/ui/input-phone"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { InputPhone } from "@/components/ui/input-phone";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from "@/components/ui/select"
 
 export function ProfileInfoForm({ user }: { user: UserType }) {
   const [photoPreview, setPhotoPreview] = React.useState<string | undefined>(
     user?.avatar
-  );
+  )
 
   const form = useForm<ProfileInfoFormType>({
     resolver: zodResolver(ProfileInfoSchema),
@@ -42,35 +42,35 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
       ...user,
       avatar: undefined,
     },
-  });
+  })
 
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: ProfileInfoFormType) {}
+  async function onSubmit(_data: ProfileInfoFormType) {}
 
   function handleResetForm() {
-    form.reset(); // Reset the form to the initial state
-    setPhotoPreview(user?.avatar); // Reset photoPreview to the initial state
+    form.reset() // Reset the form to the initial state
+    setPhotoPreview(user?.avatar) // Reset photoPreview to the initial state
   }
 
   function handleUploadPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     // Get the selected file from the file input
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
 
     if (file) {
       // Generate a temporary URL for the uploaded image for preview purposes
-      const imageUrl = URL.createObjectURL(file);
+      const imageUrl = URL.createObjectURL(file)
 
-      setPhotoPreview(imageUrl);
-      form.setValue("avatar", file);
-      form.trigger("avatar"); // Trigger validation for the "avatar" field
+      setPhotoPreview(imageUrl)
+      form.setValue("avatar", file)
+      form.trigger("avatar") // Trigger validation for the "avatar" field
     }
   }
 
   function handleRemovePhoto() {
-    form.resetField("avatar"); // Reset the "avatar" field in the form to its initial state
-    setPhotoPreview(undefined);
+    form.resetField("avatar") // Reset the "avatar" field in the form to its initial state
+    setPhotoPreview(undefined)
   }
 
   return (
@@ -454,5 +454,5 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
         </div>
       </form>
     </Form>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicInputPhone } from "./_components/basic-input-phone";
-import { BasicInputPhoneCountry } from "./_components/input-phone-country";
+import { BasicInputPhone } from "./_components/basic-input-phone"
+import { BasicInputPhoneCountry } from "./_components/input-phone-country"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Input Phone",
-};
+}
 
 export default function InputPhonePage() {
   return (
@@ -15,5 +15,5 @@ export default function InputPhonePage() {
       <BasicInputPhone />
       <BasicInputPhoneCountry />
     </section>
-  );
+  )
 }

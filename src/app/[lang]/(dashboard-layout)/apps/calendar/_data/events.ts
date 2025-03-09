@@ -1,4 +1,4 @@
-import type { EventType } from "../types";
+import type { EventType } from "../types"
 
 export const eventsData: EventType[] = [
   {
@@ -67,4 +67,4 @@ export const eventsData: EventType[] = [
       description: "Gathering with relatives.",
     },
   },
-];
+]

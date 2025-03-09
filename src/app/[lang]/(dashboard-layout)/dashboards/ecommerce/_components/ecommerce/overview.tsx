@@ -1,8 +1,11 @@
-import { BadgePercent, HandCoins, ShoppingBag } from "lucide-react";
+import { BadgePercent, HandCoins, ShoppingBag } from "lucide-react"
 
-import { overviewData } from "../../_data/overview";
+import { overviewData } from "../../_data/overview"
 
-import { DashboardCardActionsDropdown, DashboardOverviewCardV2 } from "@/components/dashboards/dashboard-card";
+import {
+  DashboardCardActionsDropdown,
+  DashboardOverviewCardV2,
+} from "@/components/dashboards/dashboard-card"
 
 export async function Overview() {
   return (
@@ -39,5 +42,5 @@ export async function Overview() {
         formatStyle="currency"
       />
     </div>
-  );
+  )
 }

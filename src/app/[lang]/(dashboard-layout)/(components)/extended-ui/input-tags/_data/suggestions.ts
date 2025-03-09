@@ -14,4 +14,4 @@ export const suggestionsData = [
   "Java",
   "C++",
   "Ruby",
-];
+]

@@ -1,19 +1,20 @@
-import { Download } from "lucide-react";
-import { cn, formatFileSize } from "@/lib/utils";
+import { Download } from "lucide-react"
 
-import type { MessageType } from "../../../../../types";
+import type { MessageType } from "../../../../../types"
 
-import { FileThumbnail } from "@/components/file-thumbnail";
-import { Button } from "@/components/ui/button";
+import { cn, formatFileSize } from "@/lib/utils"
+
+import { Button } from "@/components/ui/button"
+import { FileThumbnail } from "@/components/file-thumbnail"
 
 export function FilesMessageBubbleContent({
   files,
   isByCurrentUser,
 }: {
-  files: MessageType["files"];
-  isByCurrentUser: boolean;
+  files: MessageType["files"]
+  isByCurrentUser: boolean
 }) {
-  if (!files || !files.length) return null; // Return null if the files are empty
+  if (!files || !files.length) return null // Return null if the files are empty
 
   return files.map((file) => (
     <div
@@ -33,5 +34,5 @@ export function FilesMessageBubbleContent({
         <Download className="size-4" />
       </Button>
     </div>
-  ));
+  ))
 }

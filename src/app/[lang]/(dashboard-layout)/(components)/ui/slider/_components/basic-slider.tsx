@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Slider } from "@/components/ui/slider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Slider } from "@/components/ui/slider"
 
 export function BasicSlider() {
   return (
@@ -15,5 +15,5 @@ export function BasicSlider() {
         <Slider defaultValue={[33]} max={100} step={1} />
       </CardContent>
     </Card>
-  );
+  )
 }

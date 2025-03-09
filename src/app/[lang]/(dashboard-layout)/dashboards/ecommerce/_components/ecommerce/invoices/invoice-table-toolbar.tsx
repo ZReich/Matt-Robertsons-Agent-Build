@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { Table } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table"
 
-import { Input } from "@/components/ui/input";
-import { InvoiceTableViewOptions } from "./invoice-table-view-options";
+import { Input } from "@/components/ui/input"
+import { InvoiceTableViewOptions } from "./invoice-table-view-options"
 
 interface InvoiceTableToolbarProps<TTable> {
-  table: Table<TTable>;
+  table: Table<TTable>
 }
 
 export function InvoiceTableToolbar<TTable>({
@@ -24,5 +24,5 @@ export function InvoiceTableToolbar<TTable>({
         }
       />
     </div>
-  );
+  )
 }

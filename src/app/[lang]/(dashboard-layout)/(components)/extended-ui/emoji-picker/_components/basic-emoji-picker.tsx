@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { EmojiPicker } from "@/components/ui/emoji-picker"
 
 export function BasicEmojiPicker() {
   return (
@@ -11,5 +11,5 @@ export function BasicEmojiPicker() {
         <EmojiPicker />
       </CardContent>
     </Card>
-  );
+  )
 }

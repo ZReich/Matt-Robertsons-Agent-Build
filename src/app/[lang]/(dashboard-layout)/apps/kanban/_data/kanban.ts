@@ -1,4 +1,4 @@
-import { ColumnType } from "../types";
+import { ColumnType } from "../types"
 
 export const kanbanData: ColumnType[] = [
   {
@@ -402,4 +402,4 @@ export const kanbanData: ColumnType[] = [
       },
     ],
   },
-];
+]

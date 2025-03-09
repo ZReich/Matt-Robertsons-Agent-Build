@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { CardHeader, CardTitle } from "@/components/ui/card";
-import { EmailMenuButton } from "../email-menu-button";
+import { CardHeader, CardTitle } from "@/components/ui/card"
+import { EmailMenuButton } from "../email-menu-button"
 
 export function EmailComposerHeader() {
   return (
@@ -9,5 +9,5 @@ export function EmailComposerHeader() {
       <EmailMenuButton isIcon />
       <CardTitle>Compose Mail</CardTitle>
     </CardHeader>
-  );
+  )
 }

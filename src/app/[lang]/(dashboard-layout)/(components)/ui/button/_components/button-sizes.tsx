@@ -1,7 +1,7 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function ButtonSizes() {
   return (
@@ -34,5 +34,5 @@ export function ButtonSizes() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

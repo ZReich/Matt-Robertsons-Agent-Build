@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { CardHeader } from "@/components/ui/card";
-import { SearchInput } from "./search-input";
-import { ActionButtons } from "./action-buttons";
+import { CardHeader } from "@/components/ui/card"
+import { ActionButtons } from "./action-buttons"
+import { SearchInput } from "./search-input"
 
 export function ChatSidebarHeader() {
   return (
@@ -12,5 +12,5 @@ export function ChatSidebarHeader() {
         <ActionButtons />
       </div>
     </CardHeader>
-  );
+  )
 }

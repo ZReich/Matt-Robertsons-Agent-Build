@@ -1,35 +1,35 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import Link from "next/link";
-import { PanelLeft } from "lucide-react";
+import Image from "next/image"
+import Link from "next/link"
+import { PanelLeft } from "lucide-react"
 
-import { homeNavigationsData } from "../../_data/home-navigations";
+import { homeNavigationsData } from "../../_data/home-navigations"
 
-import { isActivePathname } from "@/lib/utils";
+import { isActivePathname } from "@/lib/utils"
 
-import {
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  useSidebar,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/sheet"
+import {
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar"
 
 export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
-  const { openMobile, setOpenMobile, isMobile } = useSidebar();
+  const { openMobile, setOpenMobile, isMobile } = useSidebar()
 
-  if (!isMobile) return;
+  if (!isMobile) return
 
   return (
     <Sheet open={openMobile} onOpenChange={setOpenMobile}>
@@ -68,7 +68,7 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
           <SidebarContent>
             <SidebarMenu>
               {homeNavigationsData.map((nav) => {
-                const isActive = isActivePathname(nav.href, fullPathname, true);
+                const isActive = isActivePathname(nav.href, fullPathname, true)
 
                 if (nav.href) {
                   return (
@@ -83,7 +83,7 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  );
+                  )
                 }
               })}
             </SidebarMenu>
@@ -91,5 +91,5 @@ export function HomeSidebar({ fullPathname }: { fullPathname: string }) {
         </ScrollArea>
       </SheetContent>
     </Sheet>
-  );
+  )
 }

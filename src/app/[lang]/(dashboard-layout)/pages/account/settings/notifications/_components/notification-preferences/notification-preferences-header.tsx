@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function NotificationPreferencesHeader() {
   return (
@@ -8,5 +8,5 @@ export function NotificationPreferencesHeader() {
         Adjust your settings to control which notifications you receive.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

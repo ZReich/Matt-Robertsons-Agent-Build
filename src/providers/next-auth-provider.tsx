@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider } from "next-auth/react"
 
-import type { SessionProviderProps } from "next-auth/react";
+import type { SessionProviderProps } from "next-auth/react"
 
 export const NextAuthProvider = ({
   children,
@@ -12,5 +12,5 @@ export const NextAuthProvider = ({
     <SessionProvider refetchOnWindowFocus={false} {...props}>
       {children}
     </SessionProvider>
-  );
-};
+  )
+}

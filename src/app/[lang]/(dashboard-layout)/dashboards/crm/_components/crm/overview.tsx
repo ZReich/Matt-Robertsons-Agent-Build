@@ -1,8 +1,11 @@
-import { BadgePercent, HandCoins, Users } from "lucide-react";
+import { BadgePercent, HandCoins, Users } from "lucide-react"
 
-import { overviewData } from "../../_data/overview";
+import { overviewData } from "../../_data/overview"
 
-import { DashboardCardActionsDropdown, DashboardOverviewCard } from "@/components/dashboards/dashboard-card";
+import {
+  DashboardCardActionsDropdown,
+  DashboardOverviewCard,
+} from "@/components/dashboards/dashboard-card"
 
 export function Overview() {
   return (
@@ -39,5 +42,5 @@ export function Overview() {
         icon={Users}
       />
     </div>
-  );
+  )
 }

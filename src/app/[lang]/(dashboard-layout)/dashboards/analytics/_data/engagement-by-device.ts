@@ -1,4 +1,4 @@
-import type { EngagementByDeviceType } from "../types";
+import type { EngagementByDeviceType } from "../types"
 
 export const engagementByDeviceData: EngagementByDeviceType[] = [
   {
@@ -57,4 +57,4 @@ export const engagementByDeviceData: EngagementByDeviceType[] = [
     userPercentage: 0.01,
     conversionRate: 0.02,
   },
-];
+]

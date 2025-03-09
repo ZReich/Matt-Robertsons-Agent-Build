@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Rating } from "@/components/ui/rating";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Rating } from "@/components/ui/rating"
 
 export function RatingIcon() {
-  const [rating, setRating] = React.useState("0");
+  const [rating, setRating] = React.useState("0")
 
   return (
     <Card>
@@ -19,5 +19,5 @@ export function RatingIcon() {
         <Rating value={rating} onValueChange={setRating} iconName="Egg" />
       </CardContent>
     </Card>
-  );
+  )
 }

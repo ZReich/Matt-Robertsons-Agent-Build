@@ -1,6 +1,6 @@
-import type { CategoryType } from "./types";
+import type { CategoryType } from "./types"
 
-export const INITIAL_VIEW = "dayGridMonth";
+export const INITIAL_VIEW = "dayGridMonth"
 
 export const CATEGORIES: CategoryType[] = [
   "Personal",
@@ -9,4 +9,4 @@ export const CATEGORIES: CategoryType[] = [
   "Holiday",
   "Health",
   "Miscellaneous",
-];
+]

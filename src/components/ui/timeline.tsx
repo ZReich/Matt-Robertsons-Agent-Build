@@ -1,15 +1,15 @@
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cva } from "class-variance-authority";
-import * as SeparatorPrimitive from "@radix-ui/react-separator";
+import * as React from "react"
+import * as SeparatorPrimitive from "@radix-ui/react-separator"
+import { Slot } from "@radix-ui/react-slot"
+import { cva } from "class-variance-authority"
 
-import { cn } from "@/lib/utils";
+import type { DynamicIconNameType } from "@/types"
+import type { VariantProps } from "class-variance-authority"
 
-import type { VariantProps } from "class-variance-authority";
-import type { DynamicIconNameType } from "@/types";
+import { cn } from "@/lib/utils"
 
-import { DynamicIcon } from "../dynamic-icon";
-import { Separator } from "./separator";
+import { DynamicIcon } from "../dynamic-icon"
+import { Separator } from "./separator"
 
 const timelineVariants = cva("grid", {
   variants: {
@@ -22,7 +22,7 @@ const timelineVariants = cva("grid", {
   defaultVariants: {
     align: "left",
   },
-});
+})
 
 interface TimelineProps
   extends React.HTMLAttributes<HTMLUListElement>,
@@ -38,10 +38,10 @@ const Timeline = React.forwardRef<HTMLUListElement, TimelineProps>(
       >
         {children}
       </ul>
-    );
+    )
   }
-);
-Timeline.displayName = "Timeline";
+)
+Timeline.displayName = "Timeline"
 
 const timelineItemVariants = cva("grid items-center gap-x-2", {
   variants: {
@@ -53,7 +53,7 @@ const timelineItemVariants = cva("grid items-center gap-x-2", {
   defaultVariants: {
     status: "default",
   },
-});
+})
 
 interface TimelineItemProps
   extends React.HTMLAttributes<HTMLLIElement>,
@@ -67,32 +67,32 @@ const TimelineItem = React.forwardRef<HTMLLIElement, TimelineItemProps>(
       {...props}
     />
   )
-);
-TimelineItem.displayName = "TimelineItem";
+)
+TimelineItem.displayName = "TimelineItem"
 
-type TimelineDotStatus = "current" | "done" | "error";
+type TimelineDotStatus = "current" | "done" | "error"
 interface TimelineDotPropsBase extends React.HTMLAttributes<HTMLDivElement> {
-  iconClassName?: string;
+  iconClassName?: string
 }
 
 interface TimelineDotPropsWithStatus extends TimelineDotPropsBase {
-  status?: TimelineDotStatus;
-  customIconName?: never;
-  customStatusName?: never;
+  status?: TimelineDotStatus
+  customIconName?: never
+  customStatusName?: never
 }
 
 interface TimelineDotPropsWithCustom extends TimelineDotPropsBase {
-  status?: never;
-  customIconName: DynamicIconNameType;
-  customStatusName: string;
+  status?: never
+  customIconName: DynamicIconNameType
+  customStatusName: string
 }
 
-type TimelineDotProps = TimelineDotPropsWithStatus | TimelineDotPropsWithCustom;
+type TimelineDotProps = TimelineDotPropsWithStatus | TimelineDotPropsWithCustom
 
 type StatusIconNamesType = Record<
   TimelineDotStatus,
   { iconName: DynamicIconNameType; className: string }
->;
+>
 
 const statusIconNames: StatusIconNamesType = {
   current: {
@@ -107,7 +107,7 @@ const statusIconNames: StatusIconNamesType = {
     iconName: "X",
     className: "bg-destructive text-destructive-foreground p-0.5 rounded-full",
   },
-};
+}
 
 const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
   (
@@ -121,20 +121,20 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
     },
     ref
   ) => {
-    let statusIconName = statusIconNames["current"].iconName;
-    let statusLabel = "current";
-    let statusClassName;
+    let statusIconName = statusIconNames["current"].iconName
+    let statusLabel = "current"
+    let statusClassName
 
     // Determines if the component uses predefined statuses or custom ones
     if (customStatusName && customIconName) {
       // If a custom icon is provided, use it along with the custom status label
-      statusIconName = customIconName;
-      statusLabel = customStatusName;
+      statusIconName = customIconName
+      statusLabel = customStatusName
     } else if (status) {
       // If the "status" prop exists, use the corresponding predefined icon and styling
-      statusIconName = statusIconNames[status].iconName;
-      statusClassName = statusIconNames[status].className;
-      statusLabel = status; // Assigns the status label for accessibility
+      statusIconName = statusIconNames[status].iconName
+      statusClassName = statusIconNames[status].className
+      statusLabel = status // Assigns the status label for accessibility
     }
 
     return (
@@ -157,10 +157,10 @@ const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
           )}
         />
       </div>
-    );
+    )
   }
-);
-TimelineDot.displayName = "TimelineDot";
+)
+TimelineDot.displayName = "TimelineDot"
 
 const timelineContentVariants = cva("row-start-2 row-end-2 pb-8", {
   variants: {
@@ -172,7 +172,7 @@ const timelineContentVariants = cva("row-start-2 row-end-2 pb-8", {
   defaultVariants: {
     side: "start",
   },
-});
+})
 
 interface TimelineContentProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -186,8 +186,8 @@ const TimelineContent = React.forwardRef<HTMLDivElement, TimelineContentProps>(
       {...props}
     />
   )
-);
-TimelineContent.displayName = "TimelineContent";
+)
+TimelineContent.displayName = "TimelineContent"
 
 const timelineHeadingVariants = cva(
   "row-start-1 row-end-1 line-clamp-1 max-w-full truncate",
@@ -207,32 +207,32 @@ const timelineHeadingVariants = cva(
       variant: "primary",
     },
   }
-);
+)
 
 interface TimelineHeadingProps
   extends React.HTMLAttributes<HTMLHeadingElement>,
     VariantProps<typeof timelineHeadingVariants> {
-  asChild?: boolean;
+  asChild?: boolean
 }
 
 const TimelineHeading = React.forwardRef<
   HTMLHeadingElement,
   TimelineHeadingProps
 >(({ className, side, variant, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "h3";
+  const Comp = asChild ? Slot : "h3"
   return (
     <Comp
       ref={ref}
       className={cn(timelineHeadingVariants({ side, variant }), className)}
       {...props}
     />
-  );
-});
-TimelineHeading.displayName = "TimelineHeading";
+  )
+})
+TimelineHeading.displayName = "TimelineHeading"
 
 interface TimelineLineProps
   extends React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
-  done?: boolean;
+  done?: boolean
 }
 const TimelineLine = React.forwardRef<
   React.ElementRef<typeof SeparatorPrimitive.Root>,
@@ -249,9 +249,9 @@ const TimelineLine = React.forwardRef<
       )}
       {...props}
     />
-  );
-});
-TimelineLine.displayName = "TimelineLine";
+  )
+})
+TimelineLine.displayName = "TimelineLine"
 
 export {
   Timeline,
@@ -260,4 +260,4 @@ export {
   TimelineContent,
   TimelineHeading,
   TimelineLine,
-};
+}

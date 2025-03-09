@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicToast } from "./_components/basic-toast";
-import { ToastWithTitle } from "./_components/toast-with-title";
-import { ToastWithAction } from "./_components/toast-with-action";
-import { ToastDestructive } from "./_components/toast-destructive";
+import { BasicToast } from "./_components/basic-toast"
+import { ToastDestructive } from "./_components/toast-destructive"
+import { ToastWithAction } from "./_components/toast-with-action"
+import { ToastWithTitle } from "./_components/toast-with-title"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Toast",
-};
+}
 
 export default function ToastPage() {
   return (
@@ -19,5 +19,5 @@ export default function ToastPage() {
       <ToastWithAction />
       <ToastDestructive />
     </section>
-  );
+  )
 }

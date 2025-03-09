@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Grid2x2Plus } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { Grid2x2Plus } from "lucide-react"
 
-import { labelsData } from "../../_data/labels";
+import { labelsData } from "../../_data/labels"
 
-import { KanbanTaskSchema } from "../../_schemas/kanban-task-schema";
+import { KanbanTaskSchema } from "../../_schemas/kanban-task-schema"
 
-import type { KanbanTaskFormType } from "../../types";
+import type { KanbanTaskFormType } from "../../types"
 
-import { useKanbanContext } from "../../hooks/use-kanban-context";
-
-import { Button } from "@/components/ui/button";
+import { useKanbanContext } from "../../hooks/use-kanban-context"
+import { Button } from "@/components/ui/button"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import {
   Form,
   FormControl,
@@ -21,27 +21,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { InputTagsWithSuggestions } from "@/components/ui/input-tags"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/ui/select"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { DatePicker } from "@/components/date-picker";
-import { InputTagsWithSuggestions } from "@/components/ui/input-tags";
-import { FileDropzone } from "@/components/ui/file-dropzone";
+} from "@/components/ui/sheet"
+import { Textarea } from "@/components/ui/textarea"
+import { DatePicker } from "@/components/date-picker"
 
 const defaultValues = {
   title: "",
@@ -51,7 +50,7 @@ const defaultValues = {
   assigned: [],
   comments: [],
   attachments: [],
-};
+}
 
 export function KanbanAddTaskSidebar() {
   const {
@@ -60,28 +59,28 @@ export function KanbanAddTaskSidebar() {
     setKanbanAddTaskSidebarIsOpen,
     handleAddTask,
     handleSelectTask,
-  } = useKanbanContext();
+  } = useKanbanContext()
 
   const form = useForm<KanbanTaskFormType>({
     resolver: zodResolver(KanbanTaskSchema),
     defaultValues,
-  });
+  })
 
-  const { teamMembers, selectedColumn } = kanbanState;
+  const { teamMembers, selectedColumn } = kanbanState
 
   function onSubmit(data: KanbanTaskFormType) {
     if (selectedColumn) {
-      handleAddTask(data, selectedColumn.id);
+      handleAddTask(data, selectedColumn.id)
     }
 
-    handleSidebarClose();
+    handleSidebarClose()
   }
 
   const handleSidebarClose = () => {
-    form.reset(defaultValues); // Reset the form to the initial values
-    handleSelectTask(undefined); // Unselect the current task
-    setKanbanAddTaskSidebarIsOpen(false); // Close the sidebar
-  };
+    form.reset(defaultValues) // Reset the form to the initial values
+    handleSelectTask(undefined) // Unselect the current task
+    setKanbanAddTaskSidebarIsOpen(false) // Close the sidebar
+  }
 
   const labelOptions = React.useMemo(
     () =>
@@ -91,7 +90,7 @@ export function KanbanAddTaskSidebar() {
         </SelectItem>
       )),
     []
-  );
+  )
 
   return (
     <Sheet
@@ -225,5 +224,5 @@ export function KanbanAddTaskSidebar() {
         </ScrollArea>
       </SheetContent>
     </Sheet>
-  );
+  )
 }

@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import { Eye } from "lucide-react";
-import { Table } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table"
+import { Eye } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface InvoiceTableViewOptionsProps<TData> {
-  table: Table<TData>;
+  table: Table<TData>
 }
 
 export function InvoiceTableViewOptions<TData>({
@@ -47,9 +47,9 @@ export function InvoiceTableViewOptions<TData>({
               >
                 {column.id.replace("_", " ")}
               </DropdownMenuCheckboxItem>
-            );
+            )
           })}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

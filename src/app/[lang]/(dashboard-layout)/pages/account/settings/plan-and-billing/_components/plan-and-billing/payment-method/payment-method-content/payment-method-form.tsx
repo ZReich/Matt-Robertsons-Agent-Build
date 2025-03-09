@@ -1,34 +1,34 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { CreditCard, Landmark, LoaderCircle } from "lucide-react";
+import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { CreditCard, Landmark, LoaderCircle } from "lucide-react"
 
-import { PaymentMethodSchema } from "../../../../_schemas/payment-method-schema";
+import { PaymentMethodSchema } from "../../../../_schemas/payment-method-schema"
 
-import { getCreditCardBrandName } from "@/lib/utils";
+import type { PaymentMethodFormType } from "@/app/[lang]/(dashboard-layout)/pages/account/types"
 
-import type { PaymentMethodFormType } from "@/app/[lang]/(dashboard-layout)/pages/account/types";
+import { getCreditCardBrandName } from "@/lib/utils"
 
-import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Form,
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
-  FormDescription,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
+import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon"
 
 export function PaymentMethodForm() {
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("card")
 
   const form = useForm<PaymentMethodFormType>({
     resolver: zodResolver(PaymentMethodSchema),
@@ -42,14 +42,14 @@ export function PaymentMethodForm() {
       routingNumber: "",
       saveCard: false,
     },
-  });
+  })
 
-  const cardNumber = form.watch("cardNumber");
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid, or submitting
-  const creditCardBrandName = getCreditCardBrandName(cardNumber);
+  const cardNumber = form.watch("cardNumber")
+  const { isSubmitting, isValid } = form.formState
+  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid, or submitting
+  const creditCardBrandName = getCreditCardBrandName(cardNumber)
 
-  function onSubmit(data: PaymentMethodFormType) {}
+  function onSubmit(_data: PaymentMethodFormType) {}
 
   return (
     <Form {...form}>
@@ -246,5 +246,5 @@ export function PaymentMethodForm() {
         </Button>
       </form>
     </Form>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import { pricingPlansData } from "../../_data/pricing-plans";
+import { pricingPlansData } from "../../_data/pricing-plans"
 
-import { PricingCardList } from "./pricing-card-list";
+import { PricingCardList } from "./pricing-card-list"
 
 export function PricingPlans() {
   return (
@@ -15,5 +15,5 @@ export function PricingPlans() {
       </div>
       <PricingCardList data={pricingPlansData} />
     </section>
-  );
+  )
 }

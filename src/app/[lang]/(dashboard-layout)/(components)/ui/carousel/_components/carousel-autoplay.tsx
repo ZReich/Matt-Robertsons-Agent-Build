@@ -1,20 +1,20 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Autoplay from "embla-carousel-autoplay";
-import { useDirection } from "@radix-ui/react-direction";
+import * as React from "react"
+import { useDirection } from "@radix-ui/react-direction"
+import Autoplay from "embla-carousel-autoplay"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
+} from "@/components/ui/carousel"
 
 export function CarouselAutoplay() {
-  const direction = useDirection();
+  const direction = useDirection()
 
   return (
     <Card>
@@ -56,5 +56,5 @@ export function CarouselAutoplay() {
         </Carousel>
       </CardContent>
     </Card>
-  );
+  )
 }

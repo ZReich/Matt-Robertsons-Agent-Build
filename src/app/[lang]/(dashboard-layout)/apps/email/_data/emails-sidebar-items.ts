@@ -1,4 +1,4 @@
-import type { EmailSidebarItemsType } from "../types";
+import type { EmailSidebarItemsType } from "../types"
 
 export const sidebarItemsData: EmailSidebarItemsType = {
   folders: [
@@ -14,4 +14,4 @@ export const sidebarItemsData: EmailSidebarItemsType = {
     { iconName: "Tag", name: "work", unreadCount: 11 },
     { iconName: "Tag", name: "important", unreadCount: 3 },
   ],
-};
+}

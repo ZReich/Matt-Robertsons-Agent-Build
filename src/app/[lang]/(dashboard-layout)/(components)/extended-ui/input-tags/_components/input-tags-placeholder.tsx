@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { InputTags } from "@/components/ui/input-tags";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { InputTags } from "@/components/ui/input-tags"
 
 export function InputTagsPlaceholder() {
-  const [tags, setTags] = React.useState<string[]>([]);
+  const [tags, setTags] = React.useState<string[]>([])
 
   return (
     <Card>
@@ -21,5 +21,5 @@ export function InputTagsPlaceholder() {
         />
       </CardContent>
     </Card>
-  );
+  )
 }

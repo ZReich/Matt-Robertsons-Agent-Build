@@ -1,8 +1,8 @@
-import { invoicesData } from "../../_data/invoices";
+import { invoicesData } from "../../_data/invoices"
 
-import type { InvoiceType } from "../../types";
+import type { InvoiceType } from "../../types"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -10,13 +10,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
 const statusClasses: Record<InvoiceType["status"], string> = {
   Paid: "bg-green-100 hover:bg-green-200",
   Pending: "bg-yellow-100 hover:bg-yellow-200",
   Overdue: "bg-red-100 hover:bg-red-200",
-};
+}
 
 export default function ContextualClasses() {
   return (
@@ -50,5 +50,5 @@ export default function ContextualClasses() {
         </Table>
       </CardContent>
     </Card>
-  );
+  )
 }

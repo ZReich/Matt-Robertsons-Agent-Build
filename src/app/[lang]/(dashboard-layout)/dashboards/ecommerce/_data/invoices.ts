@@ -1,11 +1,11 @@
-import type { InvoiceType } from "../types";
+import type { InvoiceType } from "../types"
 
 export const deliveryStatusesData = [
   { label: "In Transit", value: "In Transit" },
   { label: "Delivered", value: "Delivered" },
   { label: "Processing", value: "Processing" },
   { label: "Pending", value: "Pending" },
-];
+]
 
 export const invoicesData: InvoiceType[] = [
   {
@@ -368,4 +368,4 @@ export const invoicesData: InvoiceType[] = [
     totalAmount: 250.0,
     deliveryStatus: "Processing",
   },
-];
+]

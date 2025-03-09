@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -9,8 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/dialog"
 
 export function BasicDialog() {
   return (
@@ -20,7 +20,7 @@ export function BasicDialog() {
       </CardHeader>
       <CardContent className="flex justify-center items-center">
         <Dialog>
-          <DialogTrigger >Open</DialogTrigger>
+          <DialogTrigger>Open</DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Are you absolutely sure?</DialogTitle>
@@ -33,5 +33,5 @@ export function BasicDialog() {
         </Dialog>
       </CardContent>
     </Card>
-  );
+  )
 }

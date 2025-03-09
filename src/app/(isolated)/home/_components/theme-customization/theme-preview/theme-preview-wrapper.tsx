@@ -1,28 +1,28 @@
-"use client";
+"use client"
 
-import { baseColors } from "@/configs/base-colors";
+import { baseColors } from "@/configs/base-colors"
 
-import { useTheme } from "../hooks/use-theme";
+import { useTheme } from "../hooks/use-theme"
 
 export function ThemePreviewWrapper({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const { theme } = useTheme();
+  const { theme } = useTheme()
 
-  const color = baseColors.find((color) => color.name === theme.theme);
+  const color = baseColors.find((color) => color.name === theme.theme)
 
   const cssVars: Record<string, string> =
-    color?.cssVars?.[theme.mode === "dark" ? "dark" : "light"] || {};
+    color?.cssVars?.[theme.mode === "dark" ? "dark" : "light"] || {}
 
   // Add radius to cssVars
-  cssVars.radius = `${theme.radius ?? 0.5}rem`;
+  cssVars.radius = `${theme.radius ?? 0.5}rem`
 
   // Convert cssVars keys into CSS custom properties (CSS variables)
   const style = Object.fromEntries(
     Object.entries(cssVars).map(([key, value]) => [`--${key}`, value])
-  );
+  )
 
   return (
     <div className="size-full border rounded-lg overflow-hidden">
@@ -33,5 +33,5 @@ export function ThemePreviewWrapper({
         {children}
       </div>
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const RegisterSchema = z.object({
   firstName: z
@@ -33,4 +33,4 @@ export const RegisterSchema = z.object({
     .regex(/(?=.*[0-9])/, {
       message: "Password must contain at least one number.",
     }),
-});
+})

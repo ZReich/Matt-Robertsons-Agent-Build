@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { Table } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table"
 
-import { EngagementByDeviceTableViewOptions } from "./engagement-by-device-table-view-options";
+import { EngagementByDeviceTableViewOptions } from "./engagement-by-device-table-view-options"
 
 interface EngagementByDeviceTableToolbarProps<TTable> {
-  table: Table<TTable>;
+  table: Table<TTable>
 }
 
 export function EngagementByDeviceTableToolbar<TTable>({
@@ -15,5 +15,5 @@ export function EngagementByDeviceTableToolbar<TTable>({
     <div>
       <EngagementByDeviceTableViewOptions table={table} />
     </div>
-  );
+  )
 }

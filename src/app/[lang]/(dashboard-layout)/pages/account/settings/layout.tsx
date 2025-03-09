@@ -1,9 +1,9 @@
-import { NavList } from "./_components/nav-list";
+import { NavList } from "./_components/nav-list"
 
 export default function SettingsLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <div className="container grid w-full items-start gap-6 p-4 md:grid-cols-[180px_1fr]">
@@ -13,5 +13,5 @@ export default function SettingsLayout({
       </div>
       <div className="grid gap-6">{children}</div>
     </div>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-import type { RevenueBySourceType } from "../../../../types";
+import type { RevenueBySourceType } from "../../../../types"
 
-import { RevenueBySourceItem } from "./revenue-by-source-item";
+import { RevenueBySourceItem } from "./revenue-by-source-item"
 
 export function RevenueBySourceList({
   data,
 }: {
-  data: RevenueBySourceType["sources"];
+  data: RevenueBySourceType["sources"]
 }) {
   return (
     <ul className="space-y-2">
@@ -13,5 +13,5 @@ export function RevenueBySourceList({
         <RevenueBySourceItem key={item.name} data={item} />
       ))}
     </ul>
-  );
+  )
 }

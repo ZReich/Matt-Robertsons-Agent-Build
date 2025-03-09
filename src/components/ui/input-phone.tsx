@@ -1,15 +1,17 @@
 // Refer to react-phone-number-input README.md file for more details https://gitlab.com/catamphetamine/react-phone-number-input
-"use client";
+"use client"
 
-import * as React from "react";
-import Image from "next/image";
-import * as RPNInputPrimitive from "react-phone-number-input";
-import { useDirection } from "@radix-ui/react-direction";
-import { ChevronsUpDown, Check } from "lucide-react";
+import * as React from "react"
+import Image from "next/image"
+import { useDirection } from "@radix-ui/react-direction"
+import * as RPNInputPrimitive from "react-phone-number-input"
+import { Check, ChevronsUpDown } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { InputProps } from "@/components/ui/input"
 
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
+
+import { Button } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -17,17 +19,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-
-import type { InputProps } from "@/components/ui/input";
-
-import { Input } from "@/components/ui/input";
+} from "@/components/ui/command"
+import { Input } from "@/components/ui/input"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "./scroll-area";
+} from "@/components/ui/popover"
+import { ScrollArea } from "./scroll-area"
 
 type InputPhoneProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -37,15 +36,15 @@ type InputPhoneProps = Omit<
     RPNInputPrimitive.Props<typeof RPNInputPrimitive.default>,
     "onChange"
   > & {
-    onChange?: (value: RPNInputPrimitive.Value) => void;
-  };
+    onChange?: (value: RPNInputPrimitive.Value) => void
+  }
 
 const InputPhone: React.ForwardRefExoticComponent<InputPhoneProps> =
   React.forwardRef<
     React.ElementRef<typeof RPNInputPrimitive.default>,
     InputPhoneProps
   >(({ className, onChange, ...props }, ref) => {
-    const direction = useDirection();
+    const direction = useDirection()
 
     return (
       <RPNInputPrimitive.default
@@ -67,9 +66,9 @@ const InputPhone: React.ForwardRefExoticComponent<InputPhoneProps> =
         onChange={(value) => onChange?.(value as RPNInputPrimitive.Value)}
         {...props}
       />
-    );
-  });
-InputPhone.displayName = "InputPhone";
+    )
+  })
+InputPhone.displayName = "InputPhone"
 
 const InputComponent = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, ...props }, ref) => (
@@ -79,19 +78,19 @@ const InputComponent = React.forwardRef<HTMLInputElement, InputProps>(
       ref={ref}
     />
   )
-);
-InputComponent.displayName = "InputComponent";
+)
+InputComponent.displayName = "InputComponent"
 
 interface CountrySelectOption {
-  label: string;
-  value: RPNInputPrimitive.Country;
+  label: string
+  value: RPNInputPrimitive.Country
 }
 
 interface CountrySelectProps {
-  disabled?: boolean;
-  value: RPNInputPrimitive.Country;
-  onChange: (value: RPNInputPrimitive.Country) => void;
-  options: CountrySelectOption[];
+  disabled?: boolean
+  value: RPNInputPrimitive.Country
+  onChange: (value: RPNInputPrimitive.Country) => void
+  options: CountrySelectOption[]
 }
 
 function CountrySelect({
@@ -103,7 +102,7 @@ function CountrySelect({
   const handleSelect = React.useCallback(
     (country: RPNInputPrimitive.Country) => onChange(country),
     [onChange]
-  );
+  )
 
   const memoizedOptions = React.useMemo(
     () =>
@@ -131,7 +130,7 @@ function CountrySelect({
         </CommandItem>
       )),
     [options, handleSelect, value]
-  );
+  )
 
   return (
     <Popover>
@@ -164,11 +163,11 @@ function CountrySelect({
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }
 
 function FlagComponent({ country, countryName }: RPNInputPrimitive.FlagProps) {
-  const flagUrl = `https://purecatamphetamine.github.io/country-flag-icons/3x2/${country}.svg`;
+  const flagUrl = `https://purecatamphetamine.github.io/country-flag-icons/3x2/${country}.svg`
 
   return (
     <div className="relative h-4 w-6 bg-foreground/20 rounded-sm">
@@ -181,7 +180,7 @@ function FlagComponent({ country, countryName }: RPNInputPrimitive.FlagProps) {
         />
       )}
     </div>
-  );
+  )
 }
 
-export { InputPhone };
+export { InputPhone }

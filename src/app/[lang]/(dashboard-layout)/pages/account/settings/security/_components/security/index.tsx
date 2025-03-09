@@ -1,9 +1,9 @@
-import type { UserType } from "../../../../types";
+import type { UserType } from "../../../../types"
 
-import { ChangePassword } from "./change-password";
-import { SecurityPreferences } from "./security-preferences";
-import { AccountRecoveryOptions } from "./account-recovery-options";
-import { RecentLogs } from "./recent-logs";
+import { AccountRecoveryOptions } from "./account-recovery-options"
+import { ChangePassword } from "./change-password"
+import { RecentLogs } from "./recent-logs"
+import { SecurityPreferences } from "./security-preferences"
 
 export function Security({ user }: { user: UserType }) {
   return (
@@ -13,5 +13,5 @@ export function Security({ user }: { user: UserType }) {
       <AccountRecoveryOptions user={user} />
       <RecentLogs />
     </div>
-  );
+  )
 }

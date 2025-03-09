@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation"
 
 import {
   Breadcrumb,
@@ -9,14 +9,14 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
 export function DocsBreadcrumb() {
-  const pathname = usePathname();
-  const paths = pathname.split("/").filter(Boolean);
-  const pathsOfDocs = paths.slice(2);
+  const pathname = usePathname()
+  const paths = pathname.split("/").filter(Boolean)
+  const pathsOfDocs = paths.slice(2)
 
-  if (!paths[1]) return;
+  if (!paths[1]) return
 
   return (
     <Breadcrumb>
@@ -30,8 +30,8 @@ export function DocsBreadcrumb() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         {pathsOfDocs.map((segment, index) => {
-          const href = "/" + pathsOfDocs.slice(0, index + 1).join("/");
-          const label = segment.replace("-", " ").toLowerCase();
+          const href = "/" + pathsOfDocs.slice(0, index + 1).join("/")
+          const label = segment.replace("-", " ").toLowerCase()
 
           return (
             <BreadcrumbItem key={href}>
@@ -46,9 +46,9 @@ export function DocsBreadcrumb() {
                 </>
               )}
             </BreadcrumbItem>
-          );
+          )
         })}
       </BreadcrumbList>
     </Breadcrumb>
-  );
+  )
 }

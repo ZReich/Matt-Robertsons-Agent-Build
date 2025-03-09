@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   Label,
@@ -6,22 +6,21 @@ import {
   PolarRadiusAxis,
   RadialBar,
   RadialBarChart,
-} from "recharts";
+} from "recharts"
 
-import { useRadius } from "@/hooks/use-radius";
-
-import { ChartContainer } from "@/components/ui/chart";
+import { useRadius } from "@/hooks/use-radius"
+import { ChartContainer } from "@/components/ui/chart"
 
 export function ActiveProjectsItemChart({
   value,
   maxRating = 100,
   color = "hsl(var(--primary))",
 }: {
-  value: number;
-  maxRating?: number;
-  color?: string;
+  value: number
+  maxRating?: number
+  color?: string
 }) {
-  const radius = useRadius();
+  const radius = useRadius()
 
   return (
     <ChartContainer config={{}} className="aspect-square h-10">
@@ -65,12 +64,12 @@ export function ActiveProjectsItemChart({
                       {value}%
                     </tspan>
                   </text>
-                );
+                )
               }
             }}
           />
         </PolarRadiusAxis>
       </RadialBarChart>
     </ChartContainer>
-  );
+  )
 }

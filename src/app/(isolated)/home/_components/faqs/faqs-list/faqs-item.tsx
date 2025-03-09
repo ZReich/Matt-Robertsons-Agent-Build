@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import type { FaqType } from "../../../types";
+import type { FaqType } from "../../../types"
 
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/components/ui/accordion"
 
 export function FaqsItem({ faq }: { faq: FaqType }) {
   return (
@@ -18,5 +18,5 @@ export function FaqsItem({ faq }: { faq: FaqType }) {
       </AccordionTrigger>
       <AccordionContent>{faq.answer}</AccordionContent>
     </AccordionItem>
-  );
+  )
 }

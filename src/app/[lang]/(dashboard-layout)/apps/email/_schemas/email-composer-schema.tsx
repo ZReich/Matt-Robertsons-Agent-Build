@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const EmailComposerSchema = z.object({
   to: z
@@ -28,4 +28,4 @@ export const EmailComposerSchema = z.object({
     .trim()
     .min(1, { message: "Content must contain at least 1 character" })
     .max(5000, { message: "Content must contain at most 5000 characters" }),
-});
+})

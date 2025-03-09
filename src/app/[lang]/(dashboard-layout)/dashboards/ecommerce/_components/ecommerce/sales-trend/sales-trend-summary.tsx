@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import { useMedia } from "react-use";
+import { useMedia } from "react-use"
 
-import { formatCurrency, formatDateShort } from "@/lib/utils";
+import type { SalesTrendType } from "../../../types"
 
-import type { SalesTrendType } from "../../../types";
+import { formatCurrency, formatDateShort } from "@/lib/utils"
 
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/components/ui/separator"
 
 export function SalesTrendSummary({
   data,
 }: {
-  data: SalesTrendType["summary"];
+  data: SalesTrendType["summary"]
 }) {
-  const isSmallOrLarger = useMedia("(min-width: 640px)");
+  const isSmallOrLarger = useMedia("(min-width: 640px)")
 
   return (
     <ul className="flex flex-col justify-around gap-4 sm:flex-row">
@@ -59,5 +59,5 @@ export function SalesTrendSummary({
         </li>
       </div>
     </ul>
-  );
+  )
 }

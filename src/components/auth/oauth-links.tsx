@@ -1,8 +1,8 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { oauthLinksData } from "@/data/oauth-links";
+import { oauthLinksData } from "@/data/oauth-links"
 
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button"
 
 export function OAuthLinks() {
   return (
@@ -18,5 +18,5 @@ export function OAuthLinks() {
         </Link>
       ))}
     </div>
-  );
+  )
 }

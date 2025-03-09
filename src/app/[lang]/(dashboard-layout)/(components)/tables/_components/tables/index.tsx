@@ -1,8 +1,8 @@
-import BasicTable from "./basic-table";
-import ContextualClasses from "./contextual-classes";
-import { DataTable } from "./data-table";
-import TableWithCaption from "./table-with-caption";
-import TableWithFooter from "./table-with-footer";
+import BasicTable from "./basic-table"
+import ContextualClasses from "./contextual-classes"
+import { DataTable } from "./data-table"
+import TableWithCaption from "./table-with-caption"
+import TableWithFooter from "./table-with-footer"
 
 export function Tables() {
   return (
@@ -13,5 +13,5 @@ export function Tables() {
       <ContextualClasses />
       <DataTable />
     </section>
-  );
+  )
 }

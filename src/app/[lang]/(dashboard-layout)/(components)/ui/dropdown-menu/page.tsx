@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicDropdownMenu } from "./_components/basic-dropdown-menu";
-import { DropdownMenuCheckboxes } from "./_components/dropdown-menu-checkboxes";
-import { DropdownMenuRadioGroupComponent } from "./_components/dropdown-menu-radio-group";
+import { BasicDropdownMenu } from "./_components/basic-dropdown-menu"
+import { DropdownMenuCheckboxes } from "./_components/dropdown-menu-checkboxes"
+import { DropdownMenuRadioGroupComponent } from "./_components/dropdown-menu-radio-group"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Dropdown Menu",
-};
+}
 
 export default function DropdownMenuPage() {
   return (
@@ -17,5 +17,5 @@ export default function DropdownMenuPage() {
       <DropdownMenuCheckboxes />
       <DropdownMenuRadioGroupComponent />
     </section>
-  );
+  )
 }

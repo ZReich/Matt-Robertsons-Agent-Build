@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import type { PricingCardType } from "../../types";
+import type { PricingCardType } from "../../types"
 
-import { PricingCard } from "./pricing-card";
+import { PricingCard } from "./pricing-card"
 
 export default function PricingCardList({
   data,
   isAnnual,
 }: {
-  data: PricingCardType[];
-  isAnnual: boolean;
+  data: PricingCardType[]
+  isAnnual: boolean
 }) {
-  const discountRate = isAnnual ? 0.15 : 0;
+  const discountRate = isAnnual ? 0.15 : 0
 
   return (
     <ul className="space-y-8 md:grid md:grid-cols-3 md:gap-x-4 md:space-y-0">
@@ -30,5 +30,5 @@ export default function PricingCardList({
         />
       ))}
     </ul>
-  );
+  )
 }

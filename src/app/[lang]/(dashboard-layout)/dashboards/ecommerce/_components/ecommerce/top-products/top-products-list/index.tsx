@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import type { TopProductType } from "../../../../types";
+import type { TopProductType } from "../../../../types"
 
-import { TopProductsItem } from "./top-products-item";
+import { TopProductsItem } from "./top-products-item"
 
 export function TopProductsList({
   data,
 }: {
-  data: TopProductType["products"];
+  data: TopProductType["products"]
 }) {
   return (
     <ul className="space-y-3">
@@ -15,5 +15,5 @@ export function TopProductsList({
         <TopProductsItem key={product.sku} product={product} />
       ))}
     </ul>
-  );
+  )
 }

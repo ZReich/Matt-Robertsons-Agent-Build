@@ -1,8 +1,8 @@
 export function TextMessageBubbleContent({ text }: { text: string }) {
-  if (!text) return null; // Return null if the text is empty
+  if (!text) return null // Return null if the text is empty
 
-  const urlRegex = /(https?:\/\/[^\s]+)/g; // Regex to match URLs
-  const parts = text.split(urlRegex); // Split the text into parts using the URL regex
+  const urlRegex = /(https?:\/\/[^\s]+)/g // Regex to match URLs
+  const parts = text.split(urlRegex) // Split the text into parts using the URL regex
 
   // Map over each part to render it as either plain text or an anchor tag
   return parts.map((part, index) => {
@@ -18,7 +18,7 @@ export function TextMessageBubbleContent({ text }: { text: string }) {
         >
           {part}
         </a>
-      );
+      )
     }
 
     // If the part does not match the URL regex, return it as plain text
@@ -26,6 +26,6 @@ export function TextMessageBubbleContent({ text }: { text: string }) {
       <p key={`${part}-${index}`} className="p-2">
         {part}
       </p>
-    );
-  });
+    )
+  })
 }

@@ -1,23 +1,22 @@
-"use client";
+"use client"
 
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 
-import { camelCaseToTitleCase, formatCurrency } from "@/lib/utils";
+import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { DotProps } from "recharts"
+import type { SalesByCountryType } from "../../../types"
 
-import type { SalesByCountryType } from "../../../types";
-import type { ChartTooltipContentProps } from "@/components/ui/chart";
-import type { DotProps } from "recharts";
+import { camelCaseToTitleCase, formatCurrency } from "@/lib/utils"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
+import { useIsRtl } from "@/hooks/use-is-rtl"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
-  if (!props.payload || props.payload.length === 0) return null;
+  if (!props.payload || props.payload.length === 0) return null
 
   return (
     <ChartTooltipContent
@@ -28,7 +27,7 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
         value: formatCurrency(Number(item.value)),
       }))}
     />
-  );
+  )
 }
 
 function CustomLineDot({
@@ -36,8 +35,8 @@ function CustomLineDot({
   cy,
   payload,
 }: DotProps & { payload: SalesByCountryType["countries"][number] }) {
-  const flagUrl = `https://purecatamphetamine.github.io/country-flag-icons/3x2/${payload.countryCode}.svg`;
-  const size = 24;
+  const flagUrl = `https://purecatamphetamine.github.io/country-flag-icons/3x2/${payload.countryCode}.svg`
+  const size = 24
 
   return (
     <image
@@ -48,15 +47,15 @@ function CustomLineDot({
       width={size}
       height={size}
     />
-  );
+  )
 }
 
 export function SalesByCountryChart({
   data,
 }: {
-  data: SalesByCountryType["countries"];
+  data: SalesByCountryType["countries"]
 }) {
-  const isRtl = useIsRtl();
+  const isRtl = useIsRtl()
 
   return (
     <ChartContainer
@@ -99,5 +98,5 @@ export function SalesByCountryChart({
         />
       </LineChart>
     </ChartContainer>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/resizable"
 
 export function ResizableHandleComponent() {
   return (
@@ -23,5 +23,5 @@ export function ResizableHandleComponent() {
         </ResizablePanelGroup>
       </CardContent>
     </Card>
-  );
+  )
 }

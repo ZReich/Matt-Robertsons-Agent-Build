@@ -1,26 +1,26 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { CalendarIcon, Mail, Clock } from "lucide-react";
+import * as React from "react"
+import { CalendarIcon, Clock, Mail } from "lucide-react"
 
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { InputTime } from "@/components/ui/input-time"
+import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import { InputTime } from "@/components/ui/input-time";
+} from "@/components/ui/popover"
+import { Slider } from "@/components/ui/slider"
+import { Textarea } from "@/components/ui/textarea"
 
 export function BasicInputs() {
-  const [date, setDate] = React.useState<Date | undefined>();
+  const [date, setDate] = React.useState<Date | undefined>()
 
   return (
     <Card>
@@ -130,5 +130,5 @@ export function BasicInputs() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

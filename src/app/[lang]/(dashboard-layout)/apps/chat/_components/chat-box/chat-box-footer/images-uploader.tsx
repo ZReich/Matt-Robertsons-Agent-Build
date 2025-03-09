@@ -1,58 +1,56 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Image, LoaderCircle, Send } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { Image, LoaderCircle, Send } from "lucide-react"
 
-import { MAX_IMAGE_SIZE, MAX_IMAGES } from "../../../constants";
+import { ImagesUploaderSchema } from "../../../_schemas/images-uploader-schema"
 
-import { ImagesUploaderSchema } from "../../../_schemas/images-uploader-schema";
+import type { ImagesUploaderFormType } from "../../../types"
 
-import type { ImagesUploaderFormType } from "../../../types";
+import { formatFileSize } from "@/lib/utils"
 
-import { useChatContext } from "../../../hooks/use-chat-context";
-
-import { formatFileSize } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
+import { useChatContext } from "../../../hooks/use-chat-context"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import {
   Form,
+  FormDescription,
   FormField,
   FormItem,
-  FormDescription,
   FormMessage,
-} from "@/components/ui/form";
-import { FileDropzone } from "@/components/ui/file-dropzone";
+} from "@/components/ui/form"
+import { MAX_IMAGES, MAX_IMAGE_SIZE } from "../../../constants"
 
-const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE);
+const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE)
 
 export function ImagesUploader() {
-  const { handleAddImagesMessage } = useChatContext();
-  const [isOpen, setIsOpen] = React.useState(false);
+  const { handleAddImagesMessage } = useChatContext()
+  const [isOpen, setIsOpen] = React.useState(false)
 
   const form = useForm<ImagesUploaderFormType>({
     resolver: zodResolver(ImagesUploaderSchema),
     defaultValues: { images: [] },
-  });
+  })
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
+  const { isSubmitting, isValid } = form.formState
+  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
 
   const onSubmit = async (data: ImagesUploaderFormType) => {
-    handleAddImagesMessage(data.images);
+    handleAddImagesMessage(data.images)
 
     // Reset to default
-    form.reset();
-    setIsOpen(false);
-  };
+    form.reset()
+    setIsOpen(false)
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -107,5 +105,5 @@ export function ImagesUploader() {
         </Form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

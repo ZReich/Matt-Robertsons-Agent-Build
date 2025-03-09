@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Bold } from "lucide-react";
+import * as React from "react"
+import { Bold } from "lucide-react"
 
-import { Toggle } from "@/components/ui/toggle";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Toggle } from "@/components/ui/toggle"
 
 export function BasicToggle() {
   return (
@@ -18,5 +18,5 @@ export function BasicToggle() {
         </Toggle>
       </CardContent>
     </Card>
-  );
+  )
 }

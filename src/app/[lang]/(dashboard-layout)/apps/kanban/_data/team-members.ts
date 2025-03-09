@@ -1,4 +1,4 @@
-import type { UserType } from "../types";
+import type { UserType } from "../types"
 
 export const teamMembersData: UserType[] = [
   {
@@ -31,4 +31,4 @@ export const teamMembersData: UserType[] = [
     name: "Tom Clark",
     avatar: "/images/avatars/05.png",
   },
-];
+]

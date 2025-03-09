@@ -1,13 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { MoonStar, Sun, SunMoon } from "lucide-react";
+import * as React from "react"
+import { MoonStar, Sun, SunMoon } from "lucide-react"
 
-import type { ModeType } from "@/types";
+import type { ModeType } from "@/types"
 
-import { useSettings } from "@/hooks/use-settings";
-
-import { Button } from "@/components/ui/button";
+import { useSettings } from "@/hooks/use-settings"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,35 +15,31 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 const modeIcons = {
   light: Sun,
   dark: MoonStar,
   system: SunMoon,
-};
+}
 
 export function ModeDropdown() {
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings } = useSettings()
 
-  const mode = settings.mode;
-  const ModeIcon = modeIcons[mode];
+  const mode = settings.mode
+  const ModeIcon = modeIcons[mode]
 
   const setMode = React.useCallback(
     (modeName: ModeType) => {
-      updateSettings({ ...settings, mode: modeName });
+      updateSettings({ ...settings, mode: modeName })
     },
     [settings, updateSettings]
-  );
+  )
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Mode"
-        >
+        <Button variant="ghost" size="icon" aria-label="Mode">
           <ModeIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -67,5 +62,5 @@ export function ModeDropdown() {
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

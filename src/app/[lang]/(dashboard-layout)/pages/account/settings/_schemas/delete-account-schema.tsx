@@ -1,3 +1,3 @@
-import { z } from "zod";
+import { z } from "zod"
 
-export const DeleteAccountSchema = z.object({});
+export const DeleteAccountSchema = z.object({})

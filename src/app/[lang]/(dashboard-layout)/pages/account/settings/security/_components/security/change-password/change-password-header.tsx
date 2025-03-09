@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function ChangePasswordHeader() {
   return (
@@ -9,5 +9,5 @@ export function ChangePasswordHeader() {
         unique password.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

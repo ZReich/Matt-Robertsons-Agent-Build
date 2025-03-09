@@ -1,6 +1,6 @@
-import { formatDateWithTime } from "@/lib/utils";
+import { logsData } from "../../../../../../_data/logs"
 
-import { logsData } from "../../../../../../_data/logs";
+import { formatDateWithTime } from "@/lib/utils"
 
 import {
   Table,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
 export function RecentLogsTable() {
   return (
@@ -33,5 +33,5 @@ export function RecentLogsTable() {
         ))}
       </TableBody>
     </Table>
-  );
+  )
 }

@@ -1,12 +1,13 @@
-import { formatCurrency } from "@/lib/utils";
+import type { RevenueBySourceType } from "../../../types"
 
-import type { RevenueBySourceType } from "../../../types";
-import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge";
+import { formatCurrency } from "@/lib/utils"
+
+import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge"
 
 export function RevenueBySourceSummary({
   data,
 }: {
-  data: RevenueBySourceType["summary"];
+  data: RevenueBySourceType["summary"]
 }) {
   return (
     <div className="flex items-end gap-x-1">
@@ -19,5 +20,5 @@ export function RevenueBySourceSummary({
         className="p-0"
       />
     </div>
-  );
+  )
 }

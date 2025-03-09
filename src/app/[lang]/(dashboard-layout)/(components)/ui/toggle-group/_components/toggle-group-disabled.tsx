@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Bold, Italic, Underline } from "lucide-react";
+import * as React from "react"
+import { Bold, Italic, Underline } from "lucide-react"
 
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 export function ToggleGroupDisabled() {
   return (
@@ -29,5 +29,5 @@ export function ToggleGroupDisabled() {
         </ToggleGroup>
       </CardContent>
     </Card>
-  );
+  )
 }

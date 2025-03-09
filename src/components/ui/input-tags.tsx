@@ -1,60 +1,60 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { X } from "lucide-react";
+import * as React from "react"
+import { X } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-import { Button } from "./button";
 import {
   Command,
   CommandEmpty,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/components/ui/command"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "./scroll-area";
+} from "@/components/ui/popover"
+import { Button } from "./button"
+import { ScrollArea } from "./scroll-area"
 
 export interface InputTagsProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  placeholder?: string;
-  tags: string[];
-  onTagsChange: (tags: string[]) => void;
-  className?: string;
+  placeholder?: string
+  tags: string[]
+  onTagsChange: (tags: string[]) => void
+  className?: string
 }
 
 const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
   ({ placeholder, tags, onTagsChange, className, ...props }, ref) => {
-    const [inputValue, setInputValue] = React.useState("");
-    const inputRef = React.useRef<HTMLInputElement>(null);
+    const [inputValue, setInputValue] = React.useState("")
+    const inputRef = React.useRef<HTMLInputElement>(null)
 
     // Forward the ref to the internal ref
-    React.useImperativeHandle(ref, () => inputRef.current!);
+    React.useImperativeHandle(ref, () => inputRef.current!)
 
     const addTag = (tag: string) => {
-      const trimmedTag = tag.trim();
+      const trimmedTag = tag.trim()
       if (trimmedTag && !tags.includes(trimmedTag)) {
-        onTagsChange([...tags, trimmedTag]);
+        onTagsChange([...tags, trimmedTag])
       }
-      setInputValue("");
-    };
+      setInputValue("")
+    }
 
     const removeTag = (indexToRemove: number) => {
-      onTagsChange(tags.filter((_, index) => index !== indexToRemove));
-    };
+      onTagsChange(tags.filter((_, index) => index !== indexToRemove))
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
-        e.preventDefault();
-        addTag(inputValue);
+        e.preventDefault()
+        addTag(inputValue)
       } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
-        removeTag(tags.length - 1);
+        removeTag(tags.length - 1)
       }
-    };
+    }
 
     return (
       <div
@@ -73,8 +73,8 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
             <Button
               variant="ghost"
               onClick={(e) => {
-                e.preventDefault();
-                removeTag(index);
+                e.preventDefault()
+                removeTag(index)
               }}
               className="size-auto p-0.5 ms-0.5 -me-1 rounded-full hover:bg-secondary-foreground/20"
               aria-label="Remove"
@@ -95,18 +95,18 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
           {...props}
         />
       </div>
-    );
+    )
   }
-);
-InputTags.displayName = "InputTags";
+)
+InputTags.displayName = "InputTags"
 
 interface InputTagsWithSuggestionsProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  placeholder?: string;
-  tags: string[];
-  suggestions: string[];
-  onTagsChange: (tags: string[]) => void;
-  className?: string;
+  placeholder?: string
+  tags: string[]
+  suggestions: string[]
+  onTagsChange: (tags: string[]) => void
+  className?: string
 }
 
 const InputTagsWithSuggestions = React.forwardRef<
@@ -117,45 +117,45 @@ const InputTagsWithSuggestions = React.forwardRef<
     { placeholder, tags, suggestions, onTagsChange, className, ...props },
     ref
   ) => {
-    const [inputValue, setInputValue] = React.useState("");
-    const [open, setOpen] = React.useState(false);
-    const containerRef = React.useRef<HTMLDivElement>(null);
+    const [inputValue, setInputValue] = React.useState("")
+    const [open, setOpen] = React.useState(false)
+    const containerRef = React.useRef<HTMLDivElement>(null)
     const [popoverWidth, setPopoverWidth] = React.useState<number | undefined>(
       undefined
-    );
+    )
 
     React.useEffect(() => {
       if (containerRef.current) {
-        setPopoverWidth(containerRef.current.offsetWidth);
+        setPopoverWidth(containerRef.current.offsetWidth)
       }
-    }, [open]);
+    }, [open])
 
     const filteredSuggestions = suggestions.filter(
       (suggestion) =>
         suggestion.toLowerCase().includes(inputValue.toLowerCase()) &&
         !tags.includes(suggestion)
-    );
+    )
 
     const addTag = (tag: string) => {
-      const trimmedTag = tag.trim();
+      const trimmedTag = tag.trim()
       if (trimmedTag && !tags.includes(trimmedTag)) {
-        onTagsChange([...tags, trimmedTag]);
+        onTagsChange([...tags, trimmedTag])
       }
-      setInputValue("");
-    };
+      setInputValue("")
+    }
 
     const removeTag = (indexToRemove: number) => {
-      onTagsChange(tags.filter((_, index) => index !== indexToRemove));
-    };
+      onTagsChange(tags.filter((_, index) => index !== indexToRemove))
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && !open) {
-        e.preventDefault();
-        addTag(inputValue);
+        e.preventDefault()
+        addTag(inputValue)
       } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
-        removeTag(tags.length - 1);
+        removeTag(tags.length - 1)
       }
-    };
+    }
 
     return (
       <Popover modal open={open} onOpenChange={setOpen}>
@@ -176,8 +176,8 @@ const InputTagsWithSuggestions = React.forwardRef<
                 <Button
                   variant="ghost"
                   onClick={(e) => {
-                    e.preventDefault();
-                    removeTag(index);
+                    e.preventDefault()
+                    removeTag(index)
                   }}
                   className="size-auto p-0.5 ms-0.5 -me-1 rounded-full hover:bg-secondary-foreground/20"
                   aria-label="Remove"
@@ -219,9 +219,9 @@ const InputTagsWithSuggestions = React.forwardRef<
           </ScrollArea>
         </PopoverContent>
       </Popover>
-    );
+    )
   }
-);
-InputTagsWithSuggestions.displayName = "InputTagsWithSuggestions";
+)
+InputTagsWithSuggestions.displayName = "InputTagsWithSuggestions"
 
-export { InputTags, InputTagsWithSuggestions };
+export { InputTags, InputTagsWithSuggestions }

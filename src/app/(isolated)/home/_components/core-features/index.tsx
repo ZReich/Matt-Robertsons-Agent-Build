@@ -1,4 +1,4 @@
-import { CoreFeaturesList } from "./core-features-list";
+import { CoreFeaturesList } from "./core-features-list"
 
 export function CoreFeatures() {
   return (
@@ -12,5 +12,5 @@ export function CoreFeatures() {
       </div>
       <CoreFeaturesList />
     </section>
-  );
+  )
 }

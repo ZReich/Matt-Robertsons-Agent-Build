@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { Treemap } from "recharts";
+import { Treemap } from "recharts"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const treemapChartsData = [
   { name: "axis", size: 2100 },
@@ -16,7 +16,7 @@ const treemapChartsData = [
   { name: "layouts", size: 1900 },
   { name: "scales", size: 2100 },
   { name: "util", size: 2200 },
-];
+]
 
 export function TreemapCharts() {
   return (
@@ -40,5 +40,5 @@ export function TreemapCharts() {
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }

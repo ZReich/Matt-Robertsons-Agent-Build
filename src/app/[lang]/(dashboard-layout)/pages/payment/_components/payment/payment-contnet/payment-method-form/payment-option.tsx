@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import type { PaymentMethodFormType } from "../../../../types";
+import type { PaymentMethodFormType } from "../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { RadioGroupItem } from "@/components/ui/radio-group"
 
 export function PaymentOption({
   id,
@@ -12,10 +12,10 @@ export function PaymentOption({
   label,
   onClick,
 }: {
-  id: PaymentMethodFormType["paymentOption"];
-  icon: React.ElementType;
-  label: string;
-  onClick: (id: PaymentMethodFormType["paymentOption"]) => void;
+  id: PaymentMethodFormType["paymentOption"]
+  icon: React.ElementType
+  label: string
+  onClick: (id: PaymentMethodFormType["paymentOption"]) => void
 }) {
   return (
     <Card className="flex items-center gap-x-2 p-4">
@@ -29,5 +29,5 @@ export function PaymentOption({
         {label}
       </Label>
     </Card>
-  );
+  )
 }

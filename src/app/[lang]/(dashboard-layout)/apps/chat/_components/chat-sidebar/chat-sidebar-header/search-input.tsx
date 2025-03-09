@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { Search } from "lucide-react";
+import { Search } from "lucide-react"
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"
 
 export function SearchInput() {
   return (
@@ -15,5 +15,5 @@ export function SearchInput() {
         aria-label="Search chats or groups"
       />
     </div>
-  );
+  )
 }

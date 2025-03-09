@@ -1,40 +1,40 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
-import { sidebarNavigationData } from "../_data/sidebar-navigation";
+import { sidebarNavigationData } from "../_data/sidebar-navigation"
 
-import { cn } from "@/lib/utils";
+import type { DocNav } from "../types"
 
-import type { DocNav } from "../types";
+import { cn } from "@/lib/utils"
 
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button"
 
 function flattenSidebarNavigation(navs: DocNav[]): DocNav[] {
   return navs.flatMap(({ items, ...rest }) => {
     if (items) {
       return rest.href
         ? [rest, ...flattenSidebarNavigation(items)]
-        : flattenSidebarNavigation(items);
+        : flattenSidebarNavigation(items)
     }
-    return rest.href ? [rest] : [];
-  });
+    return rest.href ? [rest] : []
+  })
 }
 
 function getPreviousNext(pathname: string, navs: DocNav[]) {
-  const index = navs.findIndex((section) => section.href === pathname);
+  const index = navs.findIndex((section) => section.href === pathname)
   return {
     previous: navs[index - 1] || null,
     next: navs[index + 1] || null,
-  };
+  }
 }
 
 export function DocsPagination() {
-  const pathname = usePathname();
-  const navs = flattenSidebarNavigation(sidebarNavigationData);
-  const { previous, next } = getPreviousNext(pathname, navs);
+  const pathname = usePathname()
+  const navs = flattenSidebarNavigation(sidebarNavigationData)
+  const { previous, next } = getPreviousNext(pathname, navs)
 
   return (
     <article className="grid grid-cols-2 gap-4 mt-16">
@@ -75,5 +75,5 @@ export function DocsPagination() {
         </Link>
       )}
     </article>
-  );
+  )
 }

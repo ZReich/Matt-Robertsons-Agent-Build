@@ -1,36 +1,35 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams } from "next/navigation";
+import * as React from "react"
+import { useParams } from "next/navigation"
 
-import type { UserType } from "../../types";
+import type { UserType } from "../../types"
 
-import { useChatContext } from "../../hooks/use-chat-context";
-
-import { Card } from "@/components/ui/card";
-import { ChatBoxFooter } from "./chat-box-footer";
-import { ChatBoxHeader } from "./chat-box-header";
-import { ChatBoxNotFound } from "./chat-box-not-found";
-import { ChatBoxContent } from "./chat-box-content";
+import { useChatContext } from "../../hooks/use-chat-context"
+import { Card } from "@/components/ui/card"
+import { ChatBoxContent } from "./chat-box-content"
+import { ChatBoxFooter } from "./chat-box-footer"
+import { ChatBoxHeader } from "./chat-box-header"
+import { ChatBoxNotFound } from "./chat-box-not-found"
 
 export function ChatBox({ user }: { user: UserType }) {
-  const { chatState } = useChatContext();
-  const params = useParams();
+  const { chatState } = useChatContext()
+  const params = useParams()
 
-  const chatIdParam = params.id?.[0]; // Get the chat ID from route params
+  const chatIdParam = params.id?.[0] // Get the chat ID from route params
 
   const chat = React.useMemo(() => {
     if (chatIdParam) {
       // Find the chat by ID
-      return chatState.chats.find((c) => c.id === chatIdParam);
+      return chatState.chats.find((c) => c.id === chatIdParam)
     }
 
     // Return null if not found
-    return null;
-  }, [chatState.chats, chatIdParam]);
+    return null
+  }, [chatState.chats, chatIdParam])
 
   // If chat ID exists but no matching chat is found, show a not found UI
-  if (!chat) return <ChatBoxNotFound />;
+  if (!chat) return <ChatBoxNotFound />
 
   return (
     <Card className="grow grid">
@@ -38,5 +37,5 @@ export function ChatBox({ user }: { user: UserType }) {
       <ChatBoxContent user={user} chat={chat} />
       <ChatBoxFooter />
     </Card>
-  );
+  )
 }

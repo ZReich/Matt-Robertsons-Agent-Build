@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import type { ChatType } from "../../../types";
+import type { ChatType } from "../../../types"
 
-import { CardHeader } from "@/components/ui/card";
-import { ChatHeaderInfo } from "./chat-header-info";
-import { ChatHeaderActions } from "./chat-header-actions";
-import { ChatMenuButton } from "../../chat-menu-button";
+import { CardHeader } from "@/components/ui/card"
+import { ChatMenuButton } from "../../chat-menu-button"
+import { ChatHeaderActions } from "./chat-header-actions"
+import { ChatHeaderInfo } from "./chat-header-info"
 
 export function ChatBoxHeader({ chat }: { chat: ChatType }) {
   return (
@@ -16,5 +16,5 @@ export function ChatBoxHeader({ chat }: { chat: ChatType }) {
       <ChatHeaderInfo chat={chat} />
       <ChatHeaderActions />
     </CardHeader>
-  );
+  )
 }

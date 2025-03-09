@@ -1,20 +1,20 @@
-import type { ActivityTimelineType } from "../../../../types";
+import type { ActivityTimelineType } from "../../../../types"
 
-import { Timeline } from "@/components/ui/timeline";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ActivityTimelineItem } from "./activity-timeline-item";
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Timeline } from "@/components/ui/timeline"
+import { ActivityTimelineItem } from "./activity-timeline-item"
 
 export function ActivityTimelineList({
   data,
 }: {
-  data: ActivityTimelineType["activities"];
+  data: ActivityTimelineType["activities"]
 }) {
   return (
     <ScrollArea className="h-[25.5rem]">
       {data.length ? (
         <Timeline>
           {data.map((activity, index) => {
-            const isLast = index !== data.length - 1;
+            const isLast = index !== data.length - 1
 
             return (
               <ActivityTimelineItem
@@ -22,7 +22,7 @@ export function ActivityTimelineList({
                 data={activity}
                 isLast={isLast}
               />
-            );
+            )
           })}
         </Timeline>
       ) : (
@@ -31,5 +31,5 @@ export function ActivityTimelineList({
         </div>
       )}
     </ScrollArea>
-  );
+  )
 }

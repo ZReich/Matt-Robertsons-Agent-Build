@@ -1,14 +1,13 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 
-import { DeleteAccountSchema } from "../../../../_schemas/delete-account-schema";
+import { DeleteAccountSchema } from "../../../../_schemas/delete-account-schema"
 
-import type { DeleteAccountFormType, UserType } from "../../../../../types";
+import type { DeleteAccountFormType, UserType } from "../../../../../types"
 
-import { Button } from "@/components/ui/button";
-
+import { Button } from "@/components/ui/button"
 
 export function DeleteAccountForm({ user }: { user: UserType }) {
   const form = useForm<DeleteAccountFormType>({
@@ -16,12 +15,10 @@ export function DeleteAccountForm({ user }: { user: UserType }) {
     defaultValues: {
       ...user,
     },
-  });
+  })
 
-  const { isSubmitting, isValid } = form.formState;
-  const isDisabled = isSubmitting || !isValid; // Disable button if form is invalid or submitting
-
-  async function onSubmit(data: DeleteAccountFormType) {}
+  const { isSubmitting, isValid } = form.formState
+  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
 
   return (
     <div className="flex gap-2">
@@ -32,5 +29,5 @@ export function DeleteAccountForm({ user }: { user: UserType }) {
         Delete Account
       </Button>
     </div>
-  );
+  )
 }

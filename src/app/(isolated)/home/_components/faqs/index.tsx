@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
+import * as React from "react"
+import Link from "next/link"
 
-import { FaqsList } from "./faqs-list";
+import { FaqsList } from "./faqs-list"
 
 export function Faqs() {
   return (
@@ -52,5 +52,5 @@ export function Faqs() {
       </div>
       <FaqsList />
     </section>
-  );
+  )
 }

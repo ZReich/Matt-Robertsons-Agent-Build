@@ -1,17 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicInputSpin } from "./_components/basic-input-spin";
-import { InputSpinButtonVariants } from "./_components/input-spin-button-variants";
-import { InputSpinMin } from "./_components/input-spin-min";
-import { InputSpinMax } from "./_components/input-spin-max";
-import { InputSpinStep } from "./_components/input-spin-step";
-import { InputSpinDisabled } from "./_components/input-spin-disabled";
+import { BasicInputSpin } from "./_components/basic-input-spin"
+import { InputSpinButtonVariants } from "./_components/input-spin-button-variants"
+import { InputSpinDisabled } from "./_components/input-spin-disabled"
+import { InputSpinMax } from "./_components/input-spin-max"
+import { InputSpinMin } from "./_components/input-spin-min"
+import { InputSpinStep } from "./_components/input-spin-step"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Input Spin",
-};
+}
 
 export default function InputSpinPage() {
   return (
@@ -25,5 +25,5 @@ export default function InputSpinPage() {
       <InputSpinStep />
       <InputSpinDisabled />
     </section>
-  );
+  )
 }

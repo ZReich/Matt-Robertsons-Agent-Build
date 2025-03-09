@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function ProfileInfoHeader() {
   return (
@@ -6,5 +6,5 @@ export function ProfileInfoHeader() {
       <CardTitle>Profile Information</CardTitle>
       <CardDescription>Update your public profile details.</CardDescription>
     </CardHeader>
-  );
+  )
 }

@@ -1,25 +1,24 @@
-"use client";
+"use client"
 
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
 
-import { formatPercent } from "@/lib/utils";
-
-import type { OverviewType } from "../../../../types";
 import type {
   ChartConfig,
   ChartTooltipContentProps,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
+import type { OverviewType } from "../../../../types"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
+import { formatPercent } from "@/lib/utils"
 
+import { useIsRtl } from "@/hooks/use-is-rtl"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
-  if (!props.payload || props.payload.length === 0) return null;
+  if (!props.payload || props.payload.length === 0) return null
 
   return (
     <ChartTooltipContent
@@ -29,21 +28,21 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
         value: formatPercent(Number(item.value)),
       }))}
     />
-  );
+  )
 }
 
 const chartConfig = {
   value: {
     label: "Rate",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export function BounceRateChart({
   data,
 }: {
-  data: OverviewType["bounceRate"]["perMonth"];
+  data: OverviewType["bounceRate"]["perMonth"]
 }) {
-  const isRtl = useIsRtl();
+  const isRtl = useIsRtl()
 
   return (
     <ChartContainer
@@ -73,5 +72,5 @@ export function BounceRateChart({
         />
       </LineChart>
     </ChartContainer>
-  );
+  )
 }

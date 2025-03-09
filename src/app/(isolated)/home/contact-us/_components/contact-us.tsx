@@ -3,8 +3,8 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-} from "@/components/ui/card";
-import { ContactUsForm } from "./contact-us-form";
+} from "@/components/ui/card"
+import { ContactUsForm } from "./contact-us-form"
 
 export function ContactUs() {
   return (
@@ -24,5 +24,5 @@ export function ContactUs() {
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import { appsAndPagesData } from "../../../_data/apps-and-pages";
+import { appsAndPagesData } from "../../../_data/apps-and-pages"
 
-import { CardDemo } from "../../card-demo";
+import { CardDemo } from "../../card-demo"
 
 export function AppsAndPagesList() {
   return (
@@ -9,5 +9,5 @@ export function AppsAndPagesList() {
         <CardDemo key={layout.title} {...layout} />
       ))}
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import type { SalesTrendType } from "../types";
+import type { SalesTrendType } from "../types"
 
 export const salesTrendData: SalesTrendType = {
   period: "Last week",
@@ -17,4 +17,4 @@ export const salesTrendData: SalesTrendType = {
     { date: 1694025600000, sales: 85000 },
     { date: 1694112000000, sales: 116000 },
   ],
-};
+}

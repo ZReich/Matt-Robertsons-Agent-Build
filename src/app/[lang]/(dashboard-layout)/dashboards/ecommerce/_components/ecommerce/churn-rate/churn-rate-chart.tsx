@@ -1,23 +1,22 @@
-"use client";
+"use client"
 
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis } from "recharts"
 
-import { camelCaseToTitleCase, formatPercent } from "@/lib/utils";
+import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { ChurnRateType } from "../../../types"
 
-import type { ChurnRateType } from "../../../types";
-import type { ChartTooltipContentProps } from "@/components/ui/chart";
+import { camelCaseToTitleCase, formatPercent } from "@/lib/utils"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
-import { useRadius } from "@/hooks/use-radius";
-
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { useRadius } from "@/hooks/use-radius"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
-  if (!props.payload || props.payload.length === 0) return null;
+  if (!props.payload || props.payload.length === 0) return null
 
   return (
     <ChartTooltipContent
@@ -49,12 +48,12 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
         </>
       )}
     />
-  );
+  )
 }
 
 export function ChurnRateChart({ data }: { data: ChurnRateType["months"] }) {
-  const isRtl = useIsRtl();
-  const radius = useRadius();
+  const isRtl = useIsRtl()
+  const radius = useRadius()
 
   return (
     <ChartContainer config={{}} className="w-full md:h-[200px]">
@@ -97,5 +96,5 @@ export function ChurnRateChart({ data }: { data: ChurnRateType["months"] }) {
         </Bar>
       </BarChart>
     </ChartContainer>
-  );
+  )
 }

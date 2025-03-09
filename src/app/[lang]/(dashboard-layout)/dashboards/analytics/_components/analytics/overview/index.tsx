@@ -1,9 +1,9 @@
-import { overviewData } from "../../../_data/overview";
+import { overviewData } from "../../../_data/overview"
 
-import { UniqueVisitors } from "./unique-visitors";
-import { AverageSessionDuration } from "./average-session-duration";
-import { BounceRate } from "./bounce-rate";
-import { ConversionRate } from "./conversion-rate";
+import { AverageSessionDuration } from "./average-session-duration"
+import { BounceRate } from "./bounce-rate"
+import { ConversionRate } from "./conversion-rate"
+import { UniqueVisitors } from "./unique-visitors"
 
 export async function Overview() {
   return (
@@ -13,5 +13,5 @@ export async function Overview() {
       <BounceRate data={overviewData.bounceRate} />
       <ConversionRate data={overviewData.conversionRate} />
     </div>
-  );
+  )
 }

@@ -1,30 +1,29 @@
 // Refer to Emoji Mart README.md file for more details https://github.com/missive/emoji-mart
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams } from "next/navigation";
-import Picker from "@emoji-mart/react";
-import data from "@emoji-mart/data";
-import { Smile } from "lucide-react";
+import * as React from "react"
+import { useParams } from "next/navigation"
+import data from "@emoji-mart/data"
+import Picker from "@emoji-mart/react"
+import { Smile } from "lucide-react"
 
-import type { PickerProps } from "emoji-mart";
-import type { LocaleType } from "@/types";
+import type { LocaleType } from "@/types"
+import type { PickerProps } from "emoji-mart"
 
-import { useSettings } from "@/hooks/use-settings";
-
+import { useSettings } from "@/hooks/use-settings"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { buttonVariants } from "@/components/ui/button";
+} from "@/components/ui/popover"
 
 export function EmojiPicker(props: Omit<PickerProps, "data">) {
-  const { settings } = useSettings();
-  const params = useParams();
+  const { settings } = useSettings()
+  const params = useParams()
 
-  const mode = settings.mode;
-  const locale = params.locale as LocaleType;
+  const mode = settings.mode
+  const locale = params.locale as LocaleType
 
   return (
     <Popover>
@@ -48,5 +47,5 @@ export function EmojiPicker(props: Omit<PickerProps, "data">) {
         />
       </PopoverContent>
     </Popover>
-  );
+  )
 }

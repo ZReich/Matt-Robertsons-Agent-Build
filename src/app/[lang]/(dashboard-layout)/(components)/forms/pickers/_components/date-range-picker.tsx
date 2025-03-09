@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import type { DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker"
 
-import { DateRangePicker as DateRangePickerComponent } from "@/components/date-range-picker";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DateRangePicker as DateRangePickerComponent } from "@/components/date-range-picker"
 
 export function DateRangePicker() {
-  const [range, setRange] = React.useState<DateRange>();
+  const [range, setRange] = React.useState<DateRange>()
 
   return (
     <Card>
@@ -19,5 +19,5 @@ export function DateRangePicker() {
         <DateRangePickerComponent value={range} onValueChange={setRange} />
       </CardContent>
     </Card>
-  );
+  )
 }

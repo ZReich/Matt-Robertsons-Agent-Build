@@ -1,20 +1,21 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { LoaderCircle } from "lucide-react";
+import * as React from "react"
+import Link from "next/link"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { RegisterSchema } from "@/schemas/register-schema";
+import { RegisterSchema } from "@/schemas/register-schema"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-import { ensureRedirectPathname } from "@/lib/utils";
+import type { LocaleType, RegisterFormType } from "@/types"
 
-import type { LocaleType, RegisterFormType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { ensureRedirectPathname } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -22,28 +23,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
-import { SeparatorWithText } from "@/components/ui/separator";
-import { OAuthLinks } from "../oauth-links";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { SeparatorWithText } from "@/components/ui/separator"
+import { OAuthLinks } from "../oauth-links"
 
 export function RegisterForm() {
-  const router = useRouter();
-  const params = useParams();
-  const searchParams = useSearchParams();
+  const router = useRouter()
+  const params = useParams()
+  const searchParams = useSearchParams()
 
   const form = useForm<RegisterFormType>({
     resolver: zodResolver(RegisterSchema),
-  });
+  })
 
-  const locale = params.lang as LocaleType;
-  const redirectPathname = searchParams.get("redirectTo");
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const locale = params.lang as LocaleType
+  const redirectPathname = searchParams.get("redirectTo")
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
   async function onSubmit(data: RegisterFormType) {
-    const { firstName, lastName, username, email, password } = data;
+    const { firstName, lastName, username, email, password } = data
 
     try {
       const res = await fetch("/api/pages/register", {
@@ -58,26 +58,26 @@ export function RegisterForm() {
           email,
           password,
         }),
-      });
+      })
 
       if (res && res.status >= 400) {
         const {
           issues,
           message,
         }: {
-          issues?: { path: (keyof RegisterFormType)[]; message: string }[];
-          message?: string;
-        } = await res.json();
+          issues?: { path: (keyof RegisterFormType)[]; message: string }[]
+          message?: string
+        } = await res.json()
 
-        if (!issues) throw new Error(message ?? "An unknown error occurred.");
+        if (!issues) throw new Error(message ?? "An unknown error occurred.")
 
         // Set errors in React Hook Form based on server response
         issues.forEach((issue) => {
-          const field = issue.path[0];
-          form.setError(field, { type: "manual", message: issue.message });
-        });
+          const field = issue.path[0]
+          form.setError(field, { type: "manual", message: issue.message })
+        })
       } else {
-        toast({ title: "Register Successful" });
+        toast({ title: "Register Successful" })
         router.push(
           ensureLocalizedPathname(
             // Include redirect pathname if available, otherwise default to "/sign-in"
@@ -86,14 +86,14 @@ export function RegisterForm() {
               : "/pages/sign-in",
             locale
           )
-        );
+        )
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Register Failed",
         description: error instanceof Error ? error.message : undefined,
-      });
+      })
     }
   }
 
@@ -201,5 +201,5 @@ export function RegisterForm() {
         <OAuthLinks />
       </form>
     </Form>
-  );
+  )
 }

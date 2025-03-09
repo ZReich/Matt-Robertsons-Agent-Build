@@ -1,6 +1,5 @@
-import { ChevronDown, Slash } from "lucide-react";
+import { ChevronDown, Slash } from "lucide-react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,13 +7,14 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 export function DropdownBreadcrumb() {
   return (
@@ -54,5 +54,5 @@ export function DropdownBreadcrumb() {
         </Breadcrumb>
       </CardContent>
     </Card>
-  );
+  )
 }

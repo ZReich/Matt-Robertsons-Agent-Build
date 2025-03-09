@@ -1,9 +1,9 @@
-import Link from "next/link";
+import Link from "next/link"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-import { CardFooter } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button"
+import { CardFooter } from "@/components/ui/card"
 
 export function RecentLogsFooter() {
   return (
@@ -12,5 +12,5 @@ export function RecentLogsFooter() {
         View all connections
       </Link>
     </CardFooter>
-  );
+  )
 }

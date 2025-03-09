@@ -1,4 +1,4 @@
-import type { CardDemoProps } from "../_components/card-demo";
+import type { CardDemoProps } from "../_components/card-demo"
 
 export const appsAndPagesData: CardDemoProps[] = [
   {
@@ -96,4 +96,4 @@ export const appsAndPagesData: CardDemoProps[] = [
     href: "https://shadboard.vercel.app/pages/sign-in",
     imgSrc: "/images/sign-in-page.jpg",
   },
-];
+]

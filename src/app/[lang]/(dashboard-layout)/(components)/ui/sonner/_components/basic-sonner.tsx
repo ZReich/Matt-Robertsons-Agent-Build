@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
+import { toast } from "sonner"
 
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function BasicSonner() {
   return (
@@ -29,5 +29,5 @@ export function BasicSonner() {
         </Button>
       </CardContent>
     </Card>
-  );
+  )
 }

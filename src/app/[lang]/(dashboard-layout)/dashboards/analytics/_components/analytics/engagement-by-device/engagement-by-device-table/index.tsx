@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 import {
   flexRender,
   getCoreRowModel,
@@ -8,15 +8,17 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 
 import type {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-} from "@tanstack/react-table";
-import type { EngagementByDeviceType } from "../../../../types";
+} from "@tanstack/react-table"
+import type { EngagementByDeviceType } from "../../../../types"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Table,
   TableBody,
@@ -24,26 +26,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { EngagementByDeviceTableToolbar } from "./engagement-by-device-table-toolbar";
-import { columns } from "./columns";
+} from "@/components/ui/table"
+import { columns } from "./columns"
+import { EngagementByDeviceTableToolbar } from "./engagement-by-device-table-toolbar"
 
 interface EngagementByDeviceTableProps {
-  data: EngagementByDeviceType[];
+  data: EngagementByDeviceType[]
 }
 
 export function EngagementByDeviceTable({
   data,
 }: EngagementByDeviceTableProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  );
+  )
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+    React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
     data: data,
@@ -62,7 +62,7 @@ export function EngagementByDeviceTable({
       columnVisibility,
       rowSelection,
     },
-  });
+  })
 
   return (
     <Card>
@@ -124,5 +124,5 @@ export function EngagementByDeviceTable({
         </ScrollArea>
       </CardContent>
     </Card>
-  );
+  )
 }

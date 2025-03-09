@@ -1,31 +1,31 @@
-import * as React from "react";
-import { EllipsisVertical } from "lucide-react";
+import * as React from "react"
+import { EllipsisVertical } from "lucide-react"
 
-import { cn, formatOverviewCardValue } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import type { FormatStyleType, IconType } from "@/types"
 
-import type { FormatStyleType, IconType } from "@/types";
+import { cn, formatOverviewCardValue } from "@/lib/utils"
 
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { PercentageChangeBadge } from "./percentage-change-badge";
+} from "@/components/ui/dropdown-menu"
+import { PercentageChangeBadge } from "./percentage-change-badge"
 
 interface DashboardCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  title: string;
-  period?: string;
-  action?: React.ReactNode;
-  contentClassName?: string;
+  title: string
+  period?: string
+  action?: React.ReactNode
+  contentClassName?: string
 }
 
 const DashboardCard = React.forwardRef<HTMLDivElement, DashboardCardProps>(
@@ -43,21 +43,21 @@ const DashboardCard = React.forwardRef<HTMLDivElement, DashboardCardProps>(
       </article>
     </Card>
   )
-);
-DashboardCard.displayName = "DashboardCard";
+)
+DashboardCard.displayName = "DashboardCard"
 
 interface DashboardOverviewCardProps
   extends React.HTMLAttributes<HTMLDivElement> {
   data: {
-    value: number;
-    percentageChange: number;
-  };
-  title: string;
-  period?: string;
-  action?: React.ReactNode;
-  icon: IconType;
-  formatStyle?: FormatStyleType;
-  contentClassName?: string;
+    value: number
+    percentageChange: number
+  }
+  title: string
+  period?: string
+  action?: React.ReactNode
+  icon: IconType
+  formatStyle?: FormatStyleType
+  contentClassName?: string
 }
 
 const DashboardOverviewCard = React.forwardRef<
@@ -78,7 +78,7 @@ const DashboardOverviewCard = React.forwardRef<
     },
     ref
   ) => {
-    const value = formatOverviewCardValue(data.value, formatStyle);
+    const value = formatOverviewCardValue(data.value, formatStyle)
 
     return (
       <Card
@@ -104,24 +104,24 @@ const DashboardOverviewCard = React.forwardRef<
           </CardContent>
         </article>
       </Card>
-    );
+    )
   }
-);
-DashboardOverviewCard.displayName = "DashboardOverviewCard";
+)
+DashboardOverviewCard.displayName = "DashboardOverviewCard"
 
 interface DashboardOverviewCardV2Props
   extends React.HTMLAttributes<HTMLDivElement> {
   data: {
-    value: number;
-    percentageChange: number;
-  };
-  title: string;
-  period: string;
-  action?: React.ReactNode;
-  icon: IconType;
-  iconColor?: string;
-  formatStyle?: FormatStyleType;
-  contentClassName?: string;
+    value: number
+    percentageChange: number
+  }
+  title: string
+  period: string
+  action?: React.ReactNode
+  icon: IconType
+  iconColor?: string
+  formatStyle?: FormatStyleType
+  contentClassName?: string
 }
 
 const DashboardOverviewCardV2 = React.forwardRef<
@@ -143,7 +143,7 @@ const DashboardOverviewCardV2 = React.forwardRef<
     },
     ref
   ) => {
-    const value = formatOverviewCardValue(data.value, formatStyle);
+    const value = formatOverviewCardValue(data.value, formatStyle)
 
     return (
       <Card
@@ -183,22 +183,22 @@ const DashboardOverviewCardV2 = React.forwardRef<
           </CardContent>
         </article>
       </Card>
-    );
+    )
   }
-);
-DashboardOverviewCardV2.displayName = "DashboardOverviewCardV2";
+)
+DashboardOverviewCardV2.displayName = "DashboardOverviewCardV2"
 
 interface DashboardOverviewCardV3Props
   extends React.HTMLAttributes<HTMLDivElement> {
   data: {
-    value: number;
-    percentageChange: number;
-  };
-  title: string;
-  action?: React.ReactNode;
-  chart: React.ReactNode;
-  formatStyle?: FormatStyleType;
-  contentClassName?: string;
+    value: number
+    percentageChange: number
+  }
+  title: string
+  action?: React.ReactNode
+  chart: React.ReactNode
+  formatStyle?: FormatStyleType
+  contentClassName?: string
 }
 
 const DashboardOverviewCardV3 = React.forwardRef<
@@ -218,7 +218,7 @@ const DashboardOverviewCardV3 = React.forwardRef<
     },
     ref
   ) => {
-    const value = formatOverviewCardValue(data.value, formatStyle);
+    const value = formatOverviewCardValue(data.value, formatStyle)
 
     return (
       <Card
@@ -254,10 +254,10 @@ const DashboardOverviewCardV3 = React.forwardRef<
           </CardContent>
         </article>
       </Card>
-    );
+    )
   }
-);
-DashboardOverviewCardV3.displayName = "DashboardOverviewCardV3";
+)
+DashboardOverviewCardV3.displayName = "DashboardOverviewCardV3"
 
 function DashboardCardActionsDropdown({
   children,
@@ -287,7 +287,7 @@ function DashboardCardActionsDropdown({
         )}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }
 
 export {
@@ -296,4 +296,4 @@ export {
   DashboardOverviewCardV2,
   DashboardOverviewCardV3,
   DashboardCardActionsDropdown,
-};
+}

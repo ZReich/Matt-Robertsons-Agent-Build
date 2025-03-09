@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function AccountRecoveryOptionsHeader() {
   return (
@@ -9,5 +9,5 @@ export function AccountRecoveryOptionsHeader() {
         account if you forget your password.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

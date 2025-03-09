@@ -1,8 +1,7 @@
-import Image from "next/image";
+import Image from "next/image"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function BasicAspectRatio() {
   return (
@@ -21,5 +20,5 @@ export function BasicAspectRatio() {
         </AspectRatio>
       </CardContent>
     </Card>
-  );
+  )
 }

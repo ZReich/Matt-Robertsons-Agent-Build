@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { Plus } from "lucide-react";
+import { Plus } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export function KanbanAddNewColumnButton({
   setKanbanAddColumnSidebarIsOpen,
 }: {
-  setKanbanAddColumnSidebarIsOpen: (value: boolean) => void;
+  setKanbanAddColumnSidebarIsOpen: (value: boolean) => void
 }) {
   return (
     <Button
@@ -18,5 +18,5 @@ export function KanbanAddNewColumnButton({
       <Plus className="me-2 size-4 text-muted-foreground" />
       Add New Column
     </Button>
-  );
+  )
 }

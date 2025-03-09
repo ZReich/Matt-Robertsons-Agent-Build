@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const PaymentMethodSchema = z.object({
   paymentType: z.enum(["visa", "mastercard", "amex", "discover"], {
@@ -11,4 +11,4 @@ export const PaymentMethodSchema = z.object({
   accountNumber: z.string().optional(),
   routingNumber: z.string().optional(),
   saveCard: z.boolean().optional(),
-});
+})

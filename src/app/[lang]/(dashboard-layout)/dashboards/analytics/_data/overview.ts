@@ -1,4 +1,4 @@
-import type { OverviewType } from "../types";
+import type { OverviewType } from "../types"
 
 export const overviewData: OverviewType = {
   uniqueVisitors: {
@@ -49,4 +49,4 @@ export const overviewData: OverviewType = {
       { month: "June", value: 0.75 },
     ],
   },
-};
+}

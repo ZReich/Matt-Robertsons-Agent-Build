@@ -1,63 +1,62 @@
-import Negotiator from "negotiator";
-import { match } from "@formatjs/intl-localematcher";
+import { match } from "@formatjs/intl-localematcher"
+import Negotiator from "negotiator"
 
-import { i18n } from "@/configs/i18n";
+import type { LocaleType } from "@/types"
+import type { NextRequest } from "next/server"
 
-import { ensureWithPrefix } from "@/lib/utils";
-
-import type { LocaleType } from "@/types";
-import type { NextRequest } from "next/server";
+import { i18n } from "@/configs/i18n"
+import { ensureWithPrefix } from "@/lib/utils"
 
 export function isPathnameMissingLocale(pathname: string) {
-  return !i18n.locales.some((locale) => pathname.startsWith(`/${locale}`));
+  return !i18n.locales.some((locale) => pathname.startsWith(`/${locale}`))
 }
 
 export function getLocaleFromPathname(pathname: string) {
-  return i18n.locales.find((locale) => pathname.startsWith(`/${locale}`));
+  return i18n.locales.find((locale) => pathname.startsWith(`/${locale}`))
 }
 
 export function ensureLocalizedPathname(pathname: string, locale: string) {
   // Ensure both pathname and locale are provided
   if (!pathname || !locale)
-    throw new Error("Pathname or Locale cannot be empty");
+    throw new Error("Pathname or Locale cannot be empty")
 
   // Add the locale prefix to the pathname if it is missing, otherwise return the original pathname
   return isPathnameMissingLocale(pathname)
     ? `${ensureWithPrefix(locale, "/")}${ensureWithPrefix(pathname, "/")}`
-    : pathname;
+    : pathname
 }
 
 export function relocalizePathname(pathname: string, locale: string) {
   // Ensure both pathname and locale are provided
   if (!pathname || !locale)
-    throw new Error("Pathname or Locale cannot be empty");
+    throw new Error("Pathname or Locale cannot be empty")
 
-  const segments = pathname.split("/");
-  segments[1] = locale;
+  const segments = pathname.split("/")
+  segments[1] = locale
 
-  return segments.join("/");
+  return segments.join("/")
 }
 
 export function getPreferredLocale(request: NextRequest) {
-  const settingsCookie = request.cookies.get("settings")?.value;
+  const settingsCookie = request.cookies.get("settings")?.value
   try {
-    const parsedSettingsCookie = settingsCookie && JSON.parse(settingsCookie);
+    const parsedSettingsCookie = settingsCookie && JSON.parse(settingsCookie)
 
     // Return locale from settings cookie if available
     if (parsedSettingsCookie?.locale) {
-      return parsedSettingsCookie.locale as LocaleType;
+      return parsedSettingsCookie.locale as LocaleType
     }
   } catch (error) {
-    console.error("Failed to parse settings cookie", error);
+    console.error("Failed to parse settings cookie", error)
   }
 
-  const supportedLocales = [...i18n.locales];
+  const supportedLocales = [...i18n.locales]
   const preferredLocales = new Negotiator({
     headers: Object.fromEntries(request.headers.entries()),
-  }).languages(supportedLocales);
+  }).languages(supportedLocales)
 
   // Match preferred locales with supported locales
-  const locale = match(preferredLocales, supportedLocales, i18n.defaultLocale);
+  const locale = match(preferredLocales, supportedLocales, i18n.defaultLocale)
 
-  return locale as LocaleType;
+  return locale as LocaleType
 }

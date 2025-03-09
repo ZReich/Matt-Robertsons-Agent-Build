@@ -1,12 +1,15 @@
-import { OverviewType } from "../../../../types";
+import { OverviewType } from "../../../../types"
 
-import { DashboardCardActionsDropdown, DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
-import { ConversionRateChart } from "./conversion-rate-chart";
+import {
+  DashboardCardActionsDropdown,
+  DashboardOverviewCardV3,
+} from "@/components/dashboards/dashboard-card"
+import { ConversionRateChart } from "./conversion-rate-chart"
 
 export function ConversionRate({
   data,
 }: {
-  data: OverviewType["conversionRate"];
+  data: OverviewType["conversionRate"]
 }) {
   return (
     <DashboardOverviewCardV3
@@ -19,5 +22,5 @@ export function ConversionRate({
       chart={<ConversionRateChart data={data.perMonth} />}
       formatStyle="percent"
     />
-  );
+  )
 }

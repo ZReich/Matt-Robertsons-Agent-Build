@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Rating } from "@/components/ui/rating";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Rating } from "@/components/ui/rating"
 
 export function RatingReadOnly() {
   return (
@@ -17,5 +17,5 @@ export function RatingReadOnly() {
         <Rating value="5" readOnly />
       </CardContent>
     </Card>
-  );
+  )
 }

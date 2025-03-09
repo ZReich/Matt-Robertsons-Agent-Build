@@ -1,26 +1,25 @@
-"use client";
+"use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
-import { formatDuration } from "@/lib/utils";
-
-import type { OverviewType } from "../../../../types";
 import type {
   ChartConfig,
   ChartTooltipContentProps,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
+import type { OverviewType } from "../../../../types"
 
-import { useIsRtl } from "@/hooks/use-is-rtl";
-import { useRadius } from "@/hooks/use-radius";
+import { formatDuration } from "@/lib/utils"
 
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { useRadius } from "@/hooks/use-radius"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
-  if (!props.payload || props.payload.length === 0) return null;
+  if (!props.payload || props.payload.length === 0) return null
 
   return (
     <ChartTooltipContent
@@ -30,22 +29,22 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
         value: formatDuration(Number(item.value)),
       }))}
     />
-  );
+  )
 }
 
 const chartConfig = {
   value: {
     label: "Duration",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export function AverageSessionDurationChart({
   data,
 }: {
-  data: OverviewType["averageSessionDuration"]["perMonth"];
+  data: OverviewType["averageSessionDuration"]["perMonth"]
 }) {
-  const isRtl = useIsRtl();
-  const radius = useRadius();
+  const isRtl = useIsRtl()
+  const radius = useRadius()
 
   return (
     <ChartContainer
@@ -62,5 +61,5 @@ export function AverageSessionDurationChart({
         <Bar dataKey="value" barSize={44} radius={radius} />
       </BarChart>
     </ChartContainer>
-  );
+  )
 }

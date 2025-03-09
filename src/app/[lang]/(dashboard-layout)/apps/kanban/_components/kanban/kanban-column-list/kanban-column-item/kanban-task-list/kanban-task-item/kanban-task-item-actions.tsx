@@ -1,13 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { EllipsisVertical } from "lucide-react";
+import * as React from "react"
+import { EllipsisVertical } from "lucide-react"
 
-import { useKanbanContext } from "../../../../../../hooks/use-kanban-context";
+import type { TaskType } from "../../../../../../types"
 
-import type { TaskType } from "../../../../../../types";
-
-import { Button } from "@/components/ui/button";
+import { useKanbanContext } from "../../../../../../hooks/use-kanban-context"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,19 +14,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 interface KanbanTaskItemActionsProps {
-  task: TaskType;
+  task: TaskType
 }
 
 export function KanbanTaskItemActions({ task }: KanbanTaskItemActionsProps) {
-  const [open, onOpenChange] = React.useState(false);
+  const [open, onOpenChange] = React.useState(false)
   const {
     setKanbanUpdateTaskSidebarIsOpen,
     handleSelectTask,
     handleDeleteTask,
-  } = useKanbanContext();
+  } = useKanbanContext()
 
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
@@ -43,9 +42,9 @@ export function KanbanTaskItemActions({ task }: KanbanTaskItemActionsProps) {
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem
           onClick={() => {
-            handleSelectTask(task);
-            onOpenChange(false);
-            setKanbanUpdateTaskSidebarIsOpen(true);
+            handleSelectTask(task)
+            onOpenChange(false)
+            setKanbanUpdateTaskSidebarIsOpen(true)
           }}
         >
           Edit
@@ -61,5 +60,5 @@ export function KanbanTaskItemActions({ task }: KanbanTaskItemActionsProps) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

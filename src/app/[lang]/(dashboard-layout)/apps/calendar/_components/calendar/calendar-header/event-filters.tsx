@@ -1,21 +1,20 @@
-import { Filter } from "lucide-react";
+import { Filter } from "lucide-react"
 
-import { categoriesData } from "../../../_data/categories";
+import { categoriesData } from "../../../_data/categories"
 
-import { useCalendarContext } from "../../../hooks/calendar-context";
-
+import { useCalendarContext } from "../../../hooks/calendar-context"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
 
 export function EventFilters() {
   const { calendarState, handleSelectCategory, handleSelectAllCategories } =
-    useCalendarContext();
+    useCalendarContext()
 
   return (
     <DropdownMenu>
@@ -47,5 +46,5 @@ export function EventFilters() {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

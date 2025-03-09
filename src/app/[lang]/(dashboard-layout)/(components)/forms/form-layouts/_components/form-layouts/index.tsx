@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { HorizontalFormLayout } from "./horizontal-form-layout";
-import { VerticalFormLayout } from "./vertical-form-layout";
+import { HorizontalFormLayout } from "./horizontal-form-layout"
+import { VerticalFormLayout } from "./vertical-form-layout"
 
 export function FormLayouts() {
   return (
@@ -9,5 +9,5 @@ export function FormLayouts() {
       <VerticalFormLayout />
       <HorizontalFormLayout />
     </section>
-  );
+  )
 }

@@ -1,15 +1,15 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { InputSpin } from "@/components/ui/input-spin";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
+import { InputSpin } from "@/components/ui/input-spin"
 
 export function InputSpinMin() {
   return (
@@ -22,5 +22,5 @@ export function InputSpinMin() {
         <InputSpin value={5} min={5} />
       </CardContent>
     </Card>
-  );
+  )
 }

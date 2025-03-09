@@ -1,5 +1,5 @@
-import { ScatterCharts } from "./_components/scatter-charts";
+import { ScatterCharts } from "./_components/scatter-charts"
 
 export default function ScatterChartsPage() {
-  return <ScatterCharts />;
+  return <ScatterCharts />
 }

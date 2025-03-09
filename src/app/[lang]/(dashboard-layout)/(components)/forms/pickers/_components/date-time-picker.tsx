@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { DateTimePicker as DateTimePickerComponent } from "@/components/date-time-picker";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DateTimePicker as DateTimePickerComponent } from "@/components/date-time-picker"
 
 export function DateTimePicker() {
-  const [dateTime, setDateTime] = React.useState<Date | undefined>();
+  const [dateTime, setDateTime] = React.useState<Date | undefined>()
 
   return (
     <Card>
@@ -17,5 +17,5 @@ export function DateTimePicker() {
         <DateTimePickerComponent value={dateTime} onValueChange={setDateTime} />
       </CardContent>
     </Card>
-  );
+  )
 }

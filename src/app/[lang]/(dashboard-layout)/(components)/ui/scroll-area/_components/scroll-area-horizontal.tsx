@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Image from "next/image";
+import * as React from "react"
+import Image from "next/image"
 
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 export function ScrollAreaHorizontal() {
   return (
@@ -30,5 +30,5 @@ export function ScrollAreaHorizontal() {
         </ScrollArea>
       </CardContent>
     </Card>
-  );
+  )
 }

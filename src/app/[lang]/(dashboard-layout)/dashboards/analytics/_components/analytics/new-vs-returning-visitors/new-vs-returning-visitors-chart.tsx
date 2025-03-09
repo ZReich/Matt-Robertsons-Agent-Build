@@ -1,24 +1,23 @@
-"use client";
+"use client"
 
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts"
 
-import type { NewVsReturningVisitorsType } from "../../../types";
+import type { NewVsReturningVisitorsType } from "../../../types"
 
-import { useRadius } from "@/hooks/use-radius";
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
-import { ChartContainer } from "@/components/ui/chart";
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { useRadius } from "@/hooks/use-radius"
+import { ChartContainer } from "@/components/ui/chart"
 
 export function NewVsReturningVisitorsChart({
   data,
 }: {
-  data: NewVsReturningVisitorsType["visitors"];
+  data: NewVsReturningVisitorsType["visitors"]
 }) {
-  const radius = useRadius();
-  const isRtl = useIsRtl();
+  const radius = useRadius()
+  const isRtl = useIsRtl()
 
   // Transform `data` into an array format suitable for Recharts
-  const chartData = [{ new: data.new.value, returning: data.returning.value }];
+  const chartData = [{ new: data.new.value, returning: data.returning.value }]
 
   return (
     <ChartContainer config={{}} className="h-4 w-full">
@@ -43,5 +42,5 @@ export function NewVsReturningVisitorsChart({
         />
       </BarChart>
     </ChartContainer>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   CartesianGrid,
@@ -9,14 +9,14 @@ import {
   XAxis,
   YAxis,
   ZAxis,
-} from "recharts";
+} from "recharts"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const scatterChartsData = [
   { x: 100, y: 200, z: 200 },
@@ -25,7 +25,7 @@ const scatterChartsData = [
   { x: 140, y: 250, z: 280 },
   { x: 150, y: 400, z: 500 },
   { x: 110, y: 280, z: 200 },
-];
+]
 
 export function ScatterCharts() {
   return (
@@ -237,5 +237,5 @@ export function ScatterCharts() {
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }

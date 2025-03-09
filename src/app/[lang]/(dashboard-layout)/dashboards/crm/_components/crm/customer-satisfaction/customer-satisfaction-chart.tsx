@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   Label,
@@ -6,24 +6,23 @@ import {
   PolarRadiusAxis,
   RadialBar,
   RadialBarChart,
-} from "recharts";
+} from "recharts"
 
-import { ratingToPercentage } from "@/lib/utils";
+import type { CustomerSatisfactionType } from "../../../types"
 
-import type { CustomerSatisfactionType } from "../../../types";
+import { ratingToPercentage } from "@/lib/utils"
 
-import { useRadius } from "@/hooks/use-radius";
-
-import { ChartContainer } from "@/components/ui/chart";
+import { useRadius } from "@/hooks/use-radius"
+import { ChartContainer } from "@/components/ui/chart"
 
 export function CustomerSatisfactionChart({
   data,
 }: {
-  data: CustomerSatisfactionType["summary"];
+  data: CustomerSatisfactionType["summary"]
 }) {
-  const radius = useRadius();
+  const radius = useRadius()
 
-  const maxRating = 5;
+  const maxRating = 5
 
   return (
     <ChartContainer config={{}} className="aspect-square h-[200px] md:w-2/5">
@@ -73,12 +72,12 @@ export function CustomerSatisfactionChart({
                       Satisfied
                     </tspan>
                   </text>
-                );
+                )
               }
             }}
           />
         </PolarRadiusAxis>
       </RadialBarChart>
     </ChartContainer>
-  );
+  )
 }

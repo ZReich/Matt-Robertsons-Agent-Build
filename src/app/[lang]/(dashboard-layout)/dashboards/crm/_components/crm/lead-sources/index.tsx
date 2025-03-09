@@ -1,7 +1,7 @@
-import { leadSourcesData } from "../../../_data/lead-sources";
+import { leadSourcesData } from "../../../_data/lead-sources"
 
-import { DashboardCard } from "@/components/dashboards/dashboard-card";
-import { LeadSourcesChart } from "./lead-sources-chart";
+import { DashboardCard } from "@/components/dashboards/dashboard-card"
+import { LeadSourcesChart } from "./lead-sources-chart"
 
 export function LeadSources() {
   return (
@@ -13,5 +13,5 @@ export function LeadSources() {
         }}
       />
     </DashboardCard>
-  );
+  )
 }

@@ -1,25 +1,25 @@
-import { formatTime } from "@/lib/utils";
+import type { ActivityTimelineType } from "../../../../types"
 
-import type { ActivityTimelineType } from "../../../../types";
+import { formatTime } from "@/lib/utils"
 
-import { AvatarStack } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { AvatarStack } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import {
-  TimelineDot,
-  TimelineItem,
   TimelineContent,
+  TimelineDot,
   TimelineHeading,
+  TimelineItem,
   TimelineLine,
-} from "@/components/ui/timeline";
+} from "@/components/ui/timeline"
 
 function RenderAvatarStack({
   assignedMembers,
 }: {
   assignedMembers: Array<{
-    name: string;
-    avatar: string;
-    href: string;
-  }>;
+    name: string
+    avatar: string
+    href: string
+  }>
 }) {
   if (assignedMembers && assignedMembers.length > 0) {
     return (
@@ -30,18 +30,18 @@ function RenderAvatarStack({
           href: member.href,
         }))}
       />
-    );
+    )
   }
 
-  return null;
+  return null
 }
 
 export function ActivityTimelineItem({
   data,
   isLast,
 }: {
-  data: ActivityTimelineType["activities"][number];
-  isLast: boolean;
+  data: ActivityTimelineType["activities"][number]
+  isLast: boolean
 }) {
   return (
     <TimelineItem>
@@ -68,5 +68,5 @@ export function ActivityTimelineItem({
         <RenderAvatarStack assignedMembers={data.assignedMembers} />
       </TimelineContent>
     </TimelineItem>
-  );
+  )
 }

@@ -1,8 +1,11 @@
-import { customerSatisfactionData } from "../../../_data/customer-satisfaction";
+import { customerSatisfactionData } from "../../../_data/customer-satisfaction"
 
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
-import { CustomerSatisfactionChart } from "./customer-satisfaction-chart";
-import { CustomerSatisfactionCarousel } from "./customer-satisfaction-carousel";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { CustomerSatisfactionCarousel } from "./customer-satisfaction-carousel"
+import { CustomerSatisfactionChart } from "./customer-satisfaction-chart"
 
 export function CustomerSatisfaction() {
   return (
@@ -11,7 +14,6 @@ export function CustomerSatisfaction() {
       period={customerSatisfactionData.period}
       action={<DashboardCardActionsDropdown />}
       className="col-span-full"
-
     >
       <div className="flex flex-col justify-between items-center gap-6 md:flex-row">
         <CustomerSatisfactionChart data={customerSatisfactionData.summary} />
@@ -20,5 +22,5 @@ export function CustomerSatisfaction() {
         />
       </div>
     </DashboardCard>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-import { VerifyEmailForm } from "./verify-email-form";
 import {
   Auth,
-  AuthHeader,
-  AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../auth-layout";
+  AuthHeader,
+  AuthTitle,
+} from "../auth-layout"
+import { VerifyEmailForm } from "./verify-email-form"
 
 export function VerifyEmail() {
   return (
@@ -20,5 +20,5 @@ export function VerifyEmail() {
         <VerifyEmailForm />
       </AuthForm>
     </Auth>
-  );
+  )
 }

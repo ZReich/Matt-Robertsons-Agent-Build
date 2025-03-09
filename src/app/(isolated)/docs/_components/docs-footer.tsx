@@ -1,9 +1,9 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button"
 
 export function DocsFooter() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear()
 
   return (
     <footer className="bg-red-200 z-50 w-full container flex justify-between items-center bg-background p-4 md:px-6">
@@ -32,5 +32,5 @@ export function DocsFooter() {
         .
       </p>
     </footer>
-  );
+  )
 }

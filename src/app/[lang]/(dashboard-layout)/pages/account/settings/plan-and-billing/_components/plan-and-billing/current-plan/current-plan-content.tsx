@@ -1,11 +1,11 @@
-import { currentPlanData } from "../../../../../_data/curremt-plan";
+import { currentPlanData } from "../../../../../_data/curremt-plan"
 
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize } from "@/lib/utils"
 
-import { CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { DynamicIcon } from "@/components/dynamic-icon";
+import { Badge } from "@/components/ui/badge"
+import { CardContent } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 export function CurrentPlanContent() {
   return (
@@ -78,5 +78,5 @@ export function CurrentPlanContent() {
         </div>
       </div>
     </CardContent>
-  );
+  )
 }

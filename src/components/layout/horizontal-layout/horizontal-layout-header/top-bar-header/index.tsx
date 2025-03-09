@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { CommandMenu } from "@/components/layout/command-menu";
-import { TopBarHeaderMenubar } from "./top-bar-header-menubar";
+import type { DictionaryType } from "@/lib/get-dictionary"
 
-import type { DictionaryType } from "@/lib/get-dictionary";
+import { CommandMenu } from "@/components/layout/command-menu"
+import { TopBarHeaderMenubar } from "./top-bar-header-menubar"
 
 export function TopBarHeader({ dictionary }: { dictionary: DictionaryType }) {
   return (
@@ -11,5 +11,5 @@ export function TopBarHeader({ dictionary }: { dictionary: DictionaryType }) {
       <TopBarHeaderMenubar dictionary={dictionary} />
       <CommandMenu dictionary={dictionary} />
     </div>
-  );
+  )
 }

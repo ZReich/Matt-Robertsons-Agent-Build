@@ -1,30 +1,29 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useSearchParams, useParams } from "next/navigation";
-import { useMedia } from "react-use";
+import * as React from "react"
+import { useParams, useSearchParams } from "next/navigation"
+import { useMedia } from "react-use"
 
-import { useEmailContext } from "../../../hooks/use-email-context";
-
-import { CardContent } from "@/components/ui/card";
-import { EmailListContentMobile } from "./email-list-content-mobile";
-import { EmailListContentDesktop } from "./email-list-content-desktop";
-import { EmailListContentHeader } from "./email-list-content-header";
+import { useEmailContext } from "../../../hooks/use-email-context"
+import { CardContent } from "@/components/ui/card"
+import { EmailListContentDesktop } from "./email-list-content-desktop"
+import { EmailListContentHeader } from "./email-list-content-header"
+import { EmailListContentMobile } from "./email-list-content-mobile"
 
 export function EmailListContent() {
-  const { handleGetFilteredEmails } = useEmailContext();
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const isMediumOrSmaller = useMedia("(max-width: 767px)");
+  const { handleGetFilteredEmails } = useEmailContext()
+  const params = useParams()
+  const searchParams = useSearchParams()
+  const isMediumOrSmaller = useMedia("(max-width: 767px)")
 
   const pageQuery = searchParams.get("page")
     ? parseInt(searchParams.get("page") as string)
-    : 1; // Get the current page from the search params, default to page 1
-  const filterParam = params.segment as string;
+    : 1 // Get the current page from the search params, default to page 1
+  const filterParam = params.segment as string
 
   React.useEffect(() => {
-    handleGetFilteredEmails(filterParam, pageQuery);
-  }, [pageQuery, filterParam, handleGetFilteredEmails]);
+    handleGetFilteredEmails(filterParam, pageQuery)
+  }, [pageQuery, filterParam, handleGetFilteredEmails])
 
   return (
     <CardContent className="flex-1 h-full flex flex-col p-0">
@@ -35,5 +34,5 @@ export function EmailListContent() {
         <EmailListContentDesktop />
       )}
     </CardContent>
-  );
+  )
 }

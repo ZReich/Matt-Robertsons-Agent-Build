@@ -1,20 +1,19 @@
-import { Lato, Cairo } from "next/font/google";
-import { getServerSession } from "next-auth";
+import { Cairo, Lato } from "next/font/google"
+import { getServerSession } from "next-auth"
 
-import { i18n } from "@/configs/i18n";
-import { authOptions } from "@/configs/next-auth";
+import { i18n } from "@/configs/i18n"
+import { authOptions } from "@/configs/next-auth"
+import { cn } from "@/lib/utils"
 
-import { cn } from "@/lib/utils";
+import "../globals.css"
 
-import "../globals.css";
+import { Providers } from "@/providers"
 
-import type { Metadata } from "next";
-import type { LocaleType } from "@/types";
+import type { LocaleType } from "@/types"
+import type { Metadata } from "next"
 
-import { Providers } from "@/providers";
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster as Sonner } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/toaster"
 
 // Define metadata for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -25,7 +24,7 @@ export const metadata: Metadata = {
   },
   description: "",
   metadataBase: new URL(process.env.BASE_URL as string),
-};
+}
 
 // Define fonts for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
@@ -34,23 +33,23 @@ const latoFont = Lato({
   weight: ["100", "300", "400", "700", "900"],
   style: ["normal", "italic"],
   variable: "--font-lato",
-});
+})
 const cairoFont = Cairo({
   subsets: ["arabic"],
   weight: ["400", "700"],
   style: ["normal"],
   variable: "--font-cario",
-});
+})
 
 export default async function RootLayout({
   children,
   params,
 }: {
-  children: React.ReactNode;
-  params: { lang: LocaleType };
+  children: React.ReactNode
+  params: { lang: LocaleType }
 }) {
-  const session = await getServerSession(authOptions);
-  const direction = i18n.localeDirection[params.lang];
+  const session = await getServerSession(authOptions)
+  const direction = i18n.localeDirection[params.lang]
 
   return (
     <html lang={params.lang} dir={direction} suppressHydrationWarning>
@@ -69,5 +68,5 @@ export default async function RootLayout({
         </Providers>
       </body>
     </html>
-  );
+  )
 }

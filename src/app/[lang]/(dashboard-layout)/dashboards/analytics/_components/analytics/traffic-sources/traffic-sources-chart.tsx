@@ -1,30 +1,29 @@
-"use client";
+"use client"
 
-import { RadialBar, RadialBarChart } from "recharts";
+import { RadialBar, RadialBarChart } from "recharts"
 
-import type { TrafficSourcesType } from "../../../types";
-import type { ChartConfig } from "@/components/ui/chart";
+import type { ChartConfig } from "@/components/ui/chart"
+import type { TrafficSourcesType } from "../../../types"
 
-import { useRadius } from "@/hooks/use-radius";
-
+import { useRadius } from "@/hooks/use-radius"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const chartConfig = {
   visitors: {
     label: "Visitors",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export function TrafficSourcesChart({
   data,
 }: {
-  data: TrafficSourcesType["sources"];
+  data: TrafficSourcesType["sources"]
 }) {
-  const radius = useRadius();
+  const radius = useRadius()
 
   return (
     <ChartContainer
@@ -39,5 +38,5 @@ export function TrafficSourcesChart({
         <RadialBar dataKey="visitors" background cornerRadius={radius} />
       </RadialBarChart>
     </ChartContainer>
-  );
+  )
 }

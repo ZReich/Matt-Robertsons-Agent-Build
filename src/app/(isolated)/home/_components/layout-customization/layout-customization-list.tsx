@@ -1,6 +1,6 @@
-import { layoutsData } from "../../_data/layout-customization";
+import { layoutsData } from "../../_data/layout-customization"
 
-import { CardDemo } from "../card-demo";
+import { CardDemo } from "../card-demo"
 
 export function LayoutCustomizationList() {
   return (
@@ -9,5 +9,5 @@ export function LayoutCustomizationList() {
         <CardDemo key={layout.title} {...layout} />
       ))}
     </div>
-  );
+  )
 }

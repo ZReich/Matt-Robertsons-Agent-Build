@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import { DraggableProvided } from "@hello-pangea/dnd";
-import { GripVertical } from "lucide-react";
+import { DraggableProvided } from "@hello-pangea/dnd"
+import { GripVertical } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { ColumnType } from "../../../../types"
 
-import type { ColumnType } from "../../../../types";
+import { cn } from "@/lib/utils"
 
-import { CardHeader, CardTitle } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
-import { KanbanColumnActions } from "./kanban-column-actions";
+import { buttonVariants } from "@/components/ui/button"
+import { CardHeader, CardTitle } from "@/components/ui/card"
+import { KanbanColumnActions } from "./kanban-column-actions"
 
 interface KanbanColumnItemHeaderProps {
-  column: ColumnType;
-  provided: DraggableProvided;
+  column: ColumnType
+  provided: DraggableProvided
 }
 
 export function KanbanColumnItemHeader({
@@ -35,5 +35,5 @@ export function KanbanColumnItemHeader({
       <CardTitle className="me-auto">{column.title}</CardTitle>
       <KanbanColumnActions column={column} />
     </CardHeader>
-  );
+  )
 }

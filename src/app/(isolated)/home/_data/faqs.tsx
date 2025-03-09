@@ -1,9 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
+import * as React from "react"
 
-import type { FaqType } from "../types";
+import type { FaqType } from "../types"
 
 export const faqsData: FaqType[] = [
   {
@@ -92,4 +91,4 @@ export const faqsData: FaqType[] = [
       </p>
     ),
   },
-];
+]

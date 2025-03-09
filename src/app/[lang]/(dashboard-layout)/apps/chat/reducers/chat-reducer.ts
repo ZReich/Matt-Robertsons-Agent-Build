@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import type { ChatStateType, MessageType, ChatActionType } from "../types";
+import type { ChatActionType, ChatStateType, MessageType } from "../types"
 
 export const ChatReducer = (
   state: ChatStateType,
@@ -9,7 +9,7 @@ export const ChatReducer = (
   switch (action.type) {
     case "addTextMessage": {
       if (!state.selectedChat) {
-        return state; // No selected chat, return the current state
+        return state // No selected chat, return the current state
       }
 
       const newMessage: MessageType = {
@@ -18,9 +18,9 @@ export const ChatReducer = (
         text: action.text, // Set the text content
         status: "DELIVERED", // Message delivery status
         createdAt: new Date(), // Set the current timestamp
-      };
+      }
 
-      const { id, messages } = state.selectedChat;
+      const { id, messages } = state.selectedChat
 
       const updatedChat = {
         ...state.selectedChat,
@@ -29,18 +29,18 @@ export const ChatReducer = (
           createdAt: newMessage.createdAt, // Update the timestamp
         },
         messages: [newMessage, ...messages], // Add the new message to the top
-      };
+      }
 
       const updatedChats = state.chats.map(
         (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
-      );
+      )
 
-      return { ...state, chats: updatedChats };
+      return { ...state, chats: updatedChats }
     }
 
     case "addImagesMessage": {
       if (!state.selectedChat) {
-        return state; // No selected chat, return the current state
+        return state // No selected chat, return the current state
       }
 
       const newMessage: MessageType = {
@@ -49,9 +49,9 @@ export const ChatReducer = (
         images: action.images, // Attach the images to the message
         status: "DELIVERED",
         createdAt: new Date(),
-      };
+      }
 
-      const { id, messages } = state.selectedChat;
+      const { id, messages } = state.selectedChat
 
       const updatedChat = {
         ...state.selectedChat,
@@ -60,18 +60,18 @@ export const ChatReducer = (
           createdAt: newMessage.createdAt,
         },
         messages: [newMessage, ...messages], // Add the new message
-      };
+      }
 
       const updatedChats = state.chats.map(
         (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
-      );
+      )
 
-      return { ...state, chats: updatedChats };
+      return { ...state, chats: updatedChats }
     }
 
     case "addFilesMessage": {
       if (!state.selectedChat) {
-        return state; // No selected chat, return the current state
+        return state // No selected chat, return the current state
       }
 
       const newMessage: MessageType = {
@@ -80,9 +80,9 @@ export const ChatReducer = (
         files: action.files, // Attach the files to the message
         status: "DELIVERED",
         createdAt: new Date(),
-      };
+      }
 
-      const { id, messages } = state.selectedChat;
+      const { id, messages } = state.selectedChat
 
       const updatedChat = {
         ...state.selectedChat,
@@ -91,39 +91,39 @@ export const ChatReducer = (
           createdAt: newMessage.createdAt,
         },
         messages: [newMessage, ...messages], // Add the new message
-      };
+      }
 
       const updatedChats = state.chats.map(
         (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
-      );
+      )
 
-      return { ...state, chats: updatedChats };
+      return { ...state, chats: updatedChats }
     }
 
     case "setUnreadCount": {
       if (!state.selectedChat) {
-        return state; // No selected chat, return the current state
+        return state // No selected chat, return the current state
       }
 
-      const { id } = state.selectedChat;
+      const { id } = state.selectedChat
 
       const updatedChat = {
         ...state.selectedChat,
         unreadCount: 0, // Reset unread count for the selected chat
-      };
+      }
 
       const updatedChats = state.chats.map(
         (chat) => (chat.id === id ? updatedChat : chat) // Update the relevant chat
-      );
+      )
 
-      return { ...state, chats: updatedChats };
+      return { ...state, chats: updatedChats }
     }
 
     case "selectChat": {
-      return { ...state, selectedChat: action.chat }; // Set the selected chat
+      return { ...state, selectedChat: action.chat } // Set the selected chat
     }
 
     default:
-      return state; // Return the current state for unknown actions
+      return state // Return the current state for unknown actions
   }
-};
+}

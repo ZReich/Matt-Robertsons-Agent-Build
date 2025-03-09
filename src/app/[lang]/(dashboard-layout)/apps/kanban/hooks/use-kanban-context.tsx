@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { KanbanContext } from "../contexts/kanban-context";
+import { KanbanContext } from "../contexts/kanban-context"
 
 export function useKanbanContext() {
-  const context = React.useContext(KanbanContext);
+  const context = React.useContext(KanbanContext)
   if (context === undefined) {
-    throw new Error("useKanbanContext must be used within a KanbanProvider");
+    throw new Error("useKanbanContext must be used within a KanbanProvider")
   }
-  return context;
+  return context
 }

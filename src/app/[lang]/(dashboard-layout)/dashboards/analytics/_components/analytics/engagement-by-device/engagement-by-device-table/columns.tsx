@@ -1,40 +1,40 @@
-"use client";
+"use client"
 
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header";
+import { ColumnDef } from "@tanstack/react-table"
 
-import { formatDuration, formatPercent } from "@/lib/utils";
+import type { DynamicIconNameType } from "@/types"
+import type { EngagementByDeviceType } from "../../../../types"
 
-import type { EngagementByDeviceType } from "../../../../types";
-import type { DynamicIconNameType } from "@/types";
+import { formatDuration, formatPercent } from "@/lib/utils"
 
-import { Progress } from "@/components/ui/progress";
-import { DynamicIcon } from "@/components/dynamic-icon";
+import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { Progress } from "@/components/ui/progress"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 function RenderPercentageValue({ value }: { value: number }) {
-  const formattedpercentage = formatPercent(value);
+  const formattedpercentage = formatPercent(value)
 
   return (
     <div className="max-w-32 flex items-center gap-x-2">
       <Progress value={value * 100} />
       <span>{formattedpercentage}</span>
     </div>
-  );
+  )
 }
 
 function RenderValueWithIcon({
   value,
   iconName,
 }: {
-  value: number | string;
-  iconName: DynamicIconNameType;
+  value: number | string
+  iconName: DynamicIconNameType
 }) {
   return (
     <div className="flex items-center gap-x-2">
       <DynamicIcon name={iconName} className="h-3 w-3" />
       <span>{value}</span>
     </div>
-  );
+  )
 }
 
 export const columns: ColumnDef<EngagementByDeviceType>[] = [
@@ -49,9 +49,9 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
       />
     ),
     cell: ({ row }) => {
-      const deviceType = row.getValue("deviceType") as string;
+      const deviceType = row.getValue("deviceType") as string
 
-      return <span className="ms-4 text-primary">{deviceType}</span>;
+      return <span className="ms-4 text-primary">{deviceType}</span>
     },
   },
   {
@@ -61,14 +61,14 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
       <DataTableColumnHeader column={column} title="Session Duration" />
     ),
     cell: ({ row }) => {
-      const sessionDuration = row.getValue("sessionDuration") as number;
+      const sessionDuration = row.getValue("sessionDuration") as number
 
       return (
         <RenderValueWithIcon
           value={formatDuration(sessionDuration)}
           iconName="Clock"
         />
-      );
+      )
     },
   },
   {
@@ -78,9 +78,9 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
       <DataTableColumnHeader column={column} title="Pages per Session" />
     ),
     cell: ({ row }) => {
-      const pagesPerSession = row.getValue("pagesPerSession") as number;
+      const pagesPerSession = row.getValue("pagesPerSession") as number
 
-      return <RenderValueWithIcon value={pagesPerSession} iconName="Files" />;
+      return <RenderValueWithIcon value={pagesPerSession} iconName="Files" />
     },
   },
   {
@@ -90,9 +90,9 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
       <DataTableColumnHeader column={column} title="Bounce Rate (%)" />
     ),
     cell: ({ row }) => {
-      const bounceRate = row.getValue("bounceRate") as number;
+      const bounceRate = row.getValue("bounceRate") as number
 
-      return <RenderPercentageValue value={bounceRate} />;
+      return <RenderPercentageValue value={bounceRate} />
     },
   },
   {
@@ -102,9 +102,9 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
       <DataTableColumnHeader column={column} title="User Percentage (%)" />
     ),
     cell: ({ row }) => {
-      const userPercentage = row.getValue("userPercentage") as number;
+      const userPercentage = row.getValue("userPercentage") as number
 
-      return <RenderPercentageValue value={userPercentage} />;
+      return <RenderPercentageValue value={userPercentage} />
     },
   },
   {
@@ -114,9 +114,9 @@ export const columns: ColumnDef<EngagementByDeviceType>[] = [
       <DataTableColumnHeader column={column} title="Conversion Rate (%)" />
     ),
     cell: ({ row }) => {
-      const conversionRate = row.getValue("conversionRate") as number;
+      const conversionRate = row.getValue("conversionRate") as number
 
-      return <RenderPercentageValue value={conversionRate} />;
+      return <RenderPercentageValue value={conversionRate} />
     },
   },
-];
+]

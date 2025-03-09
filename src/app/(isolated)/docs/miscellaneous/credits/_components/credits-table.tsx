@@ -1,4 +1,4 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Table,
   TableBody,
@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
 export function CreditTable() {
   return (
@@ -1141,5 +1141,5 @@ export function CreditTable() {
         </TableBody>
       </Table>
     </ScrollArea>
-  );
+  )
 }

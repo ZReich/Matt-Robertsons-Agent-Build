@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export function BasicScrollArea() {
   return (
@@ -54,5 +54,5 @@ export function BasicScrollArea() {
         </ScrollArea>
       </CardContent>
     </Card>
-  );
+  )
 }

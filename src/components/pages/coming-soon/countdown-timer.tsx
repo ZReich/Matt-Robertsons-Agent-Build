@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
 export function CountdownTimer({ targetDate }: { targetDate: Date }) {
   const [timeLeft, setTimeLeft] = React.useState({
@@ -8,13 +8,13 @@ export function CountdownTimer({ targetDate }: { targetDate: Date }) {
     hours: "00",
     minutes: "00",
     seconds: "00",
-  });
+  })
 
   // Calculate the time difference and update the state every second
   React.useEffect(() => {
     const interval = setInterval(() => {
-      const now = new Date(); // Current date and time
-      const difference = targetDate.getTime() - now.getTime(); // Calculate the time difference in milliseconds
+      const now = new Date() // Current date and time
+      const difference = targetDate.getTime() - now.getTime() // Calculate the time difference in milliseconds
 
       // If the target date has not passed
       if (difference > 0) {
@@ -34,16 +34,16 @@ export function CountdownTimer({ targetDate }: { targetDate: Date }) {
             2,
             "0"
           ),
-        });
+        })
       } else {
         // If the countdown has reached or passed the target date, stop the interval
-        clearInterval(interval);
+        clearInterval(interval)
       }
-    }, 1000);
+    }, 1000)
 
     // Clean up the interval when the component unmounts or the target date changes
-    return () => clearInterval(interval);
-  }, [targetDate]);
+    return () => clearInterval(interval)
+  }, [targetDate])
 
   return (
     <div className="grid grid-cols-4 gap-4 mb-8">
@@ -54,5 +54,5 @@ export function CountdownTimer({ targetDate }: { targetDate: Date }) {
         </div>
       ))}
     </div>
-  );
+  )
 }

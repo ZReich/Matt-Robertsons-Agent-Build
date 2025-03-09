@@ -1,29 +1,29 @@
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical } from "lucide-react"
 
-import { cn, getInitials, formatDistance } from "@/lib/utils";
+import type { MessageType, UserType } from "../../../../../types"
 
-import type { MessageType, UserType } from "../../../../../types";
+import { cn, formatDistance, getInitials } from "@/lib/utils"
 
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ChatAvatar } from "../../../../chat-avatar";
-import { MessageStatusIcon } from "./message-status-icon";
-import { MessageBubbleContent } from "./message-bubble-content";
+} from "@/components/ui/dropdown-menu"
+import { ChatAvatar } from "../../../../chat-avatar"
+import { MessageBubbleContent } from "./message-bubble-content"
+import { MessageStatusIcon } from "./message-status-icon"
 
 export function MessageBubble({
   sender,
   message,
   isByCurrentUser,
 }: {
-  sender: UserType;
-  message: MessageType;
-  isByCurrentUser: boolean;
+  sender: UserType
+  message: MessageType
+  isByCurrentUser: boolean
 }) {
   return (
     <li className={cn("flex gap-2", isByCurrentUser && "flex-row-reverse")}>
@@ -82,5 +82,5 @@ export function MessageBubble({
         </DropdownMenuContent>
       </DropdownMenu>
     </li>
-  );
+  )
 }

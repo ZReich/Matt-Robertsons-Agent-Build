@@ -1,23 +1,23 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import * as React from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import type { LocaleType } from "@/types"
 
-import type { LocaleType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { cn } from "@/lib/utils"
 
 interface AuthProps extends React.HTMLAttributes<HTMLDivElement> {
-  imgSrc?: string;
+  imgSrc?: string
 }
 
 const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
   ({ className, children, imgSrc, ...props }, ref) => {
-    const params = useParams();
-    const locale = params.lang as LocaleType;
+    const params = useParams()
+    const locale = params.lang as LocaleType
 
     return (
       <section
@@ -46,13 +46,13 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
         </div>
         {imgSrc && <AuthImage imgSrc={imgSrc} />}
       </section>
-    );
+    )
   }
-);
-Auth.displayName = "Auth";
+)
+Auth.displayName = "Auth"
 
 interface AuthImageProps extends React.HTMLAttributes<HTMLDivElement> {
-  imgSrc: string;
+  imgSrc: string
 }
 
 const AuthImage = React.forwardRef<HTMLDivElement, AuthImageProps>(
@@ -74,8 +74,8 @@ const AuthImage = React.forwardRef<HTMLDivElement, AuthImageProps>(
       />
     </div>
   )
-);
-AuthImage.displayName = "AuthImage";
+)
+AuthImage.displayName = "AuthImage"
 
 const AuthHeader = React.forwardRef<
   HTMLDivElement,
@@ -86,8 +86,8 @@ const AuthHeader = React.forwardRef<
     className={cn("space-y-2 text-center", className)}
     {...props}
   />
-));
-AuthHeader.displayName = "AuthHeader";
+))
+AuthHeader.displayName = "AuthHeader"
 
 const AuthTitle = React.forwardRef<
   HTMLParagraphElement,
@@ -101,8 +101,8 @@ const AuthTitle = React.forwardRef<
     )}
     {...props}
   />
-));
-AuthTitle.displayName = "AuthTitle";
+))
+AuthTitle.displayName = "AuthTitle"
 
 const AuthDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -113,24 +113,24 @@ const AuthDescription = React.forwardRef<
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
-));
-AuthDescription.displayName = "AuthDescription";
+))
+AuthDescription.displayName = "AuthDescription"
 
 const AuthForm = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={className} {...props} />
-));
-AuthForm.displayName = "AuthForm";
+))
+AuthForm.displayName = "AuthForm"
 
 const AuthFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("grid gap-6", className)} {...props} />
-));
-AuthFooter.displayName = "AuthFooter";
+))
+AuthFooter.displayName = "AuthFooter"
 
 export {
   Auth,
@@ -140,4 +140,4 @@ export {
   AuthDescription,
   AuthForm,
   AuthImage,
-};
+}

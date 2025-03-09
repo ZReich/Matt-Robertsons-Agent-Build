@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const FormLayoutsSchema = z.object({
   firstName: z
@@ -41,4 +41,4 @@ export const FormLayoutsSchema = z.object({
     .trim()
     .min(2, { message: "Address must contain at least 2 characters." })
     .max(100, { message: "Address must contain at most 100 characters." }),
-});
+})

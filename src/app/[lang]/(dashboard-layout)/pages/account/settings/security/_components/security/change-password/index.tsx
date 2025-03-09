@@ -1,8 +1,8 @@
-import type { UserType } from "../../../../../types";
+import type { UserType } from "../../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { ChangePasswordHeader } from "./change-password-header";
-import { ChangePasswordContent } from "./change-password-content";
+import { Card } from "@/components/ui/card"
+import { ChangePasswordContent } from "./change-password-content"
+import { ChangePasswordHeader } from "./change-password-header"
 
 export function ChangePassword({ user }: { user: UserType }) {
   return (
@@ -10,5 +10,5 @@ export function ChangePassword({ user }: { user: UserType }) {
       <ChangePasswordHeader />
       <ChangePasswordContent user={user} />
     </Card>
-  );
+  )
 }

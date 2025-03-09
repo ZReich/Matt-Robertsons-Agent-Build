@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Keyboard } from "@/components/ui/keyboard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Keyboard } from "@/components/ui/keyboard"
 
 export function BasicKeyboard() {
   return (
@@ -15,5 +15,5 @@ export function BasicKeyboard() {
         <Keyboard>K</Keyboard>
       </CardContent>
     </Card>
-  );
+  )
 }

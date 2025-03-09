@@ -1,7 +1,7 @@
-import { Card } from "@/components/ui/card";
-import { CurrentPlanHeader } from "./current-plan-header";
-import { CurrentPlanContent } from "./current-plan-content";
-import { CurrentPlanFooter } from "./current-plan-footer";
+import { Card } from "@/components/ui/card"
+import { CurrentPlanContent } from "./current-plan-content"
+import { CurrentPlanFooter } from "./current-plan-footer"
+import { CurrentPlanHeader } from "./current-plan-header"
 
 export function CurrentPlan() {
   return (
@@ -10,5 +10,5 @@ export function CurrentPlan() {
       <CurrentPlanContent />
       <CurrentPlanFooter />
     </Card>
-  );
+  )
 }

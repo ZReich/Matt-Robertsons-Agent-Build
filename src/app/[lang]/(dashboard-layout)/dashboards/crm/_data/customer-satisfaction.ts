@@ -1,4 +1,4 @@
-import type { CustomerSatisfactionType } from "../types";
+import type { CustomerSatisfactionType } from "../types"
 
 export const customerSatisfactionData: CustomerSatisfactionType = {
   period: "Last week",
@@ -51,4 +51,4 @@ export const customerSatisfactionData: CustomerSatisfactionType = {
       createdAt: new Date("2024-11-16T12:30:00Z"),
     },
   ],
-};
+}

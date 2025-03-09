@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { LoaderCircle } from "lucide-react"
 
-import { SecurityPreferencesSchema } from "../../../../_schemas/security-preferences-form-schema";
+import { SecurityPreferencesSchema } from "../../../../_schemas/security-preferences-form-schema"
 
 import type {
-  UserType,
   SecurityPreferencesFormType,
-} from "../../../../../../types";
+  UserType,
+} from "../../../../../../types"
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -20,11 +20,11 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
 
 interface SecurityPreferencesFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  user: UserType;
+  user: UserType
 }
 
 export function SecurityPreferencesForm({
@@ -36,12 +36,12 @@ export function SecurityPreferencesForm({
       twoFactorAuth: user.twoFactorAuth,
       loginAlerts: user.loginAlerts,
     },
-  });
+  })
 
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
-  function onSubmit(data: SecurityPreferencesFormType) {}
+  function onSubmit(_data: SecurityPreferencesFormType) {}
 
   return (
     <Form {...form}>
@@ -101,5 +101,5 @@ export function SecurityPreferencesForm({
         </Button>
       </form>
     </Form>
-  );
+  )
 }

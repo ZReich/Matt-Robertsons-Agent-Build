@@ -1,8 +1,8 @@
-import { newVsReturningVisitors } from "../../../_data/new-vs-returning-visitors";
+import { newVsReturningVisitors } from "../../../_data/new-vs-returning-visitors"
 
-import { DashboardCard } from "@/components/dashboards/dashboard-card";
-import { NewVsReturningVisitorsChart } from "./new-vs-returning-visitors-chart";
-import { NewVsReturningVisitorsList } from "./new-vs-returning-visitors-list";
+import { DashboardCard } from "@/components/dashboards/dashboard-card"
+import { NewVsReturningVisitorsChart } from "./new-vs-returning-visitors-chart"
+import { NewVsReturningVisitorsList } from "./new-vs-returning-visitors-list"
 
 export async function NewVsReturningVisitors() {
   return (
@@ -13,5 +13,5 @@ export async function NewVsReturningVisitors() {
       <NewVsReturningVisitorsChart data={newVsReturningVisitors.visitors} />
       <NewVsReturningVisitorsList data={newVsReturningVisitors.visitors} />
     </DashboardCard>
-  );
+  )
 }

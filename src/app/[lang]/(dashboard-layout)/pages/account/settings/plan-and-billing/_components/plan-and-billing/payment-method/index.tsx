@@ -1,6 +1,6 @@
-import { Card } from "@/components/ui/card";
-import { PaymentMethodContent } from "./payment-method-content";
-import { PaymentMethodHeader } from "./payment-method-header";
+import { Card } from "@/components/ui/card"
+import { PaymentMethodContent } from "./payment-method-content"
+import { PaymentMethodHeader } from "./payment-method-header"
 
 export function PaymentMethod() {
   return (
@@ -8,5 +8,5 @@ export function PaymentMethod() {
       <PaymentMethodHeader />
       <PaymentMethodContent />
     </Card>
-  );
+  )
 }

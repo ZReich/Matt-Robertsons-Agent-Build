@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
 import {
   Card,
@@ -8,8 +8,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { FileDropzone } from "@/components/ui/file-dropzone";
+} from "@/components/ui/card"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 
 export function FileDropzoneMaxFiles() {
   return (
@@ -22,5 +22,5 @@ export function FileDropzoneMaxFiles() {
         <FileDropzone multiple maxFiles={2} />
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicInputFile } from "./_components/basic-input-file";
-import { InputFileButtonVariants } from "./_components/input-file-button-varaints";
-import { InputFileButtonLabel } from "./_components/input-file-button-label";
-import { InputFilePlaceholder } from "./_components/input-file-placeholder";
+import { BasicInputFile } from "./_components/basic-input-file"
+import { InputFileButtonLabel } from "./_components/input-file-button-label"
+import { InputFileButtonVariants } from "./_components/input-file-button-varaints"
+import { InputFilePlaceholder } from "./_components/input-file-placeholder"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Input File",
-};
+}
 
 export default function InputFilePage() {
   return (
@@ -21,5 +21,5 @@ export default function InputFilePage() {
       </div>
       <InputFileButtonVariants />
     </section>
-  );
+  )
 }

@@ -1,29 +1,28 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import * as React from "react"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import {
-  Sun,
-  MoonStar,
-  SunMoon,
-  RotateCcw,
-  Settings,
-  AlignStartHorizontal,
-  AlignStartVertical,
   AlignLeft,
   AlignRight,
-} from "lucide-react";
+  AlignStartHorizontal,
+  AlignStartVertical,
+  MoonStar,
+  RotateCcw,
+  Settings,
+  Sun,
+  SunMoon,
+} from "lucide-react"
 
-import { baseColors } from "@/configs/base-colors";
-import { i18n } from "@/configs/i18n";
+import type { LocaleType, ModeType } from "@/types"
 
-import { relocalizePathname } from "@/lib/i18n";
+import { baseColors } from "@/configs/base-colors"
+import { i18n } from "@/configs/i18n"
+import { relocalizePathname } from "@/lib/i18n"
 
-import type { LocaleType, ModeType } from "@/types";
-
-import { useSettings } from "@/hooks/use-settings";
-
-import { Button } from "@/components/ui/button";
+import { useSettings } from "@/hooks/use-settings"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Sheet,
   SheetContent,
@@ -32,8 +31,7 @@ import {
   SheetPortal,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@/components/ui/sheet"
 
 const themes = {
   zinc: {
@@ -134,38 +132,38 @@ const themes = {
       foreground: "210 20% 98%",
     },
   },
-};
+}
 
-const radiusSizes = ["0", "0.3", "0.5", "0.75", "1.0"];
+const radiusSizes = ["0", "0.3", "0.5", "0.75", "1.0"]
 
 export function Customizer() {
-  const { settings, updateSettings, resetSettings } = useSettings();
-  const pathname = usePathname();
-  const router = useRouter();
-  const params = useParams();
+  const { settings, updateSettings, resetSettings } = useSettings()
+  const pathname = usePathname()
+  const router = useRouter()
+  const params = useParams()
 
-  const locale = params.lang as LocaleType;
-  const direction = i18n.localeDirection[locale];
+  const locale = params.lang as LocaleType
+  const direction = i18n.localeDirection[locale]
 
   const handleSetLocale = React.useCallback(
     (localeName: LocaleType) => {
-      updateSettings({ ...settings, locale: localeName });
-      router.push(relocalizePathname(pathname, localeName));
+      updateSettings({ ...settings, locale: localeName })
+      router.push(relocalizePathname(pathname, localeName))
     },
     [settings, updateSettings, router, pathname]
-  );
+  )
 
   const handleSetMode = React.useCallback(
     (modeName: ModeType) => {
-      updateSettings({ ...settings, mode: modeName });
+      updateSettings({ ...settings, mode: modeName })
     },
     [settings, updateSettings]
-  );
+  )
 
   const handleReset = React.useCallback(() => {
-    resetSettings();
-    router.push(relocalizePathname(pathname, "en"));
-  }, [resetSettings, router, pathname]);
+    resetSettings()
+    router.push(relocalizePathname(pathname, "en"))
+  }, [resetSettings, router, pathname])
 
   return (
     <Sheet>
@@ -188,7 +186,7 @@ export function Customizer() {
                 <p className="text-sm">Color</p>
                 <div className="grid grid-cols-3 gap-2">
                   {baseColors.map((color) => {
-                    const isActive = settings.theme === color.name;
+                    const isActive = settings.theme === color.name
 
                     return (
                       <Button
@@ -213,7 +211,7 @@ export function Customizer() {
                       >
                         <span>{themes[color.name].label}</span>
                       </Button>
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -232,7 +230,7 @@ export function Customizer() {
                         updateSettings({
                           ...settings,
                           radius: parseFloat(value),
-                        });
+                        })
                       }}
                     >
                       {value}
@@ -339,5 +337,5 @@ export function Customizer() {
         </SheetContent>
       </SheetPortal>
     </Sheet>
-  );
+  )
 }

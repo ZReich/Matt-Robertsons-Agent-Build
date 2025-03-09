@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from "react"
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"
 
 export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
@@ -19,14 +19,14 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
       >
         {children}
       </div>
-    );
+    )
   }
-);
-InputGroup.displayName = "InputGroup";
+)
+InputGroup.displayName = "InputGroup"
 
 export interface InputGroupTextProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  merged?: boolean;
+  merged?: boolean
 }
 
 const InputGroupText = React.forwardRef<HTMLDivElement, InputGroupTextProps>(
@@ -43,9 +43,9 @@ const InputGroupText = React.forwardRef<HTMLDivElement, InputGroupTextProps>(
         )}
         {...props}
       />
-    );
+    )
   }
-);
-InputGroupText.displayName = "InputGroupText";
+)
+InputGroupText.displayName = "InputGroupText"
 
-export { InputGroup, InputGroupText };
+export { InputGroup, InputGroupText }

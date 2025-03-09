@@ -1,4 +1,4 @@
-import { AppsAndPagesList } from "./apps-and-pages-list";
+import { AppsAndPagesList } from "./apps-and-pages-list"
 
 export function AppsAndPages() {
   return (
@@ -12,5 +12,5 @@ export function AppsAndPages() {
       </div>
       <AppsAndPagesList />
     </section>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function BasicSkeleton() {
   return (
@@ -21,5 +21,5 @@ export function BasicSkeleton() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

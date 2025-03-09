@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/hover-card"
 
 export function BasicHoverCard() {
   return (
@@ -24,5 +24,5 @@ export function BasicHoverCard() {
         </HoverCard>
       </CardContent>
     </Card>
-  );
+  )
 }

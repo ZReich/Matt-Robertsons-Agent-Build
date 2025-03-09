@@ -1,64 +1,64 @@
-import { z } from "zod";
+import { z } from "zod"
 
-import { KanbanColumnSchema } from "./_schemas/kanban-column-schema";
-import { KanbanTaskSchema } from "./_schemas/kanban-task-schema";
+import { KanbanColumnSchema } from "./_schemas/kanban-column-schema"
+import { KanbanTaskSchema } from "./_schemas/kanban-task-schema"
 
-import type { FileType } from "@/types";
+import type { FileType } from "@/types"
 
 export interface UserType {
-  id: string;
-  username: string;
-  name: string;
-  avatar?: string;
+  id: string
+  username: string
+  name: string
+  avatar?: string
 }
 
 export interface CommentType {
-  id: string;
-  userId: string;
-  text: string;
-  createdAt: Date;
+  id: string
+  userId: string
+  text: string
+  createdAt: Date
 }
 
 export interface TaskType {
-  id: string;
-  columnId: string;
-  order: number;
-  title: string;
-  description?: string;
-  label: string;
-  comments: CommentType[];
-  assigned: UserType[];
-  dueDate: Date;
-  attachments: FileType[];
+  id: string
+  columnId: string
+  order: number
+  title: string
+  description?: string
+  label: string
+  comments: CommentType[]
+  assigned: UserType[]
+  dueDate: Date
+  attachments: FileType[]
 }
 
 export interface ColumnType {
-  id: string;
-  order: number;
-  title: string;
-  tasks: TaskType[];
+  id: string
+  order: number
+  title: string
+  tasks: TaskType[]
 }
 
 export type ColumnWithoutIdAndOrderAndTasksType = Omit<
   ColumnType,
   "id" | "order" | "tasks"
->;
+>
 
 export type TaskWithoutIdAndOrderAndColumnIdType = Omit<
   TaskType,
   "id" | "order" | "columnId"
->;
+>
 
 export interface KanbanStateType {
-  columns: ColumnType[];
-  teamMembers: UserType[];
-  selectedColumn?: ColumnType;
-  selectedTask?: TaskType;
+  columns: ColumnType[]
+  teamMembers: UserType[]
+  selectedColumn?: ColumnType
+  selectedTask?: TaskType
 }
 
 export interface LabelType {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 export type KanbanActionType =
@@ -66,51 +66,51 @@ export type KanbanActionType =
   | { type: "updateColumn"; column: ColumnType }
   | { type: "deleteColumn"; columnId: string }
   | {
-      type: "addTask";
-      task: TaskWithoutIdAndOrderAndColumnIdType;
-      columnId: string;
+      type: "addTask"
+      task: TaskWithoutIdAndOrderAndColumnIdType
+      columnId: string
     }
   | { type: "updateTask"; task: TaskType }
   | { type: "deleteTask"; taskId: string }
   | { type: "reorderColumns"; sourceIndex: number; destinationIndex: number }
   | {
-      type: "reorderTasks";
-      source: { columnId: string; index: number };
-      destination: { columnId: string; index: number };
+      type: "reorderTasks"
+      source: { columnId: string; index: number }
+      destination: { columnId: string; index: number }
     }
   | { type: "selectColumn"; column?: ColumnType }
-  | { type: "selectTask"; task?: TaskType };
+  | { type: "selectTask"; task?: TaskType }
 
 export interface KanbanContextType {
-  kanbanState: KanbanStateType;
-  kanbanAddTaskSidebarIsOpen: boolean;
-  setKanbanAddTaskSidebarIsOpen: (value: boolean) => void;
-  kanbanUpdateTaskSidebarIsOpen: boolean;
-  setKanbanUpdateTaskSidebarIsOpen: (value: boolean) => void;
-  kanbanAddColumnSidebarIsOpen: boolean;
-  setKanbanAddColumnSidebarIsOpen: (value: boolean) => void;
-  kanbanUpdateColumnSidebarIsOpen: boolean;
-  setKanbanUpdateColumnSidebarIsOpen: (value: boolean) => void;
-  handleAddColumn: (column: ColumnWithoutIdAndOrderAndTasksType) => void;
-  handleUpdateColumn: (column: ColumnType) => void;
-  handleDeleteColumn: (columnId: ColumnType["id"]) => void;
+  kanbanState: KanbanStateType
+  kanbanAddTaskSidebarIsOpen: boolean
+  setKanbanAddTaskSidebarIsOpen: (value: boolean) => void
+  kanbanUpdateTaskSidebarIsOpen: boolean
+  setKanbanUpdateTaskSidebarIsOpen: (value: boolean) => void
+  kanbanAddColumnSidebarIsOpen: boolean
+  setKanbanAddColumnSidebarIsOpen: (value: boolean) => void
+  kanbanUpdateColumnSidebarIsOpen: boolean
+  setKanbanUpdateColumnSidebarIsOpen: (value: boolean) => void
+  handleAddColumn: (column: ColumnWithoutIdAndOrderAndTasksType) => void
+  handleUpdateColumn: (column: ColumnType) => void
+  handleDeleteColumn: (columnId: ColumnType["id"]) => void
   handleAddTask: (
     task: TaskWithoutIdAndOrderAndColumnIdType,
     columnId: ColumnType["id"]
-  ) => void;
-  handleUpdateTask: (task: TaskType) => void;
-  handleDeleteTask: (taskId: TaskType["id"]) => void;
-  handleReorderColumns: (sourceIndex: number, destinationIndex: number) => void;
+  ) => void
+  handleUpdateTask: (task: TaskType) => void
+  handleDeleteTask: (taskId: TaskType["id"]) => void
+  handleReorderColumns: (sourceIndex: number, destinationIndex: number) => void
   handleReorderTasks: (
     sourceColumnId: string,
     sourceIndex: number,
     destinationColumnId: string,
     destinationIndex: number
-  ) => void;
-  handleSelectColumn: (column: ColumnType | undefined) => void;
-  handleSelectTask: (task: TaskType | undefined) => void;
+  ) => void
+  handleSelectColumn: (column: ColumnType | undefined) => void
+  handleSelectTask: (task: TaskType | undefined) => void
 }
 
-export type KanbanColumnFormType = z.infer<typeof KanbanColumnSchema>;
+export type KanbanColumnFormType = z.infer<typeof KanbanColumnSchema>
 
-export type KanbanTaskFormType = z.infer<typeof KanbanTaskSchema>;
+export type KanbanTaskFormType = z.infer<typeof KanbanTaskSchema>

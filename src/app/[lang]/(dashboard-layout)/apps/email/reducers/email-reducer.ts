@@ -1,35 +1,35 @@
-import { PAGE_SIZE } from "../constants";
+import type { EmailActionType, EmailStateType, EmailType } from "../types"
 
-import type { EmailStateType, EmailActionType, EmailType } from "../types";
+import { PAGE_SIZE } from "../constants"
 
 function getEmailFolderNames(email: EmailType) {
-  const names = new Set();
+  const names = new Set()
 
   if (email.isDeleted) {
-    names.add("trash");
+    names.add("trash")
   }
 
   if (email.isSent) {
-    names.add("sent");
+    names.add("sent")
   }
 
   if (email.isDraft) {
-    names.add("draft");
+    names.add("draft")
   }
 
   if (email.isStarred) {
-    names.add("starred");
+    names.add("starred")
   }
 
   if (email.isSpam) {
-    names.add("spam");
+    names.add("spam")
   }
 
   if (!email.isSpam && !email.isDeleted && !email.isSent && !email.isDraft) {
-    names.add("inbox");
+    names.add("inbox")
   }
 
-  return names;
+  return names
 }
 
 export const EmailReducer = (
@@ -38,20 +38,20 @@ export const EmailReducer = (
 ): EmailStateType => {
   switch (action.type) {
     case "getFilteredEmails": {
-      let filteredEmails = state.initialEmails;
+      let filteredEmails = state.initialEmails
 
       filteredEmails = filteredEmails.filter(
         (email) =>
           getEmailFolderNames(email).has(action.filter) ||
           email.label === action.filter
-      );
+      )
 
       // Paginate the filtered emails
-      const startIndex = (action.currentPage - 1) * PAGE_SIZE;
-      const endIndex = startIndex + PAGE_SIZE;
-      const updatedEmails = filteredEmails.slice(startIndex, endIndex);
-      const totalPages = Math.ceil(filteredEmails.length / PAGE_SIZE);
-      const totalEmails = filteredEmails.length;
+      const startIndex = (action.currentPage - 1) * PAGE_SIZE
+      const endIndex = startIndex + PAGE_SIZE
+      const updatedEmails = filteredEmails.slice(startIndex, endIndex)
+      const totalPages = Math.ceil(filteredEmails.length / PAGE_SIZE)
+      const totalEmails = filteredEmails.length
 
       return {
         ...state,
@@ -60,17 +60,17 @@ export const EmailReducer = (
         totalPages,
         currentPage: action.currentPage,
         totalEmails,
-      };
+      }
     }
 
     case "getFilteredEmailsBySearchTerm": {
-      let filteredEmails = state.initialEmails;
+      let filteredEmails = state.initialEmails
 
       filteredEmails = filteredEmails.filter(
         (email) =>
           getEmailFolderNames(email).has(action.filter) ||
           email.label === action.filter
-      );
+      )
 
       // Apply term-based search if 'term' is provided
       if (action.term) {
@@ -78,15 +78,15 @@ export const EmailReducer = (
           (email) =>
             email.subject.toLowerCase().includes(action.term.toLowerCase()) ||
             email.sender.name.toLowerCase().includes(action.term.toLowerCase())
-        );
+        )
       }
 
       // Paginate the filtered emails
-      const startIndex = (action.currentPage - 1) * PAGE_SIZE;
-      const endIndex = startIndex + PAGE_SIZE;
-      const updatedEmails = filteredEmails.slice(startIndex, endIndex);
-      const totalPages = Math.ceil(filteredEmails.length / PAGE_SIZE);
-      const totalEmails = filteredEmails.length;
+      const startIndex = (action.currentPage - 1) * PAGE_SIZE
+      const endIndex = startIndex + PAGE_SIZE
+      const updatedEmails = filteredEmails.slice(startIndex, endIndex)
+      const totalPages = Math.ceil(filteredEmails.length / PAGE_SIZE)
+      const totalEmails = filteredEmails.length
 
       return {
         ...state,
@@ -94,47 +94,47 @@ export const EmailReducer = (
         totalPages,
         currentPage: action.currentPage,
         totalEmails,
-      };
+      }
     }
 
     case "toggleSelectEmail": {
-      const currentSelectedEmails = state.selectedEmails;
+      const currentSelectedEmails = state.selectedEmails
 
       const emailIndex = currentSelectedEmails.findIndex(
         (item) => item.id === action.email.id
-      );
+      )
 
-      let updatedSelectedEmails;
+      let updatedSelectedEmails
 
       if (emailIndex === -1) {
         // Add the email ID if it is not yet selected
-        updatedSelectedEmails = [...currentSelectedEmails, action.email];
+        updatedSelectedEmails = [...currentSelectedEmails, action.email]
       } else {
         // Remove the email ID if it is already selected
         updatedSelectedEmails = currentSelectedEmails.filter(
           ({ id }) => id !== action.email.id
-        );
+        )
       }
 
       return {
         ...state,
         selectedEmails: updatedSelectedEmails,
-      };
+      }
     }
 
     case "toggleSelectAllEmail": {
-      let updatedSelectedEmails: EmailType[];
+      let updatedSelectedEmails: EmailType[]
 
       if (state.selectedEmails.length === state.emails.length) {
-        updatedSelectedEmails = []; // Deselect all if all emails are currently selected
+        updatedSelectedEmails = [] // Deselect all if all emails are currently selected
       } else {
-        updatedSelectedEmails = state.emails; // Select all emails if none or some are selected
+        updatedSelectedEmails = state.emails // Select all emails if none or some are selected
       }
 
       return {
         ...state,
         selectedEmails: updatedSelectedEmails,
-      };
+      }
     }
 
     case "toggleStarEmail": {
@@ -142,14 +142,14 @@ export const EmailReducer = (
         email.id === action.email.id
           ? { ...email, starred: !email.starred }
           : email
-      );
+      )
       const updatedEmails = state.emails.map((email) =>
         email.id === action.email.id
           ? { ...email, starred: !email.starred }
           : email
-      );
+      )
 
-      let updatedSidebarItems = state.sidebarItems;
+      let updatedSidebarItems = state.sidebarItems
       if (!action.email.read) {
         const updatedSidebarFolders = state.sidebarItems.folders.map(
           (folder) => {
@@ -159,16 +159,16 @@ export const EmailReducer = (
                 unreadCount: action.email.starred
                   ? folder.unreadCount - 1
                   : folder.unreadCount + 1,
-              };
+              }
             } else {
-              return folder;
+              return folder
             }
           }
-        );
+        )
         updatedSidebarItems = {
           ...state.sidebarItems,
           folders: updatedSidebarFolders,
-        };
+        }
       }
 
       return {
@@ -176,54 +176,54 @@ export const EmailReducer = (
         initialEmails: updatedInitalEmails,
         emails: updatedEmails,
         sidebarItems: updatedSidebarItems,
-      };
+      }
     }
 
     case "setRead": {
       const updatedEmails = state.emails.map((email) =>
         email.id === action.email.id ? { ...email, read: true } : email
-      );
+      )
       const updatedInitalEmails = state.initialEmails.map((email) =>
         email.id === action.email.id ? { ...email, read: true } : email
-      );
+      )
 
-      const folderName = getEmailFolderNames(action.email);
+      const folderName = getEmailFolderNames(action.email)
       const updatedSidebarFolders = state.sidebarItems.folders.map((folder) => {
         if (folderName.has(folder.name)) {
           return {
             ...folder,
             unreadCount: folder.unreadCount > 0 ? folder.unreadCount - 1 : 0,
-          };
+          }
         } else {
-          return folder;
+          return folder
         }
-      });
+      })
 
       const updatedSidebarFLabels = state.sidebarItems.labels.map((label) => {
         if (label.name === action.email.label) {
           return {
             ...label,
             unreadCount: label.unreadCount > 0 ? label.unreadCount - 1 : 0,
-          };
+          }
         } else {
-          return label;
+          return label
         }
-      });
+      })
 
       const updatedSidebarItems = {
         folders: updatedSidebarFolders,
         labels: updatedSidebarFLabels,
-      };
+      }
 
       return {
         ...state,
         emails: updatedEmails,
         initialEmails: updatedInitalEmails,
         sidebarItems: updatedSidebarItems,
-      };
+      }
     }
 
     default:
-      return state; // Return the current state for unknown actions
+      return state // Return the current state for unknown actions
   }
-};
+}

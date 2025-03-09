@@ -1,11 +1,11 @@
-import { SignInForm } from "./sign-in-form";
 import {
   Auth,
-  AuthHeader,
-  AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../auth-layout";
+  AuthHeader,
+  AuthTitle,
+} from "../auth-layout"
+import { SignInForm } from "./sign-in-form"
 
 export function SignIn() {
   return (
@@ -20,5 +20,5 @@ export function SignIn() {
         <SignInForm />
       </AuthForm>
     </Auth>
-  );
+  )
 }

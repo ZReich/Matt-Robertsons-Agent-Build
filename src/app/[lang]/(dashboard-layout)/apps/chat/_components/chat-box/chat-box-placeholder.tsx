@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { MessageCircleDashed } from "lucide-react";
+import { MessageCircleDashed } from "lucide-react"
 
-import { Card, CardContent } from "@/components/ui/card";
-import { ChatMenuButton } from "../chat-menu-button";
+import { Card, CardContent } from "@/components/ui/card"
+import { ChatMenuButton } from "../chat-menu-button"
 
 export function ChatBoxPlaceholder() {
   return (
@@ -16,5 +16,5 @@ export function ChatBoxPlaceholder() {
         <ChatMenuButton />
       </CardContent>
     </Card>
-  );
+  )
 }

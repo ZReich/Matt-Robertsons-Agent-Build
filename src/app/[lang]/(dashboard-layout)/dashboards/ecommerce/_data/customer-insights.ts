@@ -1,4 +1,4 @@
-import type { CustomerInsightsType } from "../types";
+import type { CustomerInsightsType } from "../types"
 
 export const customerInsightsData: CustomerInsightsType = {
   period: "Last month",
@@ -6,4 +6,4 @@ export const customerInsightsData: CustomerInsightsType = {
   newCustomers: 45,
   returningCustomers: 150,
   vipCustomers: 320,
-};
+}

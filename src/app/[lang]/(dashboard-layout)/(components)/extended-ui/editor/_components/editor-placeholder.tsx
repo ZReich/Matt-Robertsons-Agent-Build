@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Editor } from "@/components/ui/editor";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Editor } from "@/components/ui/editor"
 
 export function EditorPlaceholder() {
   return (
@@ -15,5 +15,5 @@ export function EditorPlaceholder() {
         <Editor placeholder="Write your message here..." className="h-32" />
       </CardContent>
     </Card>
-  );
+  )
 }

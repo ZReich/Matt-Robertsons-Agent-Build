@@ -5,4 +5,4 @@ export const categoriesData = [
   "Holiday",
   "Health",
   "Miscellaneous",
-] as const;
+] as const

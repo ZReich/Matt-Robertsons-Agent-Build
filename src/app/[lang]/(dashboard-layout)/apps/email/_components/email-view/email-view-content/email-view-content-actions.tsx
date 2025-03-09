@@ -1,22 +1,22 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Archive, Clock, MoreVertical, Star, Tag, Trash2 } from "lucide-react";
+import * as React from "react"
+import { Archive, Clock, MoreVertical, Star, Tag, Trash2 } from "lucide-react"
 
-import type { IconType } from "@/types";
-import type { ButtonProps } from "@/components/ui/button";
+import type { ButtonProps } from "@/components/ui/button"
+import type { IconType } from "@/types"
 
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu"
 
 interface ActionButtonProps extends ButtonProps {
-  icon: IconType;
-  label: string;
+  icon: IconType
+  label: string
 }
 
 const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(
@@ -31,10 +31,10 @@ const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(
       >
         <Icon className="h-4 w-4" />
       </Button>
-    );
+    )
   }
-);
-ActionButton.displayName = "ActionButton";
+)
+ActionButton.displayName = "ActionButton"
 
 export function EmailViewContentActions() {
   return (
@@ -60,5 +60,5 @@ export function EmailViewContentActions() {
         </DropdownMenu>
       </div>
     </div>
-  );
+  )
 }

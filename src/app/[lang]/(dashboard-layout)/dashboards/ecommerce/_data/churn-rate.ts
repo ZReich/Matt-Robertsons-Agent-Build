@@ -1,4 +1,4 @@
-import type { ChurnRateType } from "../types";
+import type { ChurnRateType } from "../types"
 
 export const churnRateData: ChurnRateType = {
   period: "Current year",
@@ -81,4 +81,4 @@ export const churnRateData: ChurnRateType = {
       churnRate: 0.0638,
     },
   ],
-};
+}

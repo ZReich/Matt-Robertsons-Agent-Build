@@ -1,4 +1,4 @@
-import { NavigationType } from "@/types";
+import { NavigationType } from "@/types"
 
 export const sidebarNavigationData: NavigationType[] = [
   {
@@ -67,4 +67,4 @@ export const sidebarNavigationData: NavigationType[] = [
       },
     ],
   },
-];
+]

@@ -1,10 +1,10 @@
-import * as React from "react";
-import Link from "next/link";
-import Image from "next/image";
+import * as React from "react"
+import Image from "next/image"
+import Link from "next/link"
 
-import { ToggleMobileSidebar } from "./toggle-mobile-sidebar";
-import { DocsCommandMenu } from "./docs-command-menu";
-import { ModeDropdown } from "../../_components/mode-dropdown";
+import { ModeDropdown } from "../../_components/mode-dropdown"
+import { DocsCommandMenu } from "./docs-command-menu"
+import { ToggleMobileSidebar } from "./toggle-mobile-sidebar"
 
 export function Header() {
   return (
@@ -28,5 +28,5 @@ export function Header() {
         <ToggleMobileSidebar />
       </div>
     </header>
-  );
+  )
 }

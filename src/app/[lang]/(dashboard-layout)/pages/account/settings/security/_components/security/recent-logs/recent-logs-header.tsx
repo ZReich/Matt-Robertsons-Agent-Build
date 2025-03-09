@@ -1,4 +1,4 @@
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function RecentLogsHeader() {
   return (
@@ -9,5 +9,5 @@ export function RecentLogsHeader() {
         suspicious actions.
       </CardDescription>
     </CardHeader>
-  );
+  )
 }

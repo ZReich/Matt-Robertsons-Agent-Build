@@ -1,14 +1,15 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { LoaderCircle } from "lucide-react";
+import * as React from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { LoaderCircle } from "lucide-react"
 
-import { FormLayoutsSchema } from "../../_schemas/form-layouts-schema";
+import { FormLayoutsSchema } from "../../_schemas/form-layouts-schema"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Form,
   FormControl,
@@ -16,29 +17,28 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { InputPhone } from "@/components/ui/input-phone"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { InputPhone } from "@/components/ui/input-phone";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/select"
 
-type FormType = z.infer<typeof FormLayoutsSchema>;
+type FormType = z.infer<typeof FormLayoutsSchema>
 
 export function VerticalFormLayout() {
   const form = useForm<FormType>({
     resolver: zodResolver(FormLayoutsSchema),
-  });
+  })
 
-  const { isSubmitting, isValid, isDirty } = form.formState;
-  const isDisabled = isSubmitting || !isDirty || !isValid; // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isValid, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
 
-  async function onSubmit(data: FormType) {}
+  async function onSubmit(_data: FormType) {}
 
   return (
     <Card>
@@ -190,5 +190,5 @@ export function VerticalFormLayout() {
         </Form>
       </CardContent>
     </Card>
-  );
+  )
 }

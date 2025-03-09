@@ -1,40 +1,40 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import type { SettingsType } from "@/types";
+import type { SettingsType } from "@/types"
 
-export type ThemeContextType = Pick<SettingsType, "theme" | "mode" | "radius">;
+export type ThemeContextType = Pick<SettingsType, "theme" | "mode" | "radius">
 
 export const defaultTheme: ThemeContextType = {
   theme: "zinc",
   mode: "system",
   radius: 0.5,
-};
+}
 
 export const ThemeContext = React.createContext<
   | {
-      theme: ThemeContextType;
-      updateTheme: (newTheme: ThemeContextType) => void;
-      resetTheme: () => void;
+      theme: ThemeContextType
+      updateTheme: (newTheme: ThemeContextType) => void
+      resetTheme: () => void
     }
   | undefined
->(undefined);
+>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = React.useState<ThemeContextType>(defaultTheme);
+  const [theme, setTheme] = React.useState<ThemeContextType>(defaultTheme)
 
   const updateTheme = (newTheme: ThemeContextType) => {
-    setTheme(newTheme);
-  };
+    setTheme(newTheme)
+  }
 
   const resetTheme = () => {
-    setTheme(defaultTheme);
-  };
+    setTheme(defaultTheme)
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, updateTheme, resetTheme }}>
       {children}
     </ThemeContext.Provider>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const VerifyEmailSchema = z.object({
   email: z
@@ -6,4 +6,4 @@ export const VerifyEmailSchema = z.object({
     .email({ message: "Invalid email address" })
     .toLowerCase()
     .trim(),
-});
+})

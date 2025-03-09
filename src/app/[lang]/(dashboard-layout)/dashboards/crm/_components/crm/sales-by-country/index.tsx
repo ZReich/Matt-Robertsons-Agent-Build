@@ -1,7 +1,10 @@
-import { salesByCountryData } from "../../../_data/sales-by-country";
+import { salesByCountryData } from "../../../_data/sales-by-country"
 
-import { SalesByCountryChart } from "./sales-by-country-chart";
-import { DashboardCard, DashboardCardActionsDropdown } from "@/components/dashboards/dashboard-card";
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { SalesByCountryChart } from "./sales-by-country-chart"
 
 export function SalesByCountry() {
   return (
@@ -12,5 +15,5 @@ export function SalesByCountry() {
     >
       <SalesByCountryChart data={salesByCountryData.countries} />
     </DashboardCard>
-  );
+  )
 }

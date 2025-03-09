@@ -1,13 +1,14 @@
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { useRouter } from "next/navigation"
+import { Check } from "lucide-react"
 
-import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils";
+import type { PricingCardType } from "../../types"
 
-import type { PricingCardType } from "../../types";
+import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -15,27 +16,26 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/card"
 
 function RenderPrice({
   price,
   period,
   discountRate,
 }: Pick<PricingCardType, "price" | "period" | "discountRate">) {
-  if (!price) return null;
+  if (!price) return null
 
   const finalPrice = discountRate
     ? getDiscountedPrice(price, discountRate, true)
-    : price;
-  const fomrattedFinalPrice = formatCurrency(finalPrice);
+    : price
+  const fomrattedFinalPrice = formatCurrency(finalPrice)
 
   return (
     <div className="flex justify-center items-baseline mb-8 mt-2">
       <span className="text-4xl font-black">{fomrattedFinalPrice}</span>
       {period && <span className="text-muted-foreground">/{period}</span>}
     </div>
-  );
+  )
 }
 
 export function PricingCard({
@@ -52,7 +52,7 @@ export function PricingCard({
   content,
   href,
 }: PricingCardType) {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <li>
@@ -100,5 +100,5 @@ export function PricingCard({
         </CardFooter>
       </Card>
     </li>
-  );
+  )
 }

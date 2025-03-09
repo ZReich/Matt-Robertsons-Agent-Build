@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { Card } from "@/components/ui/card";
-import { EmailListHeader } from "./email-list-header";
-import { EmailListContent } from "./email-list-content";
-import { EmailListFooter } from "./email-list-footer";
+import { Card } from "@/components/ui/card"
+import { EmailListContent } from "./email-list-content"
+import { EmailListFooter } from "./email-list-footer"
+import { EmailListHeader } from "./email-list-header"
 
 export function EmailList() {
   return (
@@ -14,5 +14,5 @@ export function EmailList() {
       <EmailListContent />
       <EmailListFooter />
     </Card>
-  );
+  )
 }

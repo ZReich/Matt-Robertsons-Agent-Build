@@ -1,11 +1,11 @@
-import { RegisterForm } from "./register-form";
 import {
   Auth,
-  AuthHeader,
-  AuthTitle,
   AuthDescription,
   AuthForm,
-} from "../auth-layout";
+  AuthHeader,
+  AuthTitle,
+} from "../auth-layout"
+import { RegisterForm } from "./register-form"
 
 export function Register() {
   return (
@@ -20,5 +20,5 @@ export function Register() {
         <RegisterForm />
       </AuthForm>
     </Auth>
-  );
+  )
 }

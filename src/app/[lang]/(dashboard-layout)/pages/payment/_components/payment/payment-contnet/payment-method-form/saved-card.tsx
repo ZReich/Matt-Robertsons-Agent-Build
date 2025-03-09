@@ -1,22 +1,22 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import { Landmark } from "lucide-react";
+import Image from "next/image"
+import { Landmark } from "lucide-react"
 
-import type { PaymentType, PaymentMethodFormType } from "../../../../types";
+import type { PaymentMethodFormType, PaymentType } from "../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { RadioGroupItem } from "@/components/ui/radio-group"
 
 export function SavedCard({
   card,
   onSelect,
 }: {
-  card: PaymentType["savedCards"][0];
-  onSelect: (id: PaymentMethodFormType["savedCard"]) => void;
+  card: PaymentType["savedCards"][0]
+  onSelect: (id: PaymentMethodFormType["savedCard"]) => void
 }) {
-  const isBankAccount = !card.cardType;
+  const isBankAccount = !card.cardType
 
   return (
     <Card key={card.id} className="flex items-center gap-x-2 p-4">
@@ -51,5 +51,5 @@ export function SavedCard({
         )}
       </Label>
     </Card>
-  );
+  )
 }

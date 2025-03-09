@@ -1,5 +1,5 @@
-import { Maintenance } from "@/components/pages/maintenance";
+import { Maintenance } from "@/components/pages/maintenance"
 
 export default function UnauthorizedPgae() {
-  return <Maintenance />;
+  return <Maintenance />
 }

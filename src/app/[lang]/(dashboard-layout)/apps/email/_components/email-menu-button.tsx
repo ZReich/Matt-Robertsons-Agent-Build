@@ -1,20 +1,19 @@
-"use client";
+"use client"
 
-import { Menu } from "lucide-react";
+import { Menu } from "lucide-react"
 
-import { useEmailContext } from "../hooks/use-email-context";
-
-import { Button, ButtonProps } from "@/components/ui/button";
+import { useEmailContext } from "../hooks/use-email-context"
+import { Button, ButtonProps } from "@/components/ui/button"
 
 interface EmailMenuButtonProps extends ButtonProps {
-  isIcon?: boolean;
+  isIcon?: boolean
 }
 
 export function EmailMenuButton({
   isIcon = false,
   ...props
 }: EmailMenuButtonProps) {
-  const { setIsEmailSidebarOpen } = useEmailContext();
+  const { setIsEmailSidebarOpen } = useEmailContext()
 
   if (isIcon) {
     return (
@@ -28,7 +27,7 @@ export function EmailMenuButton({
       >
         <Menu className="h-4 w-4" />
       </Button>
-    );
+    )
   }
 
   return (
@@ -40,5 +39,5 @@ export function EmailMenuButton({
     >
       Menu
     </Button>
-  );
+  )
 }

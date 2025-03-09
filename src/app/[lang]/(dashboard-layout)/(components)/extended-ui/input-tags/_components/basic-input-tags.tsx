@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { InputTags } from "@/components/ui/input-tags";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { InputTags } from "@/components/ui/input-tags"
 
 export function BasicInputTags() {
-  const [tags, setTags] = React.useState<string[]>(["React", "TypeScript"]);
+  const [tags, setTags] = React.useState<string[]>(["React", "TypeScript"])
 
   return (
     <Card>
@@ -17,5 +17,5 @@ export function BasicInputTags() {
         <InputTags tags={tags} onTagsChange={setTags} />
       </CardContent>
     </Card>
-  );
+  )
 }

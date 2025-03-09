@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicInput } from "./_components/basic-input";
-import { InputFile } from "./_components/input-file";
-import { InputDisabled } from "./_components/input-disabled";
-import { InputWithLabel } from "./_components/input-with-label";
-import { InputWithButton } from "./_components/input-with-button";
+import { BasicInput } from "./_components/basic-input"
+import { InputDisabled } from "./_components/input-disabled"
+import { InputFile } from "./_components/input-file"
+import { InputWithButton } from "./_components/input-with-button"
+import { InputWithLabel } from "./_components/input-with-label"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Input",
-};
+}
 
 export default function InputPage() {
   return (
@@ -21,5 +21,5 @@ export default function InputPage() {
       <InputWithLabel />
       <InputWithButton />
     </section>
-  );
+  )
 }

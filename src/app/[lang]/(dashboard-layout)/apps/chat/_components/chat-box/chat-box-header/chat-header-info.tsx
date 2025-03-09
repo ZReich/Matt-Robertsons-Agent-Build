@@ -1,9 +1,9 @@
-import { getInitials } from "@/lib/utils";
+import type { ChatType } from "../../../types"
 
-import type { ChatType } from "../../../types";
+import { getInitials } from "@/lib/utils"
 
-import { CardTitle } from "@/components/ui/card";
-import { ChatAvatar } from "../../chat-avatar";
+import { CardTitle } from "@/components/ui/card"
+import { ChatAvatar } from "../../chat-avatar"
 
 export function ChatHeaderInfo({ chat }: { chat: ChatType }) {
   return (
@@ -16,5 +16,5 @@ export function ChatHeaderInfo({ chat }: { chat: ChatType }) {
       />
       <CardTitle>{chat.name}</CardTitle>
     </>
-  );
+  )
 }

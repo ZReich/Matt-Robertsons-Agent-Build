@@ -1,84 +1,86 @@
-"use client";
+"use client"
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useSidebar } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
+
+import { cn } from "@/lib/utils"
+
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useSidebar } from "@/components/ui/sidebar"
 
 export function Toc() {
-  const [toc, setToc] = useState<TocItem[]>([]);
-  const pathname = usePathname();
+  const [toc, setToc] = useState<TocItem[]>([])
+  const pathname = usePathname()
 
   useEffect(() => {
-    const content = document.getElementById("mdx-content");
+    const content = document.getElementById("mdx-content")
     if (content) {
-      const tocItems = generateToc(content, "#mdx-content");
-      setToc(tocItems);
+      const tocItems = generateToc(content, "#mdx-content")
+      setToc(tocItems)
 
       // Apply generated IDs to all headings without IDs
-      const headings = content.querySelectorAll("h2, h3, h4");
+      const headings = content.querySelectorAll("h2, h3, h4")
       headings.forEach((heading, index) => {
         if (!heading.id && tocItems[index]) {
-          heading.id = tocItems[index].id;
+          heading.id = tocItems[index].id
         }
-      });
+      })
     }
-  }, [pathname]);
+  }, [pathname])
 
-  return <TableOfContents items={toc} />;
+  return <TableOfContents items={toc} />
 }
 
 export interface TocItem {
-  id: string;
-  title: string;
-  level: number;
-  children?: TocItem[];
+  id: string
+  title: string
+  level: number
+  children?: TocItem[]
 }
 
 export function generateToc(content: HTMLElement, selector: string): TocItem[] {
   const headings = Array.from(
     content.querySelectorAll(`${selector} h2, ${selector} h3, ${selector} h4`)
-  );
-  const toc: TocItem[] = [];
-  const stack: TocItem[] = [];
-  const usedIds = new Set<string>();
+  )
+  const toc: TocItem[] = []
+  const stack: TocItem[] = []
+  const usedIds = new Set<string>()
 
   headings.forEach((heading) => {
-    const level = parseInt(heading.tagName.charAt(1), 10);
-    const title = heading.textContent?.trim() || "";
-    let id = heading.id || slugify(title);
+    const level = parseInt(heading.tagName.charAt(1), 10)
+    const title = heading.textContent?.trim() || ""
+    const id = heading.id || slugify(title)
 
     // Ensure unique ID
-    let uniqueId = id;
-    let counter = 1;
+    let uniqueId = id
+    let counter = 1
     while (usedIds.has(uniqueId)) {
-      uniqueId = `${id}-${counter}`;
-      counter++;
+      uniqueId = `${id}-${counter}`
+      counter++
     }
-    usedIds.add(uniqueId);
+    usedIds.add(uniqueId)
 
     // Assign unique ID back to the heading (optional but helpful)
-    heading.id = uniqueId;
+    heading.id = uniqueId
 
-    const item: TocItem = { id: uniqueId, title, level, children: [] };
+    const item: TocItem = { id: uniqueId, title, level, children: [] }
 
     // Maintain hierarchy using stack
     while (stack.length > 0 && stack[stack.length - 1].level >= item.level) {
-      stack.pop();
+      stack.pop()
     }
 
     if (stack.length > 0) {
       // @ts-ignore
-      stack[stack.length - 1].children.push(item);
+      stack[stack.length - 1].children.push(item)
     } else {
-      toc.push(item);
+      toc.push(item)
     }
 
-    stack.push(item);
-  });
+    stack.push(item)
+  })
 
-  return toc;
+  return toc
 }
 
 // Utility function for slugifying text
@@ -86,39 +88,39 @@ function slugify(text: string): string {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with "-"
-    .replace(/^-+|-+$/g, ""); // Remove leading/trailing dashes
+    .replace(/^-+|-+$/g, "") // Remove leading/trailing dashes
 }
 
 interface TableOfContentsProps {
-  items: TocItem[];
+  items: TocItem[]
 }
 
 export function TableOfContents({ items }: TableOfContentsProps) {
-  const [activeId, setActiveId] = useState<string>("");
-  const { isMobile } = useSidebar();
+  const [activeId, setActiveId] = useState<string>("")
+  const { isMobile } = useSidebar()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
+            setActiveId(entry.target.id)
           }
-        });
+        })
       },
       { rootMargin: "0px 0px -60% 0px" }
-    );
+    )
 
     const headers = document.querySelectorAll(
       "#mdx-content h2, #mdx-content h3, #mdx-content h4"
-    );
-    headers.forEach((header) => observer.observe(header));
+    )
+    headers.forEach((header) => observer.observe(header))
 
     return () => {
-      headers.forEach((header) => observer.unobserve(header));
-      setActiveId("");
-    };
-  }, [items]);
+      headers.forEach((header) => observer.unobserve(header))
+      setActiveId("")
+    }
+  }, [items])
 
   const renderItems = (items: TocItem[]) => {
     return (
@@ -143,8 +145,8 @@ export function TableOfContents({ items }: TableOfContentsProps) {
           </li>
         ))}
       </ul>
-    );
-  };
+    )
+  }
 
   return (
     <aside
@@ -162,5 +164,5 @@ export function TableOfContents({ items }: TableOfContentsProps) {
         </ScrollArea>
       </nav>
     </aside>
-  );
+  )
 }

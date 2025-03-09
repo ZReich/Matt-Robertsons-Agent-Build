@@ -1,41 +1,41 @@
-import Link from "next/link";
+import Link from "next/link"
 import {
   AlertCircle,
   ArrowRight,
+  Bug,
+  Calendar,
   Check,
   ChevronDown,
+  Clock,
   Cloud,
   CreditCard,
-  Bug,
-  Heart,
-  Home,
-  Mail,
-  Settings,
-  Star,
-  User,
-  Calendar,
-  Clock,
   Download,
   Edit,
   File,
+  Heart,
+  Home,
   Image,
   LinkIcon,
+  Mail,
   Map,
   Phone,
   Search,
+  Settings,
+  Star,
   Trash,
-} from "lucide-react";
+  User,
+} from "lucide-react"
 
-import type { IconType } from "../../types";
+import type { IconType } from "../../types"
 
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/card"
 
 const icons: IconType[] = [
   { icon: AlertCircle, name: "AlertCircle" },
@@ -62,7 +62,7 @@ const icons: IconType[] = [
   { icon: Phone, name: "Phone" },
   { icon: Search, name: "Search" },
   { icon: Trash, name: "Trash" },
-];
+]
 
 export function Lucide() {
   return (
@@ -92,5 +92,5 @@ export function Lucide() {
         </Button>
       </CardFooter>
     </Card>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import type { ActivityTimelineType } from "../types";
+import type { ActivityTimelineType } from "../types"
 
 export const activityTimelineData: ActivityTimelineType = {
   period: "Today",
@@ -95,4 +95,4 @@ export const activityTimelineData: ActivityTimelineType = {
       ],
     },
   ],
-};
+}

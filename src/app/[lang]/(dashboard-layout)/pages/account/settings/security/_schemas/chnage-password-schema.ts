@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const ChangePasswordSchema = z.object({
   currentPassword: z.string().min(8, {
@@ -10,4 +10,4 @@ export const ChangePasswordSchema = z.object({
   confirmPassword: z.string().min(8, {
     message: "Confirm password must contain at least 8 characters",
   }),
-});
+})

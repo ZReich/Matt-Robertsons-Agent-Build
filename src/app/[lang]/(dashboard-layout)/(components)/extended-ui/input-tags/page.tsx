@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicInputTags } from "./_components/basic-input-tags";
-import { InputTagsPlaceholder } from "./_components/input-tags-placeholder";
-import { InputTagsWithSuggestionsComponent } from "./_components/input-tags-with-suggestions";
+import { BasicInputTags } from "./_components/basic-input-tags"
+import { InputTagsPlaceholder } from "./_components/input-tags-placeholder"
+import { InputTagsWithSuggestionsComponent } from "./_components/input-tags-with-suggestions"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Input Tags",
-};
+}
 
 export default function InputTagsPage() {
   return (
@@ -17,5 +17,5 @@ export default function InputTagsPage() {
       <InputTagsPlaceholder />
       <InputTagsWithSuggestionsComponent />
     </section>
-  );
+  )
 }

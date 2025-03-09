@@ -1,8 +1,8 @@
-import { activityTimelineData } from "../../../_data/activity-timeline";
+import { activityTimelineData } from "../../../_data/activity-timeline"
 
-import { DashboardCard } from "@/components/dashboards/dashboard-card";
-import { ActivityTimelineList } from "./activity-timeline-list";
-import { DatePicker } from "@/components/date-picker";
+import { DashboardCard } from "@/components/dashboards/dashboard-card"
+import { DatePicker } from "@/components/date-picker"
+import { ActivityTimelineList } from "./activity-timeline-list"
 
 export function ActivityTimeline() {
   return (
@@ -20,5 +20,5 @@ export function ActivityTimeline() {
     >
       <ActivityTimelineList data={activityTimelineData.activities} />
     </DashboardCard>
-  );
+  )
 }

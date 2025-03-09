@@ -1,4 +1,4 @@
-import type { LeadSourceType } from "../types";
+import type { LeadSourceType } from "../types"
 
 export const leadSourcesData: LeadSourceType = {
   period: "Last month",
@@ -12,4 +12,4 @@ export const leadSourcesData: LeadSourceType = {
     website: 15,
     other: 15,
   },
-};
+}

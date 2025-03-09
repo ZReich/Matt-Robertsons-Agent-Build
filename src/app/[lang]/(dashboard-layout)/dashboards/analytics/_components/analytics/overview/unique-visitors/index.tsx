@@ -1,12 +1,15 @@
-import { OverviewType } from "../../../../types";
+import { OverviewType } from "../../../../types"
 
-import { DashboardCardActionsDropdown, DashboardOverviewCardV3 } from "@/components/dashboards/dashboard-card";
-import { UniqueVisitorsChart } from "./unique-visitors-chart";
+import {
+  DashboardCardActionsDropdown,
+  DashboardOverviewCardV3,
+} from "@/components/dashboards/dashboard-card"
+import { UniqueVisitorsChart } from "./unique-visitors-chart"
 
 export function UniqueVisitors({
   data,
 }: {
-  data: OverviewType["uniqueVisitors"];
+  data: OverviewType["uniqueVisitors"]
 }) {
   return (
     <DashboardOverviewCardV3
@@ -18,5 +21,5 @@ export function UniqueVisitors({
       action={<DashboardCardActionsDropdown />}
       chart={<UniqueVisitorsChart data={data.perMonth} />}
     />
-  );
+  )
 }

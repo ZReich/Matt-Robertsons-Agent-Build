@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Droppable, DroppableProvided } from "@hello-pangea/dnd";
+import * as React from "react"
+import { Droppable, DroppableProvided } from "@hello-pangea/dnd"
 
-import type { ColumnType } from "../../../../../types";
+import type { ColumnType } from "../../../../../types"
 
-import { CardContent } from "@/components/ui/card";
-import { KanbanTaskItem } from "./kanban-task-item";
-import { KanbanAddNewTaskButton } from "./kanban-add-new-task-button";
+import { CardContent } from "@/components/ui/card"
+import { KanbanAddNewTaskButton } from "./kanban-add-new-task-button"
+import { KanbanTaskItem } from "./kanban-task-item"
 
 interface KanbanTaskListProps {
-  column: ColumnType;
+  column: ColumnType
 }
 
 export const KanbanTaskList = React.memo(({ column }: KanbanTaskListProps) => {
@@ -34,6 +34,6 @@ export const KanbanTaskList = React.memo(({ column }: KanbanTaskListProps) => {
         </CardContent>
       )}
     </Droppable>
-  );
-});
-KanbanTaskList.displayName = "KanbanTaskList";
+  )
+})
+KanbanTaskList.displayName = "KanbanTaskList"

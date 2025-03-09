@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
-import { Wrench } from "lucide-react";
+import { useRouter } from "next/navigation"
+import { Wrench } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export function Maintenance() {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center text-center text-foreground bg-background p-4">
@@ -21,5 +21,5 @@ export function Maintenance() {
         Refresh Page
       </Button>
     </div>
-  );
+  )
 }

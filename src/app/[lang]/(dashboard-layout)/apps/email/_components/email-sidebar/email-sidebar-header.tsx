@@ -1,21 +1,20 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import Link from "next/link"
+import { useParams } from "next/navigation"
 
-import { ensureLocalizedPathname } from "@/lib/i18n";
+import type { LocaleType } from "@/types"
 
-import type { LocaleType } from "@/types";
+import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import { useEmailContext } from "../../hooks/use-email-context";
-
-import { Button } from "@/components/ui/button";
+import { useEmailContext } from "../../hooks/use-email-context"
+import { Button } from "@/components/ui/button"
 
 export function EmailSidebarHeader() {
-  const { setIsEmailSidebarOpen } = useEmailContext();
-  const params = useParams();
+  const { setIsEmailSidebarOpen } = useEmailContext()
+  const params = useParams()
 
-  const locale = params.lang as LocaleType;
+  const locale = params.lang as LocaleType
 
   return (
     <div className="p-3">
@@ -28,5 +27,5 @@ export function EmailSidebarHeader() {
         </Link>
       </Button>
     </div>
-  );
+  )
 }

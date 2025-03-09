@@ -1,10 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
-import { teamMembersData } from "../_data/team-members";
-
-import { KanbanReducer } from "../reducers/kanban-reducer";
+import { teamMembersData } from "../_data/team-members"
 
 import type {
   ColumnType,
@@ -12,16 +10,18 @@ import type {
   KanbanContextType,
   TaskType,
   TaskWithoutIdAndOrderAndColumnIdType,
-} from "../types";
+} from "../types"
+
+import { KanbanReducer } from "../reducers/kanban-reducer"
 
 // Create Kanban context
 export const KanbanContext = React.createContext<KanbanContextType | undefined>(
   undefined
-);
+)
 
 interface KanbanProviderProps {
-  kanbanData: ColumnType[];
-  children: React.ReactNode;
+  kanbanData: ColumnType[]
+  children: React.ReactNode
 }
 
 export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
@@ -31,60 +31,60 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     teamMembers: teamMembersData,
     selectedColumn: undefined,
     selectedTask: undefined,
-  });
+  })
 
   // Sidebar state management
   const [kanbanAddTaskSidebarIsOpen, setKanbanAddTaskSidebarIsOpen] =
-    React.useState(false);
+    React.useState(false)
   const [kanbanUpdateTaskSidebarIsOpen, setKanbanUpdateTaskSidebarIsOpen] =
-    React.useState(false);
+    React.useState(false)
   const [kanbanAddColumnSidebarIsOpen, setKanbanAddColumnSidebarIsOpen] =
-    React.useState(false);
+    React.useState(false)
   const [kanbanUpdateColumnSidebarIsOpen, setKanbanUpdateColumnSidebarIsOpen] =
-    React.useState(false);
+    React.useState(false)
 
   // Handlers for column actions
   const handleAddColumn = (column: ColumnWithoutIdAndOrderAndTasksType) => {
-    dispatch({ type: "addColumn", column });
-  };
+    dispatch({ type: "addColumn", column })
+  }
 
   const handleUpdateColumn = (column: ColumnType) => {
-    dispatch({ type: "updateColumn", column });
-  };
+    dispatch({ type: "updateColumn", column })
+  }
 
   const handleDeleteColumn = (columnId: ColumnType["id"]) => {
-    dispatch({ type: "deleteColumn", columnId });
-  };
+    dispatch({ type: "deleteColumn", columnId })
+  }
 
   // Handlers for task actions
   const handleAddTask = (
     task: TaskWithoutIdAndOrderAndColumnIdType,
     columnId: ColumnType["id"]
   ) => {
-    dispatch({ type: "addTask", task, columnId });
-  };
+    dispatch({ type: "addTask", task, columnId })
+  }
 
   const handleUpdateTask = (task: TaskType) => {
-    dispatch({ type: "updateTask", task });
-  };
+    dispatch({ type: "updateTask", task })
+  }
 
   const handleDeleteTask = (taskId: TaskType["id"]) => {
-    dispatch({ type: "deleteTask", taskId });
-  };
+    dispatch({ type: "deleteTask", taskId })
+  }
 
   // Reorder handlers
   const handleReorderColumns = (
     sourceIndex: number,
     destinationIndex: number
   ) => {
-    if (sourceIndex === destinationIndex) return;
+    if (sourceIndex === destinationIndex) return
 
     dispatch({
       type: "reorderColumns",
       sourceIndex,
       destinationIndex,
-    });
-  };
+    })
+  }
 
   const handleReorderTasks = (
     sourceColumnId: string,
@@ -96,23 +96,23 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
       sourceColumnId === destinationColumnId &&
       sourceIndex === destinationIndex
     )
-      return;
+      return
 
     dispatch({
       type: "reorderTasks",
       source: { columnId: sourceColumnId, index: sourceIndex },
       destination: { columnId: destinationColumnId, index: destinationIndex },
-    });
-  };
+    })
+  }
 
   // Selection handlers
   const handleSelectColumn = (column: ColumnType | undefined) => {
-    dispatch({ type: "selectColumn", column });
-  };
+    dispatch({ type: "selectColumn", column })
+  }
 
   const handleSelectTask = (task: TaskType | undefined) => {
-    dispatch({ type: "selectTask", task });
-  };
+    dispatch({ type: "selectTask", task })
+  }
 
   return (
     <KanbanContext.Provider
@@ -140,5 +140,5 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     >
       {children}
     </KanbanContext.Provider>
-  );
+  )
 }

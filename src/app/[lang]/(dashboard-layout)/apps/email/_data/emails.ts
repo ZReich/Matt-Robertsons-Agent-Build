@@ -1,4 +1,4 @@
-import type { EmailType } from "../types";
+import type { EmailType } from "../types"
 
 export const emailsData: EmailType[] = [
   {
@@ -812,4 +812,4 @@ Liam`,
     isSpam: false,
     isDeleted: false,
   },
-];
+]

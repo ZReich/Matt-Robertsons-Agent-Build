@@ -1,18 +1,18 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Draggable, DraggableProvided } from "@hello-pangea/dnd";
+import * as React from "react"
+import { Draggable, DraggableProvided } from "@hello-pangea/dnd"
 
-import type { TaskType } from "../../../../../../types";
+import type { TaskType } from "../../../../../../types"
 
-import { Card } from "@/components/ui/card";
-import { KanbanTaskItemHeader } from "./kanban-task-item-header";
-import { KanbanTaskItemContent } from "./kanban-task-item-content";
-import { KanbanTaskItemFooter } from "./kanban-task-item-footer";
+import { Card } from "@/components/ui/card"
+import { KanbanTaskItemContent } from "./kanban-task-item-content"
+import { KanbanTaskItemFooter } from "./kanban-task-item-footer"
+import { KanbanTaskItemHeader } from "./kanban-task-item-header"
 
 interface KanbanTaskItemProps {
-  task: TaskType;
-  index: number;
+  task: TaskType
+  index: number
 }
 
 export const KanbanTaskItem = React.memo(
@@ -36,7 +36,7 @@ export const KanbanTaskItem = React.memo(
           </Card>
         )}
       </Draggable>
-    );
+    )
   }
-);
-KanbanTaskItem.displayName = "KanbanTaskItem";
+)
+KanbanTaskItem.displayName = "KanbanTaskItem"

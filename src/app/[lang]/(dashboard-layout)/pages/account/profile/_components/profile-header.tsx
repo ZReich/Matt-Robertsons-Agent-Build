@@ -1,25 +1,25 @@
-import Image from "next/image";
-import Link from "next/link";
-import { UserPen } from "lucide-react";
+import Image from "next/image"
+import Link from "next/link"
+import { UserPen } from "lucide-react"
 
-import type { LocaleType } from "@/types";
-import type { UserType } from "../../types";
+import type { LocaleType } from "@/types"
+import type { UserType } from "../../types"
 
-import { cn, getInitials } from "@/lib/utils";
-import { ensureLocalizedPathname } from "@/lib/i18n";
+import { ensureLocalizedPathname } from "@/lib/i18n"
+import { cn, getInitials } from "@/lib/utils"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { buttonVariants } from "@/components/ui/button";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { buttonVariants } from "@/components/ui/button"
 
 export function ProfileHeader({
   locale,
   user,
 }: {
-  locale: LocaleType;
-  user: UserType;
+  locale: LocaleType
+  user: UserType
 }) {
-  const { name, role, avatar, background } = user;
+  const { name, role, avatar, background } = user
 
   return (
     <section className="bg-background border border-border">
@@ -51,5 +51,5 @@ export function ProfileHeader({
         </Link>
       </div>
     </section>
-  );
+  )
 }

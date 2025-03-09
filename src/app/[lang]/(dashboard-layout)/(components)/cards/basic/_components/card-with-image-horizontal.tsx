@@ -1,5 +1,7 @@
-import Image from "next/image";
+import Image from "next/image"
 
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -7,9 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+} from "@/components/ui/card"
 
 export function CardWithImageHorizontal() {
   return (
@@ -37,5 +37,5 @@ export function CardWithImageHorizontal() {
         </CardFooter>
       </div>
     </Card>
-  );
+  )
 }

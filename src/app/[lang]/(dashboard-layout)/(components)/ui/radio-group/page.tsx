@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"
 
-import { BasicRadioGroup } from "./_components/basic-radio-group";
-import { RadioGroupDisabled } from "./_components/radio-group-disabled";
+import { BasicRadioGroup } from "./_components/basic-radio-group"
+import { RadioGroupDisabled } from "./_components/radio-group-disabled"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
   title: "Radio Group",
-};
+}
 
 export default function RadioGroupPage() {
   return (
@@ -15,5 +15,5 @@ export default function RadioGroupPage() {
       <BasicRadioGroup />
       <RadioGroupDisabled />
     </section>
-  );
+  )
 }

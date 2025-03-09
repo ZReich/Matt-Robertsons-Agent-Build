@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/components/ui/input-otp"
 
 export function InputOtpSeparator() {
   return (
@@ -35,5 +35,5 @@ export function InputOtpSeparator() {
         </InputOTP>
       </CardContent>
     </Card>
-  );
+  )
 }

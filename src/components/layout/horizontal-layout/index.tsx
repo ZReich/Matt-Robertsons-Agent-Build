@@ -1,15 +1,15 @@
-import type { DictionaryType } from "@/lib/get-dictionary";
+import type { DictionaryType } from "@/lib/get-dictionary"
 
-import { HorizontalLayoutHeader } from "./horizontal-layout-header";
-import { Footer } from "../footer";
-import { Sidebar } from "../sidebar";
+import { Footer } from "../footer"
+import { Sidebar } from "../sidebar"
+import { HorizontalLayoutHeader } from "./horizontal-layout-header"
 
 export function HorizontalLayout({
   children,
   dictionary,
 }: {
-  children: React.ReactNode;
-  dictionary: DictionaryType;
+  children: React.ReactNode
+  dictionary: DictionaryType
 }) {
   return (
     <>
@@ -22,5 +22,5 @@ export function HorizontalLayout({
         <Footer />
       </div>
     </>
-  );
+  )
 }

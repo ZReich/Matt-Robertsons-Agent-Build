@@ -1,10 +1,9 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { useMedia } from "react-use";
+import * as React from "react"
+import Link from "next/link"
+import { useMedia } from "react-use"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -13,8 +12,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Drawer,
   DrawerClose,
@@ -24,13 +24,13 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
+} from "@/components/ui/drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 const items = [
   { href: "", label: "Home" },
@@ -38,13 +38,13 @@ const items = [
   { href: "", label: "Building Your Application" },
   { href: "", label: "Data Fetching" },
   { label: "Caching and Revalidating" },
-];
+]
 
-const ITEMS_TO_DISPLAY = 3;
+const ITEMS_TO_DISPLAY = 3
 
 export function ResponsiveBreadcrumb() {
-  const [open, setOpen] = React.useState(false);
-  const isDesktop = useMedia("(min-width: 768px)");
+  const [open, setOpen] = React.useState(false)
+  const isDesktop = useMedia("(min-width: 768px)")
 
   return (
     <Card>
@@ -139,5 +139,5 @@ export function ResponsiveBreadcrumb() {
         </Breadcrumb>
       </CardContent>
     </Card>
-  );
+  )
 }

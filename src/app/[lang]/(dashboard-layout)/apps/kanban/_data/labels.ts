@@ -1,4 +1,4 @@
-import { LabelType } from "../types";
+import { LabelType } from "../types"
 
 export const labelsData: LabelType[] = [
   { id: "research", name: "Research" },
@@ -8,4 +8,4 @@ export const labelsData: LabelType[] = [
   { id: "documentation", name: "Documentation" },
   { id: "qa", name: "QA" },
   { id: "marketing", name: "Marketing" },
-];
+]

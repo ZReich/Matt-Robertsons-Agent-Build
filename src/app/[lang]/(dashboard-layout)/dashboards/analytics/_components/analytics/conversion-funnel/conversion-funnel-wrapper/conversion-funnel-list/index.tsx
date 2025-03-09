@@ -1,15 +1,15 @@
-"use client";
+"use client"
 
-import type { ConversionFunnelType } from "../../../../../types";
+import type { ConversionFunnelType } from "../../../../../types"
 
-import { ConversionFunnelItem } from "./conversion-funnel-item";
+import { ConversionFunnelItem } from "./conversion-funnel-item"
 
 export function ConversionFunnelList({
   data,
   trapezoidHeight,
 }: {
-  data: ConversionFunnelType["funnelSteps"];
-  trapezoidHeight: number;
+  data: ConversionFunnelType["funnelSteps"]
+  trapezoidHeight: number
 }) {
   return (
     <ul
@@ -22,5 +22,5 @@ export function ConversionFunnelList({
         <ConversionFunnelItem key={stage.name} data={stage} />
       ))}
     </ul>
-  );
+  )
 }

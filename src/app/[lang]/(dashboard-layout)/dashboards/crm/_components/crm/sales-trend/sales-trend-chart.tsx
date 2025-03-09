@@ -1,22 +1,21 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import * as React from "react"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
-import { cn } from "@/lib/utils";
+import type { ChartConfig } from "@/components/ui/chart"
+import type { SalesTrendType } from "../../../types"
 
-import type { ChartConfig } from "@/components/ui/chart";
-import type { SalesTrendType } from "../../../types";
+import { cn } from "@/lib/utils"
 
-import { useRadius } from "@/hooks/use-radius";
-import { useIsRtl } from "@/hooks/use-is-rtl";
-
+import { useIsRtl } from "@/hooks/use-is-rtl"
+import { useRadius } from "@/hooks/use-radius"
+import { Button } from "@/components/ui/button"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/chart"
 
 const chartConfig = {
   lead: {
@@ -35,15 +34,15 @@ const chartConfig = {
     label: "Closed",
     color: "hsl(var(--chart-4))",
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 export function SalesTrendChart({ data }: { data: SalesTrendType }) {
   const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>("lead");
-  const isRtl = useIsRtl();
-  const radius = useRadius();
+    React.useState<keyof typeof chartConfig>("lead")
+  const isRtl = useIsRtl()
+  const radius = useRadius()
 
-  const { monthly, summary } = data;
+  const { monthly, summary } = data
 
   return (
     <>
@@ -51,7 +50,7 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
         {Object.entries(summary).map(([key, value]) => {
           const stage = key
             .replace("total", "")
-            .toLowerCase() as keyof typeof chartConfig;
+            .toLowerCase() as keyof typeof chartConfig
 
           return (
             <Button
@@ -78,7 +77,7 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
                 {value.toLocaleString()}
               </span>
             </Button>
-          );
+          )
         })}
       </div>
       <ChartContainer
@@ -113,5 +112,5 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
         </BarChart>
       </ChartContainer>
     </>
-  );
+  )
 }

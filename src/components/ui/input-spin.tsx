@@ -1,25 +1,25 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Minus, Plus } from "lucide-react";
+import * as React from "react"
+import { Minus, Plus } from "lucide-react"
 
-import { cn } from "@/lib/utils";
+import type { ButtonProps } from "@/components/ui/button"
 
-import type { ButtonProps } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export interface InputSpinProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     "onChange" | "value" | "min" | "max" | "step"
   > {
-  value?: number;
-  onChange?: (value: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  buttonVariant?: ButtonProps["variant"];
+  value?: number
+  onChange?: (value: number) => void
+  min?: number
+  max?: number
+  step?: number
+  buttonVariant?: ButtonProps["variant"]
 }
 
 const InputSpin = React.forwardRef<HTMLInputElement, InputSpinProps>(
@@ -37,39 +37,37 @@ const InputSpin = React.forwardRef<HTMLInputElement, InputSpinProps>(
     },
     ref
   ) => {
-    const [internalValue, setInternalValue] = React.useState<number>(
-      value ?? 0
-    );
+    const [internalValue, setInternalValue] = React.useState<number>(value ?? 0)
 
     const handleIncrement = () => {
-      const newValue = internalValue + step;
+      const newValue = internalValue + step
       if (newValue <= max) {
-        setInternalValue(newValue);
-        onChange?.(newValue);
+        setInternalValue(newValue)
+        onChange?.(newValue)
       }
-    };
+    }
 
     const handleDecrement = () => {
-      const newValue = internalValue - step;
+      const newValue = internalValue - step
       if (newValue >= min) {
-        setInternalValue(newValue);
-        onChange?.(newValue);
+        setInternalValue(newValue)
+        onChange?.(newValue)
       }
-    };
+    }
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = parseFloat(e.target.value);
+      const newValue = parseFloat(e.target.value)
       if (!isNaN(newValue) && newValue >= min && newValue <= max) {
-        setInternalValue(newValue);
-        onChange?.(newValue);
+        setInternalValue(newValue)
+        onChange?.(newValue)
       }
-    };
+    }
 
     React.useEffect(() => {
       if (value !== undefined) {
-        setInternalValue(value);
+        setInternalValue(value)
       }
-    }, [value]);
+    }, [value])
 
     return (
       <div
@@ -118,9 +116,9 @@ const InputSpin = React.forwardRef<HTMLInputElement, InputSpinProps>(
           <Plus className="h-4 w-4" />
         </Button>
       </div>
-    );
+    )
   }
-);
-InputSpin.displayName = "InputSpin";
+)
+InputSpin.displayName = "InputSpin"
 
-export { InputSpin };
+export { InputSpin }

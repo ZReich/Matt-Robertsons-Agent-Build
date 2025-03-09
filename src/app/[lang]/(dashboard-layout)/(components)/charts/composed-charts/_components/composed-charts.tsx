@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   Area,
@@ -8,14 +8,14 @@ import {
   Line,
   XAxis,
   YAxis,
-} from "recharts";
+} from "recharts"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const composedChartsData = [
   { name: "Page A", uv: 590, pv: 800, amt: 1400 },
@@ -24,7 +24,7 @@ const composedChartsData = [
   { name: "Page D", uv: 1480, pv: 1200, amt: 1228 },
   { name: "Page E", uv: 1520, pv: 1108, amt: 1100 },
   { name: "Page F", uv: 1400, pv: 680, amt: 1700 },
-];
+]
 
 export function ComposedCharts() {
   return (
@@ -138,5 +138,5 @@ export function ComposedCharts() {
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { GenderDistributionType } from "../types";
+import { GenderDistributionType } from "../types"
 
 export const genderDistributionData: GenderDistributionType[] = [
   {
@@ -25,4 +25,4 @@ export const genderDistributionData: GenderDistributionType[] = [
     x: 3.75,
     y: 3.5,
   },
-];
+]

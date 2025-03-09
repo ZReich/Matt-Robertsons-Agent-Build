@@ -1,4 +1,4 @@
-import type { SalesRepresentativeType } from "../types";
+import type { SalesRepresentativeType } from "../types"
 
 export const salesRepresentativeData: SalesRepresentativeType = {
   period: "Last month",
@@ -34,4 +34,4 @@ export const salesRepresentativeData: SalesRepresentativeType = {
       email: "eve.davis@example.com",
     },
   ],
-};
+}

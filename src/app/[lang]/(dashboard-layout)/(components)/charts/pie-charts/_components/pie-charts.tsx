@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { Cell, Pie, PieChart } from "recharts";
+import { Cell, Pie, PieChart } from "recharts"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
 
 const pieChartsData = [
   { name: "Group A", value: 400 },
@@ -16,7 +16,7 @@ const pieChartsData = [
   { name: "Group D", value: 200 },
   { name: "Group E", value: 278 },
   { name: "Group F", value: 189 },
-];
+]
 
 export function PieCharts() {
   return (
@@ -201,5 +201,5 @@ export function PieCharts() {
         </CardContent>
       </Card>
     </section>
-  );
+  )
 }
