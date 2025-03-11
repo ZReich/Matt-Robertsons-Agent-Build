@@ -6,7 +6,7 @@ import type { LocaleType } from "@/types"
 import type { UserType } from "../../types"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
-import { cn, getInitials } from "@/lib/utils"
+import { cn, formatNumberToCompact, getInitials } from "@/lib/utils"
 
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -19,36 +19,48 @@ export function ProfileHeader({
   locale: LocaleType
   user: UserType
 }) {
-  const { name, role, avatar, background } = user
-
   return (
-    <section className="bg-background border border-border">
+    <section className="bg-background border-y border-border">
       <AspectRatio ratio={5 / 1} className="bg-muted">
         <Image
-          src={background}
+          src={user.background}
           fill
           className="h-full w-full object-cover"
           alt="Profile Background"
         />
       </AspectRatio>
-      <div className="w-full flex justify-between items-center p-4 md:p-8">
-        <div className="flex items-center gap-4">
-          <Avatar className="size-14 md:size-16">
-            <AvatarImage src={avatar} alt="Profile Avatar" />
-            <AvatarFallback>{getInitials(name)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-2xl font-bold">{name}</h1>
-            <p className="text-muted-foreground">{role}</p>
-          </div>
-        </div>
+      <div className="relative w-full flex flex-col items-center gap-2 p-4 md:flex-row">
+        <Avatar className="size-32 -mt-20 border-4 border-background md:size-40">
+          <AvatarImage src={user.avatar} alt="Profile Avatar" />
+          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+        </Avatar>
         <Link
           href={ensureLocalizedPathname("/pages/account/settings", locale)}
-          className={cn(buttonVariants({ variant: "default" }))}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "icon" }),
+            "absolute top-4 end-4"
+          )}
+          aria-label="Edit your profile"
         >
-          <UserPen className="me-2 size-4 stroke-[1.5]" />
-          Edit
+          <UserPen className="size-4" />
         </Link>
+        <div className="text-center md:text-start">
+          <div>
+            <h1 className="text-2xl font-bold line-clamp-1">{user.name}</h1>
+            <p className="text-muted-foreground line-clamp-1">
+              {user.state && user.state + ", "}
+              {user.country}
+            </p>
+          </div>
+          <div className="inline-flex w-full">
+            <p className="text-primary after:content-['\00b7'] after:mx-1">
+              {formatNumberToCompact(user.followers)} followers
+            </p>
+            <p className="text-primary">
+              {formatNumberToCompact(user.connections)} connections
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )

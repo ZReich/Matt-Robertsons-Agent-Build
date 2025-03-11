@@ -186,6 +186,16 @@ export function formatDistance(value: string | number | Date) {
     .replace(/\b(over|almost|about)\b/g, "")
 }
 
+export function formatNumberToCompact(
+  value: number,
+  locales: LocaleType = "en"
+) {
+  return new Intl.NumberFormat(locales, {
+    notation: "compact",
+    compactDisplay: "short",
+  }).format(value)
+}
+
 export function timeToDate(timeString: string, baseDate = new Date()) {
   if (!/^\d{2}:\d{2}$/.test(timeString)) {
     throw new Error("Invalid time format. Use 'HH:mm'.")

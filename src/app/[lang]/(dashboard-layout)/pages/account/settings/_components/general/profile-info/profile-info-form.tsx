@@ -199,57 +199,62 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="AL">Alabama</SelectItem>
-                    <SelectItem value="AK">Alaska</SelectItem>
-                    <SelectItem value="AZ">Arizona</SelectItem>
-                    <SelectItem value="AR">Arkansas</SelectItem>
-                    <SelectItem value="CA">California</SelectItem>
-                    <SelectItem value="CO">Colorado</SelectItem>
-                    <SelectItem value="CT">Connecticut</SelectItem>
-                    <SelectItem value="DE">Delaware</SelectItem>
-                    <SelectItem value="FL">Florida</SelectItem>
-                    <SelectItem value="GA">Georgia</SelectItem>
-                    <SelectItem value="HI">Hawaii</SelectItem>
-                    <SelectItem value="ID">Idaho</SelectItem>
-                    <SelectItem value="IL">Illinois</SelectItem>
-                    <SelectItem value="IN">Indiana</SelectItem>
-                    <SelectItem value="IA">Iowa</SelectItem>
-                    <SelectItem value="KS">Kansas</SelectItem>
-                    <SelectItem value="KY">Kentucky</SelectItem>
-                    <SelectItem value="LA">Louisiana</SelectItem>
-                    <SelectItem value="ME">Maine</SelectItem>
-                    <SelectItem value="MD">Maryland</SelectItem>
-                    <SelectItem value="MA">Massachusetts</SelectItem>
-                    <SelectItem value="MI">Michigan</SelectItem>
-                    <SelectItem value="MN">Minnesota</SelectItem>
-                    <SelectItem value="MS">Mississippi</SelectItem>
-                    <SelectItem value="MO">Missouri</SelectItem>
-                    <SelectItem value="MT">Montana</SelectItem>
-                    <SelectItem value="NE">Nebraska</SelectItem>
-                    <SelectItem value="NV">Nevada</SelectItem>
-                    <SelectItem value="NH">New Hampshire</SelectItem>
-                    <SelectItem value="NJ">New Jersey</SelectItem>
-                    <SelectItem value="NM">New Mexico</SelectItem>
-                    <SelectItem value="NY">New York</SelectItem>
-                    <SelectItem value="NC">North Carolina</SelectItem>
-                    <SelectItem value="ND">North Dakota</SelectItem>
-                    <SelectItem value="OH">Ohio</SelectItem>
-                    <SelectItem value="OK">Oklahoma</SelectItem>
-                    <SelectItem value="OR">Oregon</SelectItem>
-                    <SelectItem value="PA">Pennsylvania</SelectItem>
-                    <SelectItem value="RI">Rhode Island</SelectItem>
-                    <SelectItem value="SC">South Carolina</SelectItem>
-                    <SelectItem value="SD">South Dakota</SelectItem>
-                    <SelectItem value="TN">Tennessee</SelectItem>
-                    <SelectItem value="TX">Texas</SelectItem>
-                    <SelectItem value="UT">Utah</SelectItem>
-                    <SelectItem value="VT">Vermont</SelectItem>
-                    <SelectItem value="VA">Virginia</SelectItem>
-                    <SelectItem value="WA">Washington</SelectItem>
-                    <SelectItem value="WV">West Virginia</SelectItem>
-                    <SelectItem value="WI">Wisconsin</SelectItem>
-                    <SelectItem value="WY">Wyoming</SelectItem>
-                    <SelectItem value="DC">District of Columbia</SelectItem>
+                    {[
+                      "Alabama",
+                      "Alaska",
+                      "Arizona",
+                      "Arkansas",
+                      "California",
+                      "Colorado",
+                      "Connecticut",
+                      "Delaware",
+                      "Florida",
+                      "Georgia",
+                      "Hawaii",
+                      "Idaho",
+                      "Illinois",
+                      "Indiana",
+                      "Iowa",
+                      "Kansas",
+                      "Kentucky",
+                      "Louisiana",
+                      "Maine",
+                      "Maryland",
+                      "Massachusetts",
+                      "Michigan",
+                      "Minnesota",
+                      "Mississippi",
+                      "Missouri",
+                      "Montana",
+                      "Nebraska",
+                      "Nevada",
+                      "New Hampshire",
+                      "New Jersey",
+                      "New Mexico",
+                      "New York",
+                      "North Carolina",
+                      "North Dakota",
+                      "Ohio",
+                      "Oklahoma",
+                      "Oregon",
+                      "Pennsylvania",
+                      "Rhode Island",
+                      "South Carolina",
+                      "South Dakota",
+                      "Tennessee",
+                      "Texas",
+                      "Utah",
+                      "Vermont",
+                      "Virginia",
+                      "Washington",
+                      "West Virginia",
+                      "Wisconsin",
+                      "Wyoming",
+                    ].map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -269,16 +274,22 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="USA">United States</SelectItem>
-                    <SelectItem value="Canada">Canada</SelectItem>
-                    <SelectItem value="UK">United Kingdom</SelectItem>
-                    <SelectItem value="Australia">Australia</SelectItem>
-                    <SelectItem value="Germany">Germany</SelectItem>
-                    <SelectItem value="France">France</SelectItem>
-                    <SelectItem value="Japan">Japan</SelectItem>
-                    <SelectItem value="China">China</SelectItem>
-                    <SelectItem value="India">India</SelectItem>
-                    <SelectItem value="Brazil">Brazil</SelectItem>
+                    {[
+                      "United States",
+                      "Canada",
+                      "United Kingdom",
+                      "Australia",
+                      "Germany",
+                      "France",
+                      "Japan",
+                      "China",
+                      "India",
+                      "Brazil",
+                    ].map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -324,16 +335,22 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="Spanish">Spanish</SelectItem>
-                    <SelectItem value="French">French</SelectItem>
-                    <SelectItem value="German">German</SelectItem>
-                    <SelectItem value="Chinese">Chinese</SelectItem>
-                    <SelectItem value="Japanese">Japanese</SelectItem>
-                    <SelectItem value="Arabic">Arabic</SelectItem>
-                    <SelectItem value="portuguese">Portuguese</SelectItem>
-                    <SelectItem value="Russian">Russian</SelectItem>
-                    <SelectItem value="Hindi">Hindi</SelectItem>
+                    {[
+                      "English",
+                      "Spanish",
+                      "French",
+                      "German",
+                      "Chinese",
+                      "Japanese",
+                      "Arabic",
+                      "portuguese",
+                      "Russian",
+                      "Hindi",
+                    ].map((language) => (
+                      <SelectItem key={language} value={language}>
+                        {language}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -353,31 +370,42 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="gmt-12">GMT-12:00</SelectItem>
-                    <SelectItem value="gmt-11">GMT-11:00</SelectItem>
-                    <SelectItem value="gmt-10">GMT-10:00</SelectItem>
-                    <SelectItem value="gmt-9">GMT-09:00</SelectItem>
-                    <SelectItem value="gmt-8">GMT-08:00 (PST)</SelectItem>
-                    <SelectItem value="gmt-7">GMT-07:00 (MST)</SelectItem>
-                    <SelectItem value="gmt-6">GMT-06:00 (CST)</SelectItem>
-                    <SelectItem value="gmt-5">GMT-05:00 (EST)</SelectItem>
-                    <SelectItem value="gmt-4">GMT-04:00</SelectItem>
-                    <SelectItem value="gmt-3">GMT-03:00</SelectItem>
-                    <SelectItem value="gmt-2">GMT-02:00</SelectItem>
-                    <SelectItem value="gmt-1">GMT-01:00</SelectItem>
-                    <SelectItem value="gmt+0">GMT+00:00</SelectItem>
-                    <SelectItem value="gmt+1">GMT+01:00</SelectItem>
-                    <SelectItem value="gmt+2">GMT+02:00</SelectItem>
-                    <SelectItem value="gmt+3">GMT+03:00</SelectItem>
-                    <SelectItem value="gmt+4">GMT+04:00</SelectItem>
-                    <SelectItem value="gmt+5">GMT+05:00</SelectItem>
-                    <SelectItem value="gmt+6">GMT+06:00</SelectItem>
-                    <SelectItem value="gmt+7">GMT+07:00</SelectItem>
-                    <SelectItem value="gmt+8">GMT+08:00</SelectItem>
-                    <SelectItem value="gmt+9">GMT+09:00</SelectItem>
-                    <SelectItem value="gmt+10">GMT+10:00</SelectItem>
-                    <SelectItem value="gmt+11">GMT+11:00</SelectItem>
-                    <SelectItem value="gmt+12">GMT+12:00</SelectItem>
+                    {[
+                      "GMT-12:00",
+                      "GMT-11:00",
+                      "GMT-10:00",
+                      "GMT-09:00",
+                      "GMT-08:00",
+                      "GMT-07:00",
+                      "GMT-06:00",
+                      "GMT-05:00",
+                      "GMT-04:00",
+                      "GMT-03:00",
+                      "GMT-02:00",
+                      "GMT-01:00",
+                      "GMT+00:00",
+                      "GMT+01:00",
+                      "GMT+02:00",
+                      "GMT+03:00",
+                      "GMT+04:00",
+                      "GMT+05:00",
+                      "GMT+06:00",
+                      "GMT+07:00",
+                      "GMT+08:00",
+                      "GMT+09:00",
+                      "GMT+10:00",
+                      "GMT+11:00",
+                      "GMT+12:00",
+                    ].map((timezone) => (
+                      <SelectItem
+                        key={timezone}
+                        value={timezone
+                          .toLowerCase()
+                          .replace(/[^a-z0-9+]/g, "")}
+                      >
+                        {timezone}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -397,16 +425,22 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="USD">USD - US Dollar</SelectItem>
-                    <SelectItem value="EUR">EUR - Euro</SelectItem>
-                    <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                    <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
-                    <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
-                    <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
-                    <SelectItem value="CHF">CHF - Swiss Franc</SelectItem>
-                    <SelectItem value="CNY">CNY - Chinese Yuan</SelectItem>
-                    <SelectItem value="INR">INR - Indian Rupee</SelectItem>
-                    <SelectItem value="BRL">BRL - Brazilian Real</SelectItem>
+                    {[
+                      "USD",
+                      "EUR",
+                      "GBP",
+                      "JPY",
+                      "CAD",
+                      "AUD",
+                      "CHF",
+                      "CNY",
+                      "INR",
+                      "BRL",
+                    ].map((currency) => (
+                      <SelectItem key={currency} value={currency.split(" ")[0]}>
+                        {currency}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
