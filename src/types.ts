@@ -42,6 +42,34 @@ export type IconType = React.ComponentType<IconProps> | LucideIcon
 
 export type DynamicIconNameType = keyof typeof icons
 
+export interface UserType {
+  id: string
+  firstName: string
+  lastName: string
+  name: string
+  password: string
+  username: string
+  role: string
+  avatar: string
+  background: string
+  status: string
+  phoneNumber: string
+  email: string
+  state: string
+  country: string
+  address: string
+  zipCode: string
+  language: string
+  timeZone: string
+  currency: string
+  organization: string
+  twoFactorAuth: boolean
+  loginAlerts: boolean
+  accountReoveryOption: string
+  connections: number
+  followers: number
+}
+
 export interface RouteType {
   type: "guest" | "public"
   exceptions?: string[]

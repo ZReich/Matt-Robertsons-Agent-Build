@@ -1,7 +1,5 @@
 import { z } from "zod"
 
-import { userData } from "@/data/user"
-
 import { DeleteAccountSchema } from "./settings/_schemas/delete-account-schema"
 import { ProfileInfoSchema } from "./settings/_schemas/profile-info-form-schema"
 import { NotificationPreferencesSchema } from "./settings/notifications/_schemas/notifications-preferenes-schema"
@@ -11,9 +9,36 @@ import { AccountRecoveryOptionsSchema } from "./settings/security/_schemas/accou
 import { ChangePasswordSchema } from "./settings/security/_schemas/chnage-password-schema"
 import { SecurityPreferencesSchema } from "./settings/security/_schemas/security-preferences-form-schema"
 
+import type { MediaType } from "@/components/media-grid"
 import type { DynamicIconNameType } from "@/types"
 
-export type UserType = typeof userData
+export interface UserType {
+  id: string
+  firstName: string
+  lastName: string
+  name: string
+  password: string
+  username: string
+  role: string
+  avatar: string
+  background: string
+  status: string
+  phoneNumber: string
+  email: string
+  state: string
+  country: string
+  address: string
+  zipCode: string
+  language: string
+  timeZone: string
+  currency: string
+  organization: string
+  twoFactorAuth: boolean
+  loginAlerts: boolean
+  accountReoveryOption: string
+  connections: number
+  followers: number
+}
 
 export interface PlanType {
   id: number
@@ -87,4 +112,26 @@ export type ChangePasswordFormType = z.infer<typeof ChangePasswordSchema>
 
 export type SecurityPreferencesFormType = z.infer<
   typeof SecurityPreferencesSchema
+>
+
+export type VisibilityType = "public" | "friends" | "private"
+
+export type UserPostType = Pick<UserType, "name" | "avatar">
+
+export interface PostType {
+  id: string
+  user: UserPostType
+  updatedAt: Date
+  text: string
+  totalComments: number
+  totalReposts: number
+  totalLikes: number
+  media?: Array<MediaType>
+  visibility: VisibilityType
+  isLiked: boolean
+}
+
+export type UserProfileConnectionType = Pick<
+  UserType,
+  "name" | "avatar" | "connections"
 >

@@ -1,4 +1,6 @@
-export const userData = {
+import type { UserType } from "@/types"
+
+export const userData: UserType = {
   id: "1",
   firstName: "John",
   lastName: "Doe",
@@ -24,4 +26,4 @@ export const userData = {
   accountReoveryOption: "email",
   connections: 1212,
   followers: 3300,
-} as const
+}
