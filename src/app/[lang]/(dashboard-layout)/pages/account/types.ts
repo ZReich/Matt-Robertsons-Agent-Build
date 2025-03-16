@@ -35,7 +35,7 @@ export interface UserType {
   organization: string
   twoFactorAuth: boolean
   loginAlerts: boolean
-  accountReoveryOption: string
+  accountReoveryOption?: "email" | "sms" | "codes"
   connections: number
   followers: number
 }
