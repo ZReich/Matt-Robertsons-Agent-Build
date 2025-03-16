@@ -18,6 +18,10 @@ export const homeNavigationsData: HomeNavigationType[] = [
     href: "/docs/miscellaneous/changelog",
   },
   {
+    title: "GitHub Access",
+    href: "/home/github-access",
+  },
+  {
     title: "Contact Us",
     href: "/home/contact-us",
   },
