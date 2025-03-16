@@ -8,6 +8,8 @@ import { Providers } from "@/providers"
 
 import type { Metadata } from "next"
 
+import { Toaster } from "@/components/ui/toaster"
+
 // Define metadata for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
@@ -44,6 +46,7 @@ export default async function RootLayout({
       >
         <Providers locale="en" direction="ltr" session={null}>
           {children}
+          <Toaster />
         </Providers>
       </body>
     </html>

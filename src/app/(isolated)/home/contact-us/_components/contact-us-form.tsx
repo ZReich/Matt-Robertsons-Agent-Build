@@ -3,12 +3,14 @@
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { LoaderCircle } from "lucide-react"
 
 import { ContactUsSchema } from "../_schemas/contact-us-schema"
 
 import type { ContactUsType } from "../types"
 
+import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -20,6 +22,9 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+
+type FlattenedErrorType = z.typeToFlattenedError<ContactUsType, string>
+type FieldErrorType = keyof FlattenedErrorType["fieldErrors"]
 
 export function ContactUsForm() {
   const form = useForm<ContactUsType>({
@@ -34,14 +39,52 @@ export function ContactUsForm() {
   const { isSubmitting, isValid } = form.formState
   const isDisabled = isSubmitting || !isValid // Disable button if form is invalid, or submitting
 
-  async function onSubmit(_data: ContactUsType) {
+  async function onSubmit(data: ContactUsType) {
     try {
-    } catch (_error) {
-      // toast({
-      //   variant: "destructive",
-      //   title: "Failed",
-      //   description: error instanceof Error ? error.message : undefined,
-      // });
+      const res = await fetch("/api/contact-us", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (res.status >= 400) {
+        const errorRes = await res.json()
+
+        if (errorRes.formErrors) {
+          const { fieldErrors }: FlattenedErrorType = errorRes.formErrors
+
+          Object.entries(fieldErrors).forEach(([name, messages]) => {
+            form.setError(name as FieldErrorType, {
+              type: "manual",
+              message: messages[0],
+            })
+          })
+
+          toast({
+            variant: "destructive",
+            title: "Validation Errors",
+          })
+        }
+        if (errorRes.message) {
+          throw new Error(errorRes.message)
+        }
+
+        throw new Error("Failed to send message.")
+      }
+
+      toast({
+        title: "Success",
+        description: "Your message has been sent successfully!",
+      })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed",
+        description:
+          error instanceof Error ? error.message : "Something went wrong.",
+      })
     }
   }
 
