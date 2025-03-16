@@ -47,7 +47,7 @@ export function DocsSidebar() {
           <span>Shadboard</span>
         </Link>
       </SidebarHeader>
-      <ScrollArea>
+      <ScrollArea className="h-[calc(100svh-4.25rem)]">
         <SidebarContent className="gap-0">
           {sidebarNavigationData.map((nav) => (
             <SidebarGroup key={nav.title}>
