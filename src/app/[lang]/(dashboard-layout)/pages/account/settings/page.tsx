@@ -1,8 +1,9 @@
-import { userData } from "@/data/user"
-
 import type { Metadata } from "next"
 
-import { General } from "./_components/general"
+import { userData } from "@/data/user"
+
+import { DangerousZone } from "./_components/general/dangerous-zone"
+import { ProfileInfo } from "./_components/general/profile-info"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -11,5 +12,10 @@ export const metadata: Metadata = {
 }
 
 export default function ProfileInfoPage() {
-  return <General user={userData} />
+  return (
+    <div className="grid gap-4">
+      <ProfileInfo user={userData} />
+      <DangerousZone user={userData} />
+    </div>
+  )
 }

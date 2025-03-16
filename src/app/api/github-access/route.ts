@@ -2,9 +2,9 @@ import { google } from "googleapis"
 import nodemailer from "nodemailer"
 import { z } from "zod"
 
-import { GitHubAccessSchema } from "@/app/(isolated)/home/github-access/_schemas/github-access-schema"
-
 import type { NextRequest } from "next/server"
+
+import { GitHubAccessSchema } from "@/app/(isolated)/home/github-access/_schemas/github-access-schema"
 
 import { rateLimiter } from "@/lib/rate-limit"
 

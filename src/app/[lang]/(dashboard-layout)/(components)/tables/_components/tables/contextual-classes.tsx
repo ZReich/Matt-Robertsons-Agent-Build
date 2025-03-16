@@ -1,6 +1,6 @@
-import { invoicesData } from "../../_data/invoices"
-
 import type { InvoiceType } from "../../types"
+
+import { invoicesData } from "../../_data/invoices"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {

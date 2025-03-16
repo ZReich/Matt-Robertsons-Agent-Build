@@ -1,10 +1,10 @@
 import { z } from "zod"
 
+import type { FileType } from "@/types"
+
 import { FilesUploaderSchema } from "./_schemas/files-uploader-schema"
 import { ImagesUploaderSchema } from "./_schemas/images-uploader-schema"
 import { TextMessageSchema } from "./_schemas/text-message-schema"
-
-import type { FileType } from "@/types"
 
 export interface ChatContextType {
   chatState: ChatStateType

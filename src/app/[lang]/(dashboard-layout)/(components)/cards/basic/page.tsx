@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 
 import { CardOverlay } from "./_components/card-overlay"
 import { CardWithFilledImage } from "./_components/card-with-filled-image"
-import { CardWithFilledImageHorizontal } from "./_components/card-with-filled-image-horizontal copy"
+import { CardWithFilledImageHorizontal } from "./_components/card-with-filled-image-horizontal"
 import { CardWithImage } from "./_components/card-with-image"
 import { CardWithImageHorizontal } from "./_components/card-with-image-horizontal"
 import { CardWithTabs } from "./_components/card-with-tabs"

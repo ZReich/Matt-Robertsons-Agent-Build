@@ -1,13 +1,13 @@
 import type { Metadata } from "next"
 
-import { ConversionFunnel } from "../../../dashboards/analytics/_components/analytics/conversion-funnel"
-import { PerformanceOverTime } from "../../../dashboards/analytics/_components/analytics/performance-over-time"
-import { TrafficSources } from "../../../dashboards/analytics/_components/analytics/traffic-sources"
-import { SalesByCountry } from "../../../dashboards/crm/_components/crm/sales-by-country"
-import { SalesTrend } from "../../../dashboards/crm/_components/crm/sales-trend"
-import { ChurnRate } from "../../../dashboards/ecommerce/_components/ecommerce/churn-rate"
-import { RevenueBySource } from "../../../dashboards/ecommerce/_components/ecommerce/revenue-by-source"
-import { SalesTrend as SalesTrendV2 } from "../../../dashboards/ecommerce/_components/ecommerce/sales-trend"
+import { ConversionFunnel } from "../../../dashboards/analytics/_components/conversion-funnel"
+import { PerformanceOverTime } from "../../../dashboards/analytics/_components/performance-over-time"
+import { TrafficSources } from "../../../dashboards/analytics/_components/traffic-sources"
+import { SalesByCountry } from "../../../dashboards/crm/_components/sales-by-country"
+import { SalesTrend } from "../../../dashboards/crm/_components/sales-trend"
+import { ChurnRate } from "../../../dashboards/ecommerce/_components/churn-rate"
+import { RevenueBySource } from "../../../dashboards/ecommerce/_components/revenue-by-source"
+import { SalesTrend as SalesTrendV2 } from "../../../dashboards/ecommerce/_components/sales-trend"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata

@@ -2,8 +2,6 @@
 
 import * as React from "react"
 
-import { teamMembersData } from "../_data/team-members"
-
 import type {
   ColumnType,
   ColumnWithoutIdAndOrderAndTasksType,
@@ -11,6 +9,8 @@ import type {
   TaskType,
   TaskWithoutIdAndOrderAndColumnIdType,
 } from "../types"
+
+import { teamMembersData } from "../_data/team-members"
 
 import { KanbanReducer } from "../reducers/kanban-reducer"
 

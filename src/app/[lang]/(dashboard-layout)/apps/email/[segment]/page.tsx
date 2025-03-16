@@ -1,6 +1,6 @@
-import { sidebarItemsData } from "../_data/emails-sidebar-items"
-
 import type { EmailSidebarItemType } from "../types"
+
+import { sidebarItemsData } from "../_data/emails-sidebar-items"
 
 import { EmailComposer } from "../_components/email-composer"
 import { EmailList } from "../_components/email-list"

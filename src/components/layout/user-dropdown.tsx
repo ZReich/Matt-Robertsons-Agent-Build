@@ -2,10 +2,10 @@ import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { LogOut, User, UserCog } from "lucide-react"
 
-import { userData } from "@/data/user"
-
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
+
+import { userData } from "@/data/user"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { getInitials } from "@/lib/utils"

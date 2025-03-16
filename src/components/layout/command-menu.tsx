@@ -5,8 +5,6 @@ import { useParams, usePathname, useRouter } from "next/navigation"
 import { useMedia } from "react-use"
 import { ChevronDown, Search } from "lucide-react"
 
-import { navigationsData } from "@/data/navigations"
-
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type {
   LocaleType,
@@ -14,6 +12,8 @@ import type {
   NavigationRootItem,
 } from "@/types"
 import type { DialogProps } from "@radix-ui/react-dialog"
+
+import { navigationsData } from "@/data/navigations"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import {

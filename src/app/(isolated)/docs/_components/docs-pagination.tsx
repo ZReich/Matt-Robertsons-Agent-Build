@@ -4,9 +4,9 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
-import { sidebarNavigationData } from "../_data/sidebar-navigation"
-
 import type { DocNav } from "../types"
+
+import { sidebarNavigationData } from "../_data/sidebar-navigation"
 
 import { cn } from "@/lib/utils"
 

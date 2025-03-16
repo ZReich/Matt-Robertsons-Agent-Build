@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { LoaderCircle } from "lucide-react"
 
-import { ComingSoonSchema } from "@/schemas/coming-soon-schema"
-
 import type { ComingSoonFormType } from "@/types"
+
+import { ComingSoonSchema } from "@/schemas/coming-soon-schema"
 
 import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"

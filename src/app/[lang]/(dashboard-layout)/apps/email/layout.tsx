@@ -1,7 +1,7 @@
+import type { Metadata } from "next"
+
 import { emailsData } from "./_data/emails"
 import { sidebarItemsData } from "./_data/emails-sidebar-items"
-
-import type { Metadata } from "next"
 
 import { EmailWrapper } from "./_components/email-wrapper"
 

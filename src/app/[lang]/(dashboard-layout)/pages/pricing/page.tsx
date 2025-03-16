@@ -1,6 +1,6 @@
-import { pricingData } from "./_data/pricing"
-
 import type { Metadata } from "next"
+
+import { pricingData } from "./_data/pricing"
 
 import { Pricing } from "./_components/pricing"
 
@@ -11,5 +11,9 @@ export const metadata: Metadata = {
 }
 
 export default function PricingPage() {
-  return <Pricing data={pricingData} />
+  return (
+    <section className="container p-4">
+      <Pricing data={pricingData} />
+    </section>
+  )
 }

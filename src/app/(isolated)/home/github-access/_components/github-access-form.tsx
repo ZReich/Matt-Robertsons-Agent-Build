@@ -6,9 +6,9 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { LoaderCircle } from "lucide-react"
 
-import { GitHubAccessSchema } from "../_schemas/github-access-schema"
-
 import type { GitHubAccessType } from "../types"
+
+import { GitHubAccessSchema } from "../_schemas/github-access-schema"
 
 import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"

@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { CalendarCheck2, CalendarMinus } from "lucide-react"
 
-import { EventSidebarSchema } from "../_schemas/event-sidebar-schema"
-
 import type { EventSidebarFormType, EventWithoutIdType } from "../types"
+
+import { EventSidebarSchema } from "../_schemas/event-sidebar-schema"
 
 import { useCalendarContext } from "../hooks/calendar-context"
 import { Button } from "@/components/ui/button"

@@ -1,14 +1,14 @@
 import { z } from "zod"
 import { icons } from "lucide-react"
 
+import type { LucideIcon } from "lucide-react"
+
 import { ComingSoonSchema } from "./schemas/coming-soon-schema"
 import { ForgotPasswordSchema } from "./schemas/forgot-passward-schema"
 import { NewPasswordSchema } from "./schemas/new-passward-schema"
 import { RegisterSchema } from "./schemas/register-schema"
 import { SignInSchema } from "./schemas/sign-in-schema"
 import { VerifyEmailSchema } from "./schemas/verify-email-schema"
-
-import type { LucideIcon } from "lucide-react"
 
 import { baseColors } from "@/configs/base-colors"
 import { i18n } from "@/configs/i18n"

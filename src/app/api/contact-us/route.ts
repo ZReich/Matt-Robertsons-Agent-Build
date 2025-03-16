@@ -2,9 +2,9 @@ import { google } from "googleapis"
 import nodemailer from "nodemailer"
 import { z } from "zod"
 
-import { ContactUsSchema } from "@/app/(isolated)/home/contact-us/_schemas/contact-us-schema"
-
 import type { NextRequest } from "next/server"
+
+import { ContactUsSchema } from "@/app/(isolated)/home/contact-us/_schemas/contact-us-schema"
 
 import { rateLimiter } from "@/lib/rate-limit"
 

@@ -10,13 +10,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import { invoicesData } from "../../../_data/invoices"
-
 import type {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
 } from "@tanstack/react-table"
+
+import { invoicesData } from "../../../_data/invoices"
 
 import {
   Card,

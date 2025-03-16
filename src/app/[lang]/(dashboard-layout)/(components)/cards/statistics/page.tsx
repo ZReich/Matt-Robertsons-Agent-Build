@@ -1,13 +1,13 @@
 import type { Metadata } from "next"
 
-import { GenderDistribution } from "../../../dashboards/analytics/_components/analytics/gender-distribution"
-import { NewVsReturningVisitors } from "../../../dashboards/analytics/_components/analytics/new-vs-returning-visitors"
-import { Overview as OverviewV3 } from "../../../dashboards/analytics/_components/analytics/overview"
-import { LeadSources } from "../../../dashboards/crm/_components/crm/lead-sources"
-import { Overview } from "../../../dashboards/crm/_components/crm/overview"
-import { RevenueTrend } from "../../../dashboards/crm/_components/crm/revenue-trend"
-import { CustomerInsights } from "../../../dashboards/ecommerce/_components/ecommerce/customer-insights"
-import { Overview as OverviewV2 } from "../../../dashboards/ecommerce/_components/ecommerce/overview"
+import { GenderDistribution } from "../../../dashboards/analytics/_components/gender-distribution"
+import { NewVsReturningVisitors } from "../../../dashboards/analytics/_components/new-vs-returning-visitors"
+import { Overview as OverviewV3 } from "../../../dashboards/analytics/_components/overview"
+import { LeadSources } from "../../../dashboards/crm/_components/lead-sources"
+import { Overview } from "../../../dashboards/crm/_components/overview"
+import { RevenueTrend } from "../../../dashboards/crm/_components/revenue-trend"
+import { CustomerInsights } from "../../../dashboards/ecommerce/_components/customer-insights"
+import { Overview as OverviewV2 } from "../../../dashboards/ecommerce/_components/overview"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata

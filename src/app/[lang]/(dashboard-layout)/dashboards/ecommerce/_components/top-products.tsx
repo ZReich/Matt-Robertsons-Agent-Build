@@ -1,0 +1,19 @@
+import { topProductsData } from "../_data/top-products"
+
+import {
+  DashboardCard,
+  DashboardCardActionsDropdown,
+} from "@/components/dashboards/dashboard-card"
+import { TopProductsList } from "./top-products-list"
+
+export async function TopProducts() {
+  return (
+    <DashboardCard
+      title="Top Products"
+      period={topProductsData.period}
+      action={<DashboardCardActionsDropdown />}
+    >
+      <TopProductsList data={topProductsData.products} />
+    </DashboardCard>
+  )
+}

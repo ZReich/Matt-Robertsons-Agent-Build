@@ -2,8 +2,6 @@
 
 import * as React from "react"
 
-import { categoriesData } from "../_data/categories"
-
 import type { CalendarApi } from "@fullcalendar/core/index.js"
 import type {
   CalendarContextType,
@@ -11,6 +9,8 @@ import type {
   EventType,
   EventWithoutIdType,
 } from "../types"
+
+import { categoriesData } from "../_data/categories"
 
 import { CalendarReducer } from "../reducers/calendar-reducer"
 

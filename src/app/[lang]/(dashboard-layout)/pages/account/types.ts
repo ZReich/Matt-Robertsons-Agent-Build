@@ -1,5 +1,8 @@
 import { z } from "zod"
 
+import type { MediaType } from "@/components/media-grid"
+import type { DynamicIconNameType } from "@/types"
+
 import { DeleteAccountSchema } from "./settings/_schemas/delete-account-schema"
 import { ProfileInfoSchema } from "./settings/_schemas/profile-info-form-schema"
 import { NotificationPreferencesSchema } from "./settings/notifications/_schemas/notifications-preferenes-schema"
@@ -8,9 +11,6 @@ import { PaymentMethodSchema } from "./settings/plan-and-billing/_schemas/paymen
 import { AccountRecoveryOptionsSchema } from "./settings/security/_schemas/account-recovery-options-schema"
 import { ChangePasswordSchema } from "./settings/security/_schemas/chnage-password-schema"
 import { SecurityPreferencesSchema } from "./settings/security/_schemas/security-preferences-form-schema"
-
-import type { MediaType } from "@/components/media-grid"
-import type { DynamicIconNameType } from "@/types"
 
 export interface UserType {
   id: string

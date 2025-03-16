@@ -2,9 +2,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { UserPen } from "lucide-react"
 
-import { userData } from "@/data/user"
-
 import type { LocaleType } from "@/types"
+
+import { userData } from "@/data/user"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn, formatNumberToCompact, getInitials } from "@/lib/utils"

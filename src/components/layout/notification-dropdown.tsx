@@ -1,9 +1,9 @@
 import Link from "next/link"
 import { Bell } from "lucide-react"
 
-import { notificationData } from "@/data/notifications"
-
 import type { DictionaryType } from "@/lib/get-dictionary"
+
+import { notificationData } from "@/data/notifications"
 
 import { cn, formatDistance, formatUnreadCount } from "@/lib/utils"
 

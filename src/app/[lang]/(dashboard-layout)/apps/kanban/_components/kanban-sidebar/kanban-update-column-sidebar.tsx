@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Grid2x2Plus } from "lucide-react"
 
-import { KanbanColumnSchema } from "../../_schemas/kanban-column-schema"
-
 import type { KanbanColumnFormType } from "../../types"
+
+import { KanbanColumnSchema } from "../../_schemas/kanban-column-schema"
 
 import { useKanbanContext } from "../../hooks/use-kanban-context"
 import { Button } from "@/components/ui/button"

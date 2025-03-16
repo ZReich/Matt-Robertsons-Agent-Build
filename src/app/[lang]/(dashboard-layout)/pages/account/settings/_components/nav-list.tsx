@@ -3,9 +3,9 @@
 import Link from "next/link"
 import { useParams, usePathname } from "next/navigation"
 
-import { linksData } from "../../_data/nav-list-links"
-
 import type { LocaleType } from "@/types"
+
+import { linksData } from "../../_data/nav-list-links"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn } from "@/lib/utils"

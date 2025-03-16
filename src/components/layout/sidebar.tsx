@@ -5,14 +5,14 @@ import Link from "next/link"
 import { useParams, usePathname } from "next/navigation"
 import { ChevronDown } from "lucide-react"
 
-import { navigationsData } from "@/data/navigations"
-
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type {
   LocaleType,
   NavigationNestedItem,
   NavigationRootItem,
 } from "@/types"
+
+import { navigationsData } from "@/data/navigations"
 
 import { i18n } from "@/configs/i18n"
 import { ensureLocalizedPathname } from "@/lib/i18n"

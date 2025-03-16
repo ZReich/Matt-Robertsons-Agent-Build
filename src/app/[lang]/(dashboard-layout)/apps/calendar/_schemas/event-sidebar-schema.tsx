@@ -1,8 +1,8 @@
 import { z } from "zod"
 
-import { categoriesData } from "../_data/categories"
-
 import type { CategoryType } from "../types"
+
+import { categoriesData } from "../_data/categories"
 
 export const EventSidebarSchema = z.object({
   url: z.string().url({ message: "Invalid url" }).optional().or(z.literal("")),

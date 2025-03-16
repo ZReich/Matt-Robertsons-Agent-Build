@@ -5,11 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Grid2x2Plus } from "lucide-react"
 
+import type { KanbanTaskFormType } from "../../types"
+
 import { labelsData } from "../../_data/labels"
 
 import { KanbanTaskSchema } from "../../_schemas/kanban-task-schema"
-
-import type { KanbanTaskFormType } from "../../types"
 
 import { useKanbanContext } from "../../hooks/use-kanban-context"
 import { Button } from "@/components/ui/button"

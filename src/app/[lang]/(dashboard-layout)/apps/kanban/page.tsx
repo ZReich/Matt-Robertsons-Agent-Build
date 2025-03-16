@@ -1,6 +1,6 @@
-import { kanbanData } from "./_data/kanban"
-
 import type { Metadata } from "next"
+
+import { kanbanData } from "./_data/kanban"
 
 import { Kanban } from "./_components/kanban"
 import { KanbanWrapper } from "./_components/kanban-wrapper"

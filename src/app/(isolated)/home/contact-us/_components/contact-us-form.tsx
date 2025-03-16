@@ -6,9 +6,9 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { LoaderCircle } from "lucide-react"
 
-import { ContactUsSchema } from "../_schemas/contact-us-schema"
-
 import type { ContactUsType } from "../types"
+
+import { ContactUsSchema } from "../_schemas/contact-us-schema"
 
 import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
