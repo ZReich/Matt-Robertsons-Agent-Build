@@ -54,7 +54,6 @@ export const navigationsData: NavigationType[] = [
       {
         title: "Profile",
         href: "/pages/account/profile",
-        label: "Soon",
         iconName: "User",
       },
       {
