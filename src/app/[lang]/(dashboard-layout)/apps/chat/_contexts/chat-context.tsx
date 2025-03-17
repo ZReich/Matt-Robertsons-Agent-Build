@@ -5,7 +5,7 @@ import * as React from "react"
 import type { FileType } from "@/types"
 import type { ChatContextType, ChatType } from "../types"
 
-import { ChatReducer } from "../reducers/chat-reducer"
+import { ChatReducer } from "../_reducers/chat-reducer"
 
 // Create Kanban context
 export const ChatContext = React.createContext<ChatContextType | undefined>(

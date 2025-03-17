@@ -2,7 +2,7 @@
 
 import { Menu } from "lucide-react"
 
-import { useChatContext } from "../hooks/use-chat-context"
+import { useChatContext } from "../_hooks/use-chat-context"
 import { Button, ButtonProps } from "@/components/ui/button"
 
 interface ChatMenuButtonProps extends ButtonProps {

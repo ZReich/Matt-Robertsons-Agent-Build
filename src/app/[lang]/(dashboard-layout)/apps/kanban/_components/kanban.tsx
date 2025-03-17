@@ -4,7 +4,7 @@
 import * as React from "react"
 import { DragDropContext, DropResult } from "@hello-pangea/dnd"
 
-import { useKanbanContext } from "../hooks/use-kanban-context"
+import { useKanbanContext } from "../_hooks/use-kanban-context"
 import { KanbanColumnList } from "./kanban-column-list"
 
 export function Kanban() {

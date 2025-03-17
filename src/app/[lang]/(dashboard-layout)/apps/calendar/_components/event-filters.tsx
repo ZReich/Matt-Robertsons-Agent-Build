@@ -2,7 +2,7 @@ import { Filter } from "lucide-react"
 
 import { categoriesData } from "../_data/categories"
 
-import { useCalendarContext } from "../hooks/calendar-context"
+import { useCalendarContext } from "../_hooks/calendar-context"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

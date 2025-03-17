@@ -4,7 +4,7 @@ import * as React from "react"
 import { useParams, useSearchParams } from "next/navigation"
 import { useMedia } from "react-use"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { CardContent } from "@/components/ui/card"
 import { EmailListContentDesktop } from "./email-list-content-desktop"
 import { EmailListContentHeader } from "./email-list-content-header"

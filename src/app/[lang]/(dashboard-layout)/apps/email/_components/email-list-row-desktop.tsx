@@ -5,7 +5,7 @@ import type { EmailType } from "../types"
 
 import { cn, ensureWithSuffix, formatDate, getInitials } from "@/lib/utils"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"

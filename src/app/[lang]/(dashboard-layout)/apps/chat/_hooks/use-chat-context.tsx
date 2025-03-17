@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { ChatContext } from "../contexts/chat-context"
+import { ChatContext } from "../_contexts/chat-context"
 
 export function useChatContext() {
   const context = React.useContext(ChatContext)

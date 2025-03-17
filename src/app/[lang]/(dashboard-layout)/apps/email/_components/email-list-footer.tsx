@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { CardFooter } from "@/components/ui/card"
 
 export function EmailListFooter() {

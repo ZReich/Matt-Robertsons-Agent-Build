@@ -13,7 +13,7 @@ import type { DateInput, EventSourceInput } from "@fullcalendar/core/index.js"
 import type { EventImpl } from "@fullcalendar/core/internal"
 import type { CategoryType, EventType } from "../types"
 
-import { useCalendarContext } from "../hooks/calendar-context"
+import { useCalendarContext } from "../_hooks/calendar-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { INITIAL_VIEW } from "../constants"
 

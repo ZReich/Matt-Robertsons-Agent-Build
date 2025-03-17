@@ -8,7 +8,7 @@ import type { EmailListSearchFormType } from "../types"
 
 import { EmailListSearchSchema } from "../_schemas/email-list-search-schema"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 

@@ -1,6 +1,6 @@
 import type { EventType } from "../types"
 
-import { CalendarProvider } from "../contexts/calendar-context"
+import { CalendarProvider } from "../_contexts/calendar-context"
 import { EventSidebar } from "./event-sidebar"
 
 export function CalendarWrapper({

@@ -2,7 +2,7 @@
 
 import { Menu } from "lucide-react"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Button, ButtonProps } from "@/components/ui/button"
 
 interface EmailMenuButtonProps extends ButtonProps {

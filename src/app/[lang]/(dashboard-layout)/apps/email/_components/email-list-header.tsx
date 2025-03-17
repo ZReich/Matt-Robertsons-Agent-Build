@@ -6,7 +6,7 @@ import {
 } from "next/navigation"
 import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Button } from "@/components/ui/button"
 import { CardHeader } from "@/components/ui/card"
 import {

@@ -9,7 +9,7 @@ import type { EventSidebarFormType, EventWithoutIdType } from "../types"
 
 import { EventSidebarSchema } from "../_schemas/event-sidebar-schema"
 
-import { useCalendarContext } from "../hooks/calendar-context"
+import { useCalendarContext } from "../_hooks/calendar-context"
 import { Button } from "@/components/ui/button"
 import {
   Form,

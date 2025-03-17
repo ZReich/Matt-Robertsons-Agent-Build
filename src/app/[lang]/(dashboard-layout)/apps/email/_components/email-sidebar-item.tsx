@@ -8,7 +8,7 @@ import type { EmailSidebarItemType } from "../types"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn, formatUnreadCount } from "@/lib/utils"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"

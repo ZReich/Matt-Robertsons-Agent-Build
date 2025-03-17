@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { KanbanContext } from "../contexts/kanban-context"
+import { KanbanContext } from "../_contexts/kanban-context"
 
 export function useKanbanContext() {
   const context = React.useContext(KanbanContext)

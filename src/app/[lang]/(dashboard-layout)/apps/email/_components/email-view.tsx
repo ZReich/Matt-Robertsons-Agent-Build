@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useParams } from "next/navigation"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Card } from "@/components/ui/card"
 import { EmailNotFound } from "./email-not-found"
 import { EmailViewContent } from "./email-view-content"

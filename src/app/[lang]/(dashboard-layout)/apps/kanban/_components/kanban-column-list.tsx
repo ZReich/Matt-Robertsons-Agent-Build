@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Droppable, DroppableProvided } from "@hello-pangea/dnd"
 
-import { useKanbanContext } from "../hooks/use-kanban-context"
+import { useKanbanContext } from "../_hooks/use-kanban-context"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { KanbanAddNewColumnButton } from "./kanban-add-new-column-button"
 import { KanbanColumnItem } from "./kanban-column-item"

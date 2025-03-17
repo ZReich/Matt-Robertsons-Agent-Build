@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 
-import { useChatContext } from "../../hooks/use-chat-context"
+import { useChatContext } from "../../_hooks/use-chat-context"
 import { useSettings } from "@/hooks/use-settings"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChatListItem } from "./chat-list-item"

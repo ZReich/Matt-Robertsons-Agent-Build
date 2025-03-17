@@ -12,7 +12,7 @@ import type {
 
 import { categoriesData } from "../_data/categories"
 
-import { CalendarReducer } from "../reducers/calendar-reducer"
+import { CalendarReducer } from "../_reducers/calendar-reducer"
 
 // Create Kanban context
 export const CalendarContext = React.createContext<

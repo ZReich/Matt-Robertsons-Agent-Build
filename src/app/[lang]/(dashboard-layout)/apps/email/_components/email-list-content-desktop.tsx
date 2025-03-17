@@ -1,6 +1,6 @@
 import type { EmailType } from "../types"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Table, TableBody } from "@/components/ui/table"
 import { EmailListContentRowDesktop } from "./email-list-row-desktop"

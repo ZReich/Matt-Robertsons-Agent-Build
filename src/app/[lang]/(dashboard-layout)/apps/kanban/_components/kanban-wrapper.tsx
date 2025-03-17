@@ -1,6 +1,6 @@
 import type { ColumnType } from "../types"
 
-import { KanbanProvider } from "../contexts/kanban-context"
+import { KanbanProvider } from "../_contexts/kanban-context"
 import { KanbanSidebar } from "./kanban-sidebar"
 
 export function KanbanWrapper({

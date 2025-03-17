@@ -1,7 +1,7 @@
 import * as React from "react"
 import { CalendarPlus, ChevronLeft, ChevronRight } from "lucide-react"
 
-import { useCalendarContext } from "../hooks/calendar-context"
+import { useCalendarContext } from "../_hooks/calendar-context"
 import { Button } from "@/components/ui/button"
 import { CardHeader } from "@/components/ui/card"
 import { INITIAL_VIEW } from "../constants"

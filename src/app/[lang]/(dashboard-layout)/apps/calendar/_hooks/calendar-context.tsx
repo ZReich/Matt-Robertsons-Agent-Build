@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { CalendarContext } from "../contexts/calendar-context"
+import { CalendarContext } from "../_contexts/calendar-context"
 
 export function useCalendarContext() {
   const context = React.useContext(CalendarContext)

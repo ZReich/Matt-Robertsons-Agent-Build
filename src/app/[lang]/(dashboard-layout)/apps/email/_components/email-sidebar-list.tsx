@@ -4,7 +4,7 @@ import { useParams } from "next/navigation"
 
 import type { LocaleType } from "@/types"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { EmailSidebarItem } from "./email-sidebar-item"
 
 export function EmailSidebarList() {

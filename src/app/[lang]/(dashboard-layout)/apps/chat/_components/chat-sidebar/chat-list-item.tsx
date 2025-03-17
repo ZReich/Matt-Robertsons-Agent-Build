@@ -7,7 +7,7 @@ import type { ChatType } from "../../types"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn, formatDistance, getInitials } from "@/lib/utils"
 
-import { useChatContext } from "../../hooks/use-chat-context"
+import { useChatContext } from "../../_hooks/use-chat-context"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { ChatAvatar } from "../chat-avatar"

@@ -2,7 +2,7 @@
 
 import { useMedia } from "react-use"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Card } from "@/components/ui/card"
 import {
   Sheet,

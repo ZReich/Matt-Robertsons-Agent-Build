@@ -7,7 +7,7 @@ import type { ChatType, UserType } from "../types"
 
 import { cn } from "@/lib/utils"
 
-import { useChatContext } from "../hooks/use-chat-context"
+import { useChatContext } from "../_hooks/use-chat-context"
 import { useSettings } from "@/hooks/use-settings"
 import { ScrollBar } from "@/components/ui/scroll-area"
 import { MessageBubble } from "./message-bubble"

@@ -1,6 +1,6 @@
 import type { EmailSidebarItemsType, EmailType } from "../types"
 
-import { EmailProvider } from "../contexts/email-context"
+import { EmailProvider } from "../_contexts/email-context"
 import { EmailSidebar } from "./email-sidebar"
 
 export function EmailWrapper({

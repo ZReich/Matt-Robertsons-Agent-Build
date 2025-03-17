@@ -12,7 +12,7 @@ import type {
 
 import { teamMembersData } from "../_data/team-members"
 
-import { KanbanReducer } from "../reducers/kanban-reducer"
+import { KanbanReducer } from "../_reducers/kanban-reducer"
 
 // Create Kanban context
 export const KanbanContext = React.createContext<KanbanContextType | undefined>(

@@ -8,7 +8,7 @@ import type {
   EmailType,
 } from "../types"
 
-import { EmailReducer } from "../reducers/email-reducer"
+import { EmailReducer } from "../_reducers/email-reducer"
 
 // Create Email context
 export const EmailContext = React.createContext<EmailContextType | undefined>(

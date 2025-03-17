@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { EmailContext } from "../contexts/email-context"
+import { EmailContext } from "../_contexts/email-context"
 
 export function useEmailContext() {
   const context = React.useContext(EmailContext)

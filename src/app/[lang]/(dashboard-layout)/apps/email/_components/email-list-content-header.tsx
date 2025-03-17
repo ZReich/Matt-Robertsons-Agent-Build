@@ -5,7 +5,7 @@ import { EllipsisVertical } from "lucide-react"
 
 import type { CheckedState } from "@radix-ui/react-checkbox"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {

@@ -5,7 +5,7 @@ import { EllipsisVertical } from "lucide-react"
 
 import type { TaskType } from "../types"
 
-import { useKanbanContext } from "../hooks/use-kanban-context"
+import { useKanbanContext } from "../_hooks/use-kanban-context"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

@@ -9,7 +9,7 @@ import type { KanbanColumnFormType } from "../../types"
 
 import { KanbanColumnSchema } from "../../_schemas/kanban-column-schema"
 
-import { useKanbanContext } from "../../hooks/use-kanban-context"
+import { useKanbanContext } from "../../_hooks/use-kanban-context"
 import { Button } from "@/components/ui/button"
 import {
   Form,

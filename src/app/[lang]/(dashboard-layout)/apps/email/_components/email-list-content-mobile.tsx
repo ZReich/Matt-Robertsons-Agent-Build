@@ -2,7 +2,7 @@ import type { EmailType } from "../types"
 
 import { cn } from "@/lib/utils"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { useSettings } from "@/hooks/use-settings"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { EmailListContentItemMoblie } from "./email-list-content-item-mobile"

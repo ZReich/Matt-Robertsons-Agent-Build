@@ -4,7 +4,7 @@ import { Plus } from "lucide-react"
 
 import type { ColumnType } from "../types"
 
-import { useKanbanContext } from "../hooks/use-kanban-context"
+import { useKanbanContext } from "../_hooks/use-kanban-context"
 import { Button } from "@/components/ui/button"
 
 interface KanbanTaskListProps {

@@ -1,6 +1,6 @@
 import type { ChatType } from "../types"
 
-import { ChatProvider } from "../contexts/chat-context"
+import { ChatProvider } from "../_contexts/chat-context"
 import { ChatSidebar } from "./chat-sidebar"
 
 export function ChatWrapper({

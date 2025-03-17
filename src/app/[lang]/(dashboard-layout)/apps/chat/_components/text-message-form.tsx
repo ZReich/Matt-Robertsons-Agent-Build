@@ -10,7 +10,7 @@ import type { TextMessageFormType } from "../types"
 
 import { TextMessageSchema } from "../_schemas/text-message-schema"
 
-import { useChatContext } from "../hooks/use-chat-context"
+import { useChatContext } from "../_hooks/use-chat-context"
 import { Button } from "@/components/ui/button"
 import { EmojiPicker } from "@/components/ui/emoji-picker"
 import {

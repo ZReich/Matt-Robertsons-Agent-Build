@@ -11,7 +11,7 @@ import { FilesUploaderSchema } from "../_schemas/files-uploader-schema"
 
 import { formatFileSize } from "@/lib/utils"
 
-import { useChatContext } from "../hooks/use-chat-context"
+import { useChatContext } from "../_hooks/use-chat-context"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,

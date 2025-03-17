@@ -11,7 +11,7 @@ import { labelsData } from "../../_data/labels"
 
 import { KanbanTaskSchema } from "../../_schemas/kanban-task-schema"
 
-import { useKanbanContext } from "../../hooks/use-kanban-context"
+import { useKanbanContext } from "../../_hooks/use-kanban-context"
 import { Button } from "@/components/ui/button"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import {

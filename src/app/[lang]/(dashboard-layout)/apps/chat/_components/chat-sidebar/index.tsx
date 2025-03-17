@@ -2,7 +2,7 @@
 
 import { useMedia } from "react-use"
 
-import { useChatContext } from "../../hooks/use-chat-context"
+import { useChatContext } from "../../_hooks/use-chat-context"
 import { Card } from "@/components/ui/card"
 import {
   Sheet,

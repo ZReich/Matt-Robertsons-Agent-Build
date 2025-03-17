@@ -7,7 +7,7 @@ import type { LocaleType } from "@/types"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import { useEmailContext } from "../hooks/use-email-context"
+import { useEmailContext } from "../_hooks/use-email-context"
 import { Button } from "@/components/ui/button"
 
 export function EmailSidebarHeader() {
