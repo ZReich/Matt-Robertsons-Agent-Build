@@ -9,7 +9,7 @@ export function ConversionFunnelItem({
 }) {
   return (
     <li className="flex flex-col items-center text-center">
-      <p className="text-2xl">{data.value.toLocaleString()}</p>
+      <p className="text-xl sm:text-2xl">{data.value.toLocaleString()}</p>
       <h3 className="text-xs">{data.name}</h3>
     </li>
   )
