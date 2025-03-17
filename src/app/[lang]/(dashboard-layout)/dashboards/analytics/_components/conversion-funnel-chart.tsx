@@ -4,6 +4,7 @@ import { Area, AreaChart, XAxis } from "recharts"
 
 import type { ConversionFunnelType } from "../types"
 
+import { useIsRtl } from "@/hooks/use-is-rtl"
 import { ChartContainer } from "@/components/ui/chart"
 
 export function ConversionFunnelChart({
@@ -11,6 +12,8 @@ export function ConversionFunnelChart({
 }: {
   data: ConversionFunnelType["funnelSteps"]
 }) {
+  const isRtl = useIsRtl()
+
   return (
     <ChartContainer config={{}} className="aspect-video h-44 w-full">
       <AreaChart
@@ -21,7 +24,7 @@ export function ConversionFunnelChart({
           right: 0,
         }}
       >
-        <XAxis dataKey="name" hide />
+        <XAxis reversed={isRtl} dataKey="name" hide />
         <Area
           dataKey="value"
           type="bump"
