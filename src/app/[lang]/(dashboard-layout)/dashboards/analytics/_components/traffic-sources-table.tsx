@@ -6,6 +6,7 @@ import type { TrafficSourcesType } from "../types"
 
 import { formatPercent } from "@/lib/utils"
 
+import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { DynamicIcon } from "@/components/dynamic-icon"
 
@@ -36,7 +37,9 @@ export function TrafficSourcesTable({
               <span>{formatPercent(item.percentageChange)}</span>
             </TableCell>
             <TableCell aria-label="Actions">
-              <Ellipsis className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <Ellipsis className="h-4 w-4" />
+              </Button>
             </TableCell>
           </TableRow>
         ))}
