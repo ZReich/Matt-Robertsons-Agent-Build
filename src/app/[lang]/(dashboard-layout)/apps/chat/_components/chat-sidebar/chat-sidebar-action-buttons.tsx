@@ -9,10 +9,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { NotificationDropdown } from "./notification-dropdown"
-import { StatusDropdown } from "./status-dropdown"
+import { ChatSidebarNotificationDropdown } from "./chat-sidebar-notification-dropdown"
+import { ChatSidebarStatusDropdown } from "./chat-sidebar-status-dropdown"
 
-export function ActionButtons() {
+export function ChatSidebarActionButtons() {
   const [notifications, setNotifications] =
     React.useState<string>("ALL_MESSAGES")
   const [status, setStatus] = React.useState<string>("ONLINE")
@@ -34,11 +34,11 @@ export function ActionButtons() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-40">
-          <NotificationDropdown
+          <ChatSidebarNotificationDropdown
             notifications={notifications}
             setNotifications={setNotifications}
           />
-          <StatusDropdown status={status} setStatus={setStatus} />
+          <ChatSidebarStatusDropdown status={status} setStatus={setStatus} />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

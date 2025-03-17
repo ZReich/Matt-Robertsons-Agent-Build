@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils"
 import { useChatContext } from "../../_hooks/use-chat-context"
 import { useSettings } from "@/hooks/use-settings"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ChatListItem } from "./chat-list-item"
+import { ChatSidebarItem } from "./chat-sidebar-item"
 
-export function ChatList() {
+export function ChatSidebarList() {
   const { chatState } = useChatContext()
   const { settings } = useSettings()
 
@@ -24,7 +24,7 @@ export function ChatList() {
     >
       <ul className="p-3 space-y-1.5">
         {chats.map((chat) => {
-          return <ChatListItem key={chat.id} chat={chat} />
+          return <ChatSidebarItem key={chat.id} chat={chat} />
         })}
       </ul>
     </ScrollArea>

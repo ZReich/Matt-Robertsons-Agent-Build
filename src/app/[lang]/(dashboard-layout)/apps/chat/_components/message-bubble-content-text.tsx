@@ -1,4 +1,4 @@
-export function TextMessageBubbleContent({ text }: { text: string }) {
+export function MessageBubbleContentText({ text }: { text: string }) {
   if (!text) return null // Return null if the text is empty
 
   const urlRegex = /(https?:\/\/[^\s]+)/g // Regex to match URLs

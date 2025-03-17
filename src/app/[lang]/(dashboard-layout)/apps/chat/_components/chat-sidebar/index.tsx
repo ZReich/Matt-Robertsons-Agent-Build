@@ -11,8 +11,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { ChatList } from "./chat-list"
 import { ChatSidebarHeader } from "./chat-sidebar-header"
+import { ChatSidebarList } from "./chat-sidebar-list"
 
 export function ChatSidebar() {
   const { isChatSidebarOpen, setIsChatSidebarOpen } = useChatContext()
@@ -22,7 +22,7 @@ export function ChatSidebar() {
   const content = (
     <div className="md:w-72">
       <ChatSidebarHeader />
-      <ChatList />
+      <ChatSidebarList />
     </div>
   )
 

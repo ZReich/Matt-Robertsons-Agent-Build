@@ -1,6 +1,6 @@
 import { EllipsisVertical } from "lucide-react"
 
-import type { MessageType, UserType } from "../../types"
+import type { MessageType, UserType } from "../types"
 
 import { cn, formatDistance, getInitials } from "@/lib/utils"
 
@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChatAvatar } from "../chat-avatar"
+import { ChatAvatar } from "./chat-avatar"
 import { MessageBubbleContent } from "./message-bubble-content"
-import { MessageStatusIcon } from "./message-status-icon"
+import { MessageBubbleStatusIcon } from "./message-bubble-status-icon"
 
 export function MessageBubble({
   sender,
@@ -51,7 +51,9 @@ export function MessageBubble({
           <span className="text-sm font-normal text-muted-foreground">
             {formatDistance(message.createdAt)}
           </span>
-          {isByCurrentUser && <MessageStatusIcon status={message.status} />}
+          {isByCurrentUser && (
+            <MessageBubbleStatusIcon status={message.status} />
+          )}
         </div>
       </div>
 

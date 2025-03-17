@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { ChatAvatar } from "../chat-avatar"
 
-export function ChatListItem({ chat }: { chat: ChatType }) {
+export function ChatSidebarItem({ chat }: { chat: ChatType }) {
   const { setIsChatSidebarOpen } = useChatContext()
   const params = useParams()
 

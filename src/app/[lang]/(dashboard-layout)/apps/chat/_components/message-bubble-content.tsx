@@ -1,10 +1,10 @@
-import type { MessageType } from "../../types"
+import type { MessageType } from "../types"
 
 import { cn } from "@/lib/utils"
 
-import { FilesMessageBubbleContent } from "./files-message-bubble-content"
-import { ImagesMessageBubbleContent } from "./images-message-bubble-content"
-import { TextMessageBubbleContent } from "./text-message-bubble-content"
+import { MessageBubbleContentFiles } from "./message-bubble-content-files"
+import { MessageBubbleContentImages } from "./message-bubble-content-images"
+import { MessageBubbleContentText } from "./message-bubble-content-text"
 
 export function MessageBubbleContent({
   message,
@@ -17,12 +17,12 @@ export function MessageBubbleContent({
 
   // Handle different types of message content
   if (message.text) {
-    content = <TextMessageBubbleContent text={message.text} />
+    content = <MessageBubbleContentText text={message.text} />
   } else if (message.images) {
-    content = <ImagesMessageBubbleContent images={message.images} />
+    content = <MessageBubbleContentImages images={message.images} />
   } else if (message.files) {
     content = (
-      <FilesMessageBubbleContent
+      <MessageBubbleContentFiles
         files={message.files}
         isByCurrentUser={isByCurrentUser}
       />

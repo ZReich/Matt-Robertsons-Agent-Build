@@ -1,8 +1,8 @@
-import type { MessageType } from "../../types"
+import type { MessageType } from "../types"
 
 import { MediaGrid } from "@/components/media-grid"
 
-export function ImagesMessageBubbleContent({
+export function MessageBubbleContentImages({
   images,
 }: {
   images: MessageType["images"]

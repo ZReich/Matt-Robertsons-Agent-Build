@@ -10,15 +10,15 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
 
-interface NotificationDropdownProps {
+interface ChatSidebarNotificationDropdownProps {
   notifications: string
   setNotifications: (val: string) => void
 }
 
-export function NotificationDropdown({
+export function ChatSidebarNotificationDropdown({
   notifications,
   setNotifications,
-}: NotificationDropdownProps) {
+}: ChatSidebarNotificationDropdownProps) {
   const options = [
     { value: "ALL_MESSAGES", label: "All Messages" },
     { value: "ONLY_MENTIONS", label: "Only @mentions" },

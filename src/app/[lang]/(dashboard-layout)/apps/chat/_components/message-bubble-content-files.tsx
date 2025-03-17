@@ -1,13 +1,13 @@
 import { Download } from "lucide-react"
 
-import type { MessageType } from "../../types"
+import type { MessageType } from "../types"
 
 import { cn, formatFileSize } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import { FileThumbnail } from "@/components/file-thumbnail"
 
-export function FilesMessageBubbleContent({
+export function MessageBubbleContentFiles({
   files,
   isByCurrentUser,
 }: {

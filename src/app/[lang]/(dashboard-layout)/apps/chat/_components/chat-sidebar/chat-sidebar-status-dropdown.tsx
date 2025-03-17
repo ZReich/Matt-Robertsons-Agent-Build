@@ -17,12 +17,15 @@ const options = [
   { value: "INVISIBLE", label: "Invisible" },
 ]
 
-type StatusDropdownProps = {
+type ChatSidebarStatusDropdownProps = {
   status: string
   setStatus: (val: string) => void
 }
 
-export function StatusDropdown({ status, setStatus }: StatusDropdownProps) {
+export function ChatSidebarStatusDropdown({
+  status,
+  setStatus,
+}: ChatSidebarStatusDropdownProps) {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>

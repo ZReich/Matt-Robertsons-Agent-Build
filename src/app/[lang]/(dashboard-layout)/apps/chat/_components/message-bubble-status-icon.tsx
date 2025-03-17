@@ -1,8 +1,8 @@
 import { Check, CheckCheck, LoaderCircle } from "lucide-react"
 
-import type { MessageType } from "../../types"
+import type { MessageType } from "../types"
 
-export function MessageStatusIcon({
+export function MessageBubbleStatusIcon({
   status,
 }: {
   status: MessageType["status"]
