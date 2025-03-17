@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Droppable, DroppableProvided } from "@hello-pangea/dnd"
+import { Droppable } from "@hello-pangea/dnd"
+
+import type { DroppableProvided } from "@hello-pangea/dnd"
 
 import { useKanbanContext } from "../_hooks/use-kanban-context"
 import { ScrollArea } from "@/components/ui/scroll-area"

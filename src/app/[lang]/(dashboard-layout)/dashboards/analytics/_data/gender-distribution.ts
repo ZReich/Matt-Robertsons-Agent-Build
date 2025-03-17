@@ -1,4 +1,4 @@
-import { GenderDistributionType } from "../types"
+import type { GenderDistributionType } from "../types"
 
 export const genderDistributionData: GenderDistributionType[] = [
   {

@@ -2,8 +2,10 @@
 
 import { Menu } from "lucide-react"
 
+import type { ButtonProps } from "@/components/ui/button"
+
 import { useChatContext } from "../_hooks/use-chat-context"
-import { Button, ButtonProps } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 
 interface ChatMenuButtonProps extends ButtonProps {
   isIcon?: boolean

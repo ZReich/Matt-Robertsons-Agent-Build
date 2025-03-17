@@ -1,4 +1,4 @@
-import { OverviewType } from "../../types"
+import type { OverviewType } from "../../types"
 
 import {
   DashboardCardActionsDropdown,

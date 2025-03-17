@@ -1,9 +1,9 @@
 import * as React from "react"
-import * as SeparatorPrimitive from "@radix-ui/react-separator"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"
 
 import type { DynamicIconNameType } from "@/types"
+import type * as SeparatorPrimitive from "@radix-ui/react-separator"
 import type { VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"

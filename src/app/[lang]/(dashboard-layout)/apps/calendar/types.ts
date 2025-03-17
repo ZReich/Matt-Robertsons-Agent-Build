@@ -1,8 +1,6 @@
-import { z } from "zod"
-
 import type { CalendarApi } from "@fullcalendar/core/index.js"
-
-import { EventSidebarSchema } from "./_schemas/event-sidebar-schema"
+import type { z } from "zod"
+import type { EventSidebarSchema } from "./_schemas/event-sidebar-schema"
 
 export interface CalendarContextType {
   calendarState: CalendarStateType

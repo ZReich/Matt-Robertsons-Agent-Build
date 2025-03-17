@@ -1,4 +1,4 @@
-import { TrafficSourcesType } from "../types"
+import type { TrafficSourcesType } from "../types"
 
 export const trafficSourcesData: TrafficSourcesType = {
   period: "Last month",

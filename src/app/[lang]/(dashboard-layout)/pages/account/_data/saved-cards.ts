@@ -1,6 +1,5 @@
-import { z } from "zod"
-
-import { cardSchema } from "../settings/plan-and-billing/_schemas/card-schema"
+import type { z } from "zod"
+import type { cardSchema } from "../settings/plan-and-billing/_schemas/card-schema"
 
 type CardType = z.infer<typeof cardSchema>
 

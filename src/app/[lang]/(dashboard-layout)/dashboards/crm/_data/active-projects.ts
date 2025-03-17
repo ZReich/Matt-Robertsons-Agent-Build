@@ -1,4 +1,4 @@
-import { ActiveProjectType } from "../types"
+import type { ActiveProjectType } from "../types"
 
 export const activeProjectsData: ActiveProjectType[] = [
   {

@@ -85,7 +85,7 @@ declare module "emoji-mart" {
 }
 
 declare module "@emoji-mart/react" {
-  import { FC } from "react"
+  import type { FC } from "react"
 
   const Picker: FC<PickerProps>
   export default Picker

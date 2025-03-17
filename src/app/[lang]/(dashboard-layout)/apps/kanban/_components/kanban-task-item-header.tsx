@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { DraggableProvided } from "@hello-pangea/dnd"
 import { GripVertical } from "lucide-react"
 
+import type { DraggableProvided } from "@hello-pangea/dnd"
 import type { TaskType } from "../types"
 
 import { cn } from "@/lib/utils"

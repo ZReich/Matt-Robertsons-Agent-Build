@@ -1,4 +1,4 @@
-import { UserProfileConnectionType } from "../types"
+import type { UserProfileConnectionType } from "../types"
 
 export const connectionsData: UserProfileConnectionType[] = [
   {

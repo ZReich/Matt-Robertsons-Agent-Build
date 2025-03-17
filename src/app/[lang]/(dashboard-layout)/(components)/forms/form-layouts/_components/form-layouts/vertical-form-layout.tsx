@@ -3,8 +3,9 @@
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
 import { LoaderCircle } from "lucide-react"
+
+import type { z } from "zod"
 
 import { FormLayoutsSchema } from "../../_schemas/form-layouts-schema"
 

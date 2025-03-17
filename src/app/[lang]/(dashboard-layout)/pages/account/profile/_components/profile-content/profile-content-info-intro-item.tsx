@@ -1,4 +1,4 @@
-import { DynamicIconNameType } from "@/types"
+import type { DynamicIconNameType } from "@/types"
 
 import { DynamicIcon } from "@/components/dynamic-icon"
 

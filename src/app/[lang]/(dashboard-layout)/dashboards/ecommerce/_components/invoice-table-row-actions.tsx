@@ -1,8 +1,8 @@
 "use client"
 
-import { Row } from "@tanstack/react-table"
 import { EllipsisVertical } from "lucide-react"
 
+import type { Row } from "@tanstack/react-table"
 import type { InvoiceType } from "../types"
 
 import { deliveryStatusesData } from "../_data/invoices"

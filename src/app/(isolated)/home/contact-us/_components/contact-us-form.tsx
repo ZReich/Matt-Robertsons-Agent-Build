@@ -3,9 +3,9 @@
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
 import { LoaderCircle } from "lucide-react"
 
+import type { z } from "zod"
 import type { ContactUsType } from "../types"
 
 import { ContactUsSchema } from "../_schemas/contact-us-schema"

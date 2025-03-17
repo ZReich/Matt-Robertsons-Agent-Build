@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { FieldPath, UseFormReturn, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { LoaderCircle } from "lucide-react"
 
+import type { FieldPath, UseFormReturn } from "react-hook-form"
 import type { NotificationPreferencesFormType } from "../../../types"
 
 import { NotificationPreferencesSchema } from "../_schemas/notifications-preferenes-schema"

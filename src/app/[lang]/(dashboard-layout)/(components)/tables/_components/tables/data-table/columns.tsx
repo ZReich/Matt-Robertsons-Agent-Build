@@ -1,7 +1,6 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
-
+import type { ColumnDef } from "@tanstack/react-table"
 import type { InvoiceType } from "../../../types"
 
 import { Checkbox } from "@/components/ui/checkbox"

@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Draggable, DraggableProvided } from "@hello-pangea/dnd"
+import { Draggable } from "@hello-pangea/dnd"
 
+import type { DraggableProvided } from "@hello-pangea/dnd"
 import type { TaskType } from "../types"
 
 import { Card } from "@/components/ui/card"

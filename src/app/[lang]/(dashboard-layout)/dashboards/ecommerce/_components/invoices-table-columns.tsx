@@ -1,8 +1,8 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { Clock, Package, PackageCheck, Plane, Truck } from "lucide-react"
 
+import type { ColumnDef } from "@tanstack/react-table"
 import type { InvoiceType } from "../types"
 
 import { formatCurrency, formatDate } from "@/lib/utils"

@@ -1,16 +1,14 @@
-import { z } from "zod"
-
 import type { MediaType } from "@/components/media-grid"
 import type { DynamicIconNameType } from "@/types"
-
-import { DeleteAccountSchema } from "./settings/_schemas/delete-account-schema"
-import { ProfileInfoSchema } from "./settings/_schemas/profile-info-form-schema"
-import { NotificationPreferencesSchema } from "./settings/notifications/_schemas/notifications-preferenes-schema"
-import { ChangePlanSchema } from "./settings/plan-and-billing/_schemas/change-plan-schema"
-import { PaymentMethodSchema } from "./settings/plan-and-billing/_schemas/payment-method-schema"
-import { AccountRecoveryOptionsSchema } from "./settings/security/_schemas/account-recovery-options-schema"
-import { ChangePasswordSchema } from "./settings/security/_schemas/chnage-password-schema"
-import { SecurityPreferencesSchema } from "./settings/security/_schemas/security-preferences-form-schema"
+import type { z } from "zod"
+import type { DeleteAccountSchema } from "./settings/_schemas/delete-account-schema"
+import type { ProfileInfoSchema } from "./settings/_schemas/profile-info-form-schema"
+import type { NotificationPreferencesSchema } from "./settings/notifications/_schemas/notifications-preferenes-schema"
+import type { ChangePlanSchema } from "./settings/plan-and-billing/_schemas/change-plan-schema"
+import type { PaymentMethodSchema } from "./settings/plan-and-billing/_schemas/payment-method-schema"
+import type { AccountRecoveryOptionsSchema } from "./settings/security/_schemas/account-recovery-options-schema"
+import type { ChangePasswordSchema } from "./settings/security/_schemas/chnage-password-schema"
+import type { SecurityPreferencesSchema } from "./settings/security/_schemas/security-preferences-form-schema"
 
 export interface UserType {
   id: string

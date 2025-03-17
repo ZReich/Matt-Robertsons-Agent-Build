@@ -1,6 +1,6 @@
 "use client"
 
-import { Table } from "@tanstack/react-table"
+import type { Table } from "@tanstack/react-table"
 
 import { Input } from "@/components/ui/input"
 import { InvoiceTableViewOptions } from "./invoice-table-view-options"

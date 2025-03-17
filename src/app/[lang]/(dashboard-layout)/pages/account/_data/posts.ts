@@ -1,4 +1,4 @@
-import { PostType } from "../types"
+import type { PostType } from "../types"
 
 export const postsData: PostType[] = [
   {

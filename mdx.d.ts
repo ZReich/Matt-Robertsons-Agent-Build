@@ -1,5 +1,5 @@
 declare module "*.mdx" {
-  import { FC } from "react"
+  import type { FC } from "react"
 
   export const metadata: {
     title: string

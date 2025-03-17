@@ -1,4 +1,4 @@
-import { NewVsReturningVisitorsType } from "../types"
+import type { NewVsReturningVisitorsType } from "../types"
 
 export const newVsReturningVisitors: NewVsReturningVisitorsType = {
   visitors: {

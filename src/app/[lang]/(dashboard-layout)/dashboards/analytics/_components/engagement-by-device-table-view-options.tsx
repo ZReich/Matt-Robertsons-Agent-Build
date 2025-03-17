@@ -1,7 +1,8 @@
 "use client"
 
-import { Table } from "@tanstack/react-table"
 import { Eye } from "lucide-react"
+
+import type { Table } from "@tanstack/react-table"
 
 import { camelCaseToTitleCase } from "@/lib/utils"
 

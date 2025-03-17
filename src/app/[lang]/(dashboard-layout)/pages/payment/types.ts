@@ -1,6 +1,5 @@
-import { z } from "zod"
-
-import { PaymentMethodSchema } from "./_schemas/payment-method-schema"
+import type { z } from "zod"
+import type { PaymentMethodSchema } from "./_schemas/payment-method-schema"
 
 export interface CardType {
   id: string

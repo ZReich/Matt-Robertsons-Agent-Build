@@ -1,8 +1,8 @@
 "use client"
 
-import { DraggableProvided } from "@hello-pangea/dnd"
 import { GripVertical } from "lucide-react"
 
+import type { DraggableProvided } from "@hello-pangea/dnd"
 import type { ColumnType } from "../types"
 
 import { cn } from "@/lib/utils"

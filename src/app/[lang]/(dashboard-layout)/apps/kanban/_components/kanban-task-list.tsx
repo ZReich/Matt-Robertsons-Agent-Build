@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Droppable, DroppableProvided } from "@hello-pangea/dnd"
+import { Droppable } from "@hello-pangea/dnd"
 
+import type { DroppableProvided } from "@hello-pangea/dnd"
 import type { ColumnType } from "../types"
 
 import { CardContent } from "@/components/ui/card"

@@ -1,4 +1,4 @@
-import { HomeNavigationType } from "../types"
+import type { HomeNavigationType } from "../types"
 
 export const homeNavigationsData: HomeNavigationType[] = [
   {

@@ -1,4 +1,4 @@
-import { LabelType } from "../types"
+import type { LabelType } from "../types"
 
 export const labelsData: LabelType[] = [
   { id: "research", name: "Research" },

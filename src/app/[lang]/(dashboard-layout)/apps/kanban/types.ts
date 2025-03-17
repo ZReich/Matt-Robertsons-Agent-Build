@@ -1,9 +1,7 @@
-import { z } from "zod"
-
 import type { FileType } from "@/types"
-
-import { KanbanColumnSchema } from "./_schemas/kanban-column-schema"
-import { KanbanTaskSchema } from "./_schemas/kanban-task-schema"
+import type { z } from "zod"
+import type { KanbanColumnSchema } from "./_schemas/kanban-column-schema"
+import type { KanbanTaskSchema } from "./_schemas/kanban-task-schema"
 
 export interface UserType {
   id: string

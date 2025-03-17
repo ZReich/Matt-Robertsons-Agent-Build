@@ -1,7 +1,8 @@
 "use client"
 
-import { Draggable, DraggableProvided } from "@hello-pangea/dnd"
+import { Draggable } from "@hello-pangea/dnd"
 
+import type { DraggableProvided } from "@hello-pangea/dnd"
 import type { ColumnType } from "../types"
 
 import { KanbanColumnItemHeader } from "./kanban-column-item-header"

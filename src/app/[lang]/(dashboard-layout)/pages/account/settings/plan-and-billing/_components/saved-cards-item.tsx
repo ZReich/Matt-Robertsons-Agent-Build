@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { z } from "zod"
 import { EllipsisVertical } from "lucide-react"
 
-import { cardSchema } from "../_schemas/card-schema"
+import type { z } from "zod"
+import type { cardSchema } from "../_schemas/card-schema"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

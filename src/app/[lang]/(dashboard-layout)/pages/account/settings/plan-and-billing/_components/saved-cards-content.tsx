@@ -1,6 +1,5 @@
-import { z } from "zod"
-
-import { cardSchema } from "../_schemas/card-schema"
+import type { z } from "zod"
+import type { cardSchema } from "../_schemas/card-schema"
 
 import { CardContent } from "@/components/ui/card"
 import { SavedCardsList } from "./saved-cards-list"

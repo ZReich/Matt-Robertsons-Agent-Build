@@ -1,4 +1,4 @@
-import { ChatType } from "../types"
+import type { ChatType } from "../types"
 
 export const chatsData: ChatType[] = [
   {

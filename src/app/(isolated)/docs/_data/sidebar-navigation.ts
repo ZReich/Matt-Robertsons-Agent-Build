@@ -1,4 +1,4 @@
-import { NavigationType } from "@/types"
+import type { NavigationType } from "@/types"
 
 export const sidebarNavigationData: NavigationType[] = [
   {
