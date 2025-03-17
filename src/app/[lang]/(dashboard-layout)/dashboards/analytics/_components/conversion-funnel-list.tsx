@@ -6,17 +6,15 @@ import { ConversionFunnelItem } from "./conversion-funnel-item"
 
 export function ConversionFunnelList({
   data,
-  trapezoidHeight,
 }: {
   data: ConversionFunnelType["funnelSteps"]
-  trapezoidHeight: number
 }) {
   return (
     <ul
       style={{
-        gridTemplateRows: `repeat(${data.length}, ${trapezoidHeight}px)`,
+        gridTemplateColumns: `repeat(${data.length}, 1fr)`,
       }}
-      className="absolute inset-0 grid divide-y"
+      className="w-full grid px-6 space-x-3 divide-x"
     >
       {data.map((stage) => (
         <ConversionFunnelItem key={stage.name} data={stage} />

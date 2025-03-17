@@ -39,7 +39,7 @@ export function UserDropdown({
           aria-label="User"
         >
           <Avatar className="size-9">
-            <AvatarImage src={userData?.avatar as string | undefined} alt="" />
+            <AvatarImage src={userData?.avatar} alt="" />
             <AvatarFallback className="bg-transparent">
               {userData?.name && getInitials(userData.name)}
             </AvatarFallback>
@@ -48,22 +48,12 @@ export function UserDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent forceMount>
         <DropdownMenuLabel className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-            asChild
-          >
-            <Avatar className="size-9">
-              <AvatarImage
-                src={userData?.avatar as string | undefined}
-                alt="Avatar"
-              />
-              <AvatarFallback className="bg-transparent">
-                {userData?.name && getInitials(userData.name)}
-              </AvatarFallback>
-            </Avatar>
-          </Button>
+          <Avatar>
+            <AvatarImage src={userData?.avatar} alt="Avatar" />
+            <AvatarFallback className="bg-transparent">
+              {userData?.name && getInitials(userData.name)}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col overflow-hidden">
             <p className="text-sm font-medium truncate">John Doe</p>
             <p className="text-xs text-muted-foreground truncate">

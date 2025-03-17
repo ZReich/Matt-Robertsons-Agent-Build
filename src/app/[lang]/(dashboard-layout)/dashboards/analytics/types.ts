@@ -50,7 +50,6 @@ export type ConversionFunnelType = {
   funnelSteps: Array<{
     name: string
     value: number
-    fill: string
   }>
 }
 

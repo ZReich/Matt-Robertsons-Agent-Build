@@ -5,6 +5,7 @@ import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { LeadSourceType } from "../types"
 
+import { useRadius } from "@/hooks/use-radius"
 import {
   ChartContainer,
   ChartTooltip,
@@ -39,12 +40,19 @@ export function LeadSourcesChart({
 }: {
   data: Pick<LeadSourceType, "leads" | "summary">
 }) {
+  const radius = useRadius()
+
   return (
     <ChartContainer
       config={chartConfig}
-      className="mx-auto aspect-square max-h-28"
+      className="mx-auto aspect-square h-40 w-full"
     >
-      <RadialBarChart data={[data.leads]} innerRadius={45} outerRadius={100}>
+      <RadialBarChart
+        accessibilityLayer
+        data={[data.leads]}
+        innerRadius="85%"
+        outerRadius="200%"
+      >
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
@@ -82,26 +90,26 @@ export function LeadSourcesChart({
         </PolarRadiusAxis>
         <RadialBar
           dataKey="socialMedia"
-          cornerRadius={5}
+          cornerRadius={radius}
           fill="var(--color-socialMedia)"
           className="stroke-transparent stroke-2"
         />
         <RadialBar
           dataKey="emailCampaigns"
           fill="var(--color-emailCampaigns)"
-          cornerRadius={5}
+          cornerRadius={radius}
           className="stroke-transparent stroke-2"
         />
         <RadialBar
           dataKey="referrals"
           fill="var(--color-referrals)"
-          cornerRadius={5}
+          cornerRadius={radius}
           className="stroke-transparent stroke-2"
         />
         <RadialBar
           dataKey="other"
           fill="var(--color-other)"
-          cornerRadius={5}
+          cornerRadius={radius}
           className="stroke-transparent stroke-2"
         />
       </RadialBarChart>

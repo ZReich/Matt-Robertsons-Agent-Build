@@ -7,7 +7,6 @@ import { RevenueTrendSummary } from "./revenue-trend-summary"
 export function RevenueTrend() {
   return (
     <Card className="h-fit p-6">
-      <h3 className="sr-only">Revenue Trend</h3>
       <div className="space-y-4">
         <RevenueTrendSummary data={revenueTrendData.summary} />
         <RevenueTrendChart data={revenueTrendData.revenueTrends} />
