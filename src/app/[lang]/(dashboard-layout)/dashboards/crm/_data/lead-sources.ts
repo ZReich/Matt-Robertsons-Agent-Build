@@ -3,13 +3,13 @@ import type { LeadSourceType } from "../types"
 export const leadSourcesData: LeadSourceType = {
   period: "Last month",
   summary: {
-    totalLeads: 105,
+    totalLeads: 2200,
   },
   leads: {
-    socialMedia: 30,
-    emailCampaigns: 25,
-    referrals: 20,
-    website: 15,
-    other: 15,
+    socialMedia: 600,
+    emailCampaigns: 500,
+    referrals: 450,
+    website: 425,
+    other: 325,
   },
 }
