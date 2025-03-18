@@ -6,11 +6,9 @@ import { RevenueTrendSummary } from "./revenue-trend-summary"
 
 export function RevenueTrend() {
   return (
-    <Card className="h-fit p-6">
-      <div className="space-y-4">
-        <RevenueTrendSummary data={revenueTrendData.summary} />
-        <RevenueTrendChart data={revenueTrendData.revenueTrends} />
-      </div>
+    <Card className="h-56 flex flex-col justify-between gap-y-6 p-6">
+      <RevenueTrendSummary data={revenueTrendData.summary} />
+      <RevenueTrendChart data={revenueTrendData.revenueTrends} />
     </Card>
   )
 }

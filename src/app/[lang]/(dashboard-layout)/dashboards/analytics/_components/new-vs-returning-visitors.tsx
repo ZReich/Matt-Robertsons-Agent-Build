@@ -8,7 +8,8 @@ export async function NewVsReturningVisitors() {
   return (
     <DashboardCard
       title="New vs. Returning Visitors"
-      contentClassName="grid items-between gap-6"
+      size="xs"
+      contentClassName="gap-y-3"
     >
       <NewVsReturningVisitorsChart data={newVsReturningVisitors.visitors} />
       <NewVsReturningVisitorsList data={newVsReturningVisitors.visitors} />

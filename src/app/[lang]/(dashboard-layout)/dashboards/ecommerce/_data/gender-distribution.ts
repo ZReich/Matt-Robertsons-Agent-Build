@@ -1,4 +1,4 @@
-import type { GenderDistributionType } from "../types"
+import type { GenderDistributionType } from "../../analytics/types"
 
 export const genderDistributionData: GenderDistributionType[] = [
   {

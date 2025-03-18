@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { ChurnRate } from "./_components/churn-rate"
 import { CustomerInsights } from "./_components/customer-insights"
+import { GenderDistribution } from "./_components/gender-distribution"
 import { Invoices } from "./_components/invoices"
 import { Overview } from "./_components/overview"
 import { RevenueBySource } from "./_components/revenue-by-source"
@@ -20,7 +21,10 @@ export default function EcommercePage() {
       <Overview />
       <ChurnRate />
       <RevenueBySource />
-      <CustomerInsights />
+      <div className="col-span-full grid gap-4 md:grid-cols-4">
+        <CustomerInsights />
+        <GenderDistribution />
+      </div>
       <SalesTrend />
       <TopProducts />
       <Invoices />

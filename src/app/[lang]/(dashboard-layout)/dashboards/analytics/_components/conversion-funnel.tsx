@@ -14,7 +14,8 @@ export async function ConversionFunnel() {
       period={conversionFunnelData.period}
       action={<DashboardCardActionsDropdown />}
       className="overflow-hidden"
-      contentClassName="p-0 space-y-3"
+      contentClassName="p-0"
+      size="sm"
     >
       <ConversionFunnelList data={conversionFunnelData.funnelSteps} />
       <ConversionFunnelChart data={conversionFunnelData.funnelSteps} />

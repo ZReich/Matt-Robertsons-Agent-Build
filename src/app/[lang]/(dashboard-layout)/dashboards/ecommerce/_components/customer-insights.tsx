@@ -12,7 +12,9 @@ export async function CustomerInsights() {
       title="Customer Insights"
       period={customerInsightsData.period}
       action={<DashboardCardActionsDropdown />}
-      className="col-span-full"
+      size="xs"
+      className="md:col-span-3"
+      contentClassName="justify-center"
     >
       <CustomerInsightList data={customerInsightsData} />
     </DashboardCard>

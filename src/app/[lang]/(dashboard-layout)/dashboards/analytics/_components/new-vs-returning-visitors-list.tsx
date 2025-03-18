@@ -16,9 +16,9 @@ export function NewVsReturningVisitorsList({
   const { new: newVisitors, returning: returningVisitors } = data
 
   return (
-    <ul className="flex justify-between items-center">
+    <ul className="flex justify-between items-center ">
       <li className="grid place-items-start">
-        <h3 className="inline-flex items-center gap-x-1 text-xs md:text-[min(1.35vw,0.75rem)]">
+        <h3 className="inline-flex items-center gap-x-1 text-xs">
           <div
             style={{
               backgroundColor: newVisitors.fill,
@@ -27,14 +27,12 @@ export function NewVsReturningVisitorsList({
           />
           <span>New</span>
         </h3>
-        <p className="text-2xl md:text-[min(2.25vw,1.5rem)]">
-          {newVisitors.value.toLocaleString()}
-        </p>
+        <p className="text-2xl">{newVisitors.value.toLocaleString()}</p>
         <p
           style={{
             color: newVisitors.fill,
           }}
-          className="text-4xl md:text-[min(3vw,2.25rem)]"
+          className="text-4xl"
         >
           {formatPercent(newVisitors.percentageChange)}
         </p>
@@ -46,7 +44,7 @@ export function NewVsReturningVisitorsList({
         />
       </SeparatorWithText>
       <li className="grid place-items-end">
-        <h3 className="inline-flex items-center gap-x-1 text-xs md:text-[min(1.35vw,0.75rem)]">
+        <h3 className="inline-flex items-center gap-x-1 text-xs">
           <span>Returning</span>
           <div
             style={{
@@ -55,14 +53,12 @@ export function NewVsReturningVisitorsList({
             className="h-2.5 w-2.5 rounded-sm"
           />
         </h3>
-        <p className="text-2xl md:text-[min(2.25vw,1.5rem)]">
-          {returningVisitors.value.toLocaleString()}
-        </p>
+        <p className="text-2xl">{returningVisitors.value.toLocaleString()}</p>
         <p
           style={{
             color: returningVisitors.fill,
           }}
-          className="text-4xl md:text-[min(3vw,2.25rem)]"
+          className="text-4xl"
         >
           {formatPercent(returningVisitors.percentageChange)}
         </p>

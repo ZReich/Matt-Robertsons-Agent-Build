@@ -13,7 +13,7 @@ export async function TrafficSources() {
       title="Traffic Sources"
       period={trafficSourcesData.period}
       action={<DashboardCardActionsDropdown />}
-      contentClassName="grid gap-6"
+      size="lg"
     >
       <TrafficSourcesChart data={trafficSourcesData.sources} />
       <TrafficSourcesTable data={trafficSourcesData.sources} />

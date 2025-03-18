@@ -5,7 +5,7 @@ import { LeadSourcesChart } from "./lead-sources-chart"
 
 export function LeadSources() {
   return (
-    <Card className="p-6">
+    <Card className="h-56 p-6">
       <LeadSourcesChart
         data={{
           leads: leadSourcesData.leads,

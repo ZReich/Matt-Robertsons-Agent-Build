@@ -14,7 +14,7 @@ import { ChartContainer } from "@/components/ui/chart"
 export function ActiveProjectsItemChart({
   value,
   maxRating = 100,
-  color = "hsl(var(--primary))",
+  color = "hsl(var(--success))",
 }: {
   value: number
   maxRating?: number
@@ -23,15 +23,12 @@ export function ActiveProjectsItemChart({
   const radius = useRadius()
 
   return (
-    <ChartContainer config={{}} className="aspect-square h-10">
+    <ChartContainer config={{}} className="aspect-square h-16">
       <RadialBarChart
         accessibilityLayer
         data={[{ value }]}
-        barSize={2.5}
-        startAngle={450}
-        endAngle={90}
         innerRadius={25}
-        outerRadius={10}
+        outerRadius="150%"
       >
         <PolarAngleAxis
           type="number"

@@ -8,7 +8,7 @@ export function RevenueBySourceList({
   data: RevenueBySourceType["sources"]
 }) {
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-1">
       {data.map((item) => (
         <RevenueBySourceItem key={item.name} data={item} />
       ))}

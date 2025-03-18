@@ -1,7 +1,9 @@
 import * as React from "react"
+import { cva } from "class-variance-authority"
 import { EllipsisVertical } from "lucide-react"
 
 import type { FormatStyleType, IconType } from "@/types"
+import type { VariantProps } from "class-variance-authority"
 
 import { cn, formatOverviewCardValue } from "@/lib/utils"
 
@@ -21,15 +23,33 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { PercentageChangeBadge } from "./percentage-change-badge"
 
+const cardContentVariants = cva("flex flex-col justify-between gap-y-6", {
+  variants: {
+    size: {
+      xs: "h-32",
+      sm: "h-64",
+      default: "h-96",
+      lg: "h-[29rem]",
+    },
+  },
+  defaultVariants: {
+    size: "default",
+  },
+})
+
 interface DashboardCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string
   period?: string
   action?: React.ReactNode
   contentClassName?: string
+  size?: VariantProps<typeof cardContentVariants>["size"]
 }
 
 const DashboardCard = React.forwardRef<HTMLDivElement, DashboardCardProps>(
-  ({ title, period, action, children, contentClassName, ...props }, ref) => (
+  (
+    { title, period, action, children, contentClassName, size, ...props },
+    ref
+  ) => (
     <Card ref={ref} asChild {...props}>
       <article>
         <div className="flex justify-between p-6">
@@ -39,7 +59,11 @@ const DashboardCard = React.forwardRef<HTMLDivElement, DashboardCardProps>(
           </div>
           {action}
         </div>
-        <CardContent className={contentClassName}>{children}</CardContent>
+        <CardContent
+          className={cn(cardContentVariants({ size }), contentClassName)}
+        >
+          {children}
+        </CardContent>
       </article>
     </Card>
   )

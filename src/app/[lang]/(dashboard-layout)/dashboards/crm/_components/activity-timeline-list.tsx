@@ -10,7 +10,7 @@ export function ActivityTimelineList({
   data: ActivityTimelineType["activities"]
 }) {
   return (
-    <ScrollArea className="h-[25.5rem]">
+    <ScrollArea>
       {data.length ? (
         <Timeline>
           {data.map((activity, index) => {

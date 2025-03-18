@@ -36,11 +36,4 @@ export const activeProjectsData: ActiveProjectType[] = [
     dueDate: new Date("2024-08-15T00:00:00Z"),
     status: "On Track",
   },
-  {
-    name: "Sales Dashboard Enhancement",
-    progress: 50,
-    startDate: new Date("2024-02-20T00:00:00Z"),
-    dueDate: new Date("2024-10-30T00:00:00Z"),
-    status: "At Risk",
-  },
 ]

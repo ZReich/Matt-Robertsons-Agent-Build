@@ -268,7 +268,7 @@ export function Customizer() {
                   </Button>
                 </div>
                 <div className="space-y-1.5">
-                  <span className="text-xs">Layout</span>
+                  <span className="text-sm">Layout</span>
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant={
@@ -304,7 +304,7 @@ export function Customizer() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="text-xs">Direction</span>
+                  <span className="text-sm">Direction</span>
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant={direction === "ltr" ? "secondary" : "outline"}

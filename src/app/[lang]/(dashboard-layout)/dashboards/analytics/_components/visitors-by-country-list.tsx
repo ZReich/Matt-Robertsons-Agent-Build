@@ -8,7 +8,7 @@ export function VisitorsByCountryList({
   data: VisitorsByCountryDataType
 }) {
   return (
-    <ul className="space-y-4">
+    <ul className="h-full space-y-3">
       {data.countries.map((country) => (
         <VisitorsByCountryItem
           key={country.countryName}

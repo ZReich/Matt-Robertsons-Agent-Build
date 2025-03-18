@@ -59,7 +59,7 @@ export function ActivityTimelineItem({
         <div className="flex items-center text-sm text-muted-foreground">
           <span>{formatTime(data.date)}</span>
           {data.status && (
-            <Badge variant="outline" className="ml-2">
+            <Badge variant="outline" className="ms-2">
               {data.status}
             </Badge>
           )}

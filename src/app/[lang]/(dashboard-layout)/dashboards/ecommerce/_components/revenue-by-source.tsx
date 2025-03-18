@@ -14,7 +14,8 @@ export function RevenueBySource() {
       title="Revenue by Source"
       period={revenueBySourceData.period}
       action={<DashboardCardActionsDropdown />}
-      contentClassName="space-y-3"
+      size="sm"
+      contentClassName="gap-y-3"
     >
       <RevenueBySourceSummary data={revenueBySourceData.summary} />
       <RevenueBySourceChart data={revenueBySourceData.sources} />

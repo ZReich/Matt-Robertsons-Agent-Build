@@ -19,7 +19,7 @@ export function PerformanceOverTimeChart({
   const isRtl = useIsRtl()
 
   return (
-    <ChartContainer config={{}} className="w-full md:h-[14.5rem]">
+    <ChartContainer config={{}} className="aspect-auto h-full w-full">
       <LineChart
         accessibilityLayer
         data={data}

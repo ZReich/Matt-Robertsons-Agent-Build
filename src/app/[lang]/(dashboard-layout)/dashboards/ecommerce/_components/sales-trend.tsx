@@ -13,7 +13,7 @@ export async function SalesTrend() {
       title="Sales Trend"
       period={salesTrendData.period}
       action={<DashboardCardActionsDropdown />}
-      contentClassName="space-y-6"
+      size="lg"
     >
       <SalesTrendSummary data={salesTrendData.summary} />
       <SalesTrendChart data={salesTrendData.salesTrends} />

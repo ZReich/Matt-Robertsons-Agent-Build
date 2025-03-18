@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 
 import { ConversionFunnel } from "./_components/conversion-funnel"
 import { EngagementByDevice } from "./_components/engagement-by-device"
-import { GenderDistribution } from "./_components/gender-distribution"
 import { NewVsReturningVisitors } from "./_components/new-vs-returning-visitors"
 import { Overview } from "./_components/overview"
 import { PerformanceOverTime } from "./_components/performance-over-time"
@@ -22,10 +21,7 @@ export default function AnalyticsPage() {
       <TrafficSources />
       <div className="space-y-4">
         <ConversionFunnel />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <GenderDistribution />
-          <NewVsReturningVisitors />
-        </div>
+        <NewVsReturningVisitors />
       </div>
       <PerformanceOverTime />
       <VisitorsByCountry />

@@ -35,13 +35,5 @@ export const topProductsData: TopProductType = {
       order: 4,
       image: "/images/laptop-sleeve.jpeg",
     },
-    {
-      name: "Portable Charger",
-      sku: "PC-005",
-      sales: { value: 49, percentageChange: 0.18 },
-      revenue: { value: 98000, percentageChange: 0.09 },
-      order: 5,
-      image: "/images/portable-charger.jpeg",
-    },
   ],
 }

@@ -8,7 +8,7 @@ import { CustomerInsightItem } from "./customer-insight-item"
 
 export function CustomerInsightList({ data }: { data: CustomerInsightsType }) {
   return (
-    <ul className="grid grid-cols-2 gap-4 md:grid-cols-4 md:justify-items-center ">
+    <ul className="grid grid-cols-2 md:grid-cols-[repeat(auto-fit,_minmax(150px,_1fr))] gap-3 md:justify-items-center">
       <CustomerInsightItem
         title="Total Customers"
         value={data.totalCustomers}

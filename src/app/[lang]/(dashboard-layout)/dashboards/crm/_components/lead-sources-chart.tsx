@@ -45,7 +45,7 @@ export function LeadSourcesChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className="mx-auto aspect-square h-40 w-full"
+      className="mx-auto aspect-square flex-1 h-full w-full"
     >
       <RadialBarChart
         accessibilityLayer

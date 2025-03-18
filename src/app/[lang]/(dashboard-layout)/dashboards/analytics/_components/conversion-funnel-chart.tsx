@@ -1,6 +1,6 @@
 "use client"
 
-import { Area, AreaChart, XAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 import type { ConversionFunnelType } from "../types"
 
@@ -24,6 +24,7 @@ export function ConversionFunnelChart({
           right: 0,
         }}
       >
+        <CartesianGrid vertical={false} />
         <XAxis reversed={isRtl} dataKey="name" hide />
         <Area
           dataKey="value"

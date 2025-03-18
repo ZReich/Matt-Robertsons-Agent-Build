@@ -17,6 +17,8 @@ export function ActivityTimeline() {
           popoverContentOptions={{ align: "end" }}
         />
       }
+      size="lg"
+      contentClassName="pb-0"
     >
       <ActivityTimelineList data={activityTimelineData.activities} />
     </DashboardCard>

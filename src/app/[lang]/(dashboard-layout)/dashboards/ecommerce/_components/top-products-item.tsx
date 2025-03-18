@@ -14,9 +14,9 @@ export function TopProductsItem({
   product: TopProductType["products"][0]
 }) {
   return (
-    <li>
-      <Card className="grid grid-cols-7 overflow-hidden">
-        <div className="col-span-4 flex items-center gap-4 p-2">
+    <Card className="grid overflow-hidden" asChild>
+      <li>
+        <div className="flex items-center gap-4 p-2">
           <Image
             src={product.image}
             alt={product.name}
@@ -34,7 +34,7 @@ export function TopProductsItem({
             </p>
           </div>
         </div>
-        <div className="col-span-3 flex flex-col bg-accent p-2 truncate">
+        <div className="flex justify-between bg-accent p-2 truncate">
           <p className="text-accent-foreground font-semibold">
             <span className="font-normal">Sales: </span>
             {product.sales.value.toLocaleString()}
@@ -44,7 +44,7 @@ export function TopProductsItem({
             {formatCurrency(product.revenue.value)}
           </p>
         </div>
-      </Card>
-    </li>
+      </li>
+    </Card>
   )
 }

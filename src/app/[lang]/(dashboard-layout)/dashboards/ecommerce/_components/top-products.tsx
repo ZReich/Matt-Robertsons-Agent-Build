@@ -12,6 +12,7 @@ export async function TopProducts() {
       title="Top Products"
       period={topProductsData.period}
       action={<DashboardCardActionsDropdown />}
+      size="lg"
     >
       <TopProductsList data={topProductsData.products} />
     </DashboardCard>

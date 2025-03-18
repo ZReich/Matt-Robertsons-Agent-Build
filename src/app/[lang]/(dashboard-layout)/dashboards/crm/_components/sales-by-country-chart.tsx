@@ -58,11 +58,7 @@ export function SalesByCountryChart({
   const isRtl = useIsRtl()
 
   return (
-    <ChartContainer
-      dir="ltr"
-      config={{}}
-      className="aspect-auto h-[23.5rem] w-full"
-    >
+    <ChartContainer dir="ltr" config={{}} className="aspect-auto h-full w-full">
       <LineChart
         accessibilityLayer
         data={data}

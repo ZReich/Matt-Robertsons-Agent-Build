@@ -4,7 +4,7 @@ import { Scatter, ScatterChart, XAxis, YAxis } from "recharts"
 
 import type { ChartTooltipContentProps } from "@/components/ui/chart"
 import type { ScatterPointItem } from "recharts/types/cartesian/Scatter"
-import type { GenderDistributionType } from "../types"
+import type { GenderDistributionType } from "../../analytics/types"
 
 import { formatPercent } from "@/lib/utils"
 
@@ -53,7 +53,10 @@ export function GenderDistributionChart({
   const maxValue = Math.max(...values)
 
   return (
-    <ChartContainer config={{}} className="h-[7.5rem] w-full max-w-72 mx-auto">
+    <ChartContainer
+      config={{}}
+      className="aspect-square max-w-56 h-full w-full mx-auto"
+    >
       <ScatterChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
         <ChartTooltip
           cursor={false}

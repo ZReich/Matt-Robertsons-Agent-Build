@@ -43,7 +43,7 @@ export function SalesTrendChart({
   const radius = useRadius()
 
   return (
-    <ChartContainer config={{}} className="w-full md:h-[200px]">
+    <ChartContainer config={{}} className="aspect-auto h-full w-full">
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <ChartTooltip

@@ -13,7 +13,7 @@ export function ChurnRate() {
       title="Churn Rate"
       period={churnRateData.period}
       action={<DashboardCardActionsDropdown />}
-      contentClassName="space-y-3"
+      size="sm"
     >
       <ChurnRateSummary data={churnRateData.summary} />
       <ChurnRateChart data={churnRateData.months} />

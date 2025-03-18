@@ -24,7 +24,7 @@ export function TopSalesRepresentativesOthersItem({
                 {getInitials(representative.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -top-1 -right-1 w-6 h-6 border-secondary bg-secondary rounded-full flex items-center justify-center text-xs text-secondary-foreground font-semibold">
+            <div className="absolute -top-2 -right-2 w-6 h-6 border-secondary bg-secondary rounded-full flex items-center justify-center text-xs text-secondary-foreground font-semibold">
               {index + 4}
             </div>
           </div>

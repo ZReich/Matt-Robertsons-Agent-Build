@@ -56,7 +56,7 @@ export function ChurnRateChart({ data }: { data: ChurnRateType["months"] }) {
   const radius = useRadius()
 
   return (
-    <ChartContainer config={{}} className="w-full md:h-[200px]">
+    <ChartContainer config={{}} className="aspect-auto grow w-full">
       <BarChart accessibilityLayer data={data} margin={{ top: 20, bottom: 0 }}>
         <CartesianGrid vertical={false} />
         <ChartTooltip

@@ -1,20 +1,14 @@
 "use client"
 
-import { useMedia } from "react-use"
-
 import type { SalesTrendType } from "../types"
 
 import { formatCurrency, formatDateShort } from "@/lib/utils"
-
-import { Separator } from "@/components/ui/separator"
 
 export function SalesTrendSummary({
   data,
 }: {
   data: SalesTrendType["summary"]
 }) {
-  const isSmallOrLarger = useMedia("(min-width: 640px)")
-
   return (
     <ul className="flex flex-col justify-around gap-4 sm:flex-row">
       <div className="flex flex-wrap justify-around gap-4 md:flex-col">
@@ -37,11 +31,6 @@ export function SalesTrendSummary({
           </p>
         </li>
       </div>
-      {isSmallOrLarger ? (
-        <Separator orientation="vertical" className="h-40" />
-      ) : (
-        <Separator />
-      )}
       <div className="flex flex-wrap justify-around gap-4 md:flex-col">
         <li>
           <h3 className="text-sm">Total Sales</h3>

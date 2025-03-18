@@ -12,7 +12,7 @@ export function TopSalesRepresentativesList({
   const others = data.slice(3)
 
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2">
       {top3.map((rep, index) => (
         <TopSalesRepresentativesTop3Item
           key={rep.name + index}

@@ -55,13 +55,14 @@ export function PricingCard({
   const router = useRouter()
 
   return (
-    <li>
-      <Card
-        className={cn(
-          "relative h-full flex flex-col",
-          isFeatured && "border-primary"
-        )}
-      >
+    <Card
+      className={cn(
+        "relative h-full flex flex-col",
+        isFeatured && "border-primary"
+      )}
+      asChild
+    >
+      <li>
         {isFeatured && (
           <Badge className="absolute -top-2.5 start-3 w-fit">Featured</Badge>
         )}
@@ -98,7 +99,7 @@ export function PricingCard({
             {buttonContent || (isCurrentPlan ? "Your Current Plan" : "Upgrade")}
           </Button>
         </CardFooter>
-      </Card>
-    </li>
+      </li>
+    </Card>
   )
 }

@@ -10,7 +10,7 @@ export function TopProductsList({
   data: TopProductType["products"]
 }) {
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2">
       {data.map((product) => (
         <TopProductsItem key={product.sku} product={product} />
       ))}

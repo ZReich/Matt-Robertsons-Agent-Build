@@ -14,13 +14,10 @@ export function CustomerSatisfaction() {
       period={customerSatisfactionData.period}
       action={<DashboardCardActionsDropdown />}
       className="col-span-full"
+      contentClassName="h-auto items-center gap-6 md:h-64 md:flex-row"
     >
-      <div className="flex flex-col justify-between items-center gap-6 md:flex-row">
-        <CustomerSatisfactionChart data={customerSatisfactionData.summary} />
-        <CustomerSatisfactionCarousel
-          data={customerSatisfactionData.feedbacks}
-        />
-      </div>
+      <CustomerSatisfactionChart data={customerSatisfactionData.summary} />
+      <CustomerSatisfactionCarousel data={customerSatisfactionData.feedbacks} />
     </DashboardCard>
   )
 }

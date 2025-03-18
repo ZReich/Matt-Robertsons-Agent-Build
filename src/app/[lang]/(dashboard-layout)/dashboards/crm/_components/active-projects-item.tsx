@@ -6,20 +6,19 @@ import type { ActiveProjectType } from "../types"
 
 import { cn, formatDate } from "@/lib/utils"
 
-import { Badge } from "@/components/ui/badge"
 import { ActiveProjectsItemChart } from "./active-projects-item-chart"
 
 const statusColors = {
   "On Track": {
-    badge: "bg-success hover:bg-success/80",
+    text: "text-success",
     chart: "hsl(var(--success))",
   },
   "At Risk": {
-    badge: "bg-yellow-500 hover:bg-yellow-400 dark:hover:bg-yellow-600",
-    chart: "#facc15",
+    text: "text-destructive",
+    chart: "hsl(var(--destructive))",
   },
   "On Hold": {
-    badge: "bg-muted-foreground hover:bg-muted-foreground/80",
+    text: "text-muted-foreground",
     chart: "hsl(var(--muted-foreground))",
   },
 }
@@ -29,14 +28,15 @@ export function ActiveProjectsItem({
 }: {
   project: ActiveProjectType
 }) {
-  const badgeColor = statusColors[project.status].badge
+  const textColor = statusColors[project.status].text
   const chartColor = statusColors[project.status].chart
 
   return (
     <li className="flex items-center gap-4 py-2 px-4 bg-card border rounded-lg">
       <ActiveProjectsItemChart value={project.progress} color={chartColor} />
       <div>
-        <h3 className="text-[min(3vw,1rem)] line-clamp-1">{project.name}</h3>
+        <p className={cn(textColor, "text-xs")}>{project.status}</p>
+        <h3 className="line-clamp-1">{project.name}</h3>
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="shrink-0 me-2 h-4 w-4" aria-hidden />
           <p className="text-xs">
@@ -44,9 +44,6 @@ export function ActiveProjectsItem({
           </p>
         </div>
       </div>
-      <Badge className={cn("shrink-0 h-fit ms-auto", badgeColor)}>
-        {project.status}
-      </Badge>
     </li>
   )
 }

@@ -26,10 +26,7 @@ export function TrafficSourcesChart({
   const radius = useRadius()
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className="aspect-square h-[15.15rem] mx-auto"
-    >
+    <ChartContainer config={chartConfig} className="aspect-square h-52 mx-auto">
       <RadialBarChart data={data} innerRadius={30} outerRadius={110}>
         <ChartTooltip
           cursor={false}
