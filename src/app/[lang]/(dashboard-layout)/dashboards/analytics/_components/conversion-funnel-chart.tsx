@@ -15,7 +15,7 @@ export function ConversionFunnelChart({
   const isRtl = useIsRtl()
 
   return (
-    <ChartContainer config={{}} className="aspect-video h-44 w-full">
+    <ChartContainer config={{}} className="aspect-video h-40 w-full">
       <AreaChart
         accessibilityLayer
         data={data}
