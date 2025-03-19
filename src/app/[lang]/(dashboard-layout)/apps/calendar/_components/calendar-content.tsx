@@ -14,7 +14,6 @@ import type { EventImpl } from "@fullcalendar/core/internal"
 import type { CategoryType, EventType } from "../types"
 
 import { useCalendarContext } from "../_hooks/calendar-context"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { INITIAL_VIEW } from "../constants"
 
 const eventColors: Record<CategoryType, string> = {
@@ -27,7 +26,6 @@ const eventColors: Record<CategoryType, string> = {
 }
 
 export function CalendarContent() {
-  const isMobile = useIsMobile()
   const direction = useDirection()
   const {
     calendarState,
@@ -121,7 +119,7 @@ export function CalendarContent() {
       eventResizableFromStart
       dragScroll
       dayMaxEvents={2}
-      height={isMobile ? "calc(100svh - 20rem)" : "calc(100vh - 17rem)"}
+      height="auto"
       navLinks
       navLinkDayClick={handleDateClick}
       eventDrop={handleEventDrop}

@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import { CalendarPlus, ChevronLeft, ChevronRight } from "lucide-react"
 
