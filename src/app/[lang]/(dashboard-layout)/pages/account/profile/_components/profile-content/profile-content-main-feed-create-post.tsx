@@ -7,7 +7,6 @@ import { getInitials } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 
 export function ProfileContentCreatePost() {
   return (
@@ -19,11 +18,14 @@ export function ProfileContentCreatePost() {
             <AvatarFallback>{getInitials(userData.name)}</AvatarFallback>
           </Avatar>
           <div className="flex gap-x-1.5">
-            <Input
-              type="text"
-              className="h-10"
-              placeholder="What's heppening?"
-            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="flex-1 h-10 justify-start px-3"
+            >
+              What&apos;s heppening?
+            </Button>
             <Button
               type="button"
               variant="ghost"

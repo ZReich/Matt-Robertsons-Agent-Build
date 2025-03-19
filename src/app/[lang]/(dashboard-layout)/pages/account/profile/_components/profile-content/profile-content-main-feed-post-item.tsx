@@ -86,22 +86,37 @@ export function ProfileContentPostItem({ data }: { data: PostType }) {
             <Toggle
               type="button"
               size="lg"
-              className="hover:text-accent-foreground"
+              className="flex-col items-center hover:text-accent-foreground md:flex-row"
               defaultPressed={data.isLiked}
             >
-              <ThumbsUp className="me-2 h-4 w-4 shrink-0" />
+              <ThumbsUp className="h-4 w-4 shrink-0 md:me-2" />
               <span>Like</span>
             </Toggle>
-            <Button type="button" variant="ghost" size="lg">
-              <MessagesSquare className="me-2 h-4 w-4 shrink-0" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="flex-col md:flex-row"
+            >
+              <MessagesSquare className="h-4 w-4 shrink-0 md:me-2" />
               <span>Comment</span>
             </Button>
-            <Button type="button" variant="ghost" size="lg">
-              <Repeat className="me-2 h-4 w-4 shrink-0" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="flex-col md:flex-row"
+            >
+              <Repeat className="h-4 w-4 shrink-0 md:me-2" />
               <span>Repost</span>
             </Button>
-            <Button type="button" variant="ghost" size="lg">
-              <Forward className="me-2 h-4 w-4 shrink-0" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="flex-col md:flex-row"
+            >
+              <Forward className="h-4 w-4 shrink-0 md:me-2" />
               <span>Share</span>
             </Button>
           </div>
