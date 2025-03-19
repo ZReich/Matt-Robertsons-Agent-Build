@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import type { z } from "zod"
 import type { cardSchema } from "../_schemas/card-schema"
 

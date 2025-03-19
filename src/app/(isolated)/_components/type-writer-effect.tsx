@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -17,16 +17,15 @@ export function TypeWriterEffect({
   deletingSpeed = 100,
   delayBeforeDeleting = 2000,
 }: TypeWriterEffectProps) {
-  const [state, setState] = React.useState({
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [state, setState] = useState({
     index: 0,
     isDeleting: false,
     text: "",
     isWaiting: false,
   })
 
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
-
-  React.useEffect(() => {
+  useEffect(() => {
     const { index, isDeleting, text, isWaiting } = state
     const fullText = textArray[index]
     let delay = isDeleting ? deletingSpeed : typingSpeed

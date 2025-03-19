@@ -96,7 +96,7 @@ export default async function DashboardLayout({
   children,
   params,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   params: { lang: LocaleType };
 }) {
   const dictionary = await getDictionary(params.lang);
@@ -114,10 +114,9 @@ Next, update the `Layout` component in `src/components/layout/index.tsx` to make
 ```typescript
 "use client";
 
-import * as React from "react";
-
 import { useSettings } from "@/hooks/use-settings";
 
+import type { ReactNode } from "react"
 import type { DictionaryType } from "@/lib/getDictionary";
 
 import { VerticalLayout } from "./vertical-layout";
@@ -127,7 +126,7 @@ export function Layout({
   children,
   dictionary,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   dictionary: DictionaryType;
 }) {
   const { settings } = useSettings();

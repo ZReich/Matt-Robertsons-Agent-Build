@@ -1,9 +1,10 @@
 "use client"
 
-import * as React from "react"
+import { useCallback } from "react"
 import { MoonStar, RotateCcw, Sun, SunMoon } from "lucide-react"
 
 import type { ModeType } from "@/types"
+import type { CSSProperties } from "react"
 
 import { baseColors } from "@/configs/base-colors"
 
@@ -116,7 +117,7 @@ const radiusSizes = ["0", "0.3", "0.5", "0.75", "1.0"]
 export function ThemeCustomizer() {
   const { theme, updateTheme, resetTheme } = useTheme()
 
-  const setMode = React.useCallback(
+  const setMode = useCallback(
     (modeName: ModeType) => {
       updateTheme({ ...theme, mode: modeName })
     },
@@ -149,7 +150,7 @@ export function ThemeCustomizer() {
                       ],
                     "--primary-foreground":
                       themes[color.name].activeColor["foreground"],
-                  } as React.CSSProperties
+                  } as CSSProperties
                 }
                 onClick={() => {
                   updateTheme({

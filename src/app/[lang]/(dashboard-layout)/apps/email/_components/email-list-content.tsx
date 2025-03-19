@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect } from "react"
 import { useParams, useSearchParams } from "next/navigation"
 import { useMedia } from "react-use"
 
@@ -21,7 +21,7 @@ export function EmailListContent() {
     : 1 // Get the current page from the search params, default to page 1
   const filterParam = params.segment as string
 
-  React.useEffect(() => {
+  useEffect(() => {
     handleGetFilteredEmails(filterParam, pageQuery)
   }, [pageQuery, filterParam, handleGetFilteredEmails])
 

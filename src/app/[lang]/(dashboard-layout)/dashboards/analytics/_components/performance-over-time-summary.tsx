@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Eye, RefreshCw } from "lucide-react"
 
 import type { PerformanceOverTimeType } from "../types"

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { EllipsisVertical } from "lucide-react"
 
 import type { ColumnType } from "../types"
@@ -21,7 +21,7 @@ interface KanbanColumnActionsProps {
 }
 
 export function KanbanColumnActions({ column }: KanbanColumnActionsProps) {
-  const [open, onOpenChange] = React.useState(false)
+  const [open, onOpenChange] = useState(false)
   const {
     setKanbanUpdateColumnSidebarIsOpen,
     handleSelectColumn,

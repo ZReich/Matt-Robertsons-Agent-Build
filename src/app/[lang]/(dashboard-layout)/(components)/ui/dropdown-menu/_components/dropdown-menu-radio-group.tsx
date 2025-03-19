@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function DropdownMenuRadioGroupComponent() {
-  const [position, setPosition] = React.useState("bottom")
+  const [position, setPosition] = useState("bottom")
 
   return (
     <Card>

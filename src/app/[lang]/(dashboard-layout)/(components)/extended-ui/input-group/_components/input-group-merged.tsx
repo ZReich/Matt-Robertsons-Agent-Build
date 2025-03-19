@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { AtSign, DollarSign, Link2, Lock, Mail, Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useMemo } from "react"
 import { MessageCircleMore, Paperclip } from "lucide-react"
 
 import type { TaskType } from "../types"
@@ -14,7 +14,7 @@ interface KanbanTaskItemFooterProps {
 }
 
 export function KanbanTaskItemFooter({ task }: KanbanTaskItemFooterProps) {
-  const avatars = React.useMemo(() => {
+  const avatars = useMemo(() => {
     return task.assigned.map((member) => ({
       src: member.avatar,
       alt: member.name,

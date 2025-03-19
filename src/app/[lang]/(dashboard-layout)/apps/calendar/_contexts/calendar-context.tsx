@@ -1,8 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { createContext, useReducer, useState } from "react"
 
 import type { CalendarApi } from "@fullcalendar/core/index.js"
+import type { ReactNode } from "react"
 import type {
   CalendarContextType,
   CategoryType,
@@ -15,27 +16,27 @@ import { categoriesData } from "../_data/categories"
 import { CalendarReducer } from "../_reducers/calendar-reducer"
 
 // Create Kanban context
-export const CalendarContext = React.createContext<
-  CalendarContextType | undefined
->(undefined)
+export const CalendarContext = createContext<CalendarContextType | undefined>(
+  undefined
+)
 
 export function CalendarProvider({
   events,
   children,
 }: {
   events: EventType[]
-  children: React.ReactNode
+  children: ReactNode
 }) {
   // Reducer to manage Calendar state
-  const [calendarState, dispatch] = React.useReducer(CalendarReducer, {
+  const [calendarState, dispatch] = useReducer(CalendarReducer, {
     initalEvents: events,
     events,
     selectedCategories: [...categoriesData],
   })
 
   // State management
-  const [calendarApi, setCalendarApi] = React.useState<null | CalendarApi>(null)
-  const [eventSidebarIsOpen, setEventSidebarIsOpen] = React.useState(false)
+  const [calendarApi, setCalendarApi] = useState<null | CalendarApi>(null)
+  const [eventSidebarIsOpen, setEventSidebarIsOpen] = useState(false)
 
   // Handlers for event actions
   const handleAddEvent = (event: EventWithoutIdType) => {

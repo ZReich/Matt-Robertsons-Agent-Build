@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { EllipsisVertical } from "lucide-react"
 
 import type { z } from "zod"

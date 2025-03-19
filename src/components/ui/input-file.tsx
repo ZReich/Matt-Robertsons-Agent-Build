@@ -1,18 +1,22 @@
 "use client"
 
-import * as React from "react"
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react"
 
 import type { ButtonProps } from "@/components/ui/button"
+import type { ChangeEvent, InputHTMLAttributes } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 
 export interface InputFileProps
-  extends Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    "value" | "onChange"
-  > {
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
   containerClassName?: string
   buttonVariant?: ButtonProps["variant"]
   buttonLabel?: string
@@ -21,7 +25,7 @@ export interface InputFileProps
   onValueChange?: (value: FileList) => void
 }
 
-const InputFile = React.forwardRef<HTMLInputElement, InputFileProps>(
+const InputFile = forwardRef<HTMLInputElement, InputFileProps>(
   (
     {
       className,
@@ -35,13 +39,13 @@ const InputFile = React.forwardRef<HTMLInputElement, InputFileProps>(
     },
     ref
   ) => {
-    const [fileName, setFileName] = React.useState<string>(placeholder)
-    const inputRef = React.useRef<HTMLInputElement>(null)
+    const [fileName, setFileName] = useState<string>(placeholder)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     // Forward the ref to the internal ref
-    React.useImperativeHandle(ref, () => inputRef.current!)
+    useImperativeHandle(ref, () => inputRef.current!)
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files
 
       if (files) {
@@ -61,7 +65,7 @@ const InputFile = React.forwardRef<HTMLInputElement, InputFileProps>(
       inputRef.current?.click()
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
       if (value) {
         if (value.length > 1) {
           setFileName(`${value.length} Files`)

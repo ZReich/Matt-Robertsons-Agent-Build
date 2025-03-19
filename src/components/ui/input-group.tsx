@@ -1,12 +1,14 @@
-import * as React from "react"
+import { forwardRef } from "react"
+
+import type { HTMLAttributes, ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
 
-export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode
+export interface InputGroupProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode
 }
 
-const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
+const InputGroup = forwardRef<HTMLDivElement, InputGroupProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
@@ -24,12 +26,11 @@ const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
 )
 InputGroup.displayName = "InputGroup"
 
-export interface InputGroupTextProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface InputGroupTextProps extends HTMLAttributes<HTMLDivElement> {
   merged?: boolean
 }
 
-const InputGroupText = React.forwardRef<HTMLDivElement, InputGroupTextProps>(
+const InputGroupText = forwardRef<HTMLDivElement, InputGroupTextProps>(
   ({ className, merged = false, ...props }, ref) => {
     return (
       <div

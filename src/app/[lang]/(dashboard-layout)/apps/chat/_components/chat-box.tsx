@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useMemo } from "react"
 import { useParams } from "next/navigation"
 
 import type { UserType } from "../types"
@@ -18,7 +18,7 @@ export function ChatBox({ user }: { user: UserType }) {
 
   const chatIdParam = params.id?.[0] // Get the chat ID from route params
 
-  const chat = React.useMemo(() => {
+  const chat = useMemo(() => {
     if (chatIdParam) {
       // Find the chat by ID
       return chatState.chats.find((c) => c.id === chatIdParam)

@@ -1,7 +1,8 @@
 "use client"
 
-import * as React from "react"
+import { createContext, useReducer, useState } from "react"
 
+import type { ReactNode } from "react"
 import type {
   ColumnType,
   ColumnWithoutIdAndOrderAndTasksType,
@@ -15,18 +16,18 @@ import { teamMembersData } from "../_data/team-members"
 import { KanbanReducer } from "../_reducers/kanban-reducer"
 
 // Create Kanban context
-export const KanbanContext = React.createContext<KanbanContextType | undefined>(
+export const KanbanContext = createContext<KanbanContextType | undefined>(
   undefined
 )
 
 interface KanbanProviderProps {
   kanbanData: ColumnType[]
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
   // Reducer to manage Kanban state
-  const [kanbanState, dispatch] = React.useReducer(KanbanReducer, {
+  const [kanbanState, dispatch] = useReducer(KanbanReducer, {
     columns: kanbanData,
     teamMembers: teamMembersData,
     selectedColumn: undefined,
@@ -35,13 +36,13 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
 
   // Sidebar state management
   const [kanbanAddTaskSidebarIsOpen, setKanbanAddTaskSidebarIsOpen] =
-    React.useState(false)
+    useState(false)
   const [kanbanUpdateTaskSidebarIsOpen, setKanbanUpdateTaskSidebarIsOpen] =
-    React.useState(false)
+    useState(false)
   const [kanbanAddColumnSidebarIsOpen, setKanbanAddColumnSidebarIsOpen] =
-    React.useState(false)
+    useState(false)
   const [kanbanUpdateColumnSidebarIsOpen, setKanbanUpdateColumnSidebarIsOpen] =
-    React.useState(false)
+    useState(false)
 
   // Handlers for column actions
   const handleAddColumn = (column: ColumnWithoutIdAndOrderAndTasksType) => {

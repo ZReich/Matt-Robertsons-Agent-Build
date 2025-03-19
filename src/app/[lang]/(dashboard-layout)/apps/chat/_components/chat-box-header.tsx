@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import type { ChatType } from "../types"
 
 import { CardHeader } from "@/components/ui/card"

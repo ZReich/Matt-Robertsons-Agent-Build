@@ -1,9 +1,10 @@
-import * as React from "react"
+import { forwardRef } from "react"
 import { cva } from "class-variance-authority"
 import { EllipsisVertical } from "lucide-react"
 
 import type { FormatStyleType, IconType } from "@/types"
 import type { VariantProps } from "class-variance-authority"
+import type { ComponentPropsWithoutRef, HTMLAttributes, ReactNode } from "react"
 
 import { cn, formatOverviewCardValue } from "@/lib/utils"
 
@@ -37,15 +38,15 @@ const cardContentVariants = cva("flex flex-col justify-between gap-y-6", {
   },
 })
 
-interface DashboardCardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DashboardCardProps extends HTMLAttributes<HTMLDivElement> {
   title: string
   period?: string
-  action?: React.ReactNode
+  action?: ReactNode
   contentClassName?: string
   size?: VariantProps<typeof cardContentVariants>["size"]
 }
 
-const DashboardCard = React.forwardRef<HTMLDivElement, DashboardCardProps>(
+const DashboardCard = forwardRef<HTMLDivElement, DashboardCardProps>(
   (
     { title, period, action, children, contentClassName, size, ...props },
     ref
@@ -70,21 +71,20 @@ const DashboardCard = React.forwardRef<HTMLDivElement, DashboardCardProps>(
 )
 DashboardCard.displayName = "DashboardCard"
 
-interface DashboardOverviewCardProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface DashboardOverviewCardProps extends HTMLAttributes<HTMLDivElement> {
   data: {
     value: number
     percentageChange: number
   }
   title: string
   period?: string
-  action?: React.ReactNode
+  action?: ReactNode
   icon: IconType
   formatStyle?: FormatStyleType
   contentClassName?: string
 }
 
-const DashboardOverviewCard = React.forwardRef<
+const DashboardOverviewCard = forwardRef<
   HTMLDivElement,
   DashboardOverviewCardProps
 >(
@@ -133,22 +133,21 @@ const DashboardOverviewCard = React.forwardRef<
 )
 DashboardOverviewCard.displayName = "DashboardOverviewCard"
 
-interface DashboardOverviewCardV2Props
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface DashboardOverviewCardV2Props extends HTMLAttributes<HTMLDivElement> {
   data: {
     value: number
     percentageChange: number
   }
   title: string
   period: string
-  action?: React.ReactNode
+  action?: ReactNode
   icon: IconType
   iconColor?: string
   formatStyle?: FormatStyleType
   contentClassName?: string
 }
 
-const DashboardOverviewCardV2 = React.forwardRef<
+const DashboardOverviewCardV2 = forwardRef<
   HTMLDivElement,
   DashboardOverviewCardV2Props
 >(
@@ -212,20 +211,19 @@ const DashboardOverviewCardV2 = React.forwardRef<
 )
 DashboardOverviewCardV2.displayName = "DashboardOverviewCardV2"
 
-interface DashboardOverviewCardV3Props
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface DashboardOverviewCardV3Props extends HTMLAttributes<HTMLDivElement> {
   data: {
     value: number
     percentageChange: number
   }
   title: string
-  action?: React.ReactNode
-  chart: React.ReactNode
+  action?: ReactNode
+  chart: ReactNode
   formatStyle?: FormatStyleType
   contentClassName?: string
 }
 
-const DashboardOverviewCardV3 = React.forwardRef<
+const DashboardOverviewCardV3 = forwardRef<
   HTMLDivElement,
   DashboardOverviewCardV3Props
 >(
@@ -286,7 +284,7 @@ DashboardOverviewCardV3.displayName = "DashboardOverviewCardV3"
 function DashboardCardActionsDropdown({
   children,
   ...props
-}: React.ComponentPropsWithoutRef<typeof DropdownMenu>) {
+}: ComponentPropsWithoutRef<typeof DropdownMenu>) {
   return (
     <DropdownMenu {...props}>
       <DropdownMenuTrigger

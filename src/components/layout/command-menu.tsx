@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { Fragment, useCallback, useEffect, useState } from "react"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import { useMedia } from "react-use"
 import { ChevronDown, Search } from "lucide-react"
@@ -53,7 +53,7 @@ export function CommandMenu({
   dictionary,
   ...props
 }: CommandMenuProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const params = useParams()
   const router = useRouter()
@@ -61,7 +61,7 @@ export function CommandMenu({
 
   const locale = params.lang as LocaleType
 
-  React.useEffect(() => {
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
         if (
@@ -82,7 +82,7 @@ export function CommandMenu({
     return () => document.removeEventListener("keydown", down)
   }, [])
 
-  const runCommand = React.useCallback((command: () => unknown) => {
+  const runCommand = useCallback((command: () => unknown) => {
     setOpen(false)
     command()
   }, [])
@@ -194,9 +194,7 @@ export function CommandMenu({
                   className="[&_[cmdk-group-items]]:space-y-1"
                 >
                   {nav.items.map((item) => (
-                    <React.Fragment key={item.title}>
-                      {renderMenuItem(item)}
-                    </React.Fragment>
+                    <Fragment key={item.title}>{renderMenuItem(item)}</Fragment>
                   ))}
                 </CommandGroup>
               )

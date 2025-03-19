@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef } from "react"
 import { Archive, Clock, MoreVertical, Star, Tag, Trash2 } from "lucide-react"
 
 import type { ButtonProps } from "@/components/ui/button"
@@ -19,7 +19,7 @@ interface ActionButtonProps extends ButtonProps {
   label: string
 }
 
-const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(
+const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
   ({ icon: Icon, label, ...props }, ref) => {
     return (
       <Button

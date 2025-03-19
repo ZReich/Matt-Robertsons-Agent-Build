@@ -1,12 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function BasicCalendar() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
+  const [date, setDate] = useState<Date | undefined>(new Date())
 
   return (
     <Card>

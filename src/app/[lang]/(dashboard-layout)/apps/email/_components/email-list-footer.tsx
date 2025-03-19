@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import { useEmailContext } from "../_hooks/use-email-context"
 import { CardFooter } from "@/components/ui/card"
 

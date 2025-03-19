@@ -1,9 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { memo } from "react"
 import { Circle, CircleMinus, Moon } from "lucide-react"
 
-export const UserStatusIcon = React.memo(
+export const UserStatusIcon = memo(
   ({ status, size }: { status: string; size: number | string }) => {
     switch (status) {
       case "ONLINE":

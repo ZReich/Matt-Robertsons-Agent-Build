@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { CalendarCheck2, CalendarMinus } from "lucide-react"
@@ -70,7 +70,7 @@ export function EventSidebar() {
   const selectedEvent = calendarState.selectedEvent
 
   // Reset the form with the current selected event's values if it exists; otherwise reset to the default state. This runs whenever `selectedEvent` or `eventSidebarIsOpen` changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedEvent) {
       const { extendedProps, ...eventProps } = selectedEvent
 

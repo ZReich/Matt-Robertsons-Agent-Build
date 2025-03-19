@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { MoreHorizontal } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -38,8 +38,8 @@ const labels = [
 ]
 
 export function ComboboxDropdownMenu() {
-  const [label, setLabel] = React.useState("feature")
-  const [open, setOpen] = React.useState(false)
+  const [label, setLabel] = useState("feature")
+  const [open, setOpen] = useState(false)
 
   return (
     <Card>

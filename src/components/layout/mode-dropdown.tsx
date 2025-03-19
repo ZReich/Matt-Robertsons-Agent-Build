@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useCallback } from "react"
 import { useParams } from "next/navigation"
 import { MoonStar, Sun, SunMoon } from "lucide-react"
 
@@ -36,7 +36,7 @@ export function ModeDropdown({ dictionary }: { dictionary: DictionaryType }) {
   const mode = settings.mode
   const ModeIcon = modeIcons[mode]
 
-  const setMode = React.useCallback(
+  const setMode = useCallback(
     (modeName: ModeType) => {
       updateSettings({ ...settings, mode: modeName })
     },

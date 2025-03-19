@@ -1,11 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef, useState } from "react"
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 import { cva } from "class-variance-authority"
 
 import type { DynamicIconNameType } from "@/types"
 import type { VariantProps } from "class-variance-authority"
+import type { ComponentPropsWithoutRef, ElementRef } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -39,15 +40,15 @@ const starVariants = cva(
 )
 
 export interface RatingProps
-  extends React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>,
+  extends ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>,
     VariantProps<typeof starVariants> {
   length?: number
   readOnly?: boolean
   iconName?: DynamicIconNameType
 }
 
-export const Rating = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Root>,
+export const Rating = forwardRef<
+  ElementRef<typeof RadioGroupPrimitive.Root>,
   RatingProps
 >(
   (
@@ -64,7 +65,7 @@ export const Rating = React.forwardRef<
     ref
   ) => {
     const currentValue = props.value || "0"
-    const [hoverValue, onHoverValue] = React.useState(currentValue)
+    const [hoverValue, onHoverValue] = useState(currentValue)
 
     if (readOnly) {
       return (
@@ -142,8 +143,8 @@ export interface RatingStarProps
   iconName: DynamicIconNameType
 }
 
-const RatingStar = React.forwardRef<
-  React.ElementRef<typeof RadioGroupPrimitive.Item>,
+const RatingStar = forwardRef<
+  ElementRef<typeof RadioGroupPrimitive.Item>,
   RatingStarProps
 >(({ value, size, variant, filled, onHoverValue, iconName, ...props }, ref) => {
   return (

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { LoaderCircle, Paperclip, Send } from "lucide-react"
@@ -34,7 +34,7 @@ const formattedFileSize = formatFileSize(MAX_FILE_SIZE)
 
 export function FilesUploader() {
   const { handleAddFilesMessage } = useChatContext()
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const form = useForm<FilesUploaderFormType>({
     resolver: zodResolver(FilesUploaderSchema),
     defaultValues: {

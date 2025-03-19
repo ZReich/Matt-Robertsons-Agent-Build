@@ -1,11 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef, useState } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
 import type { ButtonProps } from "@/components/ui/button"
 import type { CalendarProps } from "@/components/ui/calendar"
+import type { ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -27,13 +28,13 @@ export type DateTimePickerProps = Omit<
   onValueChange?: (date?: Date) => void
   formatStr?: string
   popoverContentClassName?: string
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  popoverContentOptions?: ComponentPropsWithoutRef<typeof PopoverContent>
   buttonClassName?: string
   buttonOptions?: ButtonProps
   placeholder?: string
 }
 
-const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
+const DateTimePicker = forwardRef<HTMLButtonElement, DateTimePickerProps>(
   (
     {
       value,
@@ -48,9 +49,7 @@ const DateTimePicker = React.forwardRef<HTMLButtonElement, DateTimePickerProps>(
     },
     ref
   ) => {
-    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
-      value
-    )
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(value)
 
     const handleDateSelect = (selected?: Date | undefined) => {
       if (!selected) return

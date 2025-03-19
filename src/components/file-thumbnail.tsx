@@ -1,4 +1,4 @@
-import * as React from "react"
+import { forwardRef } from "react"
 import { FileIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -8,7 +8,7 @@ interface FileThumbnailProps {
   className?: string
 }
 
-const FileThumbnail = React.forwardRef<HTMLDivElement, FileThumbnailProps>(
+const FileThumbnail = forwardRef<HTMLDivElement, FileThumbnailProps>(
   ({ fileName, className }, ref) => {
     // Extract the file extension from the file name
     const fileExtension = fileName

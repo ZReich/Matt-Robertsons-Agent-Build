@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams, usePathname } from "next/navigation"
@@ -16,9 +16,9 @@ import { HomeSidebar } from "./home-sidebar"
 export function Header() {
   const pathname = usePathname()
   const params = useParams()
-  const [fullPathname, setFullPathname] = React.useState("")
+  const [fullPathname, setFullPathname] = useState("")
 
-  React.useEffect(() => {
+  useEffect(() => {
     setFullPathname(pathname + window.location.hash)
   }, [params, pathname])
 

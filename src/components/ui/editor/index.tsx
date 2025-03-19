@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { useDirection } from "@radix-ui/react-direction"
 import Color from "@tiptap/extension-color"
 import Image from "@tiptap/extension-image"

@@ -1,7 +1,8 @@
 "use client"
 
-import * as React from "react"
+import { createContext, useCallback, useReducer, useState } from "react"
 
+import type { ReactNode } from "react"
 import type {
   EmailContextType,
   EmailSidebarItemsType,
@@ -11,7 +12,7 @@ import type {
 import { EmailReducer } from "../_reducers/email-reducer"
 
 // Create Email context
-export const EmailContext = React.createContext<EmailContextType | undefined>(
+export const EmailContext = createContext<EmailContextType | undefined>(
   undefined
 )
 
@@ -22,10 +23,10 @@ export function EmailProvider({
 }: {
   emailsData: EmailType[]
   sidebarItemsData: EmailSidebarItemsType
-  children: React.ReactNode
+  children: ReactNode
 }) {
   // Reducer to manage Email state
-  const [emailState, dispatch] = React.useReducer(EmailReducer, {
+  const [emailState, dispatch] = useReducer(EmailReducer, {
     initialEmails: emailsData,
     sidebarItems: sidebarItemsData,
     emails: [],
@@ -36,17 +37,17 @@ export function EmailProvider({
   })
 
   // Sidebar state management
-  const [isEmailSidebarOpen, setIsEmailSidebarOpen] = React.useState(false)
+  const [isEmailSidebarOpen, setIsEmailSidebarOpen] = useState(false)
 
   // Handlers for email actions
-  const handleGetFilteredEmails = React.useCallback(
+  const handleGetFilteredEmails = useCallback(
     (filter: string, currentPage: number) => {
       dispatch({ type: "getFilteredEmails", filter, currentPage })
     },
     []
   )
 
-  const handleGetFilteredEmailsBySearchTerm = React.useCallback(
+  const handleGetFilteredEmailsBySearchTerm = useCallback(
     (term: string, filter: string, currentPage: number) => {
       dispatch({
         type: "getFilteredEmailsBySearchTerm",

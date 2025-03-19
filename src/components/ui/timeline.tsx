@@ -1,10 +1,15 @@
-import * as React from "react"
+import { forwardRef } from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"
 
 import type { DynamicIconNameType } from "@/types"
 import type * as SeparatorPrimitive from "@radix-ui/react-separator"
 import type { VariantProps } from "class-variance-authority"
+import type {
+  ComponentPropsWithoutRef,
+  ElementRef,
+  HTMLAttributes,
+} from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -25,10 +30,10 @@ const timelineVariants = cva("grid", {
 })
 
 interface TimelineProps
-  extends React.HTMLAttributes<HTMLUListElement>,
+  extends HTMLAttributes<HTMLUListElement>,
     VariantProps<typeof timelineVariants> {}
 
-const Timeline = React.forwardRef<HTMLUListElement, TimelineProps>(
+const Timeline = forwardRef<HTMLUListElement, TimelineProps>(
   ({ children, className, align, ...props }, ref) => {
     return (
       <ul
@@ -56,10 +61,10 @@ const timelineItemVariants = cva("grid items-center gap-x-2", {
 })
 
 interface TimelineItemProps
-  extends React.HTMLAttributes<HTMLLIElement>,
+  extends HTMLAttributes<HTMLLIElement>,
     VariantProps<typeof timelineItemVariants> {}
 
-const TimelineItem = React.forwardRef<HTMLLIElement, TimelineItemProps>(
+const TimelineItem = forwardRef<HTMLLIElement, TimelineItemProps>(
   ({ className, status, ...props }, ref) => (
     <li
       className={cn(timelineItemVariants({ status }), className)}
@@ -71,7 +76,7 @@ const TimelineItem = React.forwardRef<HTMLLIElement, TimelineItemProps>(
 TimelineItem.displayName = "TimelineItem"
 
 type TimelineDotStatus = "current" | "done" | "error"
-interface TimelineDotPropsBase extends React.HTMLAttributes<HTMLDivElement> {
+interface TimelineDotPropsBase extends HTMLAttributes<HTMLDivElement> {
   iconClassName?: string
 }
 
@@ -109,7 +114,7 @@ const statusIconNames: StatusIconNamesType = {
   },
 }
 
-const TimelineDot = React.forwardRef<HTMLDivElement, TimelineDotProps>(
+const TimelineDot = forwardRef<HTMLDivElement, TimelineDotProps>(
   (
     {
       className,
@@ -175,10 +180,10 @@ const timelineContentVariants = cva("row-start-2 row-end-2 pb-8", {
 })
 
 interface TimelineContentProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof timelineContentVariants> {}
 
-const TimelineContent = React.forwardRef<HTMLDivElement, TimelineContentProps>(
+const TimelineContent = forwardRef<HTMLDivElement, TimelineContentProps>(
   ({ className, side, ...props }, ref) => (
     <div
       className={cn(timelineContentVariants({ side }), className)}
@@ -210,32 +215,31 @@ const timelineHeadingVariants = cva(
 )
 
 interface TimelineHeadingProps
-  extends React.HTMLAttributes<HTMLHeadingElement>,
+  extends HTMLAttributes<HTMLHeadingElement>,
     VariantProps<typeof timelineHeadingVariants> {
   asChild?: boolean
 }
 
-const TimelineHeading = React.forwardRef<
-  HTMLHeadingElement,
-  TimelineHeadingProps
->(({ className, side, variant, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "h3"
-  return (
-    <Comp
-      ref={ref}
-      className={cn(timelineHeadingVariants({ side, variant }), className)}
-      {...props}
-    />
-  )
-})
+const TimelineHeading = forwardRef<HTMLHeadingElement, TimelineHeadingProps>(
+  ({ className, side, variant, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "h3"
+    return (
+      <Comp
+        ref={ref}
+        className={cn(timelineHeadingVariants({ side, variant }), className)}
+        {...props}
+      />
+    )
+  }
+)
 TimelineHeading.displayName = "TimelineHeading"
 
 interface TimelineLineProps
-  extends React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
+  extends ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
   done?: boolean
 }
-const TimelineLine = React.forwardRef<
-  React.ElementRef<typeof SeparatorPrimitive.Root>,
+const TimelineLine = forwardRef<
+  ElementRef<typeof SeparatorPrimitive.Root>,
   TimelineLineProps
 >(({ className, done = false, ...props }, ref) => {
   return (

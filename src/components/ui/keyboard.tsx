@@ -1,10 +1,12 @@
-import * as React from "react"
+import { forwardRef } from "react"
+
+import type { HTMLProps } from "react"
 
 import { cn } from "@/lib/utils"
 
-export interface KeyboardProps extends React.HTMLProps<HTMLElement> {}
+export interface KeyboardProps extends HTMLProps<HTMLElement> {}
 
-const Keyboard = React.forwardRef<HTMLElement, KeyboardProps>(
+const Keyboard = forwardRef<HTMLElement, KeyboardProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <kbd

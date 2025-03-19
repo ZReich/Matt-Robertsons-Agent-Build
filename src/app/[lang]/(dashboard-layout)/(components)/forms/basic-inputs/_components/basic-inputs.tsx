@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { CalendarIcon, Clock, Mail } from "lucide-react"
 
 import { formatDate } from "@/lib/utils"
@@ -20,7 +20,7 @@ import { Slider } from "@/components/ui/slider"
 import { Textarea } from "@/components/ui/textarea"
 
 export function BasicInputs() {
-  const [date, setDate] = React.useState<Date | undefined>()
+  const [date, setDate] = useState<Date | undefined>()
 
   return (
     <Card>

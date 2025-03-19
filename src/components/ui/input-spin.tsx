@@ -1,9 +1,10 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef, useEffect, useState } from "react"
 import { Minus, Plus } from "lucide-react"
 
 import type { ButtonProps } from "@/components/ui/button"
+import type { ChangeEvent, InputHTMLAttributes } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -11,7 +12,7 @@ import { Button } from "@/components/ui/button"
 
 export interface InputSpinProps
   extends Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
+    InputHTMLAttributes<HTMLInputElement>,
     "onChange" | "value" | "min" | "max" | "step"
   > {
   value?: number
@@ -22,7 +23,7 @@ export interface InputSpinProps
   buttonVariant?: ButtonProps["variant"]
 }
 
-const InputSpin = React.forwardRef<HTMLInputElement, InputSpinProps>(
+const InputSpin = forwardRef<HTMLInputElement, InputSpinProps>(
   (
     {
       value,
@@ -37,7 +38,7 @@ const InputSpin = React.forwardRef<HTMLInputElement, InputSpinProps>(
     },
     ref
   ) => {
-    const [internalValue, setInternalValue] = React.useState<number>(value ?? 0)
+    const [internalValue, setInternalValue] = useState<number>(value ?? 0)
 
     const handleIncrement = () => {
       const newValue = internalValue + step
@@ -55,7 +56,7 @@ const InputSpin = React.forwardRef<HTMLInputElement, InputSpinProps>(
       }
     }
 
-    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
       const newValue = parseFloat(e.target.value)
       if (!isNaN(newValue) && newValue >= min && newValue <= max) {
         setInternalValue(newValue)
@@ -63,7 +64,7 @@ const InputSpin = React.forwardRef<HTMLInputElement, InputSpinProps>(
       }
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
       if (value !== undefined) {
         setInternalValue(value)
       }

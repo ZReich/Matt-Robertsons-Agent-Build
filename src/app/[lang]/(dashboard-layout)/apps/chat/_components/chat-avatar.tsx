@@ -1,13 +1,13 @@
 "use client"
 
-import * as React from "react"
+import { memo } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserStatusIcon } from "./user-status-icon"
 
-const ChatAvatar = React.memo(
+const ChatAvatar = memo(
   ({
     src,
     fallback,

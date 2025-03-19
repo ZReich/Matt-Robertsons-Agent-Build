@@ -3,6 +3,7 @@
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis } from "recharts"
 
 import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { CSSProperties } from "react"
 import type { ChurnRateType } from "../types"
 
 import { camelCaseToTitleCase, formatPercent } from "@/lib/utils"
@@ -29,7 +30,7 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
               {
                 // @ts-ignore
                 "--color-bg": item.fill,
-              } as React.CSSProperties
+              } as CSSProperties
             }
           />
           {camelCaseToTitleCase(String(name))}

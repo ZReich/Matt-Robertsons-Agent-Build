@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Italic } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

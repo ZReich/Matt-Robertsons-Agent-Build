@@ -1,11 +1,17 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef, memo } from "react"
 import Link from "next/link"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 import { cva } from "class-variance-authority"
 
 import type { VariantProps } from "class-variance-authority"
+import type {
+  ComponentPropsWithoutRef,
+  ElementRef,
+  HTMLAttributes,
+  MouseEvent,
+} from "react"
 
 import { cn, getInitials } from "@/lib/utils"
 
@@ -16,9 +22,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+const Avatar = forwardRef<
+  ElementRef<typeof AvatarPrimitive.Root>,
+  ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
@@ -31,9 +37,9 @@ const Avatar = React.forwardRef<
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName
 
-const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+const AvatarImage = forwardRef<
+  ElementRef<typeof AvatarPrimitive.Image>,
+  ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
@@ -43,9 +49,9 @@ const AvatarImage = React.forwardRef<
 ))
 AvatarImage.displayName = AvatarPrimitive.Image.displayName
 
-const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+const AvatarFallback = forwardRef<
+  ElementRef<typeof AvatarPrimitive.Fallback>,
+  ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Fallback
     ref={ref}
@@ -75,14 +81,14 @@ const avatarStackVariants = cva(
 )
 
 export interface AvatarStackProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof avatarStackVariants> {
   avatars: { src?: string; alt: string; href?: string }[]
   limit?: number
-  onMoreButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onMoreButtonClick?: (event: MouseEvent<HTMLButtonElement>) => void
 }
 
-const AvatarStack = React.memo(
+const AvatarStack = memo(
   ({
     avatars,
     limit = 4,

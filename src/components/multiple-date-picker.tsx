@@ -1,11 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
 import type { ButtonProps } from "@/components/ui/button"
 import type { CalendarProps } from "@/components/ui/calendar"
+import type { ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -25,13 +26,13 @@ export type MultipleDatesPickerProps = Omit<
   onValueChange: (dates?: Date[]) => void
   formatStr?: string
   popoverContentClassName?: string
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  popoverContentOptions?: ComponentPropsWithoutRef<typeof PopoverContent>
   buttonClassName?: string
   buttonOptions?: ButtonProps
   placeholder?: string
 }
 
-const MultipleDatesPicker = React.forwardRef<
+const MultipleDatesPicker = forwardRef<
   HTMLButtonElement,
   MultipleDatesPickerProps
 >(

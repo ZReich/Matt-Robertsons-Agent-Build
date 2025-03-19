@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { Droppable } from "@hello-pangea/dnd"
 
 import type { DroppableProvided } from "@hello-pangea/dnd"

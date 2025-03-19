@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import { Card } from "@/components/ui/card"
 import { EmailListContent } from "./email-list-content"
 import { EmailListFooter } from "./email-list-footer"

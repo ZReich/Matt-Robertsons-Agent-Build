@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { EllipsisVertical } from "lucide-react"
 
 import type { TaskType } from "../types"
@@ -21,7 +21,7 @@ interface KanbanTaskItemActionsProps {
 }
 
 export function KanbanTaskItemActions({ task }: KanbanTaskItemActionsProps) {
-  const [open, onOpenChange] = React.useState(false)
+  const [open, onOpenChange] = useState(false)
   const {
     setKanbanUpdateTaskSidebarIsOpen,
     handleSelectTask,

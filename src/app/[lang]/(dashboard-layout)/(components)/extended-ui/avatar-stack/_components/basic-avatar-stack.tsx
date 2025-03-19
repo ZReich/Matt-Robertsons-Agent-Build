@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import { avatarsData } from "../_data/avatars"
 
 import { AvatarStack } from "@/components/ui/avatar"

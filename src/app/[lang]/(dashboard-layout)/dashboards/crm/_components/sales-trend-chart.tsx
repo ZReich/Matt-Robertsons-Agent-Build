@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
 import type { ChartConfig } from "@/components/ui/chart"
@@ -38,7 +38,7 @@ const chartConfig = {
 
 export function SalesTrendChart({ data }: { data: SalesTrendType }) {
   const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>("lead")
+    useState<keyof typeof chartConfig>("lead")
   const isRtl = useIsRtl()
   const radius = useRadius()
 

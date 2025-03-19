@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -47,10 +47,8 @@ const statuses: Status[] = [
 ]
 
 export function ComboboxPopover() {
-  const [open, setOpen] = React.useState(false)
-  const [selectedStatus, setSelectedStatus] = React.useState<Status | null>(
-    null
-  )
+  const [open, setOpen] = useState(false)
+  const [selectedStatus, setSelectedStatus] = useState<Status | null>(null)
 
   return (
     <Card>

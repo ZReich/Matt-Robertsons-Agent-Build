@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { ListFilter, MoreVertical, SquarePen } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -13,9 +13,8 @@ import { ChatSidebarNotificationDropdown } from "./chat-sidebar-notification-dro
 import { ChatSidebarStatusDropdown } from "./chat-sidebar-status-dropdown"
 
 export function ChatSidebarActionButtons() {
-  const [notifications, setNotifications] =
-    React.useState<string>("ALL_MESSAGES")
-  const [status, setStatus] = React.useState<string>("ONLINE")
+  const [notifications, setNotifications] = useState<string>("ALL_MESSAGES")
+  const [status, setStatus] = useState<string>("ONLINE")
 
   return (
     <div className="flex gap-1">

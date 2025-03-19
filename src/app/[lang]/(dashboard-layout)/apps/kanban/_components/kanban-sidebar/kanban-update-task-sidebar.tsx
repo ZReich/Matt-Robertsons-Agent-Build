@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Grid2x2Plus } from "lucide-react"
@@ -69,7 +69,7 @@ export function KanbanUpdateTaskSidebar() {
   const { teamMembers, selectedTask } = kanbanState
 
   // Reset the form with the current selected task's values whenever `selectedTask` changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedTask) {
       form.reset({
         title: selectedTask?.title,

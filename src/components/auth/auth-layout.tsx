@@ -1,20 +1,21 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 
 import type { LocaleType } from "@/types"
+import type { HTMLAttributes } from "react"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
-interface AuthProps extends React.HTMLAttributes<HTMLDivElement> {
+interface AuthProps extends HTMLAttributes<HTMLDivElement> {
   imgSrc?: string
 }
 
-const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
+const Auth = forwardRef<HTMLDivElement, AuthProps>(
   ({ className, children, imgSrc, ...props }, ref) => {
     const params = useParams()
     const locale = params.lang as LocaleType
@@ -51,11 +52,11 @@ const Auth = React.forwardRef<HTMLDivElement, AuthProps>(
 )
 Auth.displayName = "Auth"
 
-interface AuthImageProps extends React.HTMLAttributes<HTMLDivElement> {
+interface AuthImageProps extends HTMLAttributes<HTMLDivElement> {
   imgSrc: string
 }
 
-const AuthImage = React.forwardRef<HTMLDivElement, AuthImageProps>(
+const AuthImage = forwardRef<HTMLDivElement, AuthImageProps>(
   ({ className, imgSrc, ...props }, ref) => (
     <div
       ref={ref}
@@ -77,21 +78,20 @@ const AuthImage = React.forwardRef<HTMLDivElement, AuthImageProps>(
 )
 AuthImage.displayName = "AuthImage"
 
-const AuthHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("space-y-2 text-center", className)}
-    {...props}
-  />
-))
+const AuthHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("space-y-2 text-center", className)}
+      {...props}
+    />
+  )
+)
 AuthHeader.displayName = "AuthHeader"
 
-const AuthTitle = React.forwardRef<
+const AuthTitle = forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
+  HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h1
     ref={ref}
@@ -104,9 +104,9 @@ const AuthTitle = React.forwardRef<
 ))
 AuthTitle.displayName = "AuthTitle"
 
-const AuthDescription = React.forwardRef<
+const AuthDescription = forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
+  HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
@@ -116,20 +116,18 @@ const AuthDescription = React.forwardRef<
 ))
 AuthDescription.displayName = "AuthDescription"
 
-const AuthForm = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={className} {...props} />
-))
+const AuthForm = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={className} {...props} />
+  )
+)
 AuthForm.displayName = "AuthForm"
 
-const AuthFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("grid gap-6", className)} {...props} />
-))
+const AuthFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("grid gap-6", className)} {...props} />
+  )
+)
 AuthFooter.displayName = "AuthFooter"
 
 export {

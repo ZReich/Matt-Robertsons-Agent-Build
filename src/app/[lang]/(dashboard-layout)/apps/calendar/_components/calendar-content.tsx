@@ -1,7 +1,7 @@
 // Refer to FullCalendar documentation for more details https://fullcalendar.io/docs
 "use client"
 
-import * as React from "react"
+import { useEffect, useRef } from "react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
 import listPlugin from "@fullcalendar/list"
@@ -36,10 +36,10 @@ export function CalendarContent() {
     setEventSidebarIsOpen,
   } = useCalendarContext()
 
-  const calendarRef = React.useRef<null | FullCalendar>(null)
+  const calendarRef = useRef<null | FullCalendar>(null)
 
   // Initialize the calendar API when the component mounts or when `calendarApi` is not already set
-  React.useEffect(() => {
+  useEffect(() => {
     if (!calendarApi && calendarRef.current) {
       setCalendarApi(calendarRef.current.getApi())
     }

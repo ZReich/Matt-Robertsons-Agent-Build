@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { memo } from "react"
 import { Draggable } from "@hello-pangea/dnd"
 
 import type { DraggableProvided } from "@hello-pangea/dnd"
@@ -16,28 +16,26 @@ interface KanbanTaskItemProps {
   index: number
 }
 
-export const KanbanTaskItem = React.memo(
-  ({ task, index }: KanbanTaskItemProps) => {
-    return (
-      <Draggable
-        draggableId={task.id} // A unique identifier for this task, which helps the library track and move the item
-        index={index} // The position of this task in its column, used for reordering tasks when drag-and-drop occurs
-      >
-        {/* A render callback function that provides the necessary props
+export const KanbanTaskItem = memo(({ task, index }: KanbanTaskItemProps) => {
+  return (
+    <Draggable
+      draggableId={task.id} // A unique identifier for this task, which helps the library track and move the item
+      index={index} // The position of this task in its column, used for reordering tasks when drag-and-drop occurs
+    >
+      {/* A render callback function that provides the necessary props
         for the Draggable component to function properly */}
-        {(provided: DraggableProvided) => (
-          <Card
-            ref={provided.innerRef}
-            className="my-2 w-64 md:w-72"
-            {...provided.draggableProps} // Draggable props for drag-and-drop functionality
-          >
-            <KanbanTaskItemHeader task={task} provided={provided} />
-            <KanbanTaskItemContent task={task} />
-            <KanbanTaskItemFooter task={task} />
-          </Card>
-        )}
-      </Draggable>
-    )
-  }
-)
+      {(provided: DraggableProvided) => (
+        <Card
+          ref={provided.innerRef}
+          className="my-2 w-64 md:w-72"
+          {...provided.draggableProps} // Draggable props for drag-and-drop functionality
+        >
+          <KanbanTaskItemHeader task={task} provided={provided} />
+          <KanbanTaskItemContent task={task} />
+          <KanbanTaskItemFooter task={task} />
+        </Card>
+      )}
+    </Draggable>
+  )
+})
 KanbanTaskItem.displayName = "KanbanTaskItem"

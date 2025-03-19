@@ -1,7 +1,6 @@
 // Refer to Emoji Mart README.md file for more details https://github.com/missive/emoji-mart
 "use client"
 
-import * as React from "react"
 import { useParams } from "next/navigation"
 import data from "@emoji-mart/data"
 import Picker from "@emoji-mart/react"

@@ -1,12 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { InputTags } from "@/components/ui/input-tags"
 
 export function BasicInputTags() {
-  const [tags, setTags] = React.useState<string[]>(["React", "TypeScript"])
+  const [tags, setTags] = useState<string[]>(["React", "TypeScript"])
 
   return (
     <Card>

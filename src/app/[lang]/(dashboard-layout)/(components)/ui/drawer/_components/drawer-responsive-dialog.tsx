@@ -1,7 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { useMedia } from "react-use"
+
+import type { ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -29,7 +31,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export function DrawerResponsiveDialog() {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const isDesktop = useMedia("(min-width: 768px)")
 
   return (
@@ -81,7 +83,7 @@ export function DrawerResponsiveDialog() {
   )
 }
 
-function ProfileForm({ className }: React.ComponentProps<"form">) {
+function ProfileForm({ className }: ComponentProps<"form">) {
   return (
     <form className={cn("grid items-start gap-4", className)}>
       <div className="grid gap-2">

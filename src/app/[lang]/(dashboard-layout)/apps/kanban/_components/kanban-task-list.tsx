@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { memo } from "react"
 import { Droppable } from "@hello-pangea/dnd"
 
 import type { DroppableProvided } from "@hello-pangea/dnd"
@@ -14,7 +14,7 @@ interface KanbanTaskListProps {
   column: ColumnType
 }
 
-export const KanbanTaskList = React.memo(({ column }: KanbanTaskListProps) => {
+export const KanbanTaskList = memo(({ column }: KanbanTaskListProps) => {
   return (
     <Droppable
       droppableId={column.id} // A unique identifier for this column, which helps the library track and move the item

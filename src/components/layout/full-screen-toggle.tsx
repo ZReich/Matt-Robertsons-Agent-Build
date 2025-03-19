@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
@@ -21,7 +21,7 @@ declare global {
 }
 
 export function FullscreenToggle() {
-  const [isFullscreen, setIsFullscreen] = React.useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const toggleFullscreen = () => {
     const element = document.documentElement
@@ -65,7 +65,7 @@ export function FullscreenToggle() {
     )
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Add event listeners for fullscreen changes across various browsers
     document.addEventListener("fullscreenchange", handleFullscreenChange)
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange)

@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

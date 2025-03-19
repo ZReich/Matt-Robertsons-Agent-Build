@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Grid2x2Plus } from "lucide-react"
@@ -46,7 +46,7 @@ export function KanbanAddColumnSidebar() {
   })
 
   // Reset the form whenever `kanbanAddColumnSidebarIsOpen` changes
-  React.useEffect(() => {
+  useEffect(() => {
     form.reset()
   }, [kanbanAddColumnSidebarIsOpen, form])
 

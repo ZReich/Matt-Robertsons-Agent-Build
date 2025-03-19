@@ -1,10 +1,11 @@
 "use client"
 
-import * as React from "react"
+import { useRef, useState } from "react"
 import { Check, ImageIcon, LinkIcon, Palette, Type, Unlink } from "lucide-react"
 
 import type { DynamicIconNameType } from "@/types"
 import type { ChainedCommands, Editor } from "@tiptap/react"
+import type { FormEvent } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -179,7 +180,7 @@ function AlignmentHandler({
 }
 
 function ImageHandler({ editor }: { editor: Editor }) {
-  const [imageSrc, setImageSrc] = React.useState<string | null>(null)
+  const [imageSrc, setImageSrc] = useState<string | null>(null)
 
   function handleFileChange(files: FileList) {
     if (files.length < 1) return
@@ -187,7 +188,7 @@ function ImageHandler({ editor }: { editor: Editor }) {
     setImageSrc(objectURL)
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (editor && imageSrc) {
       editor.chain().focus().setImage({ src: imageSrc }).run()
@@ -302,7 +303,7 @@ function LinkHandler({ editor }: { editor: Editor }) {
 
 function ColorHandler({ editor }: { editor: Editor }) {
   const selectedColor = editor.getAttributes("textStyle").color
-  const inputRef = React.useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   return (
     <Button

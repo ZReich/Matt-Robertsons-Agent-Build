@@ -1,7 +1,15 @@
 "use client"
 
-import * as React from "react"
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react"
 import { X } from "lucide-react"
+
+import type { InputHTMLAttributes, KeyboardEvent } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -19,21 +27,20 @@ import {
 import { Button } from "./button"
 import { ScrollArea } from "./scroll-area"
 
-export interface InputTagsProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputTagsProps extends InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string
   tags: string[]
   onTagsChange: (tags: string[]) => void
   className?: string
 }
 
-const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
+const InputTags = forwardRef<HTMLInputElement, InputTagsProps>(
   ({ placeholder, tags, onTagsChange, className, ...props }, ref) => {
-    const [inputValue, setInputValue] = React.useState("")
-    const inputRef = React.useRef<HTMLInputElement>(null)
+    const [inputValue, setInputValue] = useState("")
+    const inputRef = useRef<HTMLInputElement>(null)
 
     // Forward the ref to the internal ref
-    React.useImperativeHandle(ref, () => inputRef.current!)
+    useImperativeHandle(ref, () => inputRef.current!)
 
     const addTag = (tag: string) => {
       const trimmedTag = tag.trim()
@@ -47,7 +54,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
       onTagsChange(tags.filter((_, index) => index !== indexToRemove))
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
         e.preventDefault()
         addTag(inputValue)
@@ -101,7 +108,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 InputTags.displayName = "InputTags"
 
 interface InputTagsWithSuggestionsProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+  extends InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string
   tags: string[]
   suggestions: string[]
@@ -109,7 +116,7 @@ interface InputTagsWithSuggestionsProps
   className?: string
 }
 
-const InputTagsWithSuggestions = React.forwardRef<
+const InputTagsWithSuggestions = forwardRef<
   HTMLInputElement,
   InputTagsWithSuggestionsProps
 >(
@@ -117,14 +124,14 @@ const InputTagsWithSuggestions = React.forwardRef<
     { placeholder, tags, suggestions, onTagsChange, className, ...props },
     ref
   ) => {
-    const [inputValue, setInputValue] = React.useState("")
-    const [open, setOpen] = React.useState(false)
-    const containerRef = React.useRef<HTMLDivElement>(null)
-    const [popoverWidth, setPopoverWidth] = React.useState<number | undefined>(
+    const [inputValue, setInputValue] = useState("")
+    const [open, setOpen] = useState(false)
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [popoverWidth, setPopoverWidth] = useState<number | undefined>(
       undefined
     )
 
-    React.useEffect(() => {
+    useEffect(() => {
       if (containerRef.current) {
         setPopoverWidth(containerRef.current.offsetWidth)
       }
@@ -148,7 +155,7 @@ const InputTagsWithSuggestions = React.forwardRef<
       onTagsChange(tags.filter((_, index) => index !== indexToRemove))
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && !open) {
         e.preventDefault()
         addTag(inputValue)

@@ -1,11 +1,11 @@
 "use client"
 
-import * as React from "react"
+import { useContext } from "react"
 
 import { EmailContext } from "../_contexts/email-context"
 
 export function useEmailContext() {
-  const context = React.useContext(EmailContext)
+  const context = useContext(EmailContext)
   if (context === undefined) {
     throw new Error("useEmailContext must be used within a EmailProvider")
   }

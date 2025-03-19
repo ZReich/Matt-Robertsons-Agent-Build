@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { GripVertical } from "lucide-react"
 
 import type { DraggableProvided } from "@hello-pangea/dnd"

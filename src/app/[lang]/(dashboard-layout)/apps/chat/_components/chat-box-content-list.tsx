@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useMemo, useRef } from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
 
 import type { ChatType, UserType } from "../types"
@@ -20,11 +20,11 @@ export function ChatBoxContentList({
   chat: ChatType
 }) {
   const { chatState, handleSelectChat, handleSetUnreadCount } = useChatContext()
-  const scrollAreaRef = React.useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { settings } = useSettings()
 
   // Synchronize chat selection and scroll to the bottom on updates
-  React.useEffect(() => {
+  useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
     }
@@ -39,7 +39,7 @@ export function ChatBoxContentList({
   }, [chat, chatState.selectedChat, handleSelectChat, handleSetUnreadCount])
 
   // A map of chat users for quick lookup
-  const userMap = React.useMemo(
+  const userMap = useMemo(
     () => new Map(chat?.users.map((user) => [user.id, user])),
     [chat?.users]
   )

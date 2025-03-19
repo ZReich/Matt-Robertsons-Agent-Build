@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import type { DictionaryType } from "@/lib/get-dictionary"
 
 import { useSettings } from "@/hooks/use-settings"

@@ -1,23 +1,22 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef, useState } from "react"
+
+import type { ChangeEvent, InputHTMLAttributes } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { Input } from "./input"
 
-export interface InputTimeProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputTimeProps extends InputHTMLAttributes<HTMLInputElement> {
   onValueChange?: (value?: string) => void
 }
 
-const InputTime = React.forwardRef<HTMLInputElement, InputTimeProps>(
+const InputTime = forwardRef<HTMLInputElement, InputTimeProps>(
   ({ className, onValueChange, ...props }, ref) => {
-    const [isEmpty, setIsEmpty] = React.useState(
-      !props.defaultValue && !props.value
-    )
+    const [isEmpty, setIsEmpty] = useState(!props.defaultValue && !props.value)
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
 
       setIsEmpty(!value)

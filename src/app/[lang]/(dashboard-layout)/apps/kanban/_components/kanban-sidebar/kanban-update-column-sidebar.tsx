@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Grid2x2Plus } from "lucide-react"
@@ -49,7 +49,7 @@ export function KanbanUpdateColumnSidebar() {
   const selectedColumn = kanbanState.selectedColumn
 
   // Reset the form with the current selected column's values whenever `selectedColumn` changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedColumn) {
       form.reset({
         title: selectedColumn?.title,

@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { useDirection } from "@radix-ui/react-direction"
 import Autoplay from "embla-carousel-autoplay"
 

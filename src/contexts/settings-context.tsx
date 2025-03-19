@@ -1,10 +1,17 @@
 "use client"
 
-import * as React from "react"
+import {
+  Suspense,
+  createContext,
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
 import { useSearchParams } from "next/navigation"
 import { useCookie } from "react-use"
 
 import type { LocaleType, SettingsType } from "@/types"
+import type { ReactNode } from "react"
 
 export const defaultSettings: SettingsType = {
   theme: "zinc",
@@ -14,7 +21,7 @@ export const defaultSettings: SettingsType = {
   locale: "en",
 }
 
-export const SettingsContext = React.createContext<
+export const SettingsContext = createContext<
   | {
       settings: SettingsType
       updateSettings: (newSettings: SettingsType) => void
@@ -28,14 +35,14 @@ function SettingsProviderContent({
   children,
 }: {
   locale: LocaleType
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
     useCookie("settings")
-  const [settings, setSettings] = React.useState<SettingsType | null>(null)
+  const [settings, setSettings] = useState<SettingsType | null>(null)
   const searchParams = useSearchParams()
 
-  React.useEffect(() => {
+  useEffect(() => {
     let initialSettings = storedSettings
       ? JSON.parse(storedSettings)
       : { ...defaultSettings, locale }
@@ -69,7 +76,7 @@ function SettingsProviderContent({
     setSettings(initialSettings)
   }, [storedSettings, locale, searchParams, setStoredSettings])
 
-  const updateSettings = React.useCallback(
+  const updateSettings = useCallback(
     (newSettings: SettingsType) => {
       setStoredSettings(JSON.stringify(newSettings))
       setSettings(newSettings)
@@ -77,7 +84,7 @@ function SettingsProviderContent({
     [setStoredSettings]
   )
 
-  const resetSettings = React.useCallback(() => {
+  const resetSettings = useCallback(() => {
     deleteStoredSettings()
     setSettings(defaultSettings)
   }, [deleteStoredSettings])
@@ -100,13 +107,13 @@ export function SettingsProvider({
   children,
 }: {
   locale: LocaleType
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
-    <React.Suspense fallback={null}>
+    <Suspense fallback={null}>
       <SettingsProviderContent locale={locale}>
         {children}
       </SettingsProviderContent>
-    </React.Suspense>
+    </Suspense>
   )
 }

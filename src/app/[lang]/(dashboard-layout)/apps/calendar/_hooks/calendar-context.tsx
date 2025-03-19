@@ -1,11 +1,11 @@
 "use client"
 
-import * as React from "react"
+import { useContext } from "react"
 
 import { CalendarContext } from "../_contexts/calendar-context"
 
 export function useCalendarContext() {
-  const context = React.useContext(CalendarContext)
+  const context = useContext(CalendarContext)
   if (context === undefined) {
     throw new Error("useCalendarContext must be used within a CalendarProvider")
   }

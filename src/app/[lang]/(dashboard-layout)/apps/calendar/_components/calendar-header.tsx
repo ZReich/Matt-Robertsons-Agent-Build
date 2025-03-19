@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { CalendarPlus, ChevronLeft, ChevronRight } from "lucide-react"
 
 import { useCalendarContext } from "../_hooks/calendar-context"
@@ -11,8 +11,8 @@ import { EventFilters } from "./event-filters"
 
 export function CalendarHeader() {
   const { calendarApi, setEventSidebarIsOpen } = useCalendarContext()
-  const [currentView, setCurrentView] = React.useState(INITIAL_VIEW)
-  const [currentDate, setCurrentDate] = React.useState<Date>(new Date())
+  const [currentView, setCurrentView] = useState(INITIAL_VIEW)
+  const [currentDate, setCurrentDate] = useState<Date>(new Date())
 
   // Function to navigate to a specific date on the calendar and update the current date state
   const handleDateChange = (newDate: Date) => {

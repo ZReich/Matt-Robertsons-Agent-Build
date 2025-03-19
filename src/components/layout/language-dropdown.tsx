@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useCallback } from "react"
 import Link from "next/link"
 import { useParams, usePathname } from "next/navigation"
 import { Earth } from "lucide-react"
@@ -36,7 +36,7 @@ export function LanguageDropdown({
   const locale = params.lang as LocaleType
   const direction = i18n.localeDirection[locale]
 
-  const setLocale = React.useCallback(
+  const setLocale = useCallback(
     (localeName: LocaleType) => {
       updateSettings({ ...settings, locale: localeName })
     },

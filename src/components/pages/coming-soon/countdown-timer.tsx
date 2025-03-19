@@ -1,9 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { useEffect, useState } from "react"
 
 export function CountdownTimer({ targetDate }: { targetDate: Date }) {
-  const [timeLeft, setTimeLeft] = React.useState({
+  const [timeLeft, setTimeLeft] = useState({
     days: "00",
     hours: "00",
     minutes: "00",
@@ -11,7 +11,7 @@ export function CountdownTimer({ targetDate }: { targetDate: Date }) {
   })
 
   // Calculate the time difference and update the state every second
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date() // Current date and time
       const difference = targetDate.getTime() - now.getTime() // Calculate the time difference in milliseconds

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useCallback } from "react"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import {
   AlignLeft,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import type { LocaleType, ModeType } from "@/types"
+import type { CSSProperties } from "react"
 
 import { baseColors } from "@/configs/base-colors"
 import { i18n } from "@/configs/i18n"
@@ -145,7 +146,7 @@ export function Customizer() {
   const locale = params.lang as LocaleType
   const direction = i18n.localeDirection[locale]
 
-  const handleSetLocale = React.useCallback(
+  const handleSetLocale = useCallback(
     (localeName: LocaleType) => {
       updateSettings({ ...settings, locale: localeName })
       router.push(relocalizePathname(pathname, localeName))
@@ -153,14 +154,14 @@ export function Customizer() {
     [settings, updateSettings, router, pathname]
   )
 
-  const handleSetMode = React.useCallback(
+  const handleSetMode = useCallback(
     (modeName: ModeType) => {
       updateSettings({ ...settings, mode: modeName })
     },
     [settings, updateSettings]
   )
 
-  const handleReset = React.useCallback(() => {
+  const handleReset = useCallback(() => {
     resetSettings()
     router.push(relocalizePathname(pathname, "en"))
   }, [resetSettings, router, pathname])
@@ -200,7 +201,7 @@ export function Customizer() {
                               ],
                             "--primary-foreground":
                               themes[color.name].activeColor["foreground"],
-                          } as React.CSSProperties
+                          } as CSSProperties
                         }
                         onClick={() =>
                           updateSettings({

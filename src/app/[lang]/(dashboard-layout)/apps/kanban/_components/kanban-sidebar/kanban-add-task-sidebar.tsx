@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useMemo } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Grid2x2Plus } from "lucide-react"
@@ -82,7 +82,7 @@ export function KanbanAddTaskSidebar() {
     setKanbanAddTaskSidebarIsOpen(false) // Close the sidebar
   }
 
-  const labelOptions = React.useMemo(
+  const labelOptions = useMemo(
     () =>
       labelsData.map((label) => (
         <SelectItem key={label.id} value={label.name}>

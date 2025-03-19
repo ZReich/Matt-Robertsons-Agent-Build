@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useMemo } from "react"
 import { useParams } from "next/navigation"
 
 import { useEmailContext } from "../_hooks/use-email-context"
@@ -15,7 +15,7 @@ export function EmailView() {
 
   const emailIdParam = params.id // Get the email ID from route params
 
-  const email = React.useMemo(() => {
+  const email = useMemo(() => {
     if (emailIdParam) {
       // Find the email by ID
       return emailState.initialEmails.find((email) => email.id === emailIdParam)

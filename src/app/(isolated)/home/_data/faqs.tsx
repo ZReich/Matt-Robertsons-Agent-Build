@@ -1,7 +1,3 @@
-"use client"
-
-import * as React from "react"
-
 import type { FaqType } from "../types"
 
 export const faqsData: FaqType[] = [

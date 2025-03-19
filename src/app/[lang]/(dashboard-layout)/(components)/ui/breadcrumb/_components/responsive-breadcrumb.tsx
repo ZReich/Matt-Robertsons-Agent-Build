@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useMedia } from "react-use"
 
@@ -43,7 +43,7 @@ const items = [
 const ITEMS_TO_DISPLAY = 3
 
 export function ResponsiveBreadcrumb() {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const isDesktop = useMedia("(min-width: 768px)")
 
   return (

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { ListRestart, MoreVertical, Send } from "lucide-react"
@@ -29,8 +29,8 @@ import { Separator } from "@/components/ui/separator"
 import { Toggle } from "@/components/ui/toggle"
 
 export function EmailComposerForm() {
-  const [showCc, setShowCc] = React.useState(false)
-  const [showBcc, setShowBcc] = React.useState(false)
+  const [showCc, setShowCc] = useState(false)
+  const [showBcc, setShowBcc] = useState(false)
 
   const form = useForm<EmailComposerFormType>({
     resolver: zodResolver(EmailComposerSchema),

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { Fragment, useCallback, useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useMedia } from "react-use"
 import { ChevronDown, Search } from "lucide-react"
@@ -40,12 +40,12 @@ export function DocsCommandMenu({
   buttonClassName,
   ...props
 }: DocsCommandMenuProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const isLargeOrLarger = useMedia("(min-width: 1024px)")
 
-  React.useEffect(() => {
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
         if (
@@ -66,7 +66,7 @@ export function DocsCommandMenu({
     return () => document.removeEventListener("keydown", down)
   }, [])
 
-  const runCommand = React.useCallback((command: () => unknown) => {
+  const runCommand = useCallback((command: () => unknown) => {
     setOpen(false)
     command()
   }, [])
@@ -169,9 +169,7 @@ export function DocsCommandMenu({
                   className="[&_[cmdk-group-items]]:space-y-1"
                 >
                   {nav.items.map((item: NavigationRootItem) => (
-                    <React.Fragment key={item.title}>
-                      {renderMenuItem(item)}
-                    </React.Fragment>
+                    <Fragment key={item.title}>{renderMenuItem(item)}</Fragment>
                   ))}
                 </CommandGroup>
               )

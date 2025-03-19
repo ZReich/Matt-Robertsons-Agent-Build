@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { LoaderCircle } from "lucide-react"
@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select"
 
 export function ProfileInfoForm({ user }: { user: UserType }) {
-  const [photoPreview, setPhotoPreview] = React.useState<string | undefined>(
+  const [photoPreview, setPhotoPreview] = useState<string | undefined>(
     user?.avatar
   )
 

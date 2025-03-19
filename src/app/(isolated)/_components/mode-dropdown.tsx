@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useCallback } from "react"
 import { MoonStar, Sun, SunMoon } from "lucide-react"
 
 import type { ModeType } from "@/types"
@@ -29,7 +29,7 @@ export function ModeDropdown() {
   const mode = settings.mode
   const ModeIcon = modeIcons[mode]
 
-  const setMode = React.useCallback(
+  const setMode = useCallback(
     (modeName: ModeType) => {
       updateSettings({ ...settings, mode: modeName })
     },

@@ -1,11 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef } from "react"
 import { format } from "date-fns"
 import { Clock } from "lucide-react"
 
 import type { ButtonProps } from "@/components/ui/button"
 import type { InputTimeProps } from "@/components/ui/input-time"
+import type { ComponentPropsWithoutRef } from "react"
 
 import { cn, timeToDate } from "@/lib/utils"
 
@@ -20,13 +21,13 @@ import {
 export interface TimePickerProps extends InputTimeProps {
   value: string | undefined
   popoverContentClassName?: string
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  popoverContentOptions?: ComponentPropsWithoutRef<typeof PopoverContent>
   buttonClassName?: string
   buttonOptions?: ButtonProps
   placeholder?: string
 }
 
-const TimePicker = React.forwardRef<HTMLButtonElement, TimePickerProps>(
+const TimePicker = forwardRef<HTMLButtonElement, TimePickerProps>(
   (
     {
       value,

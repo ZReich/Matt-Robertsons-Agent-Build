@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Image, LoaderCircle, Send } from "lucide-react"
@@ -34,7 +34,7 @@ const formattedImageSize = formatFileSize(MAX_IMAGE_SIZE)
 
 export function ImagesUploader() {
   const { handleAddImagesMessage } = useChatContext()
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const form = useForm<ImagesUploaderFormType>({
     resolver: zodResolver(ImagesUploaderSchema),

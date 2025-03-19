@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { Fragment } from "react"
 import Link from "next/link"
 import { useParams, usePathname } from "next/navigation"
 
@@ -113,9 +113,7 @@ export function TopBarHeaderMenubar({
             <MenubarTrigger>{title}</MenubarTrigger>
             <MenubarContent className="space-y-1">
               {nav.items.map((item) => (
-                <React.Fragment key={item.title}>
-                  {renderMenuItem(item)}
-                </React.Fragment>
+                <Fragment key={item.title}>{renderMenuItem(item)}</Fragment>
               ))}
             </MenubarContent>
           </MenubarMenu>

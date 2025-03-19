@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import { useEffect } from "react"
 import { AlertTriangle, RefreshCw } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -21,7 +21,7 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  React.useEffect(() => {
+  useEffect(() => {
     // Log the error to an error reporting service
     console.error(error)
   }, [error])

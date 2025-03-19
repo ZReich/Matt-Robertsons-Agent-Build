@@ -1,8 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { createContext, useState } from "react"
 
 import type { SettingsType } from "@/types"
+import type { ReactNode } from "react"
 
 export type ThemeContextType = Pick<SettingsType, "theme" | "mode" | "radius">
 
@@ -12,7 +13,7 @@ export const defaultTheme: ThemeContextType = {
   radius: 0.5,
 }
 
-export const ThemeContext = React.createContext<
+export const ThemeContext = createContext<
   | {
       theme: ThemeContextType
       updateTheme: (newTheme: ThemeContextType) => void
@@ -21,8 +22,8 @@ export const ThemeContext = React.createContext<
   | undefined
 >(undefined)
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = React.useState<ThemeContextType>(defaultTheme)
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<ThemeContextType>(defaultTheme)
 
   const updateTheme = (newTheme: ThemeContextType) => {
     setTheme(newTheme)

@@ -1,7 +1,5 @@
 "use client"
 
-import * as React from "react"
-
 import { faqsData } from "../_data/faqs"
 
 import { Accordion } from "@/components/ui/accordion"

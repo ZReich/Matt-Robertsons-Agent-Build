@@ -1,11 +1,12 @@
 "use client"
 
-import * as React from "react"
+import { forwardRef } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
 import type { ButtonProps } from "@/components/ui/button"
 import type { CalendarProps } from "@/components/ui/calendar"
+import type { ComponentPropsWithoutRef } from "react"
 import type { DateRange } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
@@ -26,16 +27,13 @@ export type DateRangePickerProps = Omit<
   onValueChange?: (date?: DateRange) => void
   formatStr?: string
   popoverContentClassName?: string
-  popoverContentOptions?: React.ComponentPropsWithoutRef<typeof PopoverContent>
+  popoverContentOptions?: ComponentPropsWithoutRef<typeof PopoverContent>
   buttonClassName?: string
   buttonOptions?: ButtonProps
   placeholder?: string
 }
 
-const DateRangePicker = React.forwardRef<
-  HTMLButtonElement,
-  DateRangePickerProps
->(
+const DateRangePicker = forwardRef<HTMLButtonElement, DateRangePickerProps>(
   (
     {
       value,

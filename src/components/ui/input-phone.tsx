@@ -1,13 +1,18 @@
 // Refer to react-phone-number-input README.md file for more details https://gitlab.com/catamphetamine/react-phone-number-input
 "use client"
 
-import * as React from "react"
+import { forwardRef, useCallback, useMemo } from "react"
 import Image from "next/image"
 import { useDirection } from "@radix-ui/react-direction"
 import * as RPNInputPrimitive from "react-phone-number-input"
 import { Check, ChevronsUpDown } from "lucide-react"
 
 import type { InputProps } from "@/components/ui/input"
+import type {
+  ElementRef,
+  ForwardRefExoticComponent,
+  InputHTMLAttributes,
+} from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -29,7 +34,7 @@ import {
 import { ScrollArea } from "./scroll-area"
 
 type InputPhoneProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
+  InputHTMLAttributes<HTMLInputElement>,
   "onChange" | "value"
 > &
   Omit<
@@ -39,38 +44,37 @@ type InputPhoneProps = Omit<
     onChange?: (value: RPNInputPrimitive.Value) => void
   }
 
-const InputPhone: React.ForwardRefExoticComponent<InputPhoneProps> =
-  React.forwardRef<
-    React.ElementRef<typeof RPNInputPrimitive.default>,
-    InputPhoneProps
-  >(({ className, onChange, ...props }, ref) => {
-    const direction = useDirection()
+const InputPhone: ForwardRefExoticComponent<InputPhoneProps> = forwardRef<
+  ElementRef<typeof RPNInputPrimitive.default>,
+  InputPhoneProps
+>(({ className, onChange, ...props }, ref) => {
+  const direction = useDirection()
 
-    return (
-      <RPNInputPrimitive.default
-        ref={ref}
-        dir={direction}
-        className={cn("w-full flex", className)}
-        flagComponent={FlagComponent}
-        countrySelectComponent={CountrySelect}
-        inputComponent={InputComponent}
-        /**
-         * Handles the onChange event.
-         *
-         * react-phone-number-input might trigger the onChange event as undefined
-         * when a valid phone number is not entered. To prevent this,
-         * the value is coerced to an empty string.
-         *
-         * @param {E164Number | undefined} value - The entered value
-         */
-        onChange={(value) => onChange?.(value as RPNInputPrimitive.Value)}
-        {...props}
-      />
-    )
-  })
+  return (
+    <RPNInputPrimitive.default
+      ref={ref}
+      dir={direction}
+      className={cn("w-full flex", className)}
+      flagComponent={FlagComponent}
+      countrySelectComponent={CountrySelect}
+      inputComponent={InputComponent}
+      /**
+       * Handles the onChange event.
+       *
+       * react-phone-number-input might trigger the onChange event as undefined
+       * when a valid phone number is not entered. To prevent this,
+       * the value is coerced to an empty string.
+       *
+       * @param {E164Number | undefined} value - The entered value
+       */
+      onChange={(value) => onChange?.(value as RPNInputPrimitive.Value)}
+      {...props}
+    />
+  )
+})
 InputPhone.displayName = "InputPhone"
 
-const InputComponent = React.forwardRef<HTMLInputElement, InputProps>(
+const InputComponent = forwardRef<HTMLInputElement, InputProps>(
   ({ className, ...props }, ref) => (
     <Input
       className={cn("rounded-e-md rounded-s-none", className)}
@@ -99,12 +103,12 @@ function CountrySelect({
   onChange,
   options,
 }: CountrySelectProps) {
-  const handleSelect = React.useCallback(
+  const handleSelect = useCallback(
     (country: RPNInputPrimitive.Country) => onChange(country),
     [onChange]
   )
 
-  const memoizedOptions = React.useMemo(
+  const memoizedOptions = useMemo(
     () =>
       options.map((option) => (
         <CommandItem
