@@ -1,13 +1,9 @@
 "use client"
 
-import { Ellipsis } from "lucide-react"
-
 import type { TrafficSourcesType } from "../types"
 
-import { formatPercent } from "@/lib/utils"
-
-import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { PercentageChangeBadge } from "@/components/dashboards/percentage-change-badge"
 import { DynamicIcon } from "@/components/dynamic-icon"
 
 export function TrafficSourcesTable({
@@ -30,16 +26,14 @@ export function TrafficSourcesTable({
             <TableCell className="font-semibold" aria-label="Name">
               {item.name}
             </TableCell>
-            <TableCell className="font-semibold" aria-label="Visitors">
-              <span>{item.visitors.toLocaleString()}</span>
+            <TableCell aria-label="Visitors">
+              <span>Visitors: </span>
+              <span className="font-semibold">
+                {item.visitors.toLocaleString()}
+              </span>
             </TableCell>
-            <TableCell aria-label="Percentage Change">
-              <span>{formatPercent(item.percentageChange)}</span>
-            </TableCell>
-            <TableCell aria-label="Actions">
-              <Button variant="ghost" size="icon" className="h-6 w-6">
-                <Ellipsis className="h-4 w-4" />
-              </Button>
+            <TableCell className="text-end" aria-label="Percentage Change">
+              <PercentageChangeBadge value={item.percentageChange} />
             </TableCell>
           </TableRow>
         ))}
