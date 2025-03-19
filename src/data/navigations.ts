@@ -104,6 +104,66 @@ export const navigationsData: NavigationType[] = [
           },
         ],
       },
+      {
+        title: "eCommerce",
+        iconName: "ShoppingCart",
+        items: [
+          {
+            title: "Dashboard",
+            href: "/dashboards/ecommerce",
+          },
+          {
+            title: "Products",
+            items: [
+              {
+                title: "List",
+                href: "/",
+                label: "Soon",
+              },
+              {
+                title: "Add",
+                href: "/",
+                label: "Soon",
+              },
+              {
+                title: "Category",
+                href: "/",
+                label: "Soon",
+              },
+            ],
+          },
+          {
+            title: "Orders",
+            items: [
+              {
+                title: "List",
+                href: "/",
+                label: "Soon",
+              },
+              {
+                title: "Details",
+                href: "/",
+                label: "Soon",
+              },
+            ],
+          },
+          {
+            title: "Customers",
+            items: [
+              {
+                title: "List",
+                href: "/",
+                label: "Soon",
+              },
+              {
+                title: "Details",
+                href: "/",
+                label: "Soon",
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
