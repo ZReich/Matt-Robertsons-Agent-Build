@@ -25,9 +25,15 @@ export function ProfileHeader({ locale }: { locale: LocaleType }) {
         />
       </AspectRatio>
       <div className="relative w-full flex flex-col items-center gap-2 p-4 md:flex-row">
-        <Avatar className="size-32 -mt-20 border-4 border-background md:size-40">
-          <AvatarImage src={userData.avatar} alt="Profile Avatar" />
-          <AvatarFallback>{getInitials(userData.name)}</AvatarFallback>
+        <Avatar className="size-32 -mt-20 md:size-40">
+          <AvatarImage
+            src={userData.avatar}
+            alt="Profile Avatar"
+            className="border-4 border-background"
+          />
+          <AvatarFallback className="border-4 border-background">
+            {getInitials(userData.name)}
+          </AvatarFallback>
         </Avatar>
         <Link
           href={ensureLocalizedPathname("/pages/account/settings", locale)}

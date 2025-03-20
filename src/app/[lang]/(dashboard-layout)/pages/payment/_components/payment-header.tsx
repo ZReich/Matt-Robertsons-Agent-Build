@@ -1,9 +1,9 @@
-import { CardHeader, CardTitle } from "@/components/ui/card"
+import { CardTitle } from "@/components/ui/card"
 
 export function PaymentHeader() {
   return (
-    <CardHeader>
+    <div className="pb-6">
       <CardTitle>Payment</CardTitle>
-    </CardHeader>
+    </div>
   )
 }

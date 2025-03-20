@@ -26,7 +26,7 @@ export function RevenueBySourceItem({
           style={{
             backgroundColor: data.fill,
           }}
-          className="w-12 justify-center dark:text-foreground"
+          className="w-12 justify-center"
         >
           {formatPercent(data.percentage)}
         </Badge>

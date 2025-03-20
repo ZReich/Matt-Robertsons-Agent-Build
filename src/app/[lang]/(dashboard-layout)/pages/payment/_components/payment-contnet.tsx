@@ -1,14 +1,13 @@
 import type { PaymentType } from "../types"
 
-import { CardContent } from "@/components/ui/card"
 import { PaymentMethodForm } from "./payment-method-form"
 import { PaymentSummary } from "./payment-summary"
 
 export function PaymentContent({ data }: { data: PaymentType }) {
   return (
-    <CardContent className="flex flex-col gap-8 lg:flex-row">
+    <div className="flex flex-col gap-4 lg:flex-row">
       <PaymentMethodForm data={data.savedCards} />
       <PaymentSummary data={data.summary} />
-    </CardContent>
+    </div>
   )
 }

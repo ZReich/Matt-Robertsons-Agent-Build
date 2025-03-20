@@ -42,8 +42,8 @@ export function PerformanceOverTimeSummary({
         >
           <RefreshCw className="size-full" />
         </Badge>
-        <div className="shrink-0">
-          <h3 className="text-sm text-muted-foreground leading-tight">
+        <div>
+          <h3 className="text-sm text-muted-foreground leading-tight line-clamp-1 break-all">
             Total Conversions
           </h3>
           <p className="text-2xl font-semibold">

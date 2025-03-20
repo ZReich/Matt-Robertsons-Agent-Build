@@ -48,7 +48,7 @@ export function SecurityPreferencesForm({
             control={form.control}
             name="twoFactorAuth"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -69,7 +69,7 @@ export function SecurityPreferencesForm({
             control={form.control}
             name="loginAlerts"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}

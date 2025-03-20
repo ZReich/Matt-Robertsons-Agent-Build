@@ -81,7 +81,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
             <AvatarImage src={photoPreview} alt="Profile Avatar" />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col gap-2 md:flex-row">
+          <div className="grid gap-2">
             <FormField
               control={form.control}
               name="avatar"

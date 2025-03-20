@@ -80,10 +80,7 @@ export function SalesTrendChart({ data }: { data: SalesTrendType }) {
           )
         })}
       </div>
-      <ChartContainer
-        config={chartConfig}
-        className="aspect-auto h-56 w-full mt-6"
-      >
+      <ChartContainer config={chartConfig} className="grow aspect-auto w-full">
         <BarChart
           accessibilityLayer
           key={activeChart}

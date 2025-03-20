@@ -24,7 +24,7 @@ export function KanbanTaskItemFooter({ task }: KanbanTaskItemFooterProps) {
 
   return (
     <CardFooter className="justify-between gap-2 pe-3 ps-5">
-      <AvatarStack avatars={avatars} size="sm" />
+      <AvatarStack avatars={avatars} limit={3} size="sm" />
       <div className="flex items-center">
         <Button variant="ghost" size="sm">
           <MessageCircleMore className="me-1.5 size-3.5 text-muted-foreground" />

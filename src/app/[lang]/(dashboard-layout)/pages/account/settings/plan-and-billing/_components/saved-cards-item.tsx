@@ -19,10 +19,10 @@ type CardType = z.infer<typeof cardSchema>
 
 export function SavedCardsItem({ card }: { card: CardType }) {
   return (
-    <li className="flex justify-between items-center gap-8 space-y-0 px-4 py-2 border rounded-md shadow">
+    <li className="flex justify-between items-center space-y-0 px-4 py-2 border rounded-lg">
       <h4 className="flex justify-center items-center gap-2">
         <CreditCardBrandIcon brandName={card.type} />
-        <span>**** **** **** {card.last4}</span>
+        <span className="shrink-0">**** **** **** {card.last4}</span>
         {/* Display a `Default` badge if the card is marked as the default */}
         {card.default && <Badge>Default</Badge>}
       </h4>

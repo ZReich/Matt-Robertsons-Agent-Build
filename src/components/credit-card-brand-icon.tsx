@@ -9,16 +9,21 @@ import {
 export function CreditCardBrandIcon({ brandName }: { brandName: string }) {
   switch (brandName) {
     case "visa":
-      return <SiVisa size={28} className="text-foreground" />
+      return <SiVisa size={28} className="shrink-0 text-foreground" />
     case "mastercard":
-      return <SiMastercard size={28} className="text-foreground" />
+      return <SiMastercard size={28} className="shrink-0 text-foreground" />
     case "amex":
       return (
-        <SiAmericanexpress size={28} className="text-foreground rounded-sm" />
+        <SiAmericanexpress
+          size={28}
+          className="shrink-0 text-foreground rounded-sm"
+        />
       )
     case "discover":
-      return <SiDiscover size={28} className="text-foreground" />
+      return <SiDiscover size={28} className="shrink-0 text-foreground" />
     default:
-      return <CreditCard className="size-7 stroke-[1.5] text-foreground" />
+      return (
+        <CreditCard className="shrink-0 size-7 stroke-[1.5] text-foreground" />
+      )
   }
 }

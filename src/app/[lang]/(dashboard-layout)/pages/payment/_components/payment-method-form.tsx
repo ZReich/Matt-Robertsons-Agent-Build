@@ -72,12 +72,9 @@ export function PaymentMethodForm({
             name="savedCard"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select From The Saved Cards</FormLabel>
+                <FormLabel>Select from the Saved Cards</FormLabel>
                 <FormControl>
-                  <RadioGroup
-                    value={field.value ?? ""}
-                    className="space-y-4 mb-6"
-                  >
+                  <RadioGroup value={field.value ?? ""} className="gap-3 mb-6">
                     {savedCards.map((card) => (
                       <SavedCard
                         key={card.id}

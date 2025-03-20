@@ -53,7 +53,7 @@ export function AccountRecoveryOptionsForm({
                   defaultValue={field.value}
                   className="flex flex-col space-y-1"
                 >
-                  <FormItem className="rounded-md border p-4 shadow">
+                  <FormItem className="rounded-md border p-4">
                     <div className="flex gap-2">
                       <FormControl>
                         <RadioGroupItem value="email" />
@@ -67,7 +67,7 @@ export function AccountRecoveryOptionsForm({
                       sent to your registered email address.
                     </p>
                   </FormItem>
-                  <FormItem className="rounded-md border p-4 shadow">
+                  <FormItem className="rounded-md border p-4">
                     <div className="flex gap-2">
                       <FormControl>
                         <RadioGroupItem value="sms" />
@@ -79,7 +79,7 @@ export function AccountRecoveryOptionsForm({
                       registered mobile phone number.
                     </p>
                   </FormItem>
-                  <FormItem className="rounded-md border p-4 shadow">
+                  <FormItem className="rounded-md border p-4">
                     <div className="flex gap-2">
                       <FormControl>
                         <RadioGroupItem value="codes" />
