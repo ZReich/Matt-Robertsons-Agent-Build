@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { MoreHorizontal } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -49,9 +50,7 @@ export function ComboboxDropdownMenu() {
       <CardContent className="flex justify-center items-center">
         <div className="flex w-full flex-col items-start justify-between rounded-md border px-4 py-3 sm:flex-row sm:items-center">
           <p className="text-sm font-medium leading-none">
-            <span className="mr-2 rounded-lg bg-primary px-2 py-1 text-xs text-primary-foreground">
-              {label}
-            </span>
+            <Badge className="me-2">{label}</Badge>
             <span className="text-muted-foreground">Create a new project</span>
           </p>
           <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -96,7 +95,7 @@ export function ComboboxDropdownMenu() {
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem className="text-destructive">
                   Delete
                   <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
                 </DropdownMenuItem>

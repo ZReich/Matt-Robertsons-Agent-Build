@@ -28,10 +28,7 @@ const Avatar = forwardRef<
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
-    className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-lg",
-      className
-    )}
+    className={cn("relative flex h-10 w-10 shrink-0", className)}
     {...props}
   />
 ))
@@ -43,7 +40,7 @@ const AvatarImage = forwardRef<
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
+    className={cn("aspect-square h-full w-full rounded-lg", className)}
     {...props}
   />
 ))
@@ -56,7 +53,7 @@ const AvatarFallback = forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-lg bg-muted",
+      "flex h-full w-full items-center justify-center bg-muted rounded-lg",
       className
     )}
     {...props}
@@ -70,7 +67,7 @@ const avatarStackVariants = cva(
     variants: {
       size: {
         default: "h-10 w-10",
-        sm: "h-9 w-9 text-xs",
+        sm: "h-9 w-9 text-sm",
         lg: "h-11 w-11",
       },
     },
@@ -112,14 +109,24 @@ const AvatarStack = memo(
                 {avatar.href ? (
                   <Link href={avatar.href}>
                     <Avatar className={avatarStackVariants({ size })}>
-                      <AvatarImage src={avatar.src} />
-                      <AvatarFallback>{getInitials(avatar.alt)}</AvatarFallback>
+                      <AvatarImage
+                        src={avatar.src}
+                        className="border-2 border-background"
+                      />
+                      <AvatarFallback className="border-2 border-background">
+                        {getInitials(avatar.alt)}
+                      </AvatarFallback>
                     </Avatar>
                   </Link>
                 ) : (
                   <Avatar className={avatarStackVariants({ size })}>
-                    <AvatarImage src={avatar.src} />
-                    <AvatarFallback>{getInitials(avatar.alt)}</AvatarFallback>
+                    <AvatarImage
+                      src={avatar.src}
+                      className="border-2 border-background"
+                    />
+                    <AvatarFallback className="border-2 border-background">
+                      {getInitials(avatar.alt)}
+                    </AvatarFallback>
                   </Avatar>
                 )}
               </TooltipTrigger>
@@ -139,7 +146,9 @@ const AvatarStack = memo(
             aria-label="Show more"
           >
             <Avatar className={avatarStackVariants({ size })}>
-              <AvatarFallback>+{remainingCount}</AvatarFallback>
+              <AvatarFallback className="border-2 border-background">
+                +{remainingCount}
+              </AvatarFallback>
             </Avatar>
           </button>
         )}

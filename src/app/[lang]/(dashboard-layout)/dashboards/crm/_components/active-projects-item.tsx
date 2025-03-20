@@ -35,11 +35,13 @@ export function ActiveProjectsItem({
     <li className="flex items-center gap-4 py-2 px-4 bg-card border rounded-lg">
       <ActiveProjectsItemChart value={project.progress} color={chartColor} />
       <div>
-        <p className={cn(textColor, "text-xs")}>{project.status}</p>
+        <p className={cn(textColor, "text-xs font-semibold")}>
+          {project.status}
+        </p>
         <h3 className="line-clamp-1">{project.name}</h3>
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="shrink-0 me-2 h-4 w-4" aria-hidden />
-          <p className="text-xs">
+          <p className="text-sm">
             {formatDate(project.startDate)} - {formatDate(project.dueDate)}
           </p>
         </div>

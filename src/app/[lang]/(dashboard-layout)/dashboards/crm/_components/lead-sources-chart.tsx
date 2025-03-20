@@ -78,7 +78,7 @@ export function LeadSourcesChart({
                     <tspan
                       x={viewBox.cx}
                       y={(viewBox.cy || 0) + 20}
-                      className="fill-muted-foreground"
+                      className="text-sm fill-muted-foreground"
                     >
                       Leads
                     </tspan>

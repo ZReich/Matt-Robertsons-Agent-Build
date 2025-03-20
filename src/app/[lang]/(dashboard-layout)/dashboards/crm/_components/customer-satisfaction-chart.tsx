@@ -66,7 +66,7 @@ export function CustomerSatisfactionChart({
                     <tspan
                       x={viewBox.cx}
                       y={(viewBox.cy || 0) + 24}
-                      className="fill-muted-foreground"
+                      className="text-sm fill-muted-foreground"
                     >
                       {ratingToPercentage(data.value, maxRating).toFixed(0)}%
                       Satisfied

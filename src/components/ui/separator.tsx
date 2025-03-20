@@ -53,7 +53,7 @@ const SeparatorWithText = forwardRef<
       />
       <span
         className={cn(
-          "shrink-0 px-2 text-xs text-muted-foreground uppercase",
+          "shrink-0 px-2 text-sm text-muted-foreground uppercase",
           orientation === "vertical" && "-rotate-90 rtl:rotate-90"
         )}
       >

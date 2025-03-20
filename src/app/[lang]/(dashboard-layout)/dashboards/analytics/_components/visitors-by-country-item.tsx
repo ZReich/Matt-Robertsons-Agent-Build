@@ -22,8 +22,12 @@ export function VisitorsByCountryItem({
       <div className="flex-1">
         <div className="flex items-end justify-between">
           <div>
-            <h3 className="text-xs">{data.countryName}</h3>
-            <p className="text-lg">{data.visitors.toLocaleString()}</p>
+            <p className="text-lg font-semibold leading-tight">
+              {data.visitors.toLocaleString()}
+            </p>
+            <h3 className="text-sm text-muted-foreground">
+              {data.countryName}
+            </h3>
           </div>
           <PercentageChangeBadge
             variant="ghost"

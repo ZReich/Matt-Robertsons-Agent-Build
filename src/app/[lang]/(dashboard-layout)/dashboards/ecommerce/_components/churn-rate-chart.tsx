@@ -39,7 +39,7 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
           </div>
           {/* Add this after the last item */}
           {index === 1 && (
-            <div className="flex basis-full items-center border-t mt-1.5 pt-1.5 text-xs font-medium text-foreground">
+            <div className="flex basis-full items-center border-t mt-1.5 pt-1.5 text-sm font-medium text-foreground">
               Churn Rate
               <div className="flex items-baseline gap-0.5 ms-auto font-mono font-medium tabular-nums text-foreground">
                 {formatPercent(item.payload.churnRate)}

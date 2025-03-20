@@ -28,7 +28,7 @@ const ChatAvatar = memo(
           width: size + "rem",
         }}
         className={cn(
-          "relative bg-background ring-2 ring-background rounded-full",
+          "relative bg-background ring-2 ring-background rounded-lg",
           className
         )}
       >
@@ -45,7 +45,7 @@ const ChatAvatar = memo(
 
         {/* Display the user status icon only if the `status` prop is provided */}
         {status && (
-          <div className="absolute bottom-0 end-0 bg-inherit ring-1 ring-inherit rounded-full z-10">
+          <div className="absolute -bottom-px -end-px bg-inherit ring-1 ring-inherit rounded-full z-10">
             <UserStatusIcon
               status={status}
               size={size * 5} // Dynamically scale the status icon size to be proportional to the avatar size

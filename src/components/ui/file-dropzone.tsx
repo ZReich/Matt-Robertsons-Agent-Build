@@ -123,7 +123,7 @@ export const FileDropzone = forwardRef<HTMLInputElement, FileDropzoneProps>(
                   )}
                   <div className="space-y-1">
                     <p className="text-sm font-medium truncate">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-semibold">
                       {formatFileSize(file.size)}
                     </p>
                   </div>

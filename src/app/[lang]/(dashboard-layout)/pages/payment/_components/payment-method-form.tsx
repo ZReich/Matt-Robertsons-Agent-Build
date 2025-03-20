@@ -91,9 +91,7 @@ export function PaymentMethodForm({
               </FormItem>
             )}
           />
-
           <SeparatorWithText>or</SeparatorWithText>
-
           {/* Payment Options */}
           <FormField
             control={form.control}

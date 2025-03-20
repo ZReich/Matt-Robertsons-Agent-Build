@@ -13,12 +13,8 @@ export function PaymentSummaryRow({
 }: PaymentSummaryRowProps) {
   return (
     <dl className="flex items-center justify-between gap-4">
-      <dt className="text-accent-foreground">{label}</dt>
-      <dd
-        className={`text-base font-medium ${
-          valueClassName ?? "text-accent-foreground"
-        }`}
-      >
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={valueClassName || "text-accent-foreground"}>
         {formatCurrency(value)}
       </dd>
     </dl>

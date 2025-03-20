@@ -12,7 +12,7 @@ const Keyboard = forwardRef<HTMLElement, KeyboardProps>(
       <kbd
         ref={ref}
         className={cn(
-          "pointer-events-none select-none h-5 inline-flex items-center gap-x-1 px-1.5 bg-muted text-xs text-muted-foreground font-mono font-medium border rounded-sm",
+          "pointer-events-none select-none h-5 inline-flex items-center gap-x-1 px-1.5 bg-muted text-sm text-muted-foreground font-mono border rounded-sm",
           "before:content-['⌘']",
           className
         )}

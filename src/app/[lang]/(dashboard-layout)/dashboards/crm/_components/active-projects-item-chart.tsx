@@ -56,7 +56,7 @@ export function ActiveProjectsItemChart({
                     <tspan
                       x={viewBox.cx}
                       y={(viewBox.cy || 0) + 2}
-                      className="fill-foreground text-xs font-semibold"
+                      className="fill-foreground text-sm font-semibold"
                     >
                       {value}%
                     </tspan>

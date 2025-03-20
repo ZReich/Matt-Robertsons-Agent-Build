@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 
 import { paymentData } from "./_data/payment"
 
-import { Card } from "@/components/ui/card"
 import { PaymentContent } from "./_components/payment-contnet"
 import { PaymentHeader } from "./_components/payment-header"
 
@@ -15,10 +14,8 @@ export const metadata: Metadata = {
 export default async function PaymentPage() {
   return (
     <section className="container p-4">
-      <Card>
-        <PaymentHeader />
-        <PaymentContent data={paymentData} />
-      </Card>
+      <PaymentHeader />
+      <PaymentContent data={paymentData} />
     </section>
   )
 }

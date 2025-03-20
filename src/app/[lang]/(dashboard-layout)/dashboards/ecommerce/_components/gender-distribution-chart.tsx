@@ -93,8 +93,7 @@ export function GenderDistributionChart({
                   y={(cy || 0) - 4}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize="12"
-                  fill="#fff"
+                  className="fill-white text-xs font-semibold"
                 >
                   {payload.name}
                 </text>
@@ -103,9 +102,7 @@ export function GenderDistributionChart({
                   y={(cy || 0) + 8.5}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize="16"
-                  fontWeight={700}
-                  fill="#fff"
+                  className="fill-white text-base font-semibold"
                 >
                   {percentage}
                 </text>

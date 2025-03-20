@@ -27,7 +27,7 @@ export function TrafficSourcesTable({
               {item.name}
             </TableCell>
             <TableCell aria-label="Visitors">
-              <span>Visitors: </span>
+              <span className="text-muted-foreground">Visitors: </span>
               <span className="font-semibold">
                 {item.visitors.toLocaleString()}
               </span>

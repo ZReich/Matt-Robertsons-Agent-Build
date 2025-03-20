@@ -58,7 +58,7 @@ export function CustomerSatisfactionCarousel({
                   <CardTitle className="text-sm font-semibold break-all truncate">
                     {feedback.name}
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground break-all truncate">
+                  <p className="text-xs text-muted-foreground font-semibold break-all truncate">
                     {feedback.email}
                   </p>
                 </div>
@@ -70,7 +70,7 @@ export function CustomerSatisfactionCarousel({
                     <Badge aria-hidden>{feedback.rating.toFixed(1)}</Badge>
                     <Rating value={feedback.rating.toString()} readOnly />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {formatDate(feedback.createdAt)}
                   </p>
                 </div>

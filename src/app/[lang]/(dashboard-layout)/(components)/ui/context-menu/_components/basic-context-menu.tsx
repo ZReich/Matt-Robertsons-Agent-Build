@@ -14,9 +14,11 @@ export function BasicContextMenu() {
       <CardHeader>
         <CardTitle>Basic Context Menu</CardTitle>
       </CardHeader>
-      <CardContent className="h-80 flex justify-center items-center">
+      <CardContent className="h-80">
         <ContextMenu>
-          <ContextMenuTrigger>Right click</ContextMenuTrigger>
+          <ContextMenuTrigger className="size-full flex justify-center items-center">
+            Right click
+          </ContextMenuTrigger>
           <ContextMenuContent>
             <ContextMenuItem>Profile</ContextMenuItem>
             <ContextMenuItem>Billing</ContextMenuItem>

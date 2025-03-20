@@ -6,7 +6,7 @@ import { PaymentSummary } from "./payment-summary"
 
 export function PaymentContent({ data }: { data: PaymentType }) {
   return (
-    <CardContent className="flex flex-col-reverse gap-8 lg:flex-row">
+    <CardContent className="flex flex-col gap-8 lg:flex-row">
       <PaymentMethodForm data={data.savedCards} />
       <PaymentSummary data={data.summary} />
     </CardContent>

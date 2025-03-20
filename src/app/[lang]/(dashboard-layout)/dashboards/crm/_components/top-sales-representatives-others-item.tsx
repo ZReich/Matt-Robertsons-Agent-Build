@@ -1,6 +1,6 @@
 import type { SalesRepresentativeType } from "../types"
 
-import { getInitials } from "@/lib/utils"
+import { formatCurrency, getInitials } from "@/lib/utils"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -18,13 +18,17 @@ export function TopSalesRepresentativesOthersItem({
       <Card>
         <CardContent className="flex items-center gap-x-4 py-3 px-6">
           <div className="relative">
-            <Avatar className="w-10 h-10 border-2 border-secondary bg-secondary">
-              <AvatarImage src={representative.avatar} alt="Avatar" />
-              <AvatarFallback>
+            <Avatar>
+              <AvatarImage
+                src={representative.avatar}
+                alt="Avatar"
+                className="border-2 border-secondary bg-secondary"
+              />
+              <AvatarFallback className="border-2 border-secondary bg-secondary">
                 {getInitials(representative.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -top-2 -right-2 w-6 h-6 border-secondary bg-secondary rounded-full flex items-center justify-center text-xs text-secondary-foreground font-semibold">
+            <div className="absolute -top-2 -right-2 w-5 h-5 border-secondary bg-secondary rounded-full flex items-center justify-center text-xs text-secondary-foreground font-semibold">
               {index + 4}
             </div>
           </div>
@@ -32,13 +36,11 @@ export function TopSalesRepresentativesOthersItem({
             <h3 className="text-sm font-semibold break-all truncate">
               {representative.name}
             </h3>
-            <p className="text-xs text-muted-foreground break-all truncate">
+            <p className="text-xs text-muted-foreground font-semibold break-all truncate">
               {representative.email}
             </p>
           </div>
-          <Badge className="text-sm">
-            ${representative.sales.toLocaleString()}
-          </Badge>
+          <Badge>{formatCurrency(representative.sales)}</Badge>
         </CardContent>
       </Card>
     </li>

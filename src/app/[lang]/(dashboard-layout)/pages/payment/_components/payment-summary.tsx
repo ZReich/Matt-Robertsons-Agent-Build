@@ -26,7 +26,7 @@ export function PaymentSummary({ data }: { data: PaymentType["summary"] }) {
         <PaymentSummaryRow
           label="Total"
           value={data.total}
-          valueClassName="text-base font-bold text-accent-foreground"
+          valueClassName="font-semibold"
         />
       </Card>
       <PaymentSummaryLogos />

@@ -44,15 +44,15 @@ export function ChatSidebarItem({ chat }: { chat: ChatType }) {
           size={1.75}
           className="shrink-0"
         />
-        <div className="h-11 w-full grid grid-cols-3 gap-x-2">
+        <div className="h-11 w-full grid grid-cols-3 gap-x-4">
           <div className="col-span-2 grid">
             <span className="truncate">{chat.name}</span>
-            <span className="text-xs text-muted-foreground truncate">
+            <span className="text-xs text-muted-foreground font-semibold truncate">
               {chat.lastMessage?.content || "No messages yet..."}
             </span>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground font-semibold">
               {formatDistance(chat.lastMessage?.createdAt ?? new Date())}
             </span>
             {/* Display unread count if available */}

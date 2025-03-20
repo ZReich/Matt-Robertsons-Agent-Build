@@ -56,7 +56,7 @@ export function UserDropdown({
           </Avatar>
           <div className="flex flex-col overflow-hidden">
             <p className="text-sm font-medium truncate">John Doe</p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground font-semibold truncate">
               {userData?.email}
             </p>
           </div>

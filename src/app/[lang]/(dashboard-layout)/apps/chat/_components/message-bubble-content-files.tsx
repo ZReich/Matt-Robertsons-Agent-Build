@@ -28,7 +28,9 @@ export function MessageBubbleContentFiles({
       <FileThumbnail fileName={file.name} />
       <div className="flex-1 grid mx-2 truncate">
         <span className="truncate">{file.name}</span>
-        <span className="text-xs truncate">{formatFileSize(file.size)}</span>
+        <span className="text-xs text-muted-foreground font-semibold truncate">
+          {formatFileSize(file.size)}
+        </span>
       </div>
       <Button variant="ghost" size="icon" aria-label="Dowmload">
         <Download className="size-4" />

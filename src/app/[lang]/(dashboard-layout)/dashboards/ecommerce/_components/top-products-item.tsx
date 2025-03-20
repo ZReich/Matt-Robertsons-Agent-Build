@@ -25,9 +25,9 @@ export function TopProductsItem({
             className="rounded-lg"
           />
           <div className="flex flex-col truncate">
-            <h3 className="font-semibold break-all truncate">
-              <span className="font-normal">#{product.order}</span>{" "}
-              {product.name}
+            <h3 className="break-all truncate">
+              <span>#{product.order}</span>{" "}
+              <span className="font-semibold">{product.name}</span>
             </h3>
             <p className="text-sm text-muted-foreground">
               Item: #{product.sku}
@@ -35,13 +35,17 @@ export function TopProductsItem({
           </div>
         </div>
         <div className="flex justify-between bg-accent p-2 truncate">
-          <p className="text-accent-foreground font-semibold">
-            <span className="font-normal">Sales: </span>
-            {product.sales.value.toLocaleString()}
+          <p className="text-accent-foreground">
+            <span className="text-muted-foreground">Sales: </span>
+            <span className="font-semibold">
+              {product.sales.value.toLocaleString()}
+            </span>
           </p>
-          <p className="text-accent-foreground font-semibold">
-            <span className="font-normal">Revenue: </span>
-            {formatCurrency(product.revenue.value)}
+          <p className="text-accent-foreground">
+            <span className="text-muted-foreground">Revenue: </span>
+            <span className="font-semibold">
+              {formatCurrency(product.revenue.value)}
+            </span>
           </p>
         </div>
       </li>

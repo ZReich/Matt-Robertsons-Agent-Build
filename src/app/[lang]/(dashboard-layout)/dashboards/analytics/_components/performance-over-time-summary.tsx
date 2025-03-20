@@ -24,8 +24,12 @@ export function PerformanceOverTimeSummary({
           <Eye className="size-full" />
         </Badge>
         <div className="shrink-0">
-          <h3 className="text-xs">Total Visitors</h3>
-          <p className="text-2xl">{data.totalVisitors.toLocaleString()}</p>
+          <h3 className="text-sm text-muted-foreground leading-tight">
+            Total Visitors
+          </h3>
+          <p className="text-2xl font-semibold">
+            {data.totalVisitors.toLocaleString()}
+          </p>
         </div>
       </li>
       <li className="flex gap-x-2">
@@ -39,8 +43,12 @@ export function PerformanceOverTimeSummary({
           <RefreshCw className="size-full" />
         </Badge>
         <div className="shrink-0">
-          <h3 className="text-xs">Total Conversions</h3>
-          <p className="text-2xl">{data.totalConversions.toLocaleString()}</p>
+          <h3 className="text-sm text-muted-foreground leading-tight">
+            Total Conversions
+          </h3>
+          <p className="text-2xl font-semibold">
+            {data.totalConversions.toLocaleString()}
+          </p>
         </div>
       </li>
     </ul>
