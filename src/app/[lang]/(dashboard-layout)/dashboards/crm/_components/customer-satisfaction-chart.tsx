@@ -25,7 +25,7 @@ export function CustomerSatisfactionChart({
   const maxRating = 5
 
   return (
-    <ChartContainer config={{}} className="aspect-square h-[200px] md:w-2/5">
+    <ChartContainer config={{}} className="aspect-square h-[12.5rem] md:w-2/5">
       <RadialBarChart
         accessibilityLayer
         data={[data]}
