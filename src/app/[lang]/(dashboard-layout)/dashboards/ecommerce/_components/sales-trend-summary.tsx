@@ -1,8 +1,8 @@
-"use client"
-
 import type { SalesTrendType } from "../types"
 
 import { formatCurrency, formatDateShort } from "@/lib/utils"
+
+import { SalesTrendSummaryItem } from "./sales-trend-summary-item"
 
 export function SalesTrendSummary({
   data,
@@ -12,42 +12,28 @@ export function SalesTrendSummary({
   return (
     <ul className="flex flex-col justify-around gap-4 sm:flex-row">
       <div className="flex flex-wrap justify-around gap-4 md:flex-col">
-        <li>
-          <h3 className="text-sm text-muted-foreground">Highest Sales</h3>
-          <p className="text-2xl font-semibold">
-            {formatCurrency(data.highestSales.sales)}
-          </p>
-          <p className="text-xs text-muted-foreground font-semibold">
-            on {formatDateShort(data.highestSales.date)}
-          </p>
-        </li>
-        <li>
-          <h3 className="text-sm text-muted-foreground">Lowest Sales</h3>
-          <p className="text-2xl font-semibold">
-            {formatCurrency(data.lowestSales.sales)}
-          </p>
-          <p className="text-xs text-muted-foreground font-semibold">
-            on {formatDateShort(data.lowestSales.date)}
-          </p>
-        </li>
+        <SalesTrendSummaryItem
+          title="Highest Sales"
+          value={formatCurrency(data.highestSales.sales)}
+          description={`on ${formatDateShort(data.highestSales.date)}`}
+        />
+        <SalesTrendSummaryItem
+          title="Lowest Sales"
+          value={formatCurrency(data.lowestSales.sales)}
+          description={`on ${formatDateShort(data.lowestSales.date)}`}
+        />
       </div>
       <div className="flex flex-wrap justify-around gap-4 md:flex-col">
-        <li>
-          <h3 className="text-sm text-muted-foreground">Total Sales</h3>
-          <p className="text-2xl font-semibold">
-            {formatCurrency(data.totalSales)}
-          </p>
-          <p className="text-xs text-muted-foreground font-semibold">
-            for the period
-          </p>
-        </li>
-        <li>
-          <h3 className="text-sm text-muted-foreground">Avg. Sales</h3>
-          <p className="text-2xl font-semibold">
-            {formatCurrency(data.avgSales)}
-          </p>
-          <p className="text-xs text-muted-foreground font-semibold">per day</p>
-        </li>
+        <SalesTrendSummaryItem
+          title="Total Sales"
+          value={formatCurrency(data.totalSales)}
+          description="for the period"
+        />
+        <SalesTrendSummaryItem
+          title="Avg. Sales"
+          value={formatCurrency(data.avgSales)}
+          description="per day"
+        />
       </div>
     </ul>
   )
