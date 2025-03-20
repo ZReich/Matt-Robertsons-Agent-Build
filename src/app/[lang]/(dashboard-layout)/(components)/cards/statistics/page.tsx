@@ -21,10 +21,12 @@ export default function StatisticsCardsPage() {
       <Overview />
       <OverviewV2 />
       <OverviewV3 />
-      <RevenueTrend />
-      <LeadSources />
-      <NewVsReturningVisitors />
-      <GenderDistribution />
+      <div className="col-span-full grid gap-4 md:grid-cols-4">
+        <RevenueTrend />
+        <LeadSources />
+        <GenderDistribution />
+        <NewVsReturningVisitors />
+      </div>
       <CustomerInsights />
     </section>
   )

@@ -20,11 +20,11 @@ export default function AdvancedCardsPage() {
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <ActiveProjects />
       <ActivityTimeline />
-      <CustomerSatisfaction />
-      <TopProducts />
-      <TopSalesRepresentatives />
       <VisitorsByCountry />
+      <TopSalesRepresentatives />
+      <TopProducts />
       <EngagementByDevice />
+      <CustomerSatisfaction />
       <Invoices />
     </section>
   )
