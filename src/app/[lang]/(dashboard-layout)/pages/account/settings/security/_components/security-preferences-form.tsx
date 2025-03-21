@@ -8,7 +8,9 @@ import type { SecurityPreferencesFormType, UserType } from "../../../types"
 
 import { SecurityPreferencesSchema } from "../_schemas/security-preferences-form-schema"
 
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
@@ -48,20 +50,25 @@ export function SecurityPreferencesForm({
             control={form.control}
             name="twoFactorAuth"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Enable 2-Step Authentication</FormLabel>
-                  <FormDescription>
-                    Add an extra security layer with 2-step authentication for
-                    better account protection.
-                  </FormDescription>
-                </div>
+              <FormItem>
+                <FormLabel
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-10 w-full justify-start gap-x-2 cursor-pointer"
+                  )}
+                >
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <span>Enable 2-Step Authentication</span>
+                </FormLabel>
+                <FormDescription>
+                  Add an extra security layer with 2-step authentication for
+                  better account protection.
+                </FormDescription>
               </FormItem>
             )}
           />
@@ -69,20 +76,25 @@ export function SecurityPreferencesForm({
             control={form.control}
             name="loginAlerts"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start gap-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Login Alerts</FormLabel>
-                  <FormDescription>
-                    Receive notifications for login activities to stay informed
-                    about access to your account.
-                  </FormDescription>
-                </div>
+              <FormItem>
+                <FormLabel
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-10 w-full justify-start gap-x-2 cursor-pointer"
+                  )}
+                >
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <span>Login Alerts</span>
+                </FormLabel>
+                <FormDescription>
+                  Receive notifications for login activities to stay informed
+                  about access to your account.
+                </FormDescription>
               </FormItem>
             )}
           />

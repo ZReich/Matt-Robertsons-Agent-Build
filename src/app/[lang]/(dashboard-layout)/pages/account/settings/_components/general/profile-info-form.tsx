@@ -397,12 +397,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
                       "GMT+11:00",
                       "GMT+12:00",
                     ].map((timezone) => (
-                      <SelectItem
-                        key={timezone}
-                        value={timezone
-                          .toLowerCase()
-                          .replace(/[^a-z0-9+]/g, "")}
-                      >
+                      <SelectItem key={timezone} value={timezone}>
                         {timezone}
                       </SelectItem>
                     ))}

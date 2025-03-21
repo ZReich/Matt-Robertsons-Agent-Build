@@ -12,6 +12,7 @@ import { PaymentMethodSchema } from "../_schemas/payment-method-schema"
 import { getCreditCardBrandName } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -24,7 +25,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Switch } from "@/components/ui/switch"
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon"
 
 export function PaymentMethodForm() {
@@ -69,14 +69,14 @@ export function PaymentMethodForm() {
                   <div className="flex items-center gap-x-2">
                     <RadioGroupItem value="card" id="card" />
                     <Label htmlFor="card" className="flex items-center">
-                      <CreditCard className="me-2 stroke-[1.5] text-foreground" />
+                      <CreditCard className="me-2 text-foreground" />
                       Pay with Card
                     </Label>
                   </div>
                   <div className="flex items-center gap-x-2">
                     <RadioGroupItem value="bank" id="bank" />
                     <Label htmlFor="bank" className="flex items-center">
-                      <Landmark className="me-2 stroke-[1.5] text-foreground" />
+                      <Landmark className="me-2 text-foreground" />
                       Pay with Bank Account
                     </Label>
                   </div>
@@ -103,13 +103,14 @@ export function PaymentMethodForm() {
                     <Input
                       type="number"
                       placeholder="1234 5678 9012 3456"
-                      className="ps-12"
+                      className="ps-9"
                       {...field}
                     />
                   </FormControl>
-                  <div className="absolute start-3 top-[1.8rem]">
-                    <CreditCardBrandIcon brandName={creditCardBrandName} />
-                  </div>
+                  <CreditCardBrandIcon
+                    brandName={creditCardBrandName}
+                    className="absolute start-3 top-[2.125rem] h-4 w-4"
+                  />
                   <FormDescription>
                     Enter your 16-digit card number
                   </FormDescription>
@@ -141,7 +142,7 @@ export function PaymentMethodForm() {
                   <FormItem className="flex-1">
                     <FormLabel>Expiry Date</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="MM/YY" />
+                      <Input placeholder="MM/YY" {...field} />
                     </FormControl>
                     <FormDescription>
                       Enter the expiry date of your card
@@ -157,7 +158,7 @@ export function PaymentMethodForm() {
                   <FormItem className="flex-1">
                     <FormLabel>CVC</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="123" />
+                      <Input placeholder="123" {...field} />
                     </FormControl>
                     <FormDescription>
                       Enter the 3 or 4 digit CVC code
@@ -173,14 +174,13 @@ export function PaymentMethodForm() {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center gap-x-2">
-                    <Switch
-                      id="save-card"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                    <Label htmlFor="save-card">
-                      Save card for future billing?
-                    </Label>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel>Save card for future billing?</FormLabel>
                   </div>
                   <FormDescription>
                     Toggle if you want to save this card
@@ -202,7 +202,7 @@ export function PaymentMethodForm() {
                 <FormItem>
                   <FormLabel>Account Number</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter your account number" />
+                    <Input placeholder="Enter your account number" {...field} />
                   </FormControl>
                   <FormDescription>
                     Enter your bank account number
@@ -218,10 +218,31 @@ export function PaymentMethodForm() {
                 <FormItem>
                   <FormLabel>Routing Number</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter your routing number" />
+                    <Input placeholder="Enter your routing number" {...field} />
                   </FormControl>
                   <FormDescription>
                     Enter your bank routing number
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="saveCard"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel>Save card for future billing?</FormLabel>
+                  </div>
+                  <FormDescription>
+                    Toggle if you want to save this card
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -1,3 +1,5 @@
+"use client"
+
 import { CreditCard } from "lucide-react"
 import {
   SiAmericanexpress,
@@ -6,24 +8,25 @@ import {
   SiVisa,
 } from "react-icons/si"
 
-export function CreditCardBrandIcon({ brandName }: { brandName: string }) {
-  switch (brandName) {
-    case "visa":
-      return <SiVisa size={28} className="shrink-0 text-foreground" />
-    case "mastercard":
-      return <SiMastercard size={28} className="shrink-0 text-foreground" />
-    case "amex":
-      return (
-        <SiAmericanexpress
-          size={28}
-          className="shrink-0 text-foreground rounded-sm"
-        />
-      )
-    case "discover":
-      return <SiDiscover size={28} className="shrink-0 text-foreground" />
-    default:
-      return (
-        <CreditCard className="shrink-0 size-7 stroke-[1.5] text-foreground" />
-      )
-  }
+import type { IconProps, IconType } from "@/types"
+
+export const creditCardIcons: Record<string, IconType> = {
+  visa: SiVisa,
+  mastercard: SiMastercard,
+  discover: SiDiscover,
+  americanexpress: SiAmericanexpress,
+}
+
+interface CreditCardBrandIconProps extends IconProps {
+  brandName?: string
+}
+
+export function CreditCardBrandIcon({
+  brandName,
+  ...props
+}: CreditCardBrandIconProps) {
+  const name = brandName?.toLocaleLowerCase()
+  const Icon = creditCardIcons[name as string] || CreditCard
+
+  return <Icon {...props} />
 }

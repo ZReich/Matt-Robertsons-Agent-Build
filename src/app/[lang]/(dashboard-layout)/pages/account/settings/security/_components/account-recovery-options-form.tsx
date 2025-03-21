@@ -8,10 +8,13 @@ import type { AccountRecoveryOptionsFormType, UserType } from "../../../types"
 
 import { AccountRecoveryOptionsSchema } from "../_schemas/account-recovery-options-schema"
 
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -53,45 +56,56 @@ export function AccountRecoveryOptionsForm({
                   defaultValue={field.value}
                   className="flex flex-col space-y-1"
                 >
-                  <FormItem className="rounded-md border p-4">
-                    <div className="flex gap-2">
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-10 w-full justify-start gap-x-2 cursor-pointer"
+                      )}
+                    >
                       <FormControl>
                         <RadioGroupItem value="email" />
                       </FormControl>
-                      <FormLabel className="font-bold">
-                        Email Recovery
-                      </FormLabel>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
+                      <span>Email Recovery</span>
+                    </FormLabel>
+                    <FormDescription>
                       Receive a password reset link or recovery instructions
                       sent to your registered email address.
-                    </p>
+                    </FormDescription>
                   </FormItem>
-                  <FormItem className="rounded-md border p-4">
-                    <div className="flex gap-2">
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-10 w-full justify-start gap-x-2 cursor-pointer"
+                      )}
+                    >
                       <FormControl>
                         <RadioGroupItem value="sms" />
                       </FormControl>
-                      <FormLabel className="font-bold">SMS Recovery</FormLabel>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
+                      <span>SMS Recovery</span>
+                    </FormLabel>
+                    <FormDescription>
                       Receive a code or recovery instructions via SMS to your
                       registered mobile phone number.
-                    </p>
+                    </FormDescription>
                   </FormItem>
-                  <FormItem className="rounded-md border p-4">
-                    <div className="flex gap-2">
+                  <FormItem>
+                    <FormLabel
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-10 w-full justify-start gap-x-2 cursor-pointer"
+                      )}
+                    >
                       <FormControl>
                         <RadioGroupItem value="codes" />
                       </FormControl>
-                      <FormLabel className="font-bold">
-                        Recovery Codes
-                      </FormLabel>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
+                      <span>Recovery Codes</span>
+                    </FormLabel>
+                    <FormDescription>
                       Use pre-generated recovery codes that you saved when
                       setting up your account to regain access.
-                    </p>
+                    </FormDescription>
                   </FormItem>
                 </RadioGroup>
               </FormControl>

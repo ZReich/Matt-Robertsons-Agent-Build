@@ -12,6 +12,7 @@ import { getCreditCardBrandName } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
   FormControl,
@@ -21,10 +22,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { RadioGroup } from "@/components/ui/radio-group"
 import { SeparatorWithText } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon"
 import { PaymentOption } from "./payment-option"
 import { SavedCard } from "./saved-card"
@@ -39,14 +38,21 @@ export function PaymentMethodForm({
   const form = useForm<PaymentMethodFormType>({
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
+      paymentOption: undefined,
+      cardNumber: "",
+      cardName: "",
+      expiry: "",
+      cvc: "",
+      accountNumber: "",
+      routingNumber: "",
       saveCard: false,
+      savedCard: "",
     },
   })
 
   const cardNumber = form.watch("cardNumber")
   const paymentOption = form.watch("paymentOption")
-
-  const creditCardBrandName = getCreditCardBrandName(cardNumber)
+  const creditCardName = getCreditCardBrandName(cardNumber)
 
   const handleSavedCardSelect = (id: PaymentMethodFormType["savedCard"]) => {
     form.setValue("savedCard", id)
@@ -57,15 +63,18 @@ export function PaymentMethodForm({
     id: PaymentMethodFormType["paymentOption"]
   ) => {
     form.setValue("paymentOption", id)
-    form.setValue("savedCard", undefined)
+    form.setValue("savedCard", "")
   }
 
   function onSubmit(_data: PaymentMethodFormType) {}
 
   return (
     <Form {...form}>
-      <Card className="w-full p-6">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Card asChild>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="w-full p-6 space-y-6"
+        >
           {/* Saved Cards */}
           <FormField
             control={form.control}
@@ -74,7 +83,7 @@ export function PaymentMethodForm({
               <FormItem>
                 <FormLabel>Select from the Saved Cards</FormLabel>
                 <FormControl>
-                  <RadioGroup value={field.value ?? ""} className="gap-3 mb-6">
+                  <RadioGroup value={field.value} className="gap-3 mb-6">
                     {savedCards.map((card) => (
                       <SavedCard
                         key={card.id}
@@ -88,7 +97,9 @@ export function PaymentMethodForm({
               </FormItem>
             )}
           />
+
           <SeparatorWithText>or</SeparatorWithText>
+
           {/* Payment Options */}
           <FormField
             control={form.control}
@@ -132,14 +143,15 @@ export function PaymentMethodForm({
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="xxxx-xxxx-xxxx-xxxx"
-                        className="ps-12"
+                        placeholder="1234 5678 9012 3456"
+                        className="ps-9"
                         {...field}
                       />
                     </FormControl>
-                    <div className="absolute start-3 top-[1.8rem]">
-                      <CreditCardBrandIcon brandName={creditCardBrandName} />
-                    </div>
+                    <CreditCardBrandIcon
+                      brandName={creditCardName}
+                      className="absolute start-3 top-1/2 h-4 w-4"
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -149,9 +161,9 @@ export function PaymentMethodForm({
                 name="cardName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name on Card</FormLabel>
+                    <FormLabel>Cardholder&apos;s Name</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="John Doe" />
+                      <Input placeholder="John Doe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -165,7 +177,7 @@ export function PaymentMethodForm({
                     <FormItem className="flex-1">
                       <FormLabel>Expiry Date</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="MM/YY" />
+                        <Input type="number" placeholder="MM/YY" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -178,7 +190,7 @@ export function PaymentMethodForm({
                     <FormItem className="flex-1">
                       <FormLabel>CVC</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="123" />
+                        <Input placeholder="123" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -191,14 +203,13 @@ export function PaymentMethodForm({
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center gap-x-2">
-                      <Switch
-                        id="save-card"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <Label htmlFor="save-card">
-                        Save card for future billing?
-                      </Label>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel>Save card for future billing?</FormLabel>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -217,8 +228,8 @@ export function PaymentMethodForm({
                     <FormLabel>Account Number</FormLabel>
                     <FormControl>
                       <Input
-                        {...field}
                         placeholder="Enter your account number"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -233,10 +244,28 @@ export function PaymentMethodForm({
                     <FormLabel>Routing Number</FormLabel>
                     <FormControl>
                       <Input
-                        {...field}
                         placeholder="Enter your routing number"
+                        {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="saveCard"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-x-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel>Save card for future billing?</FormLabel>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

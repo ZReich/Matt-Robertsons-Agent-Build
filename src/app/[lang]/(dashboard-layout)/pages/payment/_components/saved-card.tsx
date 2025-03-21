@@ -1,13 +1,15 @@
 "use client"
 
-import Image from "next/image"
 import { Landmark } from "lucide-react"
 
 import type { PaymentMethodFormType, PaymentType } from "../types"
 
-import { Card } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+
+import { buttonVariants } from "@/components/ui/button"
+import { FormControl, FormItem, FormLabel } from "@/components/ui/form"
 import { RadioGroupItem } from "@/components/ui/radio-group"
+import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon"
 
 export function SavedCard({
   card,
@@ -19,20 +21,20 @@ export function SavedCard({
   const isBankAccount = !card.cardType
 
   return (
-    <Card key={card.id} className="flex items-center gap-x-2 p-4">
-      <RadioGroupItem
-        value={card.id}
-        id={card.id}
-        onClick={() => onSelect(card.id)}
-      />
-      <Label
-        htmlFor={card.id}
-        className="w-full flex items-center justify-start gap-2"
+    <FormItem>
+      <FormLabel
+        className={cn(
+          buttonVariants({ variant: "outline" }),
+          "h-10 w-full gap-x-2 cursor-pointer"
+        )}
       >
+        <FormControl>
+          <RadioGroupItem value={card.id} onClick={() => onSelect(card.id)} />
+        </FormControl>
         {isBankAccount ? (
           <>
             <span>Bank Account ending in {card.last4}</span>
-            <Landmark className="ms-auto text-foreground" />
+            <Landmark className="h-5 w-5 ms-auto" />
           </>
         ) : (
           <>
@@ -40,16 +42,13 @@ export function SavedCard({
               <span className="capitalize">{card.cardType}</span>{" "}
               <span>ending in {card.last4}</span>
             </div>
-            <Image
-              src={`/images/logos/${card.cardType?.toLowerCase()}.svg`}
-              alt={`${card.cardType} logo`}
-              className="ms-auto"
-              width={48}
-              height={48}
+            <CreditCardBrandIcon
+              brandName={card.cardType}
+              className="h-5 w-5 ms-auto"
             />
           </>
         )}
-      </Label>
-    </Card>
+      </FormLabel>
+    </FormItem>
   )
 }

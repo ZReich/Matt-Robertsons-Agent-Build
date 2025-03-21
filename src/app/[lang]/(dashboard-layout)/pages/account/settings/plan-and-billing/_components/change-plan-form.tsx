@@ -14,14 +14,7 @@ import { ChangePlanSchema } from "../_schemas/change-plan-schema"
 
 import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -74,7 +67,7 @@ export function ChangePlanForm({
                 <FormLabel>Annual billing (Save 15%)</FormLabel>
               </div>
               <FormDescription>
-                Toggle if you want to select nnual
+                Toggle if you want to select annual
               </FormDescription>
             </FormItem>
           )}
@@ -84,6 +77,12 @@ export function ChangePlanForm({
           name="plan"
           render={({ field }) => (
             <FormItem className="space-y-3">
+              {/* <FormLabel
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-10 w-full justify-start gap-x-2 cursor-pointer"
+                )}
+              ></FormLabel> */}
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -99,45 +98,25 @@ export function ChangePlanForm({
 
                     return (
                       <FormItem key={plan.name} className="relative">
-                        <FormControl className="absolute top-4 end-4">
-                          <RadioGroupItem value={plan.name} />
-                        </FormControl>
-                        <FormLabel className="cursor-pointer h-full">
-                          <Card
-                            className={cn(
-                              "h-full",
-                              field.value === plan.name && "border-primary" // Highlight the selected price
-                            )}
-                            aria-current={
-                              field.value === plan.name ? "true" : undefined
-                            }
-                          >
-                            <CardHeader>
-                              <CardTitle>{plan.name}</CardTitle>
-                              <CardDescription>
-                                {formattedPrice}
-                                /month
-                                {isAnnual && (
-                                  <span className="me-2 text-success">
-                                    Save {formattedPrice}
-                                    /month
-                                  </span>
-                                )}
-                              </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <ul className="list-disc ps-4 space-y-1">
-                                {plan.features.map((feature, index) => (
-                                  <li
-                                    key={`${feature}-${index}`}
-                                    className="text-sm"
-                                  >
-                                    {feature}
-                                  </li>
-                                ))}
-                              </ul>
-                            </CardContent>
-                          </Card>
+                        <FormLabel
+                          className={cn(
+                            buttonVariants({ variant: "outline" }),
+                            "h-auto w-full flex-col justify-start items-start gap-2 cursor-pointer"
+                          )}
+                        >
+                          <div className="flex items-center gap-x-2">
+                            <FormControl>
+                              <RadioGroupItem value={plan.name} />
+                            </FormControl>
+                            <span>
+                              {plan.name} {formattedPrice}/month
+                            </span>
+                          </div>
+                          <ul className="text-muted-foreground list-disc ms-5">
+                            {plan.features.map((feature, index) => (
+                              <li key={`${feature}-${index}`}>{feature}</li>
+                            ))}
+                          </ul>
                         </FormLabel>
                       </FormItem>
                     )

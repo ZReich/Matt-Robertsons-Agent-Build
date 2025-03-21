@@ -61,6 +61,7 @@ export function MediaGrid({
                 src={item.src}
                 alt={item.alt}
                 className="object-cover rounded-lg"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 fill
               />
             )}
@@ -90,6 +91,7 @@ export function MediaGrid({
                 src={lastMedia.src}
                 alt={lastMedia.alt}
                 className="object-cover rounded-lg"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 fill
               />
             )}
