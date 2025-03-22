@@ -1,12 +1,24 @@
-import { Card } from "@/components/ui/card"
-import { NotificationPreferencesContent } from "./notification-preferences-content"
-import { NotificationPreferencesHeader } from "./notification-preferences-header"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { NotificationPreferencesForm } from "./notifications-preferenes-form"
 
 export function NotificationPreferences() {
   return (
     <Card>
-      <NotificationPreferencesHeader />
-      <NotificationPreferencesContent />
+      <CardHeader>
+        <CardTitle>Notification Preferences</CardTitle>
+        <CardDescription>
+          Adjust your settings to control which notifications you receive.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <NotificationPreferencesForm />
+      </CardContent>
     </Card>
   )
 }

@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 
-import type { PricingCardType } from "../types"
+import type { PricingType } from "../types"
 
-import PricingCardList from "./pricing-card-list"
 import { PricingHeader } from "./pricing-header"
+import PricingCardList from "./pricing-list"
 
-export function Pricing({ data }: { data: PricingCardType[] }) {
+export function Pricing({ data }: { data: PricingType[] }) {
   const [isAnnual, setIsAnnual] = useState(false)
 
   return (

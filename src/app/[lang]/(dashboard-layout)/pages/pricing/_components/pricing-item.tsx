@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { Check } from "lucide-react"
 
-import type { PricingCardType } from "../types"
+import type { PricingType } from "../types"
 
 import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils"
 
@@ -22,7 +22,7 @@ function RenderPrice({
   price,
   period,
   discountRate,
-}: Pick<PricingCardType, "price" | "period" | "discountRate">) {
+}: Pick<PricingType, "price" | "period" | "discountRate">) {
   if (!price) return null
 
   const finalPrice = discountRate
@@ -38,7 +38,7 @@ function RenderPrice({
   )
 }
 
-export function PricingCard({
+export function PricingItem({
   title,
   description,
   price,
@@ -51,7 +51,7 @@ export function PricingCard({
   buttonContent,
   content,
   href,
-}: PricingCardType) {
+}: PricingType) {
   const router = useRouter()
 
   return (

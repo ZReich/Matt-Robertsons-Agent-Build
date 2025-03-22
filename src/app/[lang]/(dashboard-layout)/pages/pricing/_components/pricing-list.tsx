@@ -1,14 +1,14 @@
 "use client"
 
-import type { PricingCardType } from "../types"
+import type { PricingType } from "../types"
 
-import { PricingCard } from "./pricing-card"
+import { PricingItem } from "./pricing-item"
 
-export default function PricingCardList({
+export default function PricingList({
   data,
   isAnnual,
 }: {
-  data: PricingCardType[]
+  data: PricingType[]
   isAnnual: boolean
 }) {
   const discountRate = isAnnual ? 0.15 : 0
@@ -16,7 +16,7 @@ export default function PricingCardList({
   return (
     <ul className="space-y-8 md:grid md:grid-cols-3 md:gap-x-4 md:space-y-0">
       {data.map((item) => (
-        <PricingCard
+        <PricingItem
           key={item.title}
           title={item.title}
           description={item.description}

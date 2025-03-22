@@ -1,6 +1,6 @@
 import type { ButtonProps } from "@/components/ui/button"
 
-export interface PricingCardType {
+export interface PricingType {
   title: string
   description: string
   period?: string

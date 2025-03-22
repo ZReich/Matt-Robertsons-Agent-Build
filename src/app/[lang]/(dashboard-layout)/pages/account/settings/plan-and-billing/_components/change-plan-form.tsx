@@ -101,7 +101,7 @@ export function ChangePlanForm({
                         <FormLabel
                           className={cn(
                             buttonVariants({ variant: "outline" }),
-                            "h-auto w-full flex-col justify-start items-start gap-2 cursor-pointer"
+                            "h-auto w-full flex-col justify-start items-start gap-2 p-4 cursor-pointer"
                           )}
                         >
                           <div className="flex items-center gap-x-2">

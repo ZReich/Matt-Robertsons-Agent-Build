@@ -1,14 +1,24 @@
 import type { UserType } from "../../../types"
 
-import { Card } from "@/components/ui/card"
-import { ProfileInfoContent } from "./profile-info-content"
-import { ProfileInfoHeader } from "./profile-info-header"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { ProfileInfoForm } from "./profile-info-form"
 
 export function ProfileInfo({ user }: { user: UserType }) {
   return (
     <Card>
-      <ProfileInfoHeader />
-      <ProfileInfoContent user={user} />
+      <CardHeader>
+        <CardTitle>Profile Information</CardTitle>
+        <CardDescription>Update your public profile details.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ProfileInfoForm user={user} />
+      </CardContent>
     </Card>
   )
 }
