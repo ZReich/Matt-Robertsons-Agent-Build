@@ -150,17 +150,19 @@ export function KanbanAddTaskSidebar() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assigned Team Members</FormLabel>
-                    <InputTagsWithSuggestions
-                      suggestions={teamMembers.map(({ name }) => name)}
-                      tags={field.value.map(({ name }) => name)}
-                      onTagsChange={(tags) =>
-                        field.onChange(
-                          teamMembers.filter((member) =>
-                            tags.includes(member.name)
+                    <FormControl>
+                      <InputTagsWithSuggestions
+                        suggestions={teamMembers.map(({ name }) => name)}
+                        tags={field.value.map(({ name }) => name)}
+                        onTagsChange={(tags) =>
+                          field.onChange(
+                            teamMembers.filter((member) =>
+                              tags.includes(member.name)
+                            )
                           )
-                        )
-                      }
-                    />
+                        }
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -171,11 +173,13 @@ export function KanbanAddTaskSidebar() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Due Date</FormLabel>
-                    <DatePicker
-                      formatStr="PPP"
-                      onValueChange={field.onChange}
-                      {...field}
-                    />
+                    <FormControl>
+                      <DatePicker
+                        formatStr="PPP"
+                        onValueChange={field.onChange}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
