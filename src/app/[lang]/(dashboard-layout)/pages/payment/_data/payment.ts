@@ -17,6 +17,7 @@ export const paymentData: PaymentType = {
       expiry: "11/24",
       cvc: "832",
       last4: "1234",
+      isDefault: true,
     },
     {
       id: "2",
@@ -26,13 +27,7 @@ export const paymentData: PaymentType = {
       expiry: "05/26",
       cvc: "237",
       last4: "9012",
-    },
-    {
-      id: "3",
-      cardName: "John Doe",
-      accountNumber: "789654123",
-      routingNumber: "021000021",
-      last4: "4123",
+      isDefault: false,
     },
   ],
 }

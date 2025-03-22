@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { CreditCard, Landmark, LoaderCircle } from "lucide-react"
@@ -28,42 +27,35 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { CreditCardBrandIcon } from "@/components/credit-card-brand-icon"
 
 export function PaymentMethodForm() {
-  const [paymentMethod, setPaymentMethod] = useState("card")
-
   const form = useForm<PaymentMethodFormType>({
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
-      paymentType: "visa",
-      cardNumber: "",
-      cardName: "",
-      expiry: "",
-      cvc: "",
-      accountNumber: "",
-      routingNumber: "",
+      paymentType: "card",
       saveCard: false,
     },
   })
 
   const cardNumber = form.watch("cardNumber")
-  const { isSubmitting, isValid } = form.formState
-  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid, or submitting
-  const creditCardBrandName = getCreditCardBrandName(cardNumber)
+  const paymentType = form.watch("paymentType")
+  const { isSubmitting } = form.formState
+  const isDisabled = isSubmitting // Disable button if form is submitting
+  const creditCardBrandName = getCreditCardBrandName(cardNumber || "")
 
   function onSubmit(_data: PaymentMethodFormType) {}
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-3">
         <FormField
           control={form.control}
           name="paymentType"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Select Payment Type</FormLabel>
               <FormControl>
                 <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={setPaymentMethod}
+                  value={field.value}
+                  onValueChange={field.onChange}
                   className="flex flex-col space-y-1"
                 >
                   <div className="flex items-center gap-x-2">
@@ -91,7 +83,7 @@ export function PaymentMethodForm() {
         />
 
         {/* Fields displayed when "card" is selected */}
-        {paymentMethod === "card" && (
+        {paymentType === "card" && (
           <>
             <FormField
               control={form.control}
@@ -193,7 +185,7 @@ export function PaymentMethodForm() {
         )}
 
         {/* Fields displayed when "bank" is selected */}
-        {paymentMethod === "bank" && (
+        {paymentType === "bank" && (
           <>
             <FormField
               control={form.control}
@@ -253,7 +245,7 @@ export function PaymentMethodForm() {
 
         <Button
           type="submit"
-          className="mt-6"
+          className="mt-2 w-fit"
           disabled={isDisabled}
           aria-live="assertive"
         >

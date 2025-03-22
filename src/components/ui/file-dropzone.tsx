@@ -100,7 +100,7 @@ export const FileDropzone = forwardRef<HTMLInputElement, FileDropzoneProps>(
               {files.map((file) => (
                 <div
                   key={file.id}
-                  className="relative flex flex-col rounded-lg border bg-background p-2 cursor-auto"
+                  className="relative flex flex-col gap-2 rounded-lg border bg-background p-2 cursor-auto"
                 >
                   {file.type.startsWith("image/") ? (
                     <Image
@@ -108,12 +108,12 @@ export const FileDropzone = forwardRef<HTMLInputElement, FileDropzoneProps>(
                       alt={file.name}
                       width={165}
                       height={165}
-                      className="self-center mb-2 aspect-square rounded object-contain pointer-events-none"
+                      className="self-center aspect-square rounded object-contain pointer-events-none"
                     />
                   ) : (
                     <FileThumbnail
                       fileName={file.name}
-                      className="self-center size-[10.312rem] text-4xl"
+                      className="self-center aspect-square size-full text-sm"
                     />
                   )}
                   {loadingFiles.has(file.id) && (

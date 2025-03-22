@@ -44,8 +44,8 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
     },
   })
 
-  const { isSubmitting, isValid, isDirty } = form.formState
-  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
   async function onSubmit(_data: ProfileInfoFormType) {}
 
@@ -75,9 +75,9 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Avatar className="size-24">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-3">
+        <div className="flex items-center gap-4">
+          <Avatar className="size-20">
             <AvatarImage src={photoPreview} alt="Profile Avatar" />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
@@ -116,7 +116,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
             </Button>
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2">
           <FormField
             control={form.control}
             name="firstName"
@@ -456,7 +456,8 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
             )}
           />
         </div>
-        <div className="flex gap-x-2">
+
+        <div className="flex gap-x-2 mt-2">
           <Button
             type="submit"
             className="w-fit"

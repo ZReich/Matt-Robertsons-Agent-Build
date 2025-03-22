@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { ListRestart, MoreVertical, Send } from "lucide-react"
+import { ListRestart, LoaderCircle, MoreVertical, Send } from "lucide-react"
 
 import type { EmailComposerFormType } from "../types"
 
@@ -42,6 +42,8 @@ export function EmailComposerForm() {
       content: "",
     },
   })
+  const { isSubmitting } = form.formState
+  const isDisabled = isSubmitting // Disable button if form is submitting
 
   function onSubmit(_data: EmailComposerFormType) {}
 
@@ -51,8 +53,8 @@ export function EmailComposerForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="h-full flex flex-col justify-between gap-3"
       >
-        <div className="px-3 space-y-1.5">
-          <div className="flex items-center justify-between gap-1.5">
+        <div className="px-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
             <FormField
               control={form.control}
               name="to"
@@ -65,7 +67,7 @@ export function EmailComposerForm() {
                 </FormItem>
               )}
             />
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Toggle
                 pressed={showCc}
                 onPressedChange={() => setShowCc(!showCc)}
@@ -139,7 +141,7 @@ export function EmailComposerForm() {
           />
         </div>
         <div className="flex justify-between items-center p-3 border-t border-border">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button type="button" variant="ghost" size="icon">
@@ -161,8 +163,20 @@ export function EmailComposerForm() {
               <ListRestart className="h-4 w-4" />
             </Button>
           </div>
-          <Button type="submit" size="icon" aria-label="Send">
-            <Send className="h-4 w-4" />
+
+          <Button
+            type="submit"
+            size="icon"
+            className="shadow-none"
+            disabled={isDisabled}
+            aria-live="assertive"
+            aria-label={isSubmitting ? "Loading" : "Send"}
+          >
+            {isSubmitting ? (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) : (
+              <Send className="size-4" />
+            )}
           </Button>
         </div>
       </form>

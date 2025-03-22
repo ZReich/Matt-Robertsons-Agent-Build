@@ -8,9 +8,7 @@ import type { AccountRecoveryOptionsFormType, UserType } from "../../../types"
 
 import { AccountRecoveryOptionsSchema } from "../_schemas/account-recovery-options-schema"
 
-import { cn } from "@/lib/utils"
-
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -37,71 +35,56 @@ export function AccountRecoveryOptionsForm({
     },
   })
 
-  const { isSubmitting, isValid, isDirty } = form.formState
-  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
   function onSubmit(_data: AccountRecoveryOptionsFormType) {}
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-3">
         <FormField
           control={form.control}
           name="option"
           render={({ field }) => (
-            <FormItem className="space-y-3">
+            <FormItem>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  className="flex flex-col space-y-1"
+                  className="flex flex-col space-y-2"
                 >
                   <FormItem>
-                    <FormLabel
-                      className={cn(
-                        buttonVariants({ variant: "outline" }),
-                        "h-10 w-full justify-start gap-x-2 cursor-pointer"
-                      )}
-                    >
+                    <div className="flex items-center gap-x-2">
                       <FormControl>
                         <RadioGroupItem value="email" />
                       </FormControl>
-                      <span>Email Recovery</span>
-                    </FormLabel>
+                      <FormLabel>Email Recovery</FormLabel>
+                    </div>
                     <FormDescription>
                       Receive a password reset link or recovery instructions
                       sent to your registered email address.
                     </FormDescription>
                   </FormItem>
                   <FormItem>
-                    <FormLabel
-                      className={cn(
-                        buttonVariants({ variant: "outline" }),
-                        "h-10 w-full justify-start gap-x-2 cursor-pointer"
-                      )}
-                    >
+                    <div className="flex items-center gap-x-2">
                       <FormControl>
                         <RadioGroupItem value="sms" />
                       </FormControl>
-                      <span>SMS Recovery</span>
-                    </FormLabel>
+                      <FormLabel>SMS Recovery</FormLabel>
+                    </div>
                     <FormDescription>
                       Receive a code or recovery instructions via SMS to your
                       registered mobile phone number.
                     </FormDescription>
                   </FormItem>
                   <FormItem>
-                    <FormLabel
-                      className={cn(
-                        buttonVariants({ variant: "outline" }),
-                        "h-10 w-full justify-start gap-x-2 cursor-pointer"
-                      )}
-                    >
+                    <div className="flex items-center gap-x-2">
                       <FormControl>
                         <RadioGroupItem value="codes" />
                       </FormControl>
-                      <span>Recovery Codes</span>
-                    </FormLabel>
+                      <FormLabel>Recovery Codes</FormLabel>
+                    </div>
                     <FormDescription>
                       Use pre-generated recovery codes that you saved when
                       setting up your account to regain access.
@@ -113,9 +96,10 @@ export function AccountRecoveryOptionsForm({
             </FormItem>
           )}
         />
+
         <Button
           type="submit"
-          className="w-fit"
+          className="mt-2 w-fit"
           disabled={isDisabled}
           aria-live="assertive"
         >

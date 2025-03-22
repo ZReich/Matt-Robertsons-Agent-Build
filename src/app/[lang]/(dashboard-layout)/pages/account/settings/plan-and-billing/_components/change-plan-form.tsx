@@ -44,14 +44,15 @@ export function ChangePlanForm({
   })
 
   const isAnnual = form.watch("isAnnual")
-  const { isSubmitting, isValid, isDirty } = form.formState
-  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const selectedPlan = form.watch("plan")
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
   function onSubmit(_data: ChangePlanFormType) {}
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-3">
         <FormField
           control={form.control}
           name="isAnnual"
@@ -77,12 +78,6 @@ export function ChangePlanForm({
           name="plan"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              {/* <FormLabel
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "h-10 w-full justify-start gap-x-2 cursor-pointer"
-                )}
-              ></FormLabel> */}
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -101,16 +96,16 @@ export function ChangePlanForm({
                         <FormLabel
                           className={cn(
                             buttonVariants({ variant: "outline" }),
-                            "h-auto w-full flex-col justify-start items-start gap-2 p-4 cursor-pointer"
+                            "h-auto w-full flex-col justify-start items-start gap-2 p-4 cursor-pointer",
+                            plan.name === selectedPlan && "bg-secondary"
                           )}
                         >
-                          <div className="flex items-center gap-x-2">
-                            <FormControl>
-                              <RadioGroupItem value={plan.name} />
-                            </FormControl>
-                            <span>
-                              {plan.name} {formattedPrice}/month
-                            </span>
+                          <FormControl className="sr-only">
+                            <RadioGroupItem value={plan.name} />
+                          </FormControl>
+                          <div className="inline">
+                            <span className="font-semibold">{plan.name}</span>{" "}
+                            <span>{formattedPrice}/month</span>
                           </div>
                           <ul className="text-muted-foreground list-disc ms-5">
                             {plan.features.map((feature, index) => (
@@ -129,7 +124,13 @@ export function ChangePlanForm({
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isDisabled} aria-live="assertive">
+
+        <Button
+          type="submit"
+          className="mt-2 w-fit"
+          disabled={isDisabled}
+          aria-live="assertive"
+        >
           {isSubmitting && (
             <LoaderCircle
               className="me-2 size-4 animate-spin"

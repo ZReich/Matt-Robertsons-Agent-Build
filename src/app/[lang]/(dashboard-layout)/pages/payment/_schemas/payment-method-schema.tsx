@@ -1,12 +1,17 @@
 import { z } from "zod"
 
-export const PaymentMethodSchema = z.object({
-  paymentOption: z.enum(["card", "bank"]).optional(),
+const SavedCardSchema = z.object({
+  savedCardId: z.string(),
+})
+
+const NewCardSchema = z.object({
+  savedCardId: z.undefined(),
   cardNumber: z
     .string()
     .min(13, "Card number must be at least 13 digits")
-    .max(19, "Card number must be at most 19 digits"),
-  cardName: z.string().min(1, "Cardholder's name is required"),
+    .max(19, "Card number must be at most 19 digits")
+    .regex(/^\d+$/, "Routing number must only contain digits."),
+  cardName: z.string().min(2, "Cardholder's name is required"),
   expiry: z
     .string()
     .regex(
@@ -17,8 +22,7 @@ export const PaymentMethodSchema = z.object({
     .string()
     .min(3, "CVC must be at least 3 digits")
     .max(4, "CVC must be at most 4 digits"),
-  accountNumber: z.string().optional(),
-  routingNumber: z.string().optional(),
-  saveCard: z.boolean().optional(),
-  savedCard: z.string().optional(),
+  saveCard: z.boolean(),
 })
+
+export const PaymentMethodSchema = z.union([SavedCardSchema, NewCardSchema])

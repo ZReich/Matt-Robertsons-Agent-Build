@@ -47,14 +47,14 @@ export function NotificationPreferencesForm() {
     },
   })
 
-  const { isSubmitting, isValid, isDirty } = form.formState
-  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
   function onSubmit(_data: NotificationPreferencesFormType) {}
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-3">
         <FormField
           control={form.control}
           name="security"
@@ -109,7 +109,12 @@ export function NotificationPreferencesForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isDisabled} aria-live="assertive">
+        <Button
+          type="submit"
+          className="mt-2 w-fit"
+          disabled={isDisabled}
+          aria-live="assertive"
+        >
           {isSubmitting && (
             <LoaderCircle
               className="me-2 size-4 animate-spin"

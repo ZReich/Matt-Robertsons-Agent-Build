@@ -92,7 +92,7 @@ export function KanbanUpdateColumnSidebar() {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 mt-4"
+              className="grid gap-y-3 mt-3"
             >
               <FormField
                 control={form.control}

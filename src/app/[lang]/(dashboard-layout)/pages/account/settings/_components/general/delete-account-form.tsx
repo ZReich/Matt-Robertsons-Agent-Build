@@ -17,8 +17,8 @@ export function DeleteAccountForm({ user }: { user: UserType }) {
     },
   })
 
-  const { isSubmitting, isValid } = form.formState
-  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
+  const { isSubmitting } = form.formState
+  const isDisabled = isSubmitting // Disable button if form is submitting
 
   return (
     <div className="flex gap-2">

@@ -39,7 +39,6 @@ export function TextMessageForm() {
 
   const onSubmit = async (data: TextMessageFormType) => {
     handleAddTextMessage(data.text)
-
     form.reset() // Reset the form to the initial state
   }
 
