@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle, Send } from "lucide-react"
+import { Send } from "lucide-react"
 
 import type { LocaleType } from "@/types"
 import type { TextMessageFormType } from "../types"
@@ -11,7 +11,7 @@ import type { TextMessageFormType } from "../types"
 import { TextMessageSchema } from "../_schemas/text-message-schema"
 
 import { useChatContext } from "../_hooks/use-chat-context"
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import { EmojiPicker } from "@/components/ui/emoji-picker"
 import {
   Form,
@@ -75,20 +75,16 @@ export function TextMessageForm() {
           )}
         />
 
-        <Button
-          type="submit"
-          size="icon"
-          className="shadow-none"
+        <ButtonLoading
+          isLoading={isSubmitting}
           disabled={isDisabled}
-          aria-live="assertive"
-          aria-label={isSubmitting ? "Loading" : "Send"}
+          size="icon"
+          icon={Send}
+          iconClassName="me-0"
+          loadingIconClassName="me-0"
         >
-          {isSubmitting ? (
-            <LoaderCircle className="size-4 animate-spin" />
-          ) : (
-            <Send className="size-4" />
-          )}
-        </Button>
+          Save
+        </ButtonLoading>
       </form>
     </Form>
   )

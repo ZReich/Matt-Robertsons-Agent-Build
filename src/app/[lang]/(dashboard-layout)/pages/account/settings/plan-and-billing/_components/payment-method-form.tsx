@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { CreditCard, Landmark, LoaderCircle } from "lucide-react"
+import { CreditCard, Landmark } from "lucide-react"
 
 import type { PaymentMethodFormType } from "@/app/[lang]/(dashboard-layout)/pages/account/types"
 
@@ -10,7 +10,7 @@ import { PaymentMethodSchema } from "../_schemas/payment-method-schema"
 
 import { getCreditCardBrandName } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
@@ -38,7 +38,6 @@ export function PaymentMethodForm() {
   const cardNumber = form.watch("cardNumber")
   const paymentType = form.watch("paymentType")
   const { isSubmitting } = form.formState
-  const isDisabled = isSubmitting // Disable button if form is submitting
   const creditCardBrandName = getCreditCardBrandName(cardNumber || "")
 
   function onSubmit(_data: PaymentMethodFormType) {}
@@ -243,20 +242,9 @@ export function PaymentMethodForm() {
           </>
         )}
 
-        <Button
-          type="submit"
-          className="mt-2 w-fit"
-          disabled={isDisabled}
-          aria-live="assertive"
-        >
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
+        <ButtonLoading isLoading={isSubmitting} className="mt-2 w-fit">
           Save
-        </Button>
+        </ButtonLoading>
       </form>
     </Form>
   )

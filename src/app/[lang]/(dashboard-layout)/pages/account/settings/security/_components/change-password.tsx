@@ -1,5 +1,3 @@
-import type { UserType } from "../../../types"
-
 import {
   Card,
   CardContent,
@@ -9,7 +7,7 @@ import {
 } from "@/components/ui/card"
 import { ChangePasswordForm } from "./chnage-password-form"
 
-export function ChangePassword({ user }: { user: UserType }) {
+export function ChangePassword() {
   return (
     <Card>
       <CardHeader>
@@ -20,7 +18,7 @@ export function ChangePassword({ user }: { user: UserType }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChangePasswordForm user={user} />
+        <ChangePasswordForm />
       </CardContent>
     </Card>
   )

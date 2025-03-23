@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { ProfileInfoFormType, UserType } from "../../../types"
 
@@ -12,7 +11,7 @@ import { ProfileInfoSchema } from "../../_schemas/profile-info-form-schema"
 import { cn, getInitials } from "@/lib/utils"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button, ButtonLoading, buttonVariants } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -458,20 +457,13 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
         </div>
 
         <div className="flex gap-x-2 mt-2">
-          <Button
-            type="submit"
+          <ButtonLoading
+            isLoading={isSubmitting}
             className="w-fit"
             disabled={isDisabled}
-            aria-live="assertive"
           >
-            {isSubmitting && (
-              <LoaderCircle
-                className="me-2 size-4 animate-spin"
-                aria-label="Loading"
-              />
-            )}
             Save
-          </Button>
+          </ButtonLoading>
           <Button
             type="reset"
             variant="secondary"

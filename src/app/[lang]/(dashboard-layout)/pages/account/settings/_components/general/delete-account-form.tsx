@@ -7,7 +7,7 @@ import type { DeleteAccountFormType, UserType } from "../../../types"
 
 import { DeleteAccountSchema } from "../../_schemas/delete-account-schema"
 
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 
 export function DeleteAccountForm({ user }: { user: UserType }) {
   const form = useForm<DeleteAccountFormType>({
@@ -18,16 +18,15 @@ export function DeleteAccountForm({ user }: { user: UserType }) {
   })
 
   const { isSubmitting } = form.formState
-  const isDisabled = isSubmitting // Disable button if form is submitting
 
   return (
     <div className="flex gap-2">
-      <Button variant="outline" disabled={isDisabled}>
+      <ButtonLoading isLoading={isSubmitting} variant="outline">
         Disable Account
-      </Button>
-      <Button variant="destructive" disabled={isDisabled}>
+      </ButtonLoading>
+      <ButtonLoading isLoading={isSubmitting} variant="destructive">
         Delete Account
-      </Button>
+      </ButtonLoading>
     </div>
   )
 }

@@ -2,14 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { ComingSoonFormType } from "@/types"
 
 import { ComingSoonSchema } from "@/schemas/coming-soon-schema"
 
 import { toast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -28,8 +27,7 @@ export function ComingSoonForm() {
     defaultValues,
   })
 
-  const { isSubmitting, isValid } = form.formState
-  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
+  const { isSubmitting } = form.formState
 
   async function onSubmit(_data: ComingSoonFormType) {
     form.reset(defaultValues) // Reset the form to the initial state
@@ -65,12 +63,7 @@ export function ComingSoonForm() {
           )}
         />
 
-        <Button type="submit" disabled={isDisabled}>
-          {isSubmitting && (
-            <LoaderCircle className="me-2 size-4 animate-spin" />
-          )}
-          Notify Me
-        </Button>
+        <ButtonLoading isLoading={isSubmitting}>Notify Me</ButtonLoading>
       </form>
     </Form>
   )

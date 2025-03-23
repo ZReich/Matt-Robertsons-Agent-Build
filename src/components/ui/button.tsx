@@ -1,7 +1,9 @@
 import { forwardRef } from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"
+import { LoaderCircle } from "lucide-react"
 
+import type { IconType } from "@/types"
 import type { VariantProps } from "class-variance-authority"
 import type { ButtonHTMLAttributes } from "react"
 
@@ -46,10 +48,11 @@ export interface ButtonProps
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        className={cn(buttonVariants({ variant, size, className }))}
         {...props}
       />
     )
@@ -57,4 +60,55 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+export interface ButtonLoadingProps extends ButtonProps {
+  isLoading: boolean
+  loadingIconClassName?: string
+  iconClassName?: string
+  icon?: IconType
+}
+
+const ButtonLoading = forwardRef<HTMLButtonElement, ButtonLoadingProps>(
+  (
+    {
+      isLoading,
+      disabled,
+      children,
+      loadingIconClassName,
+      iconClassName,
+      icon: Icon,
+      ...props
+    },
+    ref
+  ) => {
+    let RenderedIcon
+    if (isLoading) {
+      RenderedIcon = (
+        <LoaderCircle
+          className={cn("me-2 size-4 animate-spin", loadingIconClassName)}
+          aria-hidden
+        />
+      )
+    } else if (Icon) {
+      RenderedIcon = (
+        <Icon className={cn("me-2 size-4", iconClassName)} aria-hidden />
+      )
+    }
+
+    return (
+      <Button
+        ref={ref}
+        type="submit"
+        disabled={isLoading || disabled}
+        aria-live="assertive"
+        aria-label={isLoading ? "Loading" : props["aria-label"]}
+        {...props}
+      >
+        {RenderedIcon}
+        {children}
+      </Button>
+    )
+  }
+)
+ButtonLoading.displayName = "ButtonLoading"
+
+export { Button, ButtonLoading, buttonVariants }

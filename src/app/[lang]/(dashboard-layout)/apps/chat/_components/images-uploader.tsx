@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { Image, LoaderCircle, Send } from "lucide-react"
+import { Image, Send } from "lucide-react"
 
 import type { ImagesUploaderFormType } from "../types"
 
@@ -12,7 +12,7 @@ import { ImagesUploaderSchema } from "../_schemas/images-uploader-schema"
 import { formatFileSize } from "@/lib/utils"
 
 import { useChatContext } from "../_hooks/use-chat-context"
-import { Button } from "@/components/ui/button"
+import { Button, ButtonLoading } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -41,8 +41,7 @@ export function ImagesUploader() {
     defaultValues: { images: [] },
   })
 
-  const { isSubmitting, isValid } = form.formState
-  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
+  const { isSubmitting } = form.formState
 
   const onSubmit = async (data: ImagesUploaderFormType) => {
     handleAddImagesMessage(data.images)
@@ -87,20 +86,15 @@ export function ImagesUploader() {
               )}
             />
 
-            <Button
-              type="submit"
-              size="icon"
+            <ButtonLoading
+              isLoading={isSubmitting}
               className="ms-auto mt-2"
-              disabled={isDisabled}
-              aria-live="assertive"
-              aria-label={isSubmitting ? "Loading" : "Send"}
+              icon={Send}
+              iconClassName="me-0"
+              loadingIconClassName="me-0"
             >
-              {isSubmitting ? (
-                <LoaderCircle className="size-4 animate-spin" />
-              ) : (
-                <Send className="size-4" />
-              )}
-            </Button>
+              Save
+            </ButtonLoading>
           </form>
         </Form>
       </DialogContent>

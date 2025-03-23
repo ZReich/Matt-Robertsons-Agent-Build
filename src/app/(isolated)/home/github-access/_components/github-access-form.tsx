@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { z } from "zod"
 import type { GitHubAccessType } from "../types"
@@ -10,7 +9,7 @@ import type { GitHubAccessType } from "../types"
 import { GitHubAccessSchema } from "../_schemas/github-access-schema"
 
 import { toast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -36,8 +35,7 @@ export function GitHubAccessForm() {
     },
   })
 
-  const { isSubmitting, isValid } = form.formState
-  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid, or submitting
+  const { isSubmitting } = form.formState
 
   async function onSubmit(data: GitHubAccessType) {
     try {
@@ -165,15 +163,8 @@ export function GitHubAccessForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isDisabled} aria-live="assertive">
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
-          Submit
-        </Button>
+
+        <ButtonLoading isLoading={isSubmitting}>Submit</ButtonLoading>
       </form>
     </Form>
   )

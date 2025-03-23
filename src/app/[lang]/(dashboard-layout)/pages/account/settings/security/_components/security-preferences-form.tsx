@@ -2,13 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { SecurityPreferencesFormType, UserType } from "../../../types"
 
 import { SecurityPreferencesSchema } from "../_schemas/security-preferences-form-schema"
 
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Form,
@@ -86,20 +85,13 @@ export function SecurityPreferencesForm({
           )}
         />
 
-        <Button
-          type="submit"
+        <ButtonLoading
+          isLoading={isSubmitting}
           disabled={isDisabled}
           className="mt-2 w-fit"
-          aria-live="assertive"
         >
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
           Save
-        </Button>
+        </ButtonLoading>
       </form>
     </Form>
   )

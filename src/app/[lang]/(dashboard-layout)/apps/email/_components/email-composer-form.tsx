@@ -3,13 +3,13 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { ListRestart, LoaderCircle, MoreVertical, Send } from "lucide-react"
+import { ListRestart, MoreVertical, Send } from "lucide-react"
 
 import type { EmailComposerFormType } from "../types"
 
 import { EmailComposerSchema } from "../_schemas/email-composer-schema"
 
-import { Button } from "@/components/ui/button"
+import { Button, ButtonLoading } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +43,6 @@ export function EmailComposerForm() {
     },
   })
   const { isSubmitting } = form.formState
-  const isDisabled = isSubmitting // Disable button if form is submitting
 
   function onSubmit(_data: EmailComposerFormType) {}
 
@@ -164,20 +163,15 @@ export function EmailComposerForm() {
             </Button>
           </div>
 
-          <Button
-            type="submit"
+          <ButtonLoading
+            isLoading={isSubmitting}
             size="icon"
-            className="shadow-none"
-            disabled={isDisabled}
-            aria-live="assertive"
-            aria-label={isSubmitting ? "Loading" : "Send"}
+            icon={Send}
+            iconClassName="me-0"
+            loadingIconClassName="me-0"
           >
-            {isSubmitting ? (
-              <LoaderCircle className="size-4 animate-spin" />
-            ) : (
-              <Send className="size-4" />
-            )}
-          </Button>
+            Save
+          </ButtonLoading>
         </div>
       </form>
     </Form>

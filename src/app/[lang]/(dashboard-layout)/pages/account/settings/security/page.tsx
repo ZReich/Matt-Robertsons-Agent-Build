@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function SecurityPage() {
   return (
     <div className="grid gap-4">
-      <ChangePassword user={userData} />
+      <ChangePassword />
       <SecurityPreferences user={userData} />
       <AccountRecoveryOptions user={userData} />
       <RecentLogs />

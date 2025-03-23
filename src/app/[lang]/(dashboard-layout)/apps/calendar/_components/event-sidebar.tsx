@@ -10,7 +10,7 @@ import type { EventSidebarFormType, EventWithoutIdType } from "../types"
 import { EventSidebarSchema } from "../_schemas/event-sidebar-schema"
 
 import { useCalendarContext } from "../_hooks/calendar-context"
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -65,8 +65,8 @@ export function EventSidebar() {
     },
   })
 
-  const { isSubmitting, isValid, isDirty } = form.formState
-  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
   const selectedEvent = calendarState.selectedEvent
 
   // Reset the form with the current selected event's values if it exists; otherwise reset to the default state. This runs whenever `selectedEvent` or `eventSidebarIsOpen` changes
@@ -290,21 +290,27 @@ export function EventSidebar() {
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={isDisabled}>
-                <CalendarCheck2 className="me-1 size-4" />
+              <ButtonLoading
+                isLoading={isSubmitting}
+                disabled={isDisabled}
+                className="w-full"
+                icon={CalendarCheck2}
+              >
                 Save
-              </Button>
+              </ButtonLoading>
 
               {/* Display the delete button only when an event is selected to avoid showing it during event creation */}
               {selectedEvent && (
-                <Button
+                <ButtonLoading
+                  isLoading={isSubmitting}
+                  disabled={isDisabled}
                   variant="destructive"
                   className="w-full"
                   onClick={handleOnDeleteEvent}
+                  icon={CalendarMinus}
                 >
-                  <CalendarMinus className="me-1 size-4" />
                   Delete
-                </Button>
+                </ButtonLoading>
               )}
             </form>
           </Form>

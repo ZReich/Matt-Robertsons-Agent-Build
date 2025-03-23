@@ -4,7 +4,6 @@ import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { LocaleType, RegisterFormType } from "@/types"
 
@@ -14,7 +13,7 @@ import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
 import { toast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -38,8 +37,8 @@ export function RegisterForm() {
 
   const locale = params.lang as LocaleType
   const redirectPathname = searchParams.get("redirectTo")
-  const { isSubmitting, isValid, isDirty } = form.formState
-  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
   async function onSubmit(data: RegisterFormType) {
     const { firstName, lastName, username, email, password } = data
@@ -172,15 +171,10 @@ export function RegisterForm() {
             )}
           />
         </div>
-        <Button type="submit" disabled={isDisabled} aria-live="assertive">
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
+
+        <ButtonLoading isLoading={isSubmitting} disabled={isDisabled}>
           Sign In with Email
-        </Button>
+        </ButtonLoading>
         <div className="-mt-4 text-center text-sm">
           Already have an account?{" "}
           <Link

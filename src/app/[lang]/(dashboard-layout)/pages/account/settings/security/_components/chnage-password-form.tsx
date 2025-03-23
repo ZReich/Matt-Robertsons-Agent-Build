@@ -2,13 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { ChangePasswordFormType } from "../../../types"
 
 import { ChangePasswordSchema } from "../_schemas/chnage-password-schema"
 
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -30,7 +29,7 @@ export function ChangePasswordForm() {
   })
 
   const { isSubmitting } = form.formState
-  const isDisabled = isSubmitting // Disable button if form is submitting
+
   async function onSubmit(_data: ChangePasswordFormType) {}
 
   return (
@@ -75,20 +74,10 @@ export function ChangePasswordForm() {
             </FormItem>
           )}
         />
-        <Button
-          type="submit"
-          className="mt-2 w-fit"
-          disabled={isDisabled}
-          aria-live="assertive"
-        >
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
+
+        <ButtonLoading isLoading={isSubmitting} className="mt-2 w-fit">
           Set new password
-        </Button>
+        </ButtonLoading>
       </form>
     </Form>
   )

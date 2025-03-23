@@ -1,9 +1,13 @@
 import type { z } from "zod"
 import type { PaymentMethodSchema } from "./_schemas/payment-method-schema"
 
-export type CardType = Omit<PaymentMethodFormType, "saveCard"> & {
+export interface CardType {
   id: string
   cardType: string
+  cardNumber: string
+  cardName: string
+  expiry: string
+  cvc: string
   last4: string
   isDefault: boolean
 }

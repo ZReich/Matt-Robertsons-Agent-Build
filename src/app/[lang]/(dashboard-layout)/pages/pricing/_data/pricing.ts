@@ -1,6 +1,6 @@
-import type { PricingCardType } from "../types"
+import type { PricingType } from "../types"
 
-export const pricingData: PricingCardType[] = [
+export const pricingData: PricingType[] = [
   {
     title: "Starter",
     description:

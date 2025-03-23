@@ -2,13 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { z } from "zod"
 
 import { FormLayoutsSchema } from "../../_schemas/form-layouts-schema"
 
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Form,
@@ -35,8 +34,8 @@ export function VerticalFormLayout() {
     resolver: zodResolver(FormLayoutsSchema),
   })
 
-  const { isSubmitting, isValid, isDirty } = form.formState
-  const isDisabled = isSubmitting || !isDirty || !isValid // Disable button if form is invalid, unchanged, or submitting
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
   async function onSubmit(_data: FormType) {}
 
@@ -49,7 +48,7 @@ export function VerticalFormLayout() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-2 gap-6"
+            className="grid grid-cols-2 gap-3"
           >
             <FormField
               control={form.control}
@@ -172,20 +171,14 @@ export function VerticalFormLayout() {
                 </FormItem>
               )}
             />
-            <Button
-              type="submit"
-              className="col-start-2 w-fit ms-auto"
+
+            <ButtonLoading
+              isLoading={isSubmitting}
               disabled={isDisabled}
-              aria-live="assertive"
+              className="w-fit mt-2"
             >
-              {isSubmitting && (
-                <LoaderCircle
-                  className="me-2 size-4 animate-spin"
-                  aria-label="Loading"
-                />
-              )}
               Save
-            </Button>
+            </ButtonLoading>
           </form>
         </Form>
       </CardContent>

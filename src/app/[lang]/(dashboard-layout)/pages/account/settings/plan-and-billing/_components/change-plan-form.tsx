@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type {
   ChangePlanFormType,
@@ -14,7 +13,7 @@ import { ChangePlanSchema } from "../_schemas/change-plan-schema"
 
 import { cn, formatCurrency, getDiscountedPrice } from "@/lib/utils"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { ButtonLoading, buttonVariants } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -125,20 +124,13 @@ export function ChangePlanForm({
           )}
         />
 
-        <Button
-          type="submit"
-          className="mt-2 w-fit"
+        <ButtonLoading
+          isLoading={isSubmitting}
           disabled={isDisabled}
-          aria-live="assertive"
+          className="mt-2 w-fit"
         >
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
           Save
-        </Button>
+        </ButtonLoading>
       </form>
     </Form>
   )

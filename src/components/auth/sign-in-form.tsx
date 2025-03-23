@@ -5,7 +5,6 @@ import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { LocaleType, SignInFormType } from "@/types"
 
@@ -17,7 +16,7 @@ import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
 import { toast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -46,8 +45,8 @@ export function SignInForm() {
   })
 
   const locale = params.lang as LocaleType
-  const { isSubmitting, isValid } = form.formState
-  const isDisabled = isSubmitting || !isValid // Disable button if form is invalid, or submitting
+  const { isSubmitting } = form.formState
+  const isDisabled = isSubmitting // Disable button if form is submitting
 
   async function onSubmit(data: SignInFormType) {
     const { email, password } = data
@@ -125,15 +124,10 @@ export function SignInForm() {
             )}
           />
         </div>
-        <Button type="submit" disabled={isDisabled} aria-live="assertive">
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
+
+        <ButtonLoading isLoading={isSubmitting} disabled={isDisabled}>
           Sign In with Email
-        </Button>
+        </ButtonLoading>
         <div className="-mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
           <Link

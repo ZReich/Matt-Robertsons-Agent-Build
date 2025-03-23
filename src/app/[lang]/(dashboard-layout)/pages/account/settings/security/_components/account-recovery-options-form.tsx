@@ -2,13 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoaderCircle } from "lucide-react"
 
 import type { AccountRecoveryOptionsFormType, UserType } from "../../../types"
 
 import { AccountRecoveryOptionsSchema } from "../_schemas/account-recovery-options-schema"
 
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -97,20 +96,13 @@ export function AccountRecoveryOptionsForm({
           )}
         />
 
-        <Button
-          type="submit"
-          className="mt-2 w-fit"
+        <ButtonLoading
+          isLoading={isSubmitting}
           disabled={isDisabled}
-          aria-live="assertive"
+          className="mt-2 w-fit"
         >
-          {isSubmitting && (
-            <LoaderCircle
-              className="me-2 size-4 animate-spin"
-              aria-label="Loading"
-            />
-          )}
           Save
-        </Button>
+        </ButtonLoading>
       </form>
     </Form>
   )
