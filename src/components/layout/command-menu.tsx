@@ -153,7 +153,7 @@ export function CommandMenu({
         <Button
           variant="outline"
           className={cn(
-            "h-8 w-64 justify-start rounded-md bg-muted/50 text-muted-foreground",
+            "h-8 w-64 justify-start px-3 rounded-md bg-muted/50 text-muted-foreground",
             buttonClassName
           )}
           onClick={() => setOpen(true)}

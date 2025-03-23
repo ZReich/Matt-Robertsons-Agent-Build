@@ -82,9 +82,7 @@ export function TextMessageForm() {
           icon={Send}
           iconClassName="me-0"
           loadingIconClassName="me-0"
-        >
-          Save
-        </ButtonLoading>
+        />
       </form>
     </Form>
   )

@@ -303,7 +303,6 @@ export function EventSidebar() {
               {selectedEvent && (
                 <ButtonLoading
                   isLoading={isSubmitting}
-                  disabled={isDisabled}
                   variant="destructive"
                   className="w-full"
                   onClick={handleOnDeleteEvent}

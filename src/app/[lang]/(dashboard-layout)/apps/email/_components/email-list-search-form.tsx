@@ -44,7 +44,7 @@ export function EmailListSearchForm({
               <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <FormControl>
                 <Input
-                  className="w-full bg-accent ps-9 pe-4"
+                  className="w-full bg-muted ps-9"
                   placeholder="Search..."
                   type="search"
                   {...field}

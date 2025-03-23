@@ -10,7 +10,7 @@ import type { KanbanColumnFormType } from "../../types"
 import { KanbanColumnSchema } from "../../_schemas/kanban-column-schema"
 
 import { useKanbanContext } from "../../_hooks/use-kanban-context"
-import { Button } from "@/components/ui/button"
+import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -47,6 +47,8 @@ export function KanbanUpdateColumnSidebar() {
   })
 
   const selectedColumn = kanbanState.selectedColumn
+  const { isSubmitting, isDirty } = form.formState
+  const isDisabled = isSubmitting || !isDirty // Disable button if form is unchanged or submitting
 
   // Reset the form with the current selected column's values whenever `selectedColumn` changes
   useEffect(() => {
@@ -107,10 +109,15 @@ export function KanbanUpdateColumnSidebar() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                <Grid2x2Plus className="me-1 size-4" />
+
+              <ButtonLoading
+                isLoading={isSubmitting}
+                disabled={isDisabled}
+                className="w-full"
+                icon={Grid2x2Plus}
+              >
                 Save
-              </Button>
+              </ButtonLoading>
             </form>
           </Form>
         </ScrollArea>

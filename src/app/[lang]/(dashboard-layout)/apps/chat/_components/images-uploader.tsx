@@ -92,9 +92,7 @@ export function ImagesUploader() {
               icon={Send}
               iconClassName="me-0"
               loadingIconClassName="me-0"
-            >
-              Save
-            </ButtonLoading>
+            />
           </form>
         </Form>
       </DialogContent>

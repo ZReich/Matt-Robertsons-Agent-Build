@@ -169,9 +169,7 @@ export function EmailComposerForm() {
             icon={Send}
             iconClassName="me-0"
             loadingIconClassName="me-0"
-          >
-            Save
-          </ButtonLoading>
+          />
         </div>
       </form>
     </Form>
