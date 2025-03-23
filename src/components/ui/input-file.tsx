@@ -80,7 +80,7 @@ const InputFile = forwardRef<HTMLInputElement, InputFileProps>(
     return (
       <div
         className={cn(
-          "h-9 w-full flex rounded-md border border-input bg-transparent text-sm shadow-sm transition-colors",
+          "h-9 w-full flex rounded-md border border-input bg-transparent text-sm transition-colors",
           props.disabled && "cursor-not-allowed opacity-50",
           containerClassName
         )}

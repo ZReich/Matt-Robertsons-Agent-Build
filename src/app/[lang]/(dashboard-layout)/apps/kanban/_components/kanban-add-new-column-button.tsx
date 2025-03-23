@@ -12,7 +12,7 @@ export function KanbanAddNewColumnButton({
   return (
     <Button
       variant="outline"
-      className="w-64 md:w-72 shadow-none mx-2"
+      className="w-64 md:w-72 mx-2"
       onClick={() => setKanbanAddColumnSidebarIsOpen(true)}
     >
       <Plus className="me-2 size-4 text-muted-foreground" />

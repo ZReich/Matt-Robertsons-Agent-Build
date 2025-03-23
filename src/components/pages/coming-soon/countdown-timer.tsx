@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 
+import { Badge } from "@/components/ui/badge"
+
 export function CountdownTimer({ targetDate }: { targetDate: Date }) {
   const [timeLeft, setTimeLeft] = useState({
     days: "00",
@@ -48,10 +50,10 @@ export function CountdownTimer({ targetDate }: { targetDate: Date }) {
   return (
     <div className="grid grid-cols-4 gap-4 mb-8">
       {Object.entries(timeLeft).map(([unit, value]) => (
-        <div key={unit} className="bg-background p-4 rounded-lg shadow-md">
-          <div className="text-3xl font-bold text-primary">{value}</div>
-          <div className="text-muted-foreground capitalize">{unit}</div>
-        </div>
+        <Badge key={unit} variant="secondary" className="flex-col p-6">
+          <span className="text-3xl font-semibold">{value}</span>
+          <span className="capitalize">{unit}</span>
+        </Badge>
       ))}
     </div>
   )

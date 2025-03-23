@@ -131,7 +131,7 @@ export function DocsCommandMenu({
         <Button
           variant="outline"
           className={cn(
-            "h-8 w-64 justify-start rounded-md bg-muted/50 text-muted-foreground shadow-none",
+            "h-8 w-64 justify-start rounded-md bg-muted/50 text-muted-foreground",
             buttonClassName
           )}
           onClick={() => setOpen(true)}

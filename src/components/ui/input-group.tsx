@@ -14,7 +14,7 @@ const InputGroup = forwardRef<HTMLDivElement, InputGroupProps>(
       <div
         ref={ref}
         className={cn(
-          "flex min-h-9 w-full rounded-md border border-input bg-transparent text-sm shadow-sm transition-colors [&>*:not(.input-group-text)]:border-0 [&>input]:z-10 first:[&>input]:rounded-e-none last:[&>input]:rounded-s-none [&>input:not(:first-child):not(:last-child)]:rounded-none [&>textarea]:z-10 first:[&>textarea]:rounded-e-none last:[&>textarea]:rounded-s-none [&>textarea:not(:first-child):not(:last-child)]:rounded-none first:[&>button]:rounded-e-none last:[&>button]:rounded-s-none [&:not(:first-child):not(:last-child)]:[&>button]:rounded-none",
+          "flex min-h-9 w-full rounded-md border border-input bg-transparent text-sm transition-colors [&>*:not(.input-group-text)]:border-0 [&>input]:z-10 first:[&>input]:rounded-e-none last:[&>input]:rounded-s-none [&>input:not(:first-child):not(:last-child)]:rounded-none [&>textarea]:z-10 first:[&>textarea]:rounded-e-none last:[&>textarea]:rounded-s-none [&>textarea:not(:first-child):not(:last-child)]:rounded-none first:[&>button]:rounded-e-none last:[&>button]:rounded-s-none [&:not(:first-child):not(:last-child)]:[&>button]:rounded-none",
           className
         )}
         {...props}

@@ -29,7 +29,7 @@ const Menubar = forwardRef<
   <MenubarPrimitive.Root
     ref={ref}
     className={cn(
-      "flex h-9 items-center gap-x-1 rounded-md border bg-background p-1 shadow-sm",
+      "flex h-9 items-center gap-x-1 rounded-md border bg-background p-1",
       className
     )}
     {...props}

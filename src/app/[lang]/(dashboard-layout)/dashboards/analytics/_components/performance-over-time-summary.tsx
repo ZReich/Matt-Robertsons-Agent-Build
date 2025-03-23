@@ -18,7 +18,7 @@ export function PerformanceOverTimeSummary({
           style={{
             backgroundColor: "hsl(var(--chart-1))",
           }}
-          className="size-12 aspect-square bg-chart-1 shadow-none"
+          className="size-12 aspect-square bg-chart-1"
           aria-hidden
         >
           <Eye className="size-full" />
@@ -37,7 +37,7 @@ export function PerformanceOverTimeSummary({
           style={{
             backgroundColor: "hsl(var(--chart-2))",
           }}
-          className="size-12 aspect-square bg-chart-2 shadow-none"
+          className="size-12 aspect-square bg-chart-2"
           aria-hidden
         >
           <RefreshCw className="size-full" />

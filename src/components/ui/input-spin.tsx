@@ -74,7 +74,7 @@ const InputSpin = forwardRef<HTMLInputElement, InputSpinProps>(
       <div
         ref={ref}
         className={cn(
-          "h-9 w-fit flex justify-between items-center p-0.5 rounded-md border border-input bg-transparent text-sm shadow-sm transition-colors",
+          "h-9 w-fit flex justify-between items-center p-0.5 rounded-md border border-input bg-transparent text-sm transition-colors",
           disabled && "cursor-not-allowed opacity-50",
           className
         )}

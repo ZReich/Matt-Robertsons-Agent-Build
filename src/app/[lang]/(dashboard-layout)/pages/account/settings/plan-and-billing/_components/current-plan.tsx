@@ -80,10 +80,7 @@ export function CurrentPlan() {
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {currentPlanData.activityThisMonth.map((item, index) => (
               <li key={index} className="flex items-center gap-x-2">
-                <Badge
-                  className="size-12 aspect-square shadow-none"
-                  aria-hidden
-                >
+                <Badge className="size-12 aspect-square" aria-hidden>
                   <DynamicIcon name={item.iconName} className="size-full" />
                 </Badge>
                 <div>

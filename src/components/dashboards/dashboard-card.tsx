@@ -182,7 +182,7 @@ const DashboardOverviewCardV2 = forwardRef<
                 style={{
                   backgroundColor: iconColor,
                 }}
-                className="size-12 aspect-square shadow-none"
+                className="size-12 aspect-square"
                 aria-hidden
               >
                 <Icon className="size-full" />

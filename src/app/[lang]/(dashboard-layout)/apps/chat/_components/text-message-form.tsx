@@ -67,7 +67,7 @@ export function TextMessageForm() {
                   type="text"
                   placeholder="Type a message..."
                   autoComplete="off"
-                  className="bg-accent shadow-none"
+                  className="bg-accent"
                   {...field}
                 />
               </FormControl>

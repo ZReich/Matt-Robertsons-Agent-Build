@@ -14,7 +14,7 @@ const percentageChangeBadgeVariants = cva("justify-center", {
       default:
         "data-[non-negative-change=true]:bg-success data-[non-negative-change=false]:bg-destructive",
       ghost:
-        "bg-transparant text-sm text-foreground shadow-none data-[non-negative-change=true]:text-success data-[non-negative-change=false]:text-destructive",
+        "bg-transparant text-sm text-foreground data-[non-negative-change=true]:text-success data-[non-negative-change=false]:text-destructive",
     },
   },
   defaultVariants: {

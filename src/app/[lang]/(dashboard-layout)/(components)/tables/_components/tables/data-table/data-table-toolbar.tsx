@@ -17,7 +17,7 @@ export function InvoiceTableToolbar<TTable>({
       <InvoiceTableViewOptions table={table} />
       <Input
         placeholder="Search by Invoice ID..."
-        className="border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
+        className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
         value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
         onChange={(event) =>
           table.getColumn("id")?.setFilterValue(event.target.value)

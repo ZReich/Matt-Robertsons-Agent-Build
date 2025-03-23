@@ -18,7 +18,7 @@ export function KanbanAddNewTaskButton({ column }: KanbanTaskListProps) {
   return (
     <Button
       variant="outline"
-      className="w-full shadow-none my-2"
+      className="w-full my-2"
       onClick={() => {
         handleSelectColumn(column)
         setKanbanAddTaskSidebarIsOpen(true)

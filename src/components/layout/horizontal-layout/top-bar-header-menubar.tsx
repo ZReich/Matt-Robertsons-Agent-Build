@@ -102,7 +102,7 @@ export function TopBarHeaderMenubar({
   }
 
   return (
-    <Menubar className="shadow-none border-0">
+    <Menubar className="border-0">
       {navigationsData.map((nav) => {
         const title = getDictionaryValue(
           titleCaseToCamelCase(nav.title),
