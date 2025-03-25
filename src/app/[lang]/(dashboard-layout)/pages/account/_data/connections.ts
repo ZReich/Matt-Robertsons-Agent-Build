@@ -2,28 +2,28 @@ import type { UserProfileConnectionType } from "../types"
 
 export const connectionsData: UserProfileConnectionType[] = [
   {
-    name: "Alex Johnson",
-    avatar: "/images/avatars/01.png",
+    name: "John Doe",
+    avatar: "/images/avatars/male-01.png",
     connections: 1240,
   },
   {
-    name: "Emily Carter",
-    avatar: "/images/avatars/02.png",
+    name: "Emily Smith",
+    avatar: "/images/avatars/female-01.png",
     connections: 980,
   },
   {
-    name: "Michael Smith",
-    avatar: "/images/avatars/03.png",
+    name: "Michael Brown",
+    avatar: "/images/avatars/male-02.png",
     connections: 2150,
   },
   {
-    name: "Sophia Martinez",
-    avatar: "/images/avatars/04.png",
+    name: "Olivia Martinez",
+    avatar: "/images/avatars/female-03.png",
     connections: 1875,
   },
   {
-    name: "Daniel Lee",
-    avatar: "/images/avatars/05.png",
+    name: "Sarah Johnson",
+    avatar: "/images/avatars/female-02.png",
     connections: 3420,
   },
 ]

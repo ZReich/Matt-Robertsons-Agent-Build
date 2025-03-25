@@ -40,7 +40,10 @@ const AvatarImage = forwardRef<
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
-    className={cn("aspect-square h-full w-full rounded-lg", className)}
+    className={cn(
+      "aspect-square h-full w-full bg-muted rounded-lg object-cover",
+      className
+    )}
     {...props}
   />
 ))

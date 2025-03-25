@@ -22,13 +22,13 @@ export function TopSalesRepresentativesOthersItem({
               <AvatarImage
                 src={representative.avatar}
                 alt="Avatar"
-                className="border-2 border-secondary bg-secondary"
+                className="border-2 border-muted"
               />
-              <AvatarFallback className="border-2 border-secondary bg-secondary">
+              <AvatarFallback className="border-2 border-muted">
                 {getInitials(representative.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -top-2 -right-2 w-5 h-5 border-secondary bg-secondary rounded-full flex items-center justify-center text-xs text-secondary-foreground font-semibold">
+            <div className="absolute -top-2 -right-2 w-5 h-5 bg-muted rounded-full flex items-center justify-center text-xs text-foreground font-semibold">
               {index + 4}
             </div>
           </div>

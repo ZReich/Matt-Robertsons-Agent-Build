@@ -1,7 +1,7 @@
 export const avatarsData = [
-  { src: "/images/avatars/01.png", alt: "Alice", href: "" },
-  { src: "/images/avatars/02.png", alt: "Bob", href: "" },
-  { src: "/images/avatars/03.png", alt: "Charlie", href: "" },
-  { src: "/images/avatars/04.png", alt: "Diana" },
-  { src: "/images/avatars/05.png", alt: "Eve" },
+  { src: "/images/avatars/female-01.png", alt: "Emily Smith", href: "" },
+  { src: "/images/avatars/female-02.png", alt: "Sarah Johnson", href: "" },
+  { src: "/images/avatars/female-03.png", alt: "Olivia Martinez", href: "" },
+  { src: "/images/avatars/male-01.png", alt: "John Doe", href: "" },
+  { src: "/images/avatars/male-02.png", alt: "Michael Brown", href: "" },
 ]

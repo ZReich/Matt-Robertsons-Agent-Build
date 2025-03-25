@@ -13,8 +13,16 @@ export const activityTimelineData: ActivityTimelineType = {
       status: "Opened",
       date: "2025-02-27T10:30:00Z",
       assignedMembers: [
-        { name: "Alice Thompson", avatar: "/images/avatars/01.png", href: "/" },
-        { name: "Bob Johnson", avatar: "/images/avatars/04.png", href: "/" },
+        {
+          name: "Emily Smith",
+          avatar: "/images/avatars/female-01.png",
+          href: "/",
+        },
+        {
+          name: "Michael Brown",
+          avatar: "/images/avatars/male-02.png",
+          href: "/",
+        },
       ],
     },
     {
@@ -27,7 +35,11 @@ export const activityTimelineData: ActivityTimelineType = {
       status: "Resolved",
       date: "2025-02-27T11:10:00Z",
       assignedMembers: [
-        { name: "Emily White", avatar: "/images/avatars/02.png", href: "/" },
+        {
+          name: "Emily Smith",
+          avatar: "/images/avatars/female-01.png",
+          href: "/",
+        },
       ],
     },
     {
@@ -41,11 +53,15 @@ export const activityTimelineData: ActivityTimelineType = {
       date: "2025-02-27T14:45:00Z",
       assignedMembers: [
         {
-          name: "Daniel Martinez",
-          avatar: "/images/avatars/02.png",
+          name: "Sarah Johnson",
+          avatar: "/images/avatars/female-02.png",
           href: "/",
         },
-        { name: "Michael Scott", avatar: "/images/avatars/03.png", href: "/" },
+        {
+          name: "Michael Brown",
+          avatar: "/images/avatars/male-02.png",
+          href: "/",
+        },
       ],
     },
     {
@@ -57,7 +73,11 @@ export const activityTimelineData: ActivityTimelineType = {
         "15-minute call. Jane showed interest and requested a product demo.",
       date: "2025-02-27T15:00:00Z",
       assignedMembers: [
-        { name: "Bob Johnson", avatar: "/images/avatars/04.png", href: "/" },
+        {
+          name: "Michael Brown",
+          avatar: "/images/avatars/male-02.png",
+          href: "/",
+        },
       ],
     },
     {
@@ -70,15 +90,31 @@ export const activityTimelineData: ActivityTimelineType = {
       status: "Completed",
       date: "2025-02-24T13:00:00Z",
       assignedMembers: [
-        { name: "Alice Thompson", avatar: "/images/avatars/01.png", href: "/" },
-        { name: "Bob Johnson", avatar: "/images/avatars/04.png", href: "/" },
-        { name: "Charlie Davis", avatar: "/images/avatars/02.png", href: "/" },
         {
-          name: "Daniel Martinez",
-          avatar: "/images/avatars/03.png",
+          name: "John Doe",
+          avatar: "/images/avatars/male-01.png",
           href: "/",
         },
-        { name: "Emily White", avatar: "/images/avatars/05.png", href: "/" },
+        {
+          name: "Michael Brown",
+          avatar: "/images/avatars/male-02.png",
+          href: "/",
+        },
+        {
+          name: "Sarah Johnson",
+          avatar: "/images/avatars/female-02.png",
+          href: "/",
+        },
+        {
+          name: "Olivia Martinez",
+          avatar: "/images/avatars/female-03.png",
+          href: "/",
+        },
+        {
+          name: "Emily Smith",
+          avatar: "/images/avatars/female-01.png",
+          href: "/",
+        },
       ],
     },
     {
@@ -90,8 +126,16 @@ export const activityTimelineData: ActivityTimelineType = {
         "Client expressed interest in an upsell package. Follow-up recommended next week.",
       date: "2025-02-27T18:20:00Z",
       assignedMembers: [
-        { name: "Charlie Davis", avatar: "/images/avatars/01.png", href: "/" },
-        { name: "Emily White", avatar: "/images/avatars/02.png", href: "/" },
+        {
+          name: "John Doe",
+          avatar: "/images/avatars/male-01.png",
+          href: "/",
+        },
+        {
+          name: "Emily Smith",
+          avatar: "/images/avatars/female-01.png",
+          href: "/",
+        },
       ],
     },
   ],

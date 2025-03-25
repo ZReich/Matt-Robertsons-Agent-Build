@@ -8,7 +8,7 @@ export const userData: UserType = {
   password: "StrongPass123",
   username: "john.doe",
   role: "Next.js Developer",
-  avatar: "/images/avatars/04.png",
+  avatar: "/images/avatars/male-01.png",
   background: "https://images.unsplash.com/photo-1635315619556-5826839a1bea",
   status: "ONLINE",
   phoneNumber: "+15558675309",
