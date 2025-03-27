@@ -392,6 +392,10 @@ export const navigationsData: NavigationType[] = [
             href: "/extended-ui/avatar-stack",
           },
           {
+            title: "Media Grid",
+            href: "/extended-ui/media-grid",
+          },
+          {
             title: "Editor",
             href: "/extended-ui/editor",
           },
