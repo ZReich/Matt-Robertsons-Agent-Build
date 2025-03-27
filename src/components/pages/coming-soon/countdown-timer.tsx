@@ -48,7 +48,7 @@ export function CountdownTimer({ targetDate }: { targetDate: Date }) {
   }, [targetDate])
 
   return (
-    <div className="grid grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-4 gap-4">
       {Object.entries(timeLeft).map(([unit, value]) => (
         <Badge key={unit} variant="secondary" className="flex-col p-6">
           <span className="text-3xl font-semibold">{value}</span>

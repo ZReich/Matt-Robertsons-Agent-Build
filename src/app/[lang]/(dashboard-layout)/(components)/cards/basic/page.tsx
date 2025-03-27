@@ -17,8 +17,8 @@ export default function BasicCardsPage() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
       <CardWithImage />
-      <CardWithFilledImage />
       <CardOverlay />
+      <CardWithFilledImage />
       <div className="space-y-4">
         <CardWithImageHorizontal />
         <CardWithFilledImageHorizontal />

@@ -20,9 +20,9 @@ export function TopProductsItem({
           <Image
             src={product.image}
             alt={product.name}
-            width={40}
-            height={40}
-            className="rounded-lg"
+            width={100}
+            height={100}
+            className="aspect-square h-12 w-12 rounded-lg object-cover"
           />
           <div className="flex flex-col truncate">
             <h3 className="break-all truncate">

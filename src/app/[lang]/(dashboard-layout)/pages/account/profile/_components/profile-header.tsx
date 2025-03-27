@@ -17,12 +17,14 @@ export function ProfileHeader({ locale }: { locale: LocaleType }) {
   return (
     <section className="bg-background border-y border-border">
       <AspectRatio ratio={5 / 1} className="bg-muted">
-        <Image
-          src={userData.background}
-          fill
-          className="h-full w-full object-cover"
-          alt="Profile Background"
-        />
+        {userData.background && (
+          <Image
+            src={userData.background}
+            fill
+            className="h-full w-full object-cover"
+            alt="Profile Background"
+          />
+        )}
       </AspectRatio>
       <div className="relative w-full flex flex-col items-center gap-2 p-4 md:flex-row">
         <Avatar className="size-32 -mt-20 md:size-40">

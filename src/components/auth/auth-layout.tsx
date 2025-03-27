@@ -13,10 +13,11 @@ import { cn } from "@/lib/utils"
 
 interface AuthProps extends HTMLAttributes<HTMLDivElement> {
   imgSrc?: string
+  imgClassName?: string
 }
 
 const Auth = forwardRef<HTMLDivElement, AuthProps>(
-  ({ className, children, imgSrc, ...props }, ref) => {
+  ({ className, children, imgSrc, imgClassName, ...props }, ref) => {
     const params = useParams()
     const locale = params.lang as LocaleType
 
@@ -45,7 +46,7 @@ const Auth = forwardRef<HTMLDivElement, AuthProps>(
         <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6">
           {children}
         </div>
-        {imgSrc && <AuthImage imgSrc={imgSrc} />}
+        {imgSrc && <AuthImage imgSrc={imgSrc} className={imgClassName} />}
       </section>
     )
   }
@@ -71,7 +72,7 @@ const AuthImage = forwardRef<HTMLDivElement, AuthImageProps>(
         alt="Image"
         fill
         sizes="(max-width: 1200px) 60vw, 38vw"
-        className="object-cover dark:grayscale"
+        className="object-cover"
       />
     </div>
   )

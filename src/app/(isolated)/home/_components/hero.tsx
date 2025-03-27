@@ -69,7 +69,7 @@ export function Hero() {
       </div>
       <div className="pointer-events-none aspect-[16/7] relative [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
         <Image
-          src="/images/hero.jpg"
+          src="/images/misc/hero.jpg"
           alt=""
           fill
           sizes="(max-width: 768px) 640px, 1080px"
@@ -77,7 +77,7 @@ export function Hero() {
           className="block border border-border rounded-lg object-cover object-top dark:hidden"
         />
         <Image
-          src="/images/hero-dark.jpg"
+          src="/images/misc/hero-dark.jpg"
           alt=""
           fill
           sizes="(max-width: 768px) 640px, 1080px"

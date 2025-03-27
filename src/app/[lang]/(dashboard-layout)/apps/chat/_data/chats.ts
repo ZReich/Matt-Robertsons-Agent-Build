@@ -57,7 +57,7 @@ export const chatsData: ChatType[] = [
       {
         id: "msg_20",
         senderId: "5",
-        text: "These mockups might help visualize the design.",
+        text: "This mockup might help visualize the design.",
         createdAt: new Date("2024-10-31T10:08:00Z"),
         status: "READ",
       },
@@ -68,9 +68,9 @@ export const chatsData: ChatType[] = [
           {
             id: "img_1",
             name: "mockup-home-page",
-            type: "image/png",
+            type: "image/svg",
             size: 512000,
-            url: "/images/mockup-home-page.png",
+            url: "/images/illustrations/misc/whiteboard.svg",
           },
         ],
         createdAt: new Date("2024-10-31T10:07:00Z"),
@@ -81,13 +81,13 @@ export const chatsData: ChatType[] = [
       {
         id: "1",
         name: "John Doe",
-        avatar: "/images/avatars/male-01.png",
+        avatar: "/images/avatars/male-01.svg",
         status: "ONLINE",
       },
       {
         id: "5",
         name: "Sarah Johnson",
-        avatar: "/images/avatars/female-02.png",
+        avatar: "/images/avatars/female-02.svg",
         status: "ONLINE",
       },
     ],
@@ -134,13 +134,13 @@ export const chatsData: ChatType[] = [
       {
         id: "1",
         name: "John Doe",
-        avatar: "/images/avatars/male-01.png",
+        avatar: "/images/avatars/male-01.svg",
         status: "ONLINE",
       },
       {
         id: "2",
         name: "Olivia Martinez",
-        avatar: "/images/avatars/female-03.png",
+        avatar: "/images/avatars/female-03.svg",
         status: "IDLE",
       },
     ],
@@ -154,7 +154,7 @@ export const chatsData: ChatType[] = [
       createdAt: new Date("2024-10-31T10:08:00Z"),
     },
     name: "Olivia Martinez",
-    avatar: "/images/avatars/female-03.png",
+    avatar: "/images/avatars/female-03.svg",
     status: "IDLE",
     messages: [
       {
@@ -190,13 +190,13 @@ export const chatsData: ChatType[] = [
       {
         id: "1",
         name: "John Doe",
-        avatar: "/images/avatars/male-01.png",
+        avatar: "/images/avatars/male-01.svg",
         status: "ONLINE",
       },
       {
         id: "2",
         name: "Olivia Martinez",
-        avatar: "/images/avatars/female-03.png",
+        avatar: "/images/avatars/female-03.svg",
         status: "IDLE",
       },
     ],
@@ -243,13 +243,13 @@ export const chatsData: ChatType[] = [
       {
         id: "3",
         name: "Michael Brown",
-        avatar: "/images/avatars/male-02.png",
+        avatar: "/images/avatars/male-02.svg",
         status: "ONLINE",
       },
       {
         id: "4",
         name: "Emily Smith",
-        avatar: "/images/avatars/female-01.png",
+        avatar: "/images/avatars/female-01.svg",
         status: "DO NOT DISTURB",
       },
     ],
@@ -262,7 +262,7 @@ export const chatsData: ChatType[] = [
       createdAt: new Date("2024-10-31T10:18:00Z"),
     },
     name: "Michael Johnson",
-    avatar: "/images/avatars/male-02.png",
+    avatar: "/images/avatars/male-02.svg",
     status: "ONLINE",
     messages: [
       {
@@ -298,13 +298,13 @@ export const chatsData: ChatType[] = [
       {
         id: "1",
         name: "John Doe",
-        avatar: "/images/avatars/male-01.png",
+        avatar: "/images/avatars/male-01.svg",
         status: "ONLINE",
       },
       {
         id: "3",
         name: "Michael Johnson",
-        avatar: "/images/avatars/male-02.png",
+        avatar: "/images/avatars/male-02.svg",
         status: "ONLINE",
       },
     ],

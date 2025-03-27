@@ -1,25 +1,29 @@
-"use client"
-
-import { useRouter } from "next/navigation"
-import { Wrench } from "lucide-react"
+import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 
 export function Maintenance() {
-  const router = useRouter()
-
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center text-center text-foreground bg-background p-4">
-      <Wrench size={120} className="text-primary mb-8" />
-      <h1 className="text-6xl font-bold mb-4">Under Maintenance</h1>
-      <h2 className="text-3xl font-semibold mb-6">We&apos;ll be back soon!</h2>
-      <p className="text-xl text-muted-foreground mb-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center gap-y-6 text-center text-foreground bg-background p-4">
+      <div className="flex flex-col-reverse justify-center items-center gap-y-6 md:flex-row md:text-start">
+        <Image
+          src="/images/illustrations/characters/character-01.svg"
+          alt=""
+          height={242}
+          width={171}
+        />
+        <h1 className="inline-grid text-3xl font-black">
+          Under Maintenance
+          <span className="text-xl font-semibold">
+            We&apos;ll be back soon!
+          </span>
+        </h1>
+      </div>
+      <p className="max-w-prose text-xl text-muted-foreground">
         We&apos;re currently performing some scheduled maintenance. We&apos;ll
         be back up shortly. Thank you for your patience!
       </p>
-      <Button size="lg" onClick={() => router.refresh()}>
-        Refresh Page
-      </Button>
+      <Button size="lg">Refresh Page</Button>
     </div>
   )
 }

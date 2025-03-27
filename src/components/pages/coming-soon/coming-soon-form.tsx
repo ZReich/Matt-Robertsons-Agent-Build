@@ -42,7 +42,7 @@ export function ComingSoonForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex gap-x-2 justify-center text-start mb-6"
+        className="flex gap-x-2 justify-center text-start"
       >
         <FormField
           control={form.control}

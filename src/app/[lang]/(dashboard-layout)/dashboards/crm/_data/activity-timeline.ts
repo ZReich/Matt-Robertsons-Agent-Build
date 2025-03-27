@@ -15,12 +15,12 @@ export const activityTimelineData: ActivityTimelineType = {
       assignedMembers: [
         {
           name: "Emily Smith",
-          avatar: "/images/avatars/female-01.png",
+          avatar: "/images/avatars/female-01.svg",
           href: "/",
         },
         {
           name: "Michael Brown",
-          avatar: "/images/avatars/male-02.png",
+          avatar: "/images/avatars/male-02.svg",
           href: "/",
         },
       ],
@@ -37,7 +37,7 @@ export const activityTimelineData: ActivityTimelineType = {
       assignedMembers: [
         {
           name: "Emily Smith",
-          avatar: "/images/avatars/female-01.png",
+          avatar: "/images/avatars/female-01.svg",
           href: "/",
         },
       ],
@@ -54,12 +54,12 @@ export const activityTimelineData: ActivityTimelineType = {
       assignedMembers: [
         {
           name: "Sarah Johnson",
-          avatar: "/images/avatars/female-02.png",
+          avatar: "/images/avatars/female-02.svg",
           href: "/",
         },
         {
           name: "Michael Brown",
-          avatar: "/images/avatars/male-02.png",
+          avatar: "/images/avatars/male-02.svg",
           href: "/",
         },
       ],
@@ -75,7 +75,7 @@ export const activityTimelineData: ActivityTimelineType = {
       assignedMembers: [
         {
           name: "Michael Brown",
-          avatar: "/images/avatars/male-02.png",
+          avatar: "/images/avatars/male-02.svg",
           href: "/",
         },
       ],
@@ -92,27 +92,27 @@ export const activityTimelineData: ActivityTimelineType = {
       assignedMembers: [
         {
           name: "John Doe",
-          avatar: "/images/avatars/male-01.png",
+          avatar: "/images/avatars/male-01.svg",
           href: "/",
         },
         {
           name: "Michael Brown",
-          avatar: "/images/avatars/male-02.png",
+          avatar: "/images/avatars/male-02.svg",
           href: "/",
         },
         {
           name: "Sarah Johnson",
-          avatar: "/images/avatars/female-02.png",
+          avatar: "/images/avatars/female-02.svg",
           href: "/",
         },
         {
           name: "Olivia Martinez",
-          avatar: "/images/avatars/female-03.png",
+          avatar: "/images/avatars/female-03.svg",
           href: "/",
         },
         {
           name: "Emily Smith",
-          avatar: "/images/avatars/female-01.png",
+          avatar: "/images/avatars/female-01.svg",
           href: "/",
         },
       ],
@@ -128,12 +128,12 @@ export const activityTimelineData: ActivityTimelineType = {
       assignedMembers: [
         {
           name: "John Doe",
-          avatar: "/images/avatars/male-01.png",
+          avatar: "/images/avatars/male-01.svg",
           href: "/",
         },
         {
           name: "Emily Smith",
-          avatar: "/images/avatars/female-01.png",
+          avatar: "/images/avatars/female-01.svg",
           href: "/",
         },
       ],

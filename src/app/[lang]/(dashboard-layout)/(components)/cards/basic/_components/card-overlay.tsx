@@ -13,7 +13,7 @@ export function CardOverlay() {
   return (
     <Card className="relative">
       <Image
-        src="/images/bluetooth-speaker.jpeg"
+        src="/images/misc/product-01.jpg"
         alt="Bluetooth Speaker"
         fill
         className="absolute h-full w-full rounded-md object-cover"

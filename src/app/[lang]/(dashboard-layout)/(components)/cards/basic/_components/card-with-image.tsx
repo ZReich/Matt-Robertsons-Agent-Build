@@ -15,25 +15,25 @@ export function CardWithImage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Wireless Bluetooth Speaker</CardTitle>
+        <CardTitle>Wireless Bluetooth Headphones</CardTitle>
         <CardDescription>
           High-quality sound, deep bass, and long battery life.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
+        <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg">
           <Image
-            src="/images/bluetooth-speaker.jpeg"
-            alt="Bluetooth Speaker"
+            src="/images/misc/product-01.jpg"
+            alt="Bluetooth Headphones"
             fill
-            className="h-full w-full rounded-md object-cover"
+            className="h-full w-full rounded-lg object-cover"
           />
         </AspectRatio>
       </CardContent>
       <CardFooter className="flex-col items-start space-y-3">
         <p>
           Experience immersive audio with this compact and stylish Bluetooth
-          speaker.
+          Headphones.
         </p>
         <div className="flex gap-x-2">
           <Button>Buy Now</Button>

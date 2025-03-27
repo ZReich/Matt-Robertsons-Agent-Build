@@ -35,7 +35,7 @@ export function UserDropdown({
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full"
+          className="rounded-lg"
           aria-label="User"
         >
           <Avatar className="size-9">
