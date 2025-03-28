@@ -57,7 +57,7 @@ export const kanbanData: ColumnType[] = [
           {
             id: "attachment-1",
             url: "/images/illustrations/scenes/scene-02.svg",
-            name: "images-business-03.jpeg",
+            name: "scene-02.svg",
             size: 524288,
             type: "image/jpeg",
           },
@@ -152,7 +152,42 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
+            id: "attachment-2",
+            url: "/images/illustrations/scenes/scene-01.svg",
+            name: "scene-01.svg",
+            size: 524288,
+            type: "image/jpeg",
+          },
+          {
+            id: "attachment-3",
+            url: "/images/illustrations/scenes/scene-02.svg",
+            name: "scene-02.svg",
+            size: 524288,
+            type: "image/jpeg",
+          },
+          {
             id: "attachment-4",
+            url: "/images/illustrations/scenes/scene-03.svg",
+            name: "scene-03.svg",
+            size: 524288,
+            type: "image/jpeg",
+          },
+          {
+            id: "attachment-5",
+            url: "/images/illustrations/scenes/scene-04.svg",
+            name: "scene-04.svg",
+            size: 524288,
+            type: "image/jpeg",
+          },
+          {
+            id: "attachment-6",
+            url: "/images/illustrations/scenes/scene-04.svg",
+            name: "scene-05.svg",
+            size: 524288,
+            type: "image/jpeg",
+          },
+          {
+            id: "attachment-7",
             url: "/api-specs.pdf",
             name: "api-specs.pdf",
             size: 2097152,
@@ -237,7 +272,7 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
-            id: "attachment-6",
+            id: "attachment-8",
             url: "/project-docs.pdf",
             name: "project-docs.pdf",
             size: 1572864,
@@ -295,7 +330,7 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
-            id: "attachment-7",
+            id: "attachment-9",
             url: "/bug-report.pdf",
             name: "bug-report.pdf",
             size: 512000,
@@ -347,7 +382,7 @@ export const kanbanData: ColumnType[] = [
         dueDate: new Date(),
         attachments: [
           {
-            id: "attachment-8",
+            id: "attachment-10",
             url: "/campaign-plan.pdf",
             name: "Campaign Plan",
             size: 1310720,

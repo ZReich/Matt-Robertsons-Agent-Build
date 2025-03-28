@@ -1,34 +1,36 @@
 "use client"
 
-import Image from "next/image"
-
 import type { TaskType } from "../types"
 
 import { CardContent, CardDescription, CardTitle } from "@/components/ui/card"
+import { MediaGrid } from "@/components/media-grid"
 
 interface KanbanTaskItemContentProps {
   task: TaskType
 }
 
 export function KanbanTaskItemContent({ task }: KanbanTaskItemContentProps) {
-  // Check for an image attachment
-  const imageAttachment = task.attachments.find((attachment) =>
-    attachment.type.includes("image")
-  )
+  // Get all media attachments (images & videos)
+  const mediaAttachments = task.attachments
+    .filter(
+      (attachment) =>
+        attachment.type.includes("image") || attachment.type.includes("video")
+    )
+    .map((attachment) => ({
+      src: attachment.url,
+      alt: attachment.name || "Task attachment",
+      type: attachment.type.includes("video")
+        ? ("VIDEO" as const)
+        : ("IMAGE" as const),
+    }))
 
   return (
     <CardContent>
       <CardTitle>{task.title}</CardTitle>
       <CardDescription>{task.description}</CardDescription>
-      {/* Display image attachment if available */}
-      {imageAttachment && (
-        <Image
-          src={imageAttachment.url}
-          alt={imageAttachment.name || "Task attachment"}
-          className="w-full h-auto mt-2 rounded-md"
-          height={288}
-          width={288}
-        />
+      {/* Display media grid if there are attachments */}
+      {mediaAttachments.length > 0 && (
+        <MediaGrid data={mediaAttachments} className="mt-2" />
       )}
     </CardContent>
   )
