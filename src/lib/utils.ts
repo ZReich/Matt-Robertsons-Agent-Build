@@ -88,8 +88,15 @@ export function formatFileType(type: string) {
   return type.slice(0, type.lastIndexOf("/"))
 }
 
-export function ratingToPercentage(rating: number, maxRating: number) {
-  return (rating / maxRating) * 100
+export function ratingToPercentage(
+  rating: number,
+  maxRating: number,
+  fractionDigits: number = 0
+) {
+  const value = ((rating / maxRating) * 100).toFixed(fractionDigits)
+  const result = value + "%"
+
+  return result
 }
 
 export function formatCurrency(
