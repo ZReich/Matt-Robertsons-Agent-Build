@@ -1138,6 +1138,19 @@ export function CreditTable() {
             </TableCell>
             <TableCell>Apache-2.0</TableCell>
           </TableRow>
+          <TableRow>
+            <TableCell>Open Peeps</TableCell>
+            <TableCell className="break-all">
+              <a
+                href="https://www.openpeeps.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://www.openpeeps.com/
+              </a>
+            </TableCell>
+            <TableCell>CC0</TableCell>
+          </TableRow>
         </TableBody>
       </Table>
     </ScrollArea>
