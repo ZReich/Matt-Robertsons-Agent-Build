@@ -2,7 +2,7 @@
 
 import type { DictionaryType } from "@/lib/get-dictionary"
 
-import { useSettings } from "@/hooks/use-settings"
+import { useIsVertical } from "@/hooks/use-is-vertical"
 import { Customizer } from "./customizer"
 import { HorizontalLayout } from "./horizontal-layout"
 import { VerticalLayout } from "./vertical-layout"
@@ -14,8 +14,7 @@ export function Layout({
   children: React.ReactNode
   dictionary: DictionaryType
 }) {
-  const { settings } = useSettings()
-  const isVertical = settings.layout === "vertical"
+  const isVertical = useIsVertical()
 
   return (
     <>

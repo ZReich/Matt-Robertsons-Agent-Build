@@ -42,6 +42,7 @@ export function EmailComposerForm() {
       content: "",
     },
   })
+
   const { isSubmitting } = form.formState
 
   function onSubmit(_data: EmailComposerFormType) {}

@@ -8,17 +8,6 @@ const nextConfig = {
   // See https://lucide.dev/guide/packages/lucide-react#nextjs-example
   transpilePackages: ["lucide-react"],
 
-  // See https://nextjs.org/docs/messages/next-image-unconfigured-host
-  // See https://nextjs.org/docs/pages/api-reference/components/image#remotepatterns
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
-  },
-
   // See https://nextjs.org/docs/app/building-your-application/routing/redirecting#redirects-in-nextconfigjs
   async redirects() {
     return [

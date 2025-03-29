@@ -14,13 +14,13 @@ export function CardOverlay() {
     <Card className="relative">
       <Image
         src="/images/misc/product-01.jpg"
-        alt="Bluetooth Speaker"
+        alt=""
         fill
         className="absolute h-full w-full rounded-md object-cover"
       />
       <div className="h-full w-full relative flex flex-col justify-between z-20">
         <CardHeader>
-          <CardTitle>Wireless Bluetooth Speaker</CardTitle>
+          <CardTitle>Bluetooth Headphones</CardTitle>
           <CardDescription>
             High-quality sound, deep bass, and long battery life.
           </CardDescription>

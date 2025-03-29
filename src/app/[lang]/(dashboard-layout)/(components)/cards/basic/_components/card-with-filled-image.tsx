@@ -15,16 +15,17 @@ export function CardWithFilledImage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Smartwatch</CardTitle>
+        <CardTitle>Smartphone</CardTitle>
         <CardDescription>
-          Stay connected, track fitness, and enjoy seamless notifications.
+          Sleek design, powerful performance, and cutting-edge camera
+          technology.
         </CardDescription>
       </CardHeader>
       <CardContent className="px-0">
         <AspectRatio ratio={16 / 9} className="bg-muted">
           <Image
-            src="/images/misc/product-02.jpg"
-            alt="Smartwatch"
+            src="/images/misc/product-04.jpg"
+            alt=""
             fill
             className="h-full w-full object-cover"
           />
@@ -32,7 +33,8 @@ export function CardWithFilledImage() {
       </CardContent>
       <CardFooter className="flex-col items-start space-y-3">
         <p>
-          Enhance your lifestyle with this sleek and feature-packed smartwatch.
+          Stay connected and enjoy seamless multitasking with this premium
+          smartphone.
         </p>
         <div className="flex gap-x-2">
           <Button>Buy Now</Button>

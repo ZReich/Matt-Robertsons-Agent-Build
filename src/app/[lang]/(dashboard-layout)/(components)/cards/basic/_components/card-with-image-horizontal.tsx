@@ -17,19 +17,20 @@ export function CardWithImageHorizontal() {
       <CardHeader className="col-span-2">
         <AspectRatio ratio={1 / 1} className="bg-muted rounded-lg">
           <Image
-            src="/images/misc/product-04.jpg"
-            alt="Wireless Keyboard"
+            src="/images/misc/product-02.jpg"
+            alt=""
             fill
             className="h-full w-full rounded-lg object-cover"
           />
         </AspectRatio>
       </CardHeader>
-      <div className="col-span-3 flex flex-col justify-between gap-y-3 py-6">
-        <CardContent className="p-0">
-          <CardTitle>Wireless Keyboard</CardTitle>
-          <CardDescription>
-            Ergonomic design, responsive keys, and seamless Bluetooth
-            connectivity.
+      <div className="col-span-3 flex flex-col justify-between gap-y-3 py-6 pe-6">
+        <CardContent className="p-0 space-y-1.5">
+          <CardTitle>Smartwatch</CardTitle>
+          <CardDescription className="line-clamp-3">
+            Stay connected and track your fitness goals with this stylish
+            smartwatch featuring heart rate monitoring, GPS, and seamless
+            smartphone integration.
           </CardDescription>
         </CardContent>
         <CardFooter className="gap-x-3 p-0">

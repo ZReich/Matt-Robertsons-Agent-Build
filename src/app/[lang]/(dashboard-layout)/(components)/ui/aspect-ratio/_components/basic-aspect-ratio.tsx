@@ -12,7 +12,7 @@ export function BasicAspectRatio() {
       <CardContent>
         <AspectRatio ratio={16 / 9} className="bg-muted">
           <Image
-            src="https://images.unsplash.com/photo-1635315619556-5826839a1bea"
+            src="/images/misc/product-01.jpg"
             alt=""
             fill
             className="h-full w-full rounded-md object-cover"
