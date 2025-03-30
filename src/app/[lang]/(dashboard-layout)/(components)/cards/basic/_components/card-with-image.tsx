@@ -26,6 +26,8 @@ export function CardWithImage() {
             src="/images/misc/product-01.jpg"
             alt=""
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
             className="h-full w-full rounded-lg object-cover"
           />
         </AspectRatio>

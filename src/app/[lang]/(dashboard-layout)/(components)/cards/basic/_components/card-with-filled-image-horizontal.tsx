@@ -13,14 +13,15 @@ import {
 
 export function CardWithFilledImageHorizontal() {
   return (
-    <Card className="grid grid-cols-5 overflow-hidden">
+    <Card className="grid grid-cols-5">
       <CardHeader className="col-span-2 p-0 pe-6">
         <AspectRatio ratio={1 / 1} className="bg-muted">
           <Image
             src="/images/misc/product-03.jpg"
             alt=""
             fill
-            className="h-full w-full object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="h-full w-full rounded-s-lg object-cover"
           />
         </AspectRatio>
       </CardHeader>

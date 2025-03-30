@@ -16,7 +16,9 @@ export function CardOverlay() {
         src="/images/misc/product-01.jpg"
         alt=""
         fill
-        className="absolute h-full w-full rounded-md object-cover"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        priority
+        className="h-full w-full rounded-lg object-cover"
       />
       <div className="h-full w-full relative flex flex-col justify-between z-20">
         <CardHeader>

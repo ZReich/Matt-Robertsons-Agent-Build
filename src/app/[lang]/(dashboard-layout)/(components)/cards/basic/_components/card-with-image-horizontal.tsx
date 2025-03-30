@@ -20,6 +20,7 @@ export function CardWithImageHorizontal() {
             src="/images/misc/product-02.jpg"
             alt=""
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="h-full w-full rounded-lg object-cover"
           />
         </AspectRatio>
