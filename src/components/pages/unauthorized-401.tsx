@@ -16,6 +16,7 @@ export function Unauthorized401({ locale }: { locale: LocaleType }) {
           alt=""
           height={251}
           width={170}
+          priority
         />
         <h1 className="inline-grid text-6xl font-black">
           401

@@ -11,6 +11,7 @@ export function Maintenance() {
           alt=""
           height={242}
           width={171}
+          priority
         />
         <h1 className="inline-grid text-3xl font-black">
           Under Maintenance

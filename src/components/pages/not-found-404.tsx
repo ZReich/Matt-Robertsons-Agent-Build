@@ -10,9 +10,11 @@ export function NotFound404() {
         <Image
           src="/images/illustrations/characters/character-02.svg"
           alt=""
-          height={223}
+          height={232}
           width={249}
+          priority
         />
+
         <h1 className="inline-grid text-6xl font-black">
           404 <span className="text-3xl font-semibold">Page Not Found</span>
         </h1>
