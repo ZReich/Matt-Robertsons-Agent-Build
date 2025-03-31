@@ -108,3 +108,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+aside.EmojiPickerReact {
+  /* Emoji Picker vars */
+  --epr-emoji-size: 2rem;
+  --epr-emoji-padding: 0.25rem;
+  --epr-emoji-gap: 0.5rem;
+  --epr-hover-bg-color: hsl(var(--accent));
+  --epr-focus-bg-color: hsl(var(--accent));
+  --epr-bg-color: hsl(var(--background));
+  --epr-reactions-bg-color: hsl(var(--background));
+  --epr-highlight-color: hsl(var(--primary));
+  --epr-category-icon-active-color: hsl(var(--primary));
+  --epr-category-label-bg-color: hsl(var(--background));
+  --epr-text-color: hsl(var(--foreground));
+  --epr-horizontal-padding: 0.75rem;
+  --epr-search-input-bg-color: hsl(var(--muted));
+  --epr-search-input-border-radius: var(--radius);
+  --epr-search-input-padding: 0 40px;
+  --epr-preview-text-size: 0.875rem;
+  --epr-header-padding: var(--epr-horizontal-padding)
+    var(--epr-horizontal-padding);
+  --epr-picker-border-radius: var(--radius);
+  --epr-picker-border-color: hsl(var(--border));
+  --epr-skin-tone-outer-border-color: hsl(var(--border));
+}
+.EmojiPickerReact .epr-btn {
+  border-radius: var(--radius);
+}
+.EmojiPickerReact .epr-btn:focus::before {
+  border-radius: var(--radius);
+  border-width: 1px;
+}

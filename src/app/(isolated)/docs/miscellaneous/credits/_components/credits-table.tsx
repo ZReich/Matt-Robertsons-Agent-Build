@@ -47,27 +47,14 @@ export function CreditTable() {
             <TableCell>ISC</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>@emoji-mart/data</TableCell>
+            <TableCell>emoji-picker-react</TableCell>
             <TableCell className="break-all">
               <a
-                href="https://github.com/missive/emoji-mart"
+                href="https://github.com/ealush/emoji-picker-react"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://github.com/missive/emoji-mart
-              </a>
-            </TableCell>
-            <TableCell>MIT</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>@emoji-mart/react</TableCell>
-            <TableCell className="break-all">
-              <a
-                href="https://github.com/missive/emoji-mart"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://github.com/missive/emoji-mart
+                https://github.com/ealush/emoji-picker-react
               </a>
             </TableCell>
             <TableCell>MIT</TableCell>
@@ -705,19 +692,6 @@ export function CreditTable() {
                 rel="noopener noreferrer"
               >
                 https://github.com/davidcetinkaya/embla-carousel
-              </a>
-            </TableCell>
-            <TableCell>MIT</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>emoji-mart</TableCell>
-            <TableCell className="break-all">
-              <a
-                href="https://github.com/missive/emoji-mart"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://github.com/missive/emoji-mart
               </a>
             </TableCell>
             <TableCell>MIT</TableCell>

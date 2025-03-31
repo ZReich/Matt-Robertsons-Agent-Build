@@ -1,15 +1,16 @@
-// Refer to Emoji Mart README.md file for more details https://github.com/missive/emoji-mart
+// Refer to emoji-picker-react README.md file for more details https://github.com/ealush/emoji-picker-react
 "use client"
 
-import { useParams } from "next/navigation"
-import data from "@emoji-mart/data"
-import Picker from "@emoji-mart/react"
+import dynamic from "next/dynamic"
+import { Theme } from "emoji-picker-react"
 import { Smile } from "lucide-react"
 
-import type { LocaleType } from "@/types"
-import type { PickerProps } from "emoji-mart"
+import type { ButtonProps } from "@/components/ui/button"
+import type { ComponentProps, ComponentPropsWithoutRef } from "react"
 
-import { useSettings } from "@/hooks/use-settings"
+import { cn } from "@/lib/utils"
+
+import { useIsDarkMode } from "@/hooks/use-mode"
 import { buttonVariants } from "@/components/ui/button"
 import {
   Popover,
@@ -17,32 +18,92 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-export function EmojiPicker(props: Omit<PickerProps, "data">) {
-  const { settings } = useSettings()
-  const params = useParams()
+// Avoid errors such as "document is not defined" on the server side
+// See https://github.com/ealush/emoji-picker-react?tab=readme-ov-file#nextjs
+const Picker = dynamic(
+  () => {
+    return import("emoji-picker-react")
+  },
+  { ssr: false }
+)
 
-  const mode = settings.mode
-  const locale = params.locale as LocaleType
+export interface EmojiPicker extends ComponentProps<typeof Picker> {
+  popoverContentClassName?: string
+  popoverContentOptions?: ComponentPropsWithoutRef<typeof PopoverContent>
+  buttonClassName?: string
+  buttonOptions?: ButtonProps
+  placeholder?: string
+}
+
+export function EmojiPicker({
+  popoverContentClassName,
+  popoverContentOptions,
+  buttonClassName,
+  buttonOptions,
+  ...props
+}: EmojiPicker) {
+  const isDarkMode = useIsDarkMode()
+
+  const theme = isDarkMode ? Theme.DARK : Theme.LIGHT
 
   return (
     <Popover>
       <PopoverTrigger
-        className={buttonVariants({ variant: "ghost", size: "icon" })}
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "icon" }),
+          buttonClassName
+        )}
+        {...buttonOptions}
         aria-label="Emoji"
       >
         <Smile className="h-4 w-4" />
       </PopoverTrigger>
-      <PopoverContent className="w-fit p-0" align="start">
+      <PopoverContent
+        className={cn("w-auto p-0", popoverContentClassName)}
+        align="start"
+        {...popoverContentOptions}
+      >
+        <Picker theme={theme} searchPlaceholder="Search..." {...props} />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+export function ReactionPicker({
+  popoverContentClassName,
+  popoverContentOptions,
+  buttonClassName,
+  buttonOptions,
+  ...props
+}: EmojiPicker) {
+  const isDarkMode = useIsDarkMode()
+
+  const theme = isDarkMode ? Theme.DARK : Theme.LIGHT
+
+  return (
+    <Popover>
+      <PopoverTrigger
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "icon" }),
+          buttonClassName
+        )}
+        {...buttonOptions}
+        aria-label="Emoji"
+      >
+        <Smile className="h-4 w-4" />
+      </PopoverTrigger>
+      <PopoverContent
+        className={cn("w-auto p-0", popoverContentClassName)}
+        align="start"
+        {...popoverContentOptions}
+      >
         <Picker
-          theme={mode === "system" ? "auto" : mode}
-          locale={locale}
-          previewPosition="none"
-          icons="outline"
-          emojiSize={16}
-          emojiButtonRadius={`${settings.radius}rem`}
-          autoFocus
+          theme={theme}
+          searchPlaceholder="Search..."
+          lazyLoadEmojis
+          allowExpandReactions={false}
           {...props}
-          data={data}
+          reactionsDefaultOpen
         />
       </PopoverContent>
     </Popover>

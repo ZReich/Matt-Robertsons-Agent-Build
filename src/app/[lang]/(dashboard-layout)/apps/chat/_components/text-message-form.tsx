@@ -1,11 +1,9 @@
 "use client"
 
-import { useParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Send } from "lucide-react"
 
-import type { LocaleType } from "@/types"
 import type { TextMessageFormType } from "../types"
 
 import { TextMessageSchema } from "../_schemas/text-message-schema"
@@ -23,7 +21,6 @@ import {
 import { Input } from "@/components/ui/input"
 
 export function TextMessageForm() {
-  const params = useParams()
   const { handleAddTextMessage } = useChatContext()
   const form = useForm<TextMessageFormType>({
     resolver: zodResolver(TextMessageSchema),
@@ -35,7 +32,6 @@ export function TextMessageForm() {
   const text = form.watch("text")
   const { isSubmitting, isValid } = form.formState
   const isDisabled = isSubmitting || !isValid // Disable button if form is invalid or submitting
-  const locale = params.lang as LocaleType
 
   const onSubmit = async (data: TextMessageFormType) => {
     handleAddTextMessage(data.text)
@@ -49,9 +45,8 @@ export function TextMessageForm() {
         className="w-full flex justify-center items-center gap-1.5"
       >
         <EmojiPicker
-          locale={locale}
-          onEmojiSelect={(e) => {
-            form.setValue("text", text + e.native)
+          onEmojiClick={(e) => {
+            form.setValue("text", text + e.emoji)
             form.trigger()
           }}
         />
