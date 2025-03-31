@@ -6,11 +6,10 @@ import { EmailComposer } from "../_components/email-composer"
 import { EmailList } from "../_components/email-list"
 import { EmailNotFound } from "../_components/email-not-found"
 
-export default async function EmailPage({
-  params,
-}: {
-  params: { segment: string }
+export default async function EmailPage(props: {
+  params: Promise<{ segment: string }>
 }) {
+  const params = await props.params
   const segmentParam = params.segment
 
   // If the segment is 'compose', render the email composer form to create a new email

@@ -1,7 +1,6 @@
 "use client"
 
 import { useLayoutEffect, useState } from "react"
-import { CopyToClipboard } from "react-copy-to-clipboard"
 import { bundledLanguages } from "shiki/bundle/web"
 
 import type { JSX } from "react"
@@ -30,18 +29,25 @@ export function CodeBlock({
     void highlight(children, language).then(setNodes)
   }, [children, language])
 
-  const handleCopy = () => {
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(children)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error("Failed to copy text: ", error)
+    }
   }
 
   return (
     <div className="relative">
-      <CopyToClipboard text={children} onCopy={handleCopy}>
-        <Button variant="secondary" className="absolute end-2 top-2 w-16">
-          {copied ? "Copied!" : "Copy"}
-        </Button>
-      </CopyToClipboard>
+      <Button
+        variant="secondary"
+        className="absolute end-2 top-2 w-16"
+        onClick={handleCopy}
+      >
+        {copied ? "Copied!" : "Copy"}
+      </Button>
       {nodes}
     </div>
   )

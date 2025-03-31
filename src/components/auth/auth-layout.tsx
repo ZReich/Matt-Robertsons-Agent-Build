@@ -72,6 +72,7 @@ const AuthImage = forwardRef<HTMLDivElement, AuthImageProps>(
         alt="Image"
         fill
         sizes="(max-width: 1200px) 60vw, 38vw"
+        priority
         className="object-cover"
       />
     </div>

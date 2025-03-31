@@ -41,13 +41,14 @@ const cairoFont = Cairo({
   variable: "--font-cario",
 })
 
-export default async function RootLayout({
-  children,
-  params,
-}: {
+export default async function RootLayout(props: {
   children: React.ReactNode
-  params: { lang: LocaleType }
+  params: Promise<{ lang: LocaleType }>
 }) {
+  const params = await props.params
+
+  const { children } = props
+
   const session = await getServerSession(authOptions)
   const direction = i18n.localeDirection[params.lang]
 
