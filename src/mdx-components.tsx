@@ -29,7 +29,8 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ),
     code: ({ children, className }) => {
       if (className) {
-        return <CodeBlock className={className}>{children as string}</CodeBlock>
+        const lang = className?.replace(/language-/, "") || "markdown"
+        return <CodeBlock lang={lang}>{children as string}</CodeBlock>
       }
       return (
         <code className="px-3 py-1 bg-primary/5 text-foreground rounded-md before:content-none after:content-none">
