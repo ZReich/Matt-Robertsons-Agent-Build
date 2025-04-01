@@ -106,7 +106,6 @@ const DateTimePicker = forwardRef<HTMLButtonElement, DateTimePickerProps>(
           {...popoverContentOptions}
         >
           <Calendar
-            initialFocus
             mode="single"
             selected={selectedDate}
             onSelect={handleDateSelect}

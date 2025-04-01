@@ -81,7 +81,6 @@ const DateRangePicker = forwardRef<HTMLButtonElement, DateRangePickerProps>(
           {...popoverContentOptions}
         >
           <Calendar
-            initialFocus
             mode="range"
             selected={value}
             onSelect={onValueChange}

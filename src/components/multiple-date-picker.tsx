@@ -78,7 +78,6 @@ const MultipleDatesPicker = forwardRef<
           {...popoverContentOptions}
         >
           <Calendar
-            initialFocus
             mode="multiple"
             selected={value}
             onSelect={onValueChange}

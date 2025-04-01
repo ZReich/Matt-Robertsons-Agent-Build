@@ -3,6 +3,7 @@
 import Link from "next/link"
 
 import type { LocaleType } from "@/types"
+import type { ParamValue } from "next/dist/server/request/params"
 import type { EmailSidebarItemType } from "../types"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
@@ -15,7 +16,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface EmailSidebarItemProps {
   item: EmailSidebarItemType
-  segmentParam: string | string[]
+  segmentParam: ParamValue
   locale: LocaleType
 }
 
