@@ -1,4 +1,3 @@
-import { ThemeProvider } from "../_contexts/theme-context"
 import { ThemeCustomizer } from "./theme-customizer"
 import { ThemePreview } from "./theme-preview"
 
@@ -16,12 +15,10 @@ export function ThemeCustomization() {
           identity effortlessly.
         </p>
       </div>
-      <ThemeProvider>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <ThemeCustomizer />
-          <ThemePreview />
-        </div>
-      </ThemeProvider>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <ThemeCustomizer />
+        <ThemePreview />
+      </div>
     </section>
   )
 }

@@ -15,7 +15,7 @@ export function ToolsAndTechnologiesItem({
     <article key={item.title}>
       <Link
         href={item.href}
-        className="size-fit flex flex-col justify-center items-center gap-2 text-primary"
+        className="size-fit flex flex-col justify-center items-center gap-2"
       >
         <div
           className={cn(

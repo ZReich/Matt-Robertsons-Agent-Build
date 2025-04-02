@@ -1,26 +1,28 @@
 "use client"
 
-import { baseColors } from "@/configs/base-colors"
+import { useEffect } from "react"
 
-import { useIsDarkMode } from "@/hooks/use-mode"
 import { useSettings } from "@/hooks/use-settings"
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { settings } = useSettings()
-  const isDarkMode = useIsDarkMode()
 
-  const rootElement = document.documentElement
-  const currentTheme = baseColors.find((color) => color.name === settings.theme)
-  const cssVars: Record<string, string> =
-    currentTheme?.cssVars?.[isDarkMode ? "dark" : "light"] || {}
+  useEffect(() => {
+    const bodyElement = document.body
 
-  // Add radius to cssVars
-  cssVars.radius = `${settings.radius ?? 0.5}rem`
+    // Update class names in the <body> tag
+    Array.from(bodyElement.classList)
+      .filter(
+        (className) =>
+          className.startsWith("theme-") || className.startsWith("radius-")
+      )
+      .forEach((className) => {
+        bodyElement.classList.remove(className)
+      })
 
-  // Apply the styles to the <html> tag
-  Object.entries(cssVars).forEach(([key, value]) => {
-    rootElement.style.setProperty(`--${key}`, value)
-  })
+    bodyElement.classList.add(`theme-${settings.theme}`)
+    bodyElement.classList.add(`radius-${settings.radius ?? 0.5}`)
+  }, [settings.theme, settings.radius])
 
   return <>{children}</>
 }

@@ -1,7 +1,6 @@
 import { cva } from "class-variance-authority"
 import { TrendingDown, TrendingUp } from "lucide-react"
 
-import type { BadgeProps } from "@/components/ui/badge"
 import type { VariantProps } from "class-variance-authority"
 
 import { cn, formatPercent, isNonNegative } from "@/lib/utils"
@@ -14,7 +13,7 @@ const percentageChangeBadgeVariants = cva("gap-0", {
       default:
         "data-[non-negative-change=true]:bg-success data-[non-negative-change=false]:bg-destructive",
       ghost:
-        "bg-transparant text-sm text-foreground data-[non-negative-change=true]:text-success data-[non-negative-change=false]:text-destructive",
+        "bg-transparent text-sm text-foreground data-[non-negative-change=true]:text-success data-[non-negative-change=false]:text-destructive",
     },
   },
   defaultVariants: {
@@ -23,7 +22,7 @@ const percentageChangeBadgeVariants = cva("gap-0", {
 })
 
 export interface PercentageChangeBadgeProps
-  extends Omit<BadgeProps, "variant">,
+  extends Omit<React.ComponentProps<typeof Badge>, "variant">,
     VariantProps<typeof percentageChangeBadgeVariants> {
   value: number
 }

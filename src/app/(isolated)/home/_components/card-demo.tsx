@@ -1,6 +1,5 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ExternalLink } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -21,13 +20,13 @@ export function CardDemo({ title, href, imgSrc }: CardDemoProps) {
         <Link
           href={href}
           className={cn(
-            "shrink-0",
             buttonVariants({
-              size: "icon",
-            })
+              variant: "link",
+            }),
+            "shrink-0 size-fit p-0"
           )}
         >
-          <ExternalLink className="h-4 w-4" />
+          View Demo
         </Link>
       </div>
       <AspectRatio ratio={16 / 9} className="bg-muted m-4 mb-0 rounded-t-md">

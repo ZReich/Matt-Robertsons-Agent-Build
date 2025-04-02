@@ -1,18 +1,22 @@
 "use client"
 
+import { useEffect } from "react"
+
 import { useIsDarkMode } from "@/hooks/use-mode"
 
 const defaultModes = ["light", "dark"]
 
 export function ModeProvider({ children }: { children: React.ReactNode }) {
   const isDarkMode = useIsDarkMode()
-
   const mode = isDarkMode ? "dark" : "light"
 
-  // Update class name in the <html> tag
-  const rootElement = document.documentElement
-  rootElement.classList.remove(...defaultModes)
-  if (mode) rootElement.classList.add(mode)
+  useEffect(() => {
+    const rootElement = document.documentElement
+
+    // Update class names in the <html> tag
+    rootElement.classList.remove(...defaultModes)
+    rootElement.classList.add(mode)
+  }, [mode])
 
   return <>{children}</>
 }

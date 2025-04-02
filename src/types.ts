@@ -1,7 +1,7 @@
-import type { baseColors } from "@/configs/base-colors"
 import type { i18n } from "@/configs/i18n"
 import type { LucideIcon, icons } from "lucide-react"
 import type { z } from "zod"
+import type { radii, themes } from "./configs/themes"
 import type { ComingSoonSchema } from "./schemas/coming-soon-schema"
 import type { ForgotPasswordSchema } from "./schemas/forgot-passward-schema"
 import type { NewPasswordSchema } from "./schemas/new-passward-schema"
@@ -19,12 +19,14 @@ export type DirectionType = "ltr" | "rtl"
 
 export type LocaleType = (typeof i18n)["locales"][number]
 
-export type BaseColorType = (typeof baseColors)[number]
+export type ThemeType = keyof typeof themes
+
+export type RadiusType = (typeof radii)[number]
 
 export type SettingsType = {
-  theme: BaseColorType["name"]
+  theme: ThemeType
   mode: ModeType
-  radius: number
+  radius: RadiusType
   layout: LayoutType
   locale: LocaleType
 }
