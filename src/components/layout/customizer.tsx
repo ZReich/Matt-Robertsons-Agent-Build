@@ -199,12 +199,12 @@ export function Customizer() {
                         variant={isActive ? "secondary" : "default"}
                         style={
                           {
-                            "--primary":
+                            "--color-primary": `hsl(${
                               themes[color.name].activeColor[
                                 settings.mode === "dark" ? "dark" : "light"
-                              ],
-                            "--primary-foreground":
-                              themes[color.name].activeColor["foreground"],
+                              ]
+                            })`,
+                            "--color-primary-foreground": `hsl(${themes[color.name].activeColor["foreground"]})`,
                           } as CSSProperties
                         }
                         onClick={() =>
