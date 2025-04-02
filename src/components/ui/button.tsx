@@ -1,16 +1,14 @@
-import { forwardRef } from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"
 import { LoaderCircle } from "lucide-react"
 
 import type { IconType } from "@/types"
 import type { VariantProps } from "class-variance-authority"
-import type { ButtonHTMLAttributes } from "react"
 
 import { cn } from "@/lib/utils"
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+export const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors cursor-pointer focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -39,25 +37,28 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
+  extends React.ComponentProps<"button">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+export function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}: ButtonProps) {
+  const Comp = asChild ? Slot : "button"
 
-    return (
-      <Comp
-        ref={ref}
-        className={cn(buttonVariants({ variant, size, className }))}
-        {...props}
-      />
-    )
-  }
-)
-Button.displayName = "Button"
+  return (
+    <Comp
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
 
 export interface ButtonLoadingProps extends ButtonProps {
   isLoading: boolean
@@ -66,48 +67,40 @@ export interface ButtonLoadingProps extends ButtonProps {
   icon?: IconType
 }
 
-const ButtonLoading = forwardRef<HTMLButtonElement, ButtonLoadingProps>(
-  (
-    {
-      isLoading,
-      disabled,
-      children,
-      loadingIconClassName,
-      iconClassName,
-      icon: Icon,
-      ...props
-    },
-    ref
-  ) => {
-    let RenderedIcon
-    if (isLoading) {
-      RenderedIcon = (
-        <LoaderCircle
-          className={cn("me-2 size-4 animate-spin", loadingIconClassName)}
-          aria-hidden
-        />
-      )
-    } else if (Icon) {
-      RenderedIcon = (
-        <Icon className={cn("me-2 size-4", iconClassName)} aria-hidden />
-      )
-    }
-
-    return (
-      <Button
-        ref={ref}
-        type="submit"
-        disabled={isLoading || disabled}
-        aria-live="assertive"
-        aria-label={isLoading ? "Loading" : props["aria-label"]}
-        {...props}
-      >
-        {RenderedIcon}
-        {children}
-      </Button>
+export function ButtonLoading({
+  isLoading,
+  disabled,
+  children,
+  loadingIconClassName,
+  iconClassName,
+  icon: Icon,
+  ...props
+}: ButtonLoadingProps) {
+  let RenderedIcon
+  if (isLoading) {
+    RenderedIcon = (
+      <LoaderCircle
+        className={cn("me-2 size-4 animate-spin", loadingIconClassName)}
+        aria-hidden
+      />
+    )
+  } else if (Icon) {
+    RenderedIcon = (
+      <Icon className={cn("me-2 size-4", iconClassName)} aria-hidden />
     )
   }
-)
-ButtonLoading.displayName = "ButtonLoading"
 
-export { Button, ButtonLoading, buttonVariants }
+  return (
+    <Button
+      data-slot="button-loading"
+      type="submit"
+      disabled={isLoading || disabled}
+      aria-live="assertive"
+      aria-label={isLoading ? "Loading" : props["aria-label"]}
+      {...props}
+    >
+      {RenderedIcon}
+      {children}
+    </Button>
+  )
+}

@@ -1,17 +1,11 @@
 "use client"
 
-import { forwardRef, memo } from "react"
 import Link from "next/link"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 import { cva } from "class-variance-authority"
 
 import type { VariantProps } from "class-variance-authority"
-import type {
-  ComponentPropsWithoutRef,
-  ElementRef,
-  HTMLAttributes,
-  MouseEvent,
-} from "react"
+import type { HTMLAttributes, MouseEvent } from "react"
 
 import { cn, getInitials } from "@/lib/utils"
 
@@ -22,47 +16,49 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-const Avatar = forwardRef<
-  ElementRef<typeof AvatarPrimitive.Root>,
-  ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
-    ref={ref}
-    className={cn("relative flex h-10 w-10 shrink-0", className)}
-    {...props}
-  />
-))
-Avatar.displayName = AvatarPrimitive.Root.displayName
+export function Avatar({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+  return (
+    <AvatarPrimitive.Root
+      data-slot="avatar"
+      className={cn("relative flex h-10 w-10 shrink-0", className)}
+      {...props}
+    />
+  )
+}
 
-const AvatarImage = forwardRef<
-  ElementRef<typeof AvatarPrimitive.Image>,
-  ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn(
-      "aspect-square h-full w-full bg-muted rounded-lg object-cover",
-      className
-    )}
-    {...props}
-  />
-))
-AvatarImage.displayName = AvatarPrimitive.Image.displayName
+export function AvatarImage({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+  return (
+    <AvatarPrimitive.Image
+      data-slot="avatar-image"
+      className={cn(
+        "aspect-square h-full w-full bg-muted rounded-lg object-cover",
+        className
+      )}
+      {...props}
+    />
+  )
+}
 
-const AvatarFallback = forwardRef<
-  ElementRef<typeof AvatarPrimitive.Fallback>,
-  ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Fallback
-    ref={ref}
-    className={cn(
-      "flex h-full w-full items-center justify-center bg-muted rounded-lg",
-      className
-    )}
-    {...props}
-  />
-))
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+export function AvatarFallback({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+  return (
+    <AvatarPrimitive.Fallback
+      className={cn(
+        "flex h-full w-full items-center justify-center bg-muted rounded-lg",
+        className
+      )}
+      {...props}
+    />
+  )
+}
 
 const avatarStackVariants = cva(
   "transition duration-300 hover:scale-105 hover:z-10",
@@ -88,40 +84,28 @@ export interface AvatarStackProps
   onMoreButtonClick?: (event: MouseEvent<HTMLButtonElement>) => void
 }
 
-const AvatarStack = memo(
-  ({
-    avatars,
-    limit = 4,
-    size,
-    onMoreButtonClick,
-    className,
-    ...props
-  }: AvatarStackProps) => {
-    const limitedAvatars = avatars.slice(0, limit)
-    const remainingCount = avatars.length - limitedAvatars.length
+export function AvatarStack({
+  avatars,
+  limit = 4,
+  size,
+  onMoreButtonClick,
+  className,
+  ...props
+}: AvatarStackProps) {
+  const limitedAvatars = avatars.slice(0, limit)
+  const remainingCount = avatars.length - limitedAvatars.length
 
-    return (
-      <div className={cn("flex", className)} {...props}>
-        {limitedAvatars.slice(0, limit).map((avatar) => (
-          <TooltipProvider
-            key={`${avatar.alt}-${avatar.src}`}
-            delayDuration={200}
-          >
-            <Tooltip>
-              <TooltipTrigger className="-ms-1 -me-1">
-                {avatar.href ? (
-                  <Link href={avatar.href}>
-                    <Avatar className={avatarStackVariants({ size })}>
-                      <AvatarImage
-                        src={avatar.src}
-                        className="border-2 border-background"
-                      />
-                      <AvatarFallback className="border-2 border-background">
-                        {getInitials(avatar.alt)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Link>
-                ) : (
+  return (
+    <div className={cn("flex", className)} {...props}>
+      {limitedAvatars.slice(0, limit).map((avatar) => (
+        <TooltipProvider
+          key={`${avatar.alt}-${avatar.src}`}
+          delayDuration={200}
+        >
+          <Tooltip>
+            <TooltipTrigger className="-ms-1 -me-1">
+              {avatar.href ? (
+                <Link href={avatar.href}>
                   <Avatar className={avatarStackVariants({ size })}>
                     <AvatarImage
                       src={avatar.src}
@@ -131,34 +115,41 @@ const AvatarStack = memo(
                       {getInitials(avatar.alt)}
                     </AvatarFallback>
                   </Avatar>
-                )}
-              </TooltipTrigger>
-              <TooltipContent className="capitalize -me-[1.23rem]">
-                <p>{avatar.alt}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ))}
+                </Link>
+              ) : (
+                <Avatar className={avatarStackVariants({ size })}>
+                  <AvatarImage
+                    src={avatar.src}
+                    className="border-2 border-background"
+                  />
+                  <AvatarFallback className="border-2 border-background">
+                    {getInitials(avatar.alt)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            </TooltipTrigger>
+            <TooltipContent className="capitalize -me-[1.23rem]">
+              <p>{avatar.alt}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ))}
 
-        {/* Show "+N" button if avatars exceed the limit */}
-        {remainingCount > 0 && (
-          <button
-            type="button"
-            onClick={onMoreButtonClick}
-            className="-ms-1 -me-1"
-            aria-label="Show more"
-          >
-            <Avatar className={avatarStackVariants({ size })}>
-              <AvatarFallback className="border-2 border-background">
-                +{remainingCount}
-              </AvatarFallback>
-            </Avatar>
-          </button>
-        )}
-      </div>
-    )
-  }
-)
-AvatarStack.displayName = "AvatarStack"
-
-export { Avatar, AvatarImage, AvatarFallback, AvatarStack }
+      {/* Show "+N" button if avatars exceed the limit */}
+      {remainingCount > 0 && (
+        <button
+          type="button"
+          onClick={onMoreButtonClick}
+          className="-ms-1 -me-1"
+          aria-label="Show more"
+        >
+          <Avatar className={avatarStackVariants({ size })}>
+            <AvatarFallback className="border-2 border-background">
+              +{remainingCount}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+      )}
+    </div>
+  )
+}

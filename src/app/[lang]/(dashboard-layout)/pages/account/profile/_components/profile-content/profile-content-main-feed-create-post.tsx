@@ -12,7 +12,7 @@ export function ProfileContentCreatePost() {
   return (
     <Card asChild>
       <article aria-label="Create a post">
-        <div className="grid grid-cols-[2.5rem,_auto] gap-x-2 p-6">
+        <div className="grid grid-cols-[2.5rem__auto] gap-x-2 p-6">
           <Avatar>
             <AvatarImage src={userData.avatar} alt="" />
             <AvatarFallback>{getInitials(userData.name)}</AvatarFallback>

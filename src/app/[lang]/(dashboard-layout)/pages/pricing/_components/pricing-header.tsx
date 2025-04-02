@@ -11,7 +11,7 @@ export function PricingHeader({
   setIsAnnual: (isAnnual: boolean) => void
 }) {
   return (
-    <div className="mx-auto max-w-screen-md text-center mb-8 md:mb-12">
+    <div className="mx-auto max-w-(--breakpoint-md) text-center mb-8 md:mb-12">
       <h2 className="mb-4 text-2xl tracking-tight font-bold text-foreground">
         Flexible Pricing Plans
       </h2>

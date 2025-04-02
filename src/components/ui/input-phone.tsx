@@ -1,18 +1,12 @@
-// Refer to react-phone-number-input README.md file for more details https://gitlab.com/catamphetamine/react-phone-number-input
 "use client"
 
-import { forwardRef, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import Image from "next/image"
 import { useDirection } from "@radix-ui/react-direction"
 import * as RPNInputPrimitive from "react-phone-number-input"
 import { Check, ChevronsUpDown } from "lucide-react"
 
-import type { InputProps } from "@/components/ui/input"
-import type {
-  ElementRef,
-  ForwardRefExoticComponent,
-  InputHTMLAttributes,
-} from "react"
+import type { InputHTMLAttributes } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -44,15 +38,12 @@ type InputPhoneProps = Omit<
     onChange?: (value: RPNInputPrimitive.Value) => void
   }
 
-const InputPhone: ForwardRefExoticComponent<InputPhoneProps> = forwardRef<
-  ElementRef<typeof RPNInputPrimitive.default>,
-  InputPhoneProps
->(({ className, onChange, ...props }, ref) => {
+export function InputPhone({ className, onChange, ...props }: InputPhoneProps) {
   const direction = useDirection()
 
   return (
     <RPNInputPrimitive.default
-      ref={ref}
+      data-slot="input-phone"
       dir={direction}
       className={cn("w-full flex", className)}
       flagComponent={FlagComponent}
@@ -71,19 +62,19 @@ const InputPhone: ForwardRefExoticComponent<InputPhoneProps> = forwardRef<
       {...props}
     />
   )
-})
-InputPhone.displayName = "InputPhone"
+}
 
-const InputComponent = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, ...props }, ref) => (
+function InputComponent({
+  className,
+  ...props
+}: React.ComponentProps<"input">) {
+  return (
     <Input
       className={cn("rounded-e-md rounded-s-none", className)}
       {...props}
-      ref={ref}
     />
   )
-)
-InputComponent.displayName = "InputComponent"
+}
 
 interface CountrySelectOption {
   label: string
@@ -186,5 +177,3 @@ function FlagComponent({ country, countryName }: RPNInputPrimitive.FlagProps) {
     </div>
   )
 }
-
-export { InputPhone }

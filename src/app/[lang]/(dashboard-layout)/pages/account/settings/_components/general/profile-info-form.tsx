@@ -74,9 +74,9 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-3">
-        <div className="flex items-center gap-4">
-          <Avatar className="size-20">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-y-3">
+        <div className="flex items-center gap-x-4">
+          <Avatar className="size-22">
             <AvatarImage src={photoPreview} alt="Profile Avatar" />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
@@ -115,7 +115,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
             </Button>
           </div>
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-2 md:grid-cols-2">
           <FormField
             control={form.control}
             name="firstName"

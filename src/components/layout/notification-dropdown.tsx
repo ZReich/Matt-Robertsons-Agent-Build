@@ -58,7 +58,7 @@ export function NotificationDropdown({
               <li key={notification.id}>
                 <Link
                   href={notification.url}
-                  className="flex items-center gap-2 py-4 px-6 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="flex items-center gap-2 py-4 px-6 hover:bg-accent hover:text-accent-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <Badge className="h-10 w-10">
                     <DynamicIcon

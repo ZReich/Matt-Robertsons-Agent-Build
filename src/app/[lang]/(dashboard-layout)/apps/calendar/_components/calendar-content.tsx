@@ -102,7 +102,7 @@ export function CalendarContent() {
   // Custom class names for event styling
   const eventClassNames = () => [
     "h-[1.62rem] pt-px px-1 rounded-md",
-    "[&_td]:hover:!bg-accent/60", // Styling for hover state on table cells
+    "hover:[&_td]:bg-accent/60!", // Styling for hover state on table cells
   ]
 
   return (

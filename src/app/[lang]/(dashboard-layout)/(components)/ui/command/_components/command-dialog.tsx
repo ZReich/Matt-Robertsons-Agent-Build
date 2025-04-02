@@ -21,6 +21,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command"
+import { DialogTitle } from "@/components/ui/dialog"
 import { Keyboard } from "@/components/ui/keyboard"
 
 export function CommandDialogComponent() {
@@ -48,6 +49,7 @@ export function CommandDialogComponent() {
           Press <Keyboard>J</Keyboard>
         </p>
         <CommandDialog open={open} onOpenChange={setOpen}>
+          <DialogTitle className="sr-only">Search Menu</DialogTitle>
           <CommandInput placeholder="Type a command or search..." />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>

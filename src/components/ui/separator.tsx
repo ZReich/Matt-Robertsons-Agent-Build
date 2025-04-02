@@ -1,22 +1,18 @@
 "use client"
 
-import { forwardRef } from "react"
 import * as SeparatorPrimitive from "@radix-ui/react-separator"
-
-import type { ComponentPropsWithoutRef, ElementRef } from "react"
 
 import { cn } from "@/lib/utils"
 
-const Separator = forwardRef<
-  ElementRef<typeof SeparatorPrimitive.Root>,
-  ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
->(
-  (
-    { className, orientation = "horizontal", decorative = true, ...props },
-    ref
-  ) => (
+export function Separator({
+  className,
+  orientation = "horizontal",
+  decorative = true,
+  ...props
+}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
+  return (
     <SeparatorPrimitive.Root
-      ref={ref}
+      data-slot="separator-root"
       decorative={decorative}
       orientation={orientation}
       className={cn(
@@ -27,19 +23,18 @@ const Separator = forwardRef<
       {...props}
     />
   )
-)
-Separator.displayName = SeparatorPrimitive.Root.displayName
+}
 
-const SeparatorWithText = forwardRef<
-  HTMLDivElement,
-  ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
->(
-  (
-    { className, orientation = "horizontal", decorative = true, children },
-    ref
-  ) => (
+export function SeparatorWithText({
+  className,
+  orientation = "horizontal",
+  decorative = true,
+  children,
+  ...props
+}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
+  return (
     <div
-      ref={ref}
+      data-slot="separator-with-text"
       className={cn(
         "flex justify-between items-center",
         orientation === "horizontal" ? "w-full" : "flex-col h-full",
@@ -50,6 +45,7 @@ const SeparatorWithText = forwardRef<
         decorative={decorative}
         orientation={orientation}
         className="shrink"
+        {...props}
       />
       <span
         className={cn(
@@ -63,10 +59,8 @@ const SeparatorWithText = forwardRef<
         decorative={decorative}
         orientation={orientation}
         className="shrink"
+        {...props}
       />
     </div>
   )
-)
-SeparatorWithText.displayName = "SeparatorWithText"
-
-export { Separator, SeparatorWithText }
+}

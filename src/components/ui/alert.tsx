@@ -1,8 +1,6 @@
-import { forwardRef } from "react"
 import { cva } from "class-variance-authority"
 
 import type { VariantProps } from "class-variance-authority"
-import type { HTMLAttributes } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -22,41 +20,43 @@ const alertVariants = cva(
   }
 )
 
-const Alert = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
-))
-Alert.displayName = "Alert"
+export function Alert({
+  className,
+  variant,
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+  return (
+    <div
+      data-slot="alert"
+      role="alert"
+      className={cn(alertVariants({ variant }), className)}
+      {...props}
+    />
+  )
+}
 
-const AlertTitle = forwardRef<
-  HTMLParagraphElement,
-  HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h5
-    ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
-    {...props}
-  />
-))
-AlertTitle.displayName = "AlertTitle"
+export function AlertTitle({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <h5
+      data-slot="alert-title"
+      className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+      {...props}
+    />
+  )
+}
 
-const AlertDescription = forwardRef<
-  HTMLParagraphElement,
-  HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed", className)}
-    {...props}
-  />
-))
-AlertDescription.displayName = "AlertDescription"
-
-export { Alert, AlertTitle, AlertDescription }
+export function AlertDescription({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="alert-description"
+      className={cn("text-sm [&_p]:leading-relaxed", className)}
+      {...props}
+    />
+  )
+}

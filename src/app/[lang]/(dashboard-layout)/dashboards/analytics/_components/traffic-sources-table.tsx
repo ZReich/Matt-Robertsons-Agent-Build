@@ -35,7 +35,7 @@ export function TrafficSourcesTable({
               <DynamicIcon
                 name={item.icon}
                 style={{ color: item.fill }}
-                className="h-3 w-3 stroke-[3]"
+                className="h-3 w-3 stroke-3"
               />
             </TableCell>
             <TableCell className="font-semibold">{item.name}</TableCell>

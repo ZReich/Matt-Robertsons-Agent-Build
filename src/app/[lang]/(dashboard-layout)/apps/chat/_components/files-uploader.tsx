@@ -87,6 +87,7 @@ export function FilesUploader() {
             />
 
             <ButtonLoading
+              size="icon"
               isLoading={isSubmitting}
               className="ms-auto mt-2"
               icon={Send}

@@ -17,7 +17,7 @@ const words = [
 
 export function Hero() {
   return (
-    <section className="container relative p-8 !pb-0 space-y-16 overflow-hidden md:p-16">
+    <section className="container relative p-8 pb-0! space-y-16 overflow-hidden md:p-16">
       <svg
         aria-hidden
         className="pointer-events-none absolute inset-0 h-1/2 w-full fill-muted-foreground -z-10 [mask-image:radial-gradient(closest-side,white,transparent)] md:[mask-size:50%]"
@@ -67,7 +67,7 @@ export function Hero() {
           </Link>
         </div>
       </div>
-      <div className="pointer-events-none aspect-[16/7] relative [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
+      <div className="pointer-events-none aspect-16/7 relative [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
         <Image
           src="/images/misc/hero.jpg"
           alt=""

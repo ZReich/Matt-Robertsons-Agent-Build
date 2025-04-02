@@ -46,7 +46,7 @@ export function MediaGrid({
           <button
             type="button"
             onClick={onMediaClick}
-            className="relative size-full aspect-square before:absolute before:inset-0 before:rounded-lg before:z-10 before:hover:bg-black/5"
+            className="cursor-pointer relative size-full aspect-square before:absolute before:inset-0 before:rounded-lg before:z-10 hover:before:bg-black/5"
             aria-label="Media"
           >
             {item.type === "VIDEO" ? (
@@ -76,7 +76,7 @@ export function MediaGrid({
             onClick={(e) =>
               remainingCount > 0 ? onMoreButtonClick?.(e) : onMediaClick?.(e)
             }
-            className="relative size-full aspect-square before:absolute before:inset-0 before:rounded-lg before:z-10 before:hover:bg-black/5"
+            className="cursor-pointer relative size-full aspect-square before:absolute before:inset-0 before:rounded-lg before:z-10 hover:before:bg-black/5"
             aria-label={remainingCount > 0 ? "More media" : "Media"}
           >
             {lastMedia.type === "VIDEO" ? (
@@ -96,7 +96,7 @@ export function MediaGrid({
               />
             )}
             {remainingCount > 0 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-25 text-3xl text-white font-semibold rounded-lg">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/25 text-3xl text-white font-semibold rounded-lg">
                 <span>+{remainingCount}</span>
               </div>
             )}

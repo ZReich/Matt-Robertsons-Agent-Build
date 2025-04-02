@@ -20,7 +20,7 @@ export function DeleteAccountForm({ user }: { user: UserType }) {
   const { isSubmitting } = form.formState
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-x-2">
       <ButtonLoading isLoading={isSubmitting} variant="outline">
         Disable Account
       </ButtonLoading>

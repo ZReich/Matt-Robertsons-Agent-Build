@@ -11,12 +11,12 @@ import { buttonVariants } from "@/components/ui/button"
 
 export type CalendarProps = ComponentProps<typeof DayPicker>
 
-function Calendar({
+export function Calendar({
   className,
   classNames,
   showOutsideDays = true,
   ...props
-}: CalendarProps) {
+}: React.ComponentProps<typeof DayPicker>) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -25,14 +25,14 @@ function Calendar({
         month: "space-y-4",
         month_caption: "flex justify-center pt-1 items-center",
         caption_label: "text-sm font-medium",
-        nav: "gap-x-1 flex items-center",
+        nav: "relative gap-x-1 flex items-center",
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
-          "absolute top-3.5 start-4 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "absolute top-0 start-0 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
         ),
         button_next: cn(
           buttonVariants({ variant: "outline" }),
-          "absolute top-3.5 end-4 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "absolute top-0 end-0 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex",
@@ -43,9 +43,9 @@ function Calendar({
           buttonVariants({ variant: "ghost" }),
           "relative h-8 w-8 p-0 font-normal text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-e-md"
         ),
-        day_button: "h-full w-full aria-selected:opacity-100",
-        range_start: "!rounded-md",
-        range_end: "!rounded-md",
+        day_button: "cursor-pointer h-full w-full aria-selected:opacity-100",
+        range_start: "rounded-md!",
+        range_end: "rounded-md!",
         selected: cn(
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
           props.mode === "range" && "rounded-none"
@@ -71,6 +71,3 @@ function Calendar({
     />
   )
 }
-Calendar.displayName = "Calendar"
-
-export { Calendar }

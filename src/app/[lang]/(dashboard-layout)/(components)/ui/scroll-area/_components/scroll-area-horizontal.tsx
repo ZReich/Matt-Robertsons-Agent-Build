@@ -19,7 +19,7 @@ export function ScrollAreaHorizontal() {
                 key={index}
                 src="/images/misc/product-01.jpg"
                 alt=""
-                className="shrink-0 aspect-[3/4] object-cover rounded-md overflow-hidden"
+                className="shrink-0 aspect-3/4 object-cover rounded-md overflow-hidden"
                 width={165}
                 height={250}
               />

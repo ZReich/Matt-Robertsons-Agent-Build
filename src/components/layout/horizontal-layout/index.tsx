@@ -14,7 +14,7 @@ export function HorizontalLayout({
   return (
     <>
       <Sidebar dictionary={dictionary} />
-      <div className="min-h-screen w-full grid md:grid-rows-[auto,_1fr,_auto]">
+      <div className="min-h-screen w-full grid md:grid-rows-[auto__1fr__auto]">
         <HorizontalLayoutHeader dictionary={dictionary} />
         <main className="min-h-[calc(100vh-9.553rem)] bg-muted/40 border-x border-b border-sidebar-border overflow-x-hidden">
           {children}

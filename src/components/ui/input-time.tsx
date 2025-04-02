@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useState } from "react"
+import { useState } from "react"
 
 import type { ChangeEvent, InputHTMLAttributes } from "react"
 
@@ -12,32 +12,31 @@ export interface InputTimeProps extends InputHTMLAttributes<HTMLInputElement> {
   onValueChange?: (value?: string) => void
 }
 
-const InputTime = forwardRef<HTMLInputElement, InputTimeProps>(
-  ({ className, onValueChange, ...props }, ref) => {
-    const [isEmpty, setIsEmpty] = useState(!props.defaultValue && !props.value)
+export function InputTime({
+  className,
+  onValueChange,
+  ...props
+}: InputTimeProps) {
+  const [isEmpty, setIsEmpty] = useState(!props.defaultValue && !props.value)
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
 
-      setIsEmpty(!value)
-      onValueChange?.(value)
-    }
-
-    return (
-      <Input
-        ref={ref}
-        className={cn(
-          "block [&::-webkit-calendar-picker-indicator]:hidden rtl:text-right",
-          isEmpty && "text-muted-foreground",
-          className
-        )}
-        {...props}
-        type="time"
-        onChange={handleChange}
-      />
-    )
+    setIsEmpty(!value)
+    onValueChange?.(value)
   }
-)
-InputTime.displayName = "InputTime"
 
-export { InputTime }
+  return (
+    <Input
+      data-slot="input-time"
+      className={cn(
+        "block [&::-webkit-calendar-picker-indicator]:hidden rtl:text-right",
+        isEmpty && "text-muted-foreground",
+        className
+      )}
+      {...props}
+      type="time"
+      onChange={handleChange}
+    />
+  )
+}

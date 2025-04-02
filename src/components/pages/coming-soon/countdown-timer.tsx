@@ -50,7 +50,7 @@ export function CountdownTimer({ targetDate }: { targetDate: Date }) {
   return (
     <div className="grid grid-cols-4 gap-4">
       {Object.entries(timeLeft).map(([unit, value]) => (
-        <Badge key={unit} variant="secondary" className="flex-col p-6">
+        <Badge key={unit} variant="secondary" className="w-full flex-col p-6">
           <span className="text-3xl font-semibold">{value}</span>
           <span className="capitalize">{unit}</span>
         </Badge>

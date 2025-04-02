@@ -1,12 +1,12 @@
 "use client"
 
-import { forwardRef, useState } from "react"
+import { useState } from "react"
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 import { cva } from "class-variance-authority"
 
 import type { DynamicIconNameType } from "@/types"
 import type { VariantProps } from "class-variance-authority"
-import type { ComponentPropsWithoutRef, ElementRef } from "react"
+import type { ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -47,94 +47,85 @@ export interface RatingProps
   iconName?: DynamicIconNameType
 }
 
-export const Rating = forwardRef<
-  ElementRef<typeof RadioGroupPrimitive.Root>,
-  RatingProps
->(
-  (
-    {
-      className,
-      length = 5,
-      size,
-      variant = "default",
-      orientation = "horizontal",
-      readOnly = false,
-      iconName = "Star",
-      ...props
-    },
-    ref
-  ) => {
-    const currentValue = props.value || "0"
-    const [hoverValue, onHoverValue] = useState(currentValue)
+export function Rating({
+  className,
+  length = 5,
+  size,
+  variant = "default",
+  orientation = "horizontal",
+  readOnly = false,
+  iconName = "Star",
+  ...props
+}: RatingProps) {
+  const currentValue = props.value || "0"
+  const [hoverValue, onHoverValue] = useState(currentValue)
 
-    if (readOnly) {
-      return (
-        <div
-          ref={ref}
-          role="img"
-          className={cn(
-            "flex",
-            orientation === "horizontal" ? "gap-x-1.5" : "flex-col space-y-1.5",
-            className
-          )}
-          aria-label={`Rating: ${currentValue} out of ${length}`}
-          {...props}
-        >
-          {Array.from({ length }, (_, index) => {
-            const starValue = (index + 1).toString()
-            const filled = Number(starValue) <= Number(currentValue)
-
-            return (
-              <DynamicIcon
-                key={starValue}
-                name={iconName}
-                className={cn(
-                  starVariants({ size, variant, filled }),
-                  "fill-current"
-                )}
-                aria-hidden
-              />
-            )
-          })}
-        </div>
-      )
-    }
-
+  if (readOnly) {
     return (
-      <RadioGroupPrimitive.Root
-        ref={ref}
+      <div
+        data-slot="rating"
+        role="img"
         className={cn(
           "flex",
           orientation === "horizontal" ? "gap-x-1.5" : "flex-col space-y-1.5",
           className
         )}
-        orientation={orientation}
-        onMouseLeave={() => onHoverValue("0")}
-        aria-label="Rating"
+        aria-label={`Rating: ${currentValue} out of ${length}`}
         {...props}
       >
-        {Array.from({ length }).map((_, index) => {
+        {Array.from({ length }, (_, index) => {
           const starValue = (index + 1).toString()
-          const filled =
-            Number(starValue) <= (Number(hoverValue) || Number(currentValue))
+          const filled = Number(starValue) <= Number(currentValue)
 
           return (
-            <RatingStar
+            <DynamicIcon
               key={starValue}
-              variant={variant}
-              size={size}
-              filled={filled}
-              value={starValue}
-              onHoverValue={onHoverValue}
-              iconName={iconName}
+              name={iconName}
+              className={cn(
+                starVariants({ size, variant, filled }),
+                "fill-current"
+              )}
+              aria-hidden
             />
           )
         })}
-      </RadioGroupPrimitive.Root>
+      </div>
     )
   }
-)
-Rating.displayName = "Rating"
+
+  return (
+    <RadioGroupPrimitive.Root
+      data-slot="rating"
+      className={cn(
+        "flex",
+        orientation === "horizontal" ? "gap-x-1.5" : "flex-col space-y-1.5",
+        className
+      )}
+      orientation={orientation}
+      onMouseLeave={() => onHoverValue("0")}
+      aria-label="Rating"
+      {...props}
+    >
+      {Array.from({ length }).map((_, index) => {
+        const starValue = (index + 1).toString()
+        const filled =
+          Number(starValue) <= (Number(hoverValue) || Number(currentValue))
+
+        return (
+          <RatingStar
+            key={starValue}
+            variant={variant}
+            size={size}
+            filled={filled}
+            value={starValue}
+            onHoverValue={onHoverValue}
+            iconName={iconName}
+          />
+        )
+      })}
+    </RadioGroupPrimitive.Root>
+  )
+}
 
 export interface RatingStarProps
   extends RadioGroupPrimitive.RadioGroupItemProps,
@@ -143,17 +134,22 @@ export interface RatingStarProps
   iconName: DynamicIconNameType
 }
 
-const RatingStar = forwardRef<
-  ElementRef<typeof RadioGroupPrimitive.Item>,
-  RatingStarProps
->(({ value, size, variant, filled, onHoverValue, iconName, ...props }, ref) => {
+export function RatingStar({
+  value,
+  size,
+  variant,
+  filled,
+  onHoverValue,
+  iconName,
+  ...props
+}: RatingStarProps) {
   return (
     <RadioGroupPrimitive.Item
-      ref={ref}
+      data-slot="rating-star"
       value={value}
       className={cn(
         starVariants({ size, variant, filled }),
-        "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        "cursor-pointer focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
       )}
       onMouseEnter={() => onHoverValue(value)}
       aria-label={`Rate ${value} star${value === "1" ? "" : "s"}`}
@@ -162,5 +158,4 @@ const RatingStar = forwardRef<
       <DynamicIcon name={iconName} className="h-full w-full fill-current" />
     </RadioGroupPrimitive.Item>
   )
-})
-RatingStar.displayName = "RatingStar"
+}

@@ -25,7 +25,7 @@ function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
       formatter={(value, name, item, index) => (
         <>
           <div
-            className="shrink-0 h-2.5 w-2.5 rounded-sm bg-[--color-bg]"
+            className="shrink-0 h-2.5 w-2.5 rounded-sm bg-(--color-bg)"
             style={
               {
                 // @ts-ignore

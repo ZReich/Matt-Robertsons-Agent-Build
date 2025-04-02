@@ -121,10 +121,10 @@ export function ResponsiveBreadcrumb() {
                 {item.href ? (
                   <>
                     <BreadcrumbLink
-                      asChild
                       className="max-w-20 truncate md:max-w-none"
+                      href={item.href}
                     >
-                      <Link href={item.href}>{item.label}</Link>
+                      {item.label}
                     </BreadcrumbLink>
                     <BreadcrumbSeparator />
                   </>

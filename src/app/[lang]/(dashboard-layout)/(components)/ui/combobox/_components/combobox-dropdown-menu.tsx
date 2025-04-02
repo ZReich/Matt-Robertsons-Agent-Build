@@ -49,10 +49,10 @@ export function ComboboxDropdownMenu() {
       </CardHeader>
       <CardContent className="flex justify-center items-center">
         <div className="flex w-full flex-col items-start justify-between rounded-md border px-4 py-3 sm:flex-row sm:items-center">
-          <p className="text-sm font-medium leading-none">
-            <Badge className="me-2">{label}</Badge>
-            <span className="text-muted-foreground">Create a new project</span>
-          </p>
+          <div className="flex items-center gap-2 text-sm font-medium leading-none">
+            <Badge>{label}</Badge>
+            <p className="text-muted-foreground">Create a new project</p>
+          </div>
           <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">

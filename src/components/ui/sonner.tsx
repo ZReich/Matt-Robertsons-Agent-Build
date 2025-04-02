@@ -6,7 +6,7 @@ import { useSettings } from "@/hooks/use-settings"
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
-const Toaster = ({ ...props }: ToasterProps) => {
+export function Toaster({ ...props }: ToasterProps) {
   const { settings } = useSettings()
 
   const mode = settings.mode
@@ -30,5 +30,3 @@ const Toaster = ({ ...props }: ToasterProps) => {
     />
   )
 }
-
-export { Toaster }

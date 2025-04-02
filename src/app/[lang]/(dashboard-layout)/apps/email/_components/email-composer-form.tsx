@@ -59,7 +59,7 @@ export function EmailComposerForm() {
               control={form.control}
               name="to"
               render={({ field }) => (
-                <FormItem className="flex-grow space-y-0">
+                <FormItem className="grow space-y-0">
                   <FormControl>
                     <Input type="email" placeholder="To" {...field} />
                   </FormControl>
