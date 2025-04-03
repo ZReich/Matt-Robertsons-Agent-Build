@@ -5,7 +5,7 @@ import { ModeDropdown } from "../../_components/mode-dropdown"
 import { DocsCommandMenu } from "./docs-command-menu"
 import { ToggleMobileSidebar } from "./toggle-mobile-sidebar"
 
-export function Header() {
+export function DocsHeader() {
   return (
     <header className="sticky top-0 w-full bg-background z-50">
       <div className="container flex justify-between items-center gap-2 p-4">

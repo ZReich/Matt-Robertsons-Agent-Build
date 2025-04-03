@@ -6,7 +6,7 @@ export function DocsFooter() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-red-200 z-50 w-full container flex justify-between items-center bg-background p-4 md:px-6">
+    <footer className="container flex justify-between items-center bg-background p-4 md:px-6">
       <p className="text-xs text-muted-foreground md:text-sm">
         © {currentYear}{" "}
         <a

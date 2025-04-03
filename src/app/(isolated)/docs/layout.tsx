@@ -2,10 +2,10 @@ import type { Metadata } from "next"
 
 import { Separator } from "@/components/ui/separator"
 import { DocsBreadcrumb } from "./_components/docs-breadcrumb"
+import { DocsFooter } from "./_components/docs-footer"
+import { DocsHeader } from "./_components/docs-header"
 import { DocsPagination } from "./_components/docs-pagination"
 import { DocsSidebar } from "./_components/docs-sidebar"
-import { Footer } from "./_components/footer"
-import { Header } from "./_components/header"
 import { Toc } from "./_components/toc"
 
 // Define metadata for the application
@@ -21,7 +21,7 @@ export default async function DocsLayout({
 }) {
   return (
     <div className="w-screen">
-      <Header />
+      <DocsHeader />
       <div className="relative grid lg:grid-cols-[auto_1fr_auto]">
         <DocsSidebar />
         <main className="grid bg-muted/40 border-x border-b border-sidebar-border">
@@ -39,7 +39,7 @@ export default async function DocsLayout({
         </main>
         <Toc />
       </div>
-      <Footer />
+      <DocsFooter />
     </div>
   )
 }

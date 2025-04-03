@@ -5,7 +5,7 @@ export function ThemeCustomization() {
   return (
     <section
       id="theme-customization"
-      className="container grid gap-4 p-4 pb-16"
+      className="container grid gap-4 pt-4 pb-16"
     >
       <div className="space-y-6 text-center">
         <h1 className="text-2xl font-semibold">Theme Customization</h1>

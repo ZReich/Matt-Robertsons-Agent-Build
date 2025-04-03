@@ -2,7 +2,7 @@ import { CoreFeaturesList } from "./core-features-list"
 
 export function CoreFeatures() {
   return (
-    <section id="features" className="container grid gap-6 p-4 py-16">
+    <section id="features" className="container grid gap-6 py-16">
       <div className="space-y-6 text-center">
         <h1 className="text-2xl font-semibold">Core Features</h1>
         <p className="max-w-prose mx-auto">

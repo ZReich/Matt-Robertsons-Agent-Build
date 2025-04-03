@@ -8,7 +8,7 @@ export function Faqs() {
   return (
     <section
       id="faqs"
-      className="container relative grid gap-6 p-4 py-16 md:grid-cols-3"
+      className="container relative grid gap-6 py-16 md:grid-cols-3"
     >
       <svg
         aria-hidden
