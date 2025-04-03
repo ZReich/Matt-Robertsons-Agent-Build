@@ -16,7 +16,7 @@ import type { ReactNode } from "react"
 export const defaultSettings: SettingsType = {
   theme: "zinc",
   mode: "system",
-  radius: "0.5",
+  radius: 0.5,
   layout: "vertical",
   locale: "en",
 }

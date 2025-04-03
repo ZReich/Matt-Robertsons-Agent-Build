@@ -7,7 +7,10 @@ import { useSettings } from "@/hooks/use-settings"
 export function useRadius(asPx = true) {
   const { settings } = useSettings()
 
-  const radius = asPx ? remToPx(settings.radius) : settings.radius
+  let radius = Number(settings.radius)
+  if (asPx) {
+    radius = remToPx(radius)
+  }
 
   return radius
 }

@@ -1,4 +1,4 @@
-export const radii = ["0", "0.3", "0.5", "0.75", "1"]
+export const radii = [0, 0.3, 0.5, 0.75, 1]
 
 export const themes = {
   zinc: {
