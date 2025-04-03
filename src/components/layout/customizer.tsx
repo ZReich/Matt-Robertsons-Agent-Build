@@ -68,7 +68,7 @@ export function Customizer() {
       <SheetTrigger className="fixed bottom-10 end-0 z-50" asChild>
         <Button
           size="icon"
-          className="rounded-e-none shadow-md"
+          className="rounded-e-none shadow-sm"
           aria-label="Customizer"
         >
           <Settings className="shrink-0 h-4 w-4" />
