@@ -37,6 +37,10 @@ export function PaymentMethodForm({
   const form = useForm<PaymentMethodFormType>({
     resolver: zodResolver(PaymentMethodSchema),
     defaultValues: {
+      cardNumber: "",
+      cardName: "",
+      expiry: "",
+      cvc: "",
       saveCard: false,
     },
   })
@@ -113,7 +117,7 @@ export function PaymentMethodForm({
                 </FormControl>
                 <CreditCardBrandIcon
                   brandName={creditCardName}
-                  className="absolute start-3 top-[2.2rem] h-4 w-4"
+                  className="absolute start-3 top-[2rem] h-4 w-4"
                 />
                 <FormMessage />
               </FormItem>
