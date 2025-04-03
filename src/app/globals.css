@@ -1,10 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 @import "./themes.css";
 
-@plugin "@tailwindcss/typography";
-
-@custom-variant dark (&: is(.dark *));
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-lato:
