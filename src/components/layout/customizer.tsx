@@ -60,7 +60,7 @@ export function Customizer() {
 
   const handleReset = useCallback(() => {
     resetSettings()
-    router.push(relocalizePathname(pathname, "en"))
+    router.push(relocalizePathname(pathname, "en"), { scroll: false })
   }, [resetSettings, router, pathname])
 
   return (
