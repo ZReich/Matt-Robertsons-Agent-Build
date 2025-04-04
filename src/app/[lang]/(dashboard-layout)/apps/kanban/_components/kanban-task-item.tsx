@@ -1,6 +1,5 @@
 "use client"
 
-import { memo } from "react"
 import { Draggable } from "@hello-pangea/dnd"
 
 import type { DraggableProvided } from "@hello-pangea/dnd"
@@ -16,19 +15,14 @@ interface KanbanTaskItemProps {
   index: number
 }
 
-export const KanbanTaskItem = memo(({ task, index }: KanbanTaskItemProps) => {
+export function KanbanTaskItem({ task, index }: KanbanTaskItemProps) {
   return (
-    <Draggable
-      draggableId={task.id} // A unique identifier for this task, which helps the library track and move the item
-      index={index} // The position of this task in its column, used for reordering tasks when drag-and-drop occurs
-    >
-      {/* A render callback function that provides the necessary props
-        for the Draggable component to function properly */}
+    <Draggable draggableId={task.id} index={index}>
       {(provided: DraggableProvided) => (
         <Card
           ref={provided.innerRef}
           className="my-2 w-64 md:w-72"
-          {...provided.draggableProps} // Draggable props for drag-and-drop functionality
+          {...provided.draggableProps}
         >
           <KanbanTaskItemHeader task={task} provided={provided} />
           <KanbanTaskItemContent task={task} />
@@ -37,5 +31,4 @@ export const KanbanTaskItem = memo(({ task, index }: KanbanTaskItemProps) => {
       )}
     </Draggable>
   )
-})
-KanbanTaskItem.displayName = "KanbanTaskItem"
+}
