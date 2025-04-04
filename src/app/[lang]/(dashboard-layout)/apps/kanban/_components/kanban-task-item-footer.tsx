@@ -1,6 +1,5 @@
 "use client"
 
-import { useMemo } from "react"
 import { MessageCircleMore, Paperclip } from "lucide-react"
 
 import type { TaskType } from "../types"
@@ -14,13 +13,11 @@ interface KanbanTaskItemFooterProps {
 }
 
 export function KanbanTaskItemFooter({ task }: KanbanTaskItemFooterProps) {
-  const avatars = useMemo(() => {
-    return task.assigned.map((member) => ({
-      src: member.avatar,
-      alt: member.name,
-      href: "/", // Replace with the correct link to the member's profile, e.g., `/profile/${member.username}`
-    }))
-  }, [task.assigned])
+  const avatars = task.assigned.map((member) => ({
+    src: member.avatar,
+    alt: member.name,
+    href: "/", // Replace with the correct link to the member's profile, e.g., `/profile/${member.username}`
+  }))
 
   return (
     <CardFooter className="justify-between gap-2 pe-3 ps-5">
