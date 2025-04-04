@@ -11,6 +11,7 @@ import { EventSidebarSchema } from "../_schemas/event-sidebar-schema"
 
 import { useCalendarContext } from "../_hooks/calendar-context"
 import { ButtonLoading } from "@/components/ui/button"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Form,
   FormControl,
@@ -38,7 +39,6 @@ import {
 } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/date-picker"
 
 export function EventSidebar() {
   const {

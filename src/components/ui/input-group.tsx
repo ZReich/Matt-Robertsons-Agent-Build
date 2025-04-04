@@ -1,8 +1,10 @@
 "use client"
 
+import type { ComponentProps } from "react"
+
 import { cn } from "@/lib/utils"
 
-export interface InputGroupProps extends React.ComponentProps<"div"> {}
+export interface InputGroupProps extends ComponentProps<"div"> {}
 
 export function InputGroup({ className, children, ...props }: InputGroupProps) {
   return (
@@ -19,7 +21,7 @@ export function InputGroup({ className, children, ...props }: InputGroupProps) {
   )
 }
 
-export interface InputGroupTextProps extends React.ComponentProps<"div"> {
+export interface InputGroupTextProps extends ComponentProps<"div"> {
   merged?: boolean
 }
 

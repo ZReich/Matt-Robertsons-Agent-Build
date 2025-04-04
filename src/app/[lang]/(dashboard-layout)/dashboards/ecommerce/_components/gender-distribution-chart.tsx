@@ -2,7 +2,7 @@
 
 import { Scatter, ScatterChart, XAxis, YAxis } from "recharts"
 
-import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { ComponentProps } from "react"
 import type { ScatterPointItem } from "recharts/types/cartesian/Scatter"
 import type { GenderDistributionType } from "../../analytics/types"
 
@@ -22,7 +22,9 @@ const getNormalizedSize = (value: number, min: number, max: number) => {
   return minSize + ((value - min) / (max - min)) * (maxSize - minSize)
 }
 
-function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+function ModifiedChartTooltipContent(
+  props: ComponentProps<typeof ChartTooltipContent>
+) {
   if (!props.payload || props.payload.length === 0) return null
 
   const item = props.payload[0]

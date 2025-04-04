@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
+import type { ComponentProps } from "react"
 import type { SecurityPreferencesFormType, UserType } from "../../../types"
 
 import { SecurityPreferencesSchema } from "../_schemas/security-preferences-form-schema"
@@ -18,8 +19,7 @@ import {
   FormLabel,
 } from "@/components/ui/form"
 
-interface SecurityPreferencesFormProps
-  extends React.HTMLAttributes<HTMLFormElement> {
+interface SecurityPreferencesFormProps extends ComponentProps<"form"> {
   user: UserType
 }
 

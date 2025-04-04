@@ -11,7 +11,7 @@ import type { DropzoneOptions } from "react-dropzone"
 import { cn, formatFileSize, wait } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
-import { FileThumbnail } from "../file-thumbnail"
+import { FileThumbnail } from "./file-thumbnail"
 import { ScrollArea } from "./scroll-area"
 
 export interface FileDropzoneProps extends Partial<DropzoneOptions> {

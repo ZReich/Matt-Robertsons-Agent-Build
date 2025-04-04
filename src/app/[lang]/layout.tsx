@@ -11,6 +11,7 @@ import { Providers } from "@/providers"
 
 import type { LocaleType } from "@/types"
 import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { Toaster } from "@/components/ui/toaster"
@@ -42,7 +43,7 @@ const cairoFont = Cairo({
 })
 
 export default async function RootLayout(props: {
-  children: React.ReactNode
+  children: ReactNode
   params: Promise<{ lang: LocaleType }>
 }) {
   const params = await props.params

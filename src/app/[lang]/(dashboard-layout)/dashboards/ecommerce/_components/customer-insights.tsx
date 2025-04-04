@@ -6,7 +6,7 @@ import {
 } from "@/components/dashboards/dashboard-card"
 import { CustomerInsightList } from "./customer-insight-list"
 
-export async function CustomerInsights() {
+export function CustomerInsights() {
   return (
     <DashboardCard
       title="Customer Insights"

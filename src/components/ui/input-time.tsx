@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 
-import type { ChangeEvent, InputHTMLAttributes } from "react"
+import type { ChangeEvent, ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { Input } from "./input"
 
-export interface InputTimeProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputTimeProps extends ComponentProps<"input"> {
   onValueChange?: (value?: string) => void
 }
 

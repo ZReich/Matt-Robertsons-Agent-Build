@@ -7,7 +7,7 @@ import {
   DashboardOverviewCardV2,
 } from "@/components/dashboards/dashboard-card"
 
-export async function Overview() {
+export function Overview() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-2 md:grid-cols-4">
       <DashboardOverviewCardV2

@@ -1,6 +1,7 @@
-import type { CardDemoProps } from "../_components/card-demo"
+import type { ComponentProps } from "react"
+import type { CardDemo } from "../_components/card-demo"
 
-export const appsAndPagesData: CardDemoProps[] = [
+export const appsAndPagesData: ComponentProps<typeof CardDemo>[] = [
   {
     title: "Email",
     href: "https://shadboard.vercel.app/apps/email/inbox",

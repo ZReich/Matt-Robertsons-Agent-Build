@@ -5,7 +5,11 @@ import { cva } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import type { VariantProps } from "class-variance-authority"
-import type { ComponentPropsWithoutRef, ReactElement } from "react"
+import type {
+  ComponentProps,
+  ComponentPropsWithoutRef,
+  ReactElement,
+} from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -14,7 +18,7 @@ export const ToastProvider = ToastPrimitives.Provider
 export function ToastViewport({
   className,
   ...props
-}: React.ComponentProps<typeof ToastPrimitives.Viewport>) {
+}: ComponentProps<typeof ToastPrimitives.Viewport>) {
   return (
     <ToastPrimitives.Viewport
       data-slot="toast-viewport"
@@ -27,7 +31,7 @@ export function ToastViewport({
   )
 }
 
-const toastVariants = cva(
+export const toastVariants = cva(
   "group pointer-events-auto relative flex w-full items-center justify-between gap-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full sm:data-[state=open]:slide-in-from-bottom-full",
   {
     variants: {
@@ -47,7 +51,7 @@ export function Toast({
   className,
   variant,
   ...props
-}: React.ComponentProps<typeof ToastPrimitives.Root> &
+}: ComponentProps<typeof ToastPrimitives.Root> &
   VariantProps<typeof toastVariants>) {
   return (
     <ToastPrimitives.Root
@@ -61,7 +65,7 @@ export function Toast({
 export function ToastAction({
   className,
   ...props
-}: React.ComponentProps<typeof ToastPrimitives.Action>) {
+}: ComponentProps<typeof ToastPrimitives.Action>) {
   return (
     <ToastPrimitives.Action
       data-slot="toast-action"
@@ -77,7 +81,7 @@ export function ToastAction({
 export function ToastClose({
   className,
   ...props
-}: React.ComponentProps<typeof ToastPrimitives.Close>) {
+}: ComponentProps<typeof ToastPrimitives.Close>) {
   return (
     <ToastPrimitives.Close
       data-slot="toast-close"
@@ -96,7 +100,7 @@ export function ToastClose({
 export function ToastTitle({
   className,
   ...props
-}: React.ComponentProps<typeof ToastPrimitives.Title>) {
+}: ComponentProps<typeof ToastPrimitives.Title>) {
   return (
     <ToastPrimitives.Title
       data-slot="toast-title"
@@ -109,7 +113,7 @@ export function ToastTitle({
 export function ToastDescription({
   className,
   ...props
-}: React.ComponentProps<typeof ToastPrimitives.Title>) {
+}: ComponentProps<typeof ToastPrimitives.Title>) {
   return (
     <ToastPrimitives.Description
       data-slot="toast-description"

@@ -1,4 +1,5 @@
 import type { DynamicIconNameType } from "@/types"
+import type { ReactNode } from "react"
 
 import { DynamicIcon } from "@/components/dynamic-icon"
 
@@ -9,7 +10,7 @@ export function ProfileContentIntroItem({
 }: {
   iconName: DynamicIconNameType
   title: string
-  value: string | React.ReactNode
+  value: string | ReactNode
 }) {
   return (
     <li className="inline-flex items-baseline gap-x-1">

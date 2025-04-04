@@ -3,7 +3,7 @@ import Image from "next/image"
 import type { MDXComponents } from "mdx/types"
 import type { ImageProps } from "next/image"
 
-import { CodeBlock } from "./components/code-block"
+import { CodeBlock } from "./components/ui/code-block"
 
 // This file allows you to provide custom React components
 // to be used in MDX files. You can import and use any

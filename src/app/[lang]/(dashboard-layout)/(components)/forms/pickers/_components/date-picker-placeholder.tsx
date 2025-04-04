@@ -3,7 +3,7 @@
 import { useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DatePicker } from "@/components/date-picker"
+import { DatePicker } from "@/components/ui/date-picker"
 
 export function DatePickerPlaceholder() {
   const [date, setDate] = useState<Date | undefined>()

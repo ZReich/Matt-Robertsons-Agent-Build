@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { buttonVariants } from "@/components/ui/button"
 
-export interface CardDemoProps {
+interface CardDemoProps {
   title: string
   href: string
   imgSrc: string

@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
 import { emailsData } from "./_data/emails"
 import { sidebarItemsData } from "./_data/emails-sidebar-items"
@@ -11,11 +12,7 @@ export const metadata: Metadata = {
   title: "Email",
 }
 
-export default function EmailLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function EmailLayout({ children }: { children: ReactNode }) {
   return (
     <EmailWrapper emailsData={emailsData} sidebarItemsData={sidebarItemsData}>
       {children}

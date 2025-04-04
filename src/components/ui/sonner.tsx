@@ -2,9 +2,11 @@
 
 import { Toaster as Sonner } from "sonner"
 
+import type { ComponentProps } from "react"
+
 import { useSettings } from "@/hooks/use-settings"
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+type ToasterProps = ComponentProps<typeof Sonner>
 
 export function Toaster({ ...props }: ToasterProps) {
   const { settings } = useSettings()

@@ -1,10 +1,12 @@
+import type { ComponentProps } from "react"
+
 import { cn } from "@/lib/utils"
 
 export function Keyboard({
   className,
   children,
   ...props
-}: React.ComponentProps<"kbd">) {
+}: ComponentProps<"kbd">) {
   return (
     <kbd
       data-slot="keyboard"

@@ -3,7 +3,7 @@
 import { useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TimePicker as TimePickerComponent } from "@/components/time-picker"
+import { TimePicker as TimePickerComponent } from "@/components/ui/time-picker"
 
 export function TimePicker() {
   const [time, setTime] = useState<string | undefined>()

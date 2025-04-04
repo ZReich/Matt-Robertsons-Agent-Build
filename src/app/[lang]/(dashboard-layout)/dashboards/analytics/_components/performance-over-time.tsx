@@ -39,7 +39,7 @@ function PerformanceOverTimeActionButton() {
   )
 }
 
-export async function PerformanceOverTime() {
+export function PerformanceOverTime() {
   return (
     <DashboardCard
       title="Performance over Time"

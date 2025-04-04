@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
-import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { ComponentProps } from "react"
 import type { SalesTrendType } from "../types"
 
 import {
@@ -19,7 +19,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+function ModifiedChartTooltipContent(
+  props: ComponentProps<typeof ChartTooltipContent>
+) {
   if (!props.payload || props.payload.length === 0) return null
 
   return (

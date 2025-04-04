@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { cn } from "@/lib/utils"
 
-export interface TypeWriterEffectProps {
+interface TypeWriterEffectProps {
   textArray: string[]
   typingSpeed?: number
   deletingSpeed?: number

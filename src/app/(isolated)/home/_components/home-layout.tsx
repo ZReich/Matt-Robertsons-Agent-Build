@@ -1,7 +1,9 @@
+import type { ReactNode } from "react"
+
 import { Footer } from "./footer"
 import { Header } from "./header"
 
-export function HomeLayout({ children }: { children: React.ReactNode }) {
+export function HomeLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grow">
       <Header />

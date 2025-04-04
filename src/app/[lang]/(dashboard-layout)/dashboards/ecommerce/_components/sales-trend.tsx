@@ -7,7 +7,7 @@ import {
 import { SalesTrendChart } from "./sales-trend-chart"
 import { SalesTrendSummary } from "./sales-trend-summary"
 
-export async function SalesTrend() {
+export function SalesTrend() {
   return (
     <DashboardCard
       title="Sales Trend"

@@ -4,13 +4,14 @@ import { cva } from "class-variance-authority"
 import type { DynamicIconNameType } from "@/types"
 import type * as SeparatorPrimitive from "@radix-ui/react-separator"
 import type { VariantProps } from "class-variance-authority"
+import type { ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { DynamicIcon } from "../dynamic-icon"
 import { Separator } from "./separator"
 
-const timelineVariants = cva("grid", {
+export const timelineVariants = cva("grid", {
   variants: {
     align: {
       left: "[&>li]:grid-cols-[0_min-content_1fr]",
@@ -23,12 +24,15 @@ const timelineVariants = cva("grid", {
   },
 })
 
+type TimelineProps = ComponentProps<"ul"> &
+  VariantProps<typeof timelineVariants>
+
 export function Timeline({
   children,
   className,
   align,
   ...props
-}: React.ComponentProps<"ul"> & VariantProps<typeof timelineVariants>) {
+}: TimelineProps) {
   return (
     <ul
       data-slot="timeline"
@@ -40,7 +44,7 @@ export function Timeline({
   )
 }
 
-const timelineItemVariants = cva("grid items-center gap-x-2", {
+export const timelineItemVariants = cva("grid items-center gap-x-2", {
   variants: {
     status: {
       done: "text-foreground",
@@ -52,11 +56,14 @@ const timelineItemVariants = cva("grid items-center gap-x-2", {
   },
 })
 
+type TimelineItemProps = ComponentProps<"li"> &
+  VariantProps<typeof timelineItemVariants>
+
 export function TimelineItem({
   className,
   status,
   ...props
-}: React.ComponentProps<"li"> & VariantProps<typeof timelineItemVariants>) {
+}: TimelineItemProps) {
   return (
     <li
       data-slot="timeline-item"
@@ -68,7 +75,7 @@ export function TimelineItem({
 
 type TimelineDotStatus = "current" | "done" | "error"
 
-interface TimelineDotPropsBase extends React.ComponentProps<"div"> {
+interface TimelineDotPropsBase extends ComponentProps<"div"> {
   iconClassName?: string
 }
 
@@ -153,7 +160,7 @@ export function TimelineDot({
   )
 }
 
-const timelineContentVariants = cva("row-start-2 row-end-2 pb-8", {
+export const timelineContentVariants = cva("row-start-2 row-end-2 pb-8", {
   variants: {
     side: {
       start: "col-start-3 col-end-4 me-auto text-start",
@@ -165,11 +172,14 @@ const timelineContentVariants = cva("row-start-2 row-end-2 pb-8", {
   },
 })
 
+type TimelineContentProps = ComponentProps<"div"> &
+  VariantProps<typeof timelineContentVariants>
+
 export function TimelineContent({
   className,
   side,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof timelineContentVariants>) {
+}: TimelineContentProps) {
   return (
     <div
       data-slot="timeline-content"
@@ -179,7 +189,7 @@ export function TimelineContent({
   )
 }
 
-const timelineHeadingVariants = cva(
+export const timelineHeadingVariants = cva(
   "row-start-1 row-end-1 line-clamp-1 max-w-full truncate",
   {
     variants: {
@@ -199,16 +209,18 @@ const timelineHeadingVariants = cva(
   }
 )
 
+type TimelineHeadingProps = ComponentProps<"h3"> &
+  VariantProps<typeof timelineHeadingVariants> & {
+    asChild?: boolean
+  }
+
 export function TimelineHeading({
   className,
   side,
   variant,
   asChild = false,
   ...props
-}: React.ComponentProps<"h3"> &
-  VariantProps<typeof timelineHeadingVariants> & {
-    asChild?: boolean
-  }) {
+}: TimelineHeadingProps) {
   const Comp = asChild ? Slot : "h3"
 
   return (
@@ -220,13 +232,15 @@ export function TimelineHeading({
   )
 }
 
+type TimelineLineProps = ComponentProps<typeof SeparatorPrimitive.Root> & {
+  done?: boolean
+}
+
 export function TimelineLine({
   className,
   done = false,
   ...props
-}: React.ComponentProps<typeof SeparatorPrimitive.Root> & {
-  done?: boolean
-}) {
+}: TimelineLineProps) {
   return (
     <Separator
       data-slot="timeline-line"

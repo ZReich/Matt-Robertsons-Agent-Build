@@ -1,6 +1,7 @@
-import type { CardDemoProps } from "../_components/card-demo"
+import type { ComponentProps } from "react"
+import type { CardDemo } from "../_components/card-demo"
 
-export const layoutsData: CardDemoProps[] = [
+export const layoutsData: ComponentProps<typeof CardDemo>[] = [
   {
     title: "Vertical LTR Layout",
     href: "https://shadboard.vercel.app/en/dashboards/analytics?layout=vertical&radius=0.5&mode=system",

@@ -1,5 +1,6 @@
 import type { i18n } from "@/configs/i18n"
 import type { LucideIcon, icons } from "lucide-react"
+import type { ComponentType, SVGAttributes } from "react"
 import type { z } from "zod"
 import type { radii, themes } from "./configs/themes"
 import type { ComingSoonSchema } from "./schemas/coming-soon-schema"
@@ -31,12 +32,12 @@ export type SettingsType = {
   locale: LocaleType
 }
 
-export interface IconProps extends React.SVGAttributes<SVGElement> {
+export interface IconProps extends SVGAttributes<SVGElement> {
   children?: never
   color?: string
 }
 
-export type IconType = React.ComponentType<IconProps> | LucideIcon
+export type IconType = ComponentType<IconProps> | LucideIcon
 
 export type DynamicIconNameType = keyof typeof icons
 

@@ -1,6 +1,7 @@
 import { usePathname, useRouter } from "next/navigation"
 import { EllipsisVertical, Star } from "lucide-react"
 
+import type { KeyboardEvent } from "react"
 import type { EmailType } from "../types"
 
 import { cn, ensureWithSuffix, formatDate } from "@/lib/utils"
@@ -31,7 +32,7 @@ export function EmailListContentItemMoblie({
 
   const isStarred = email.starred
 
-  function handleOnKeyDown(e: React.KeyboardEvent) {
+  function handleOnKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter" || e.key === " ") {
       handleSetRead(email)
       router.push(ensureWithSuffix(pathname, "/") + email.id)

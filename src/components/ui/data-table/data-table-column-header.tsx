@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowDownUp, ArrowUp, EyeOff } from "lucide-react"
 
 import type { Column } from "@tanstack/react-table"
+import type { ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 interface DataTableColumnHeaderProps<TData, TValue>
-  extends React.HTMLAttributes<HTMLDivElement> {
+  extends ComponentProps<"div"> {
   column: Column<TData, TValue>
   title: string
   className?: string

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { EventType } from "../types"
 
 import { CalendarProvider } from "../_contexts/calendar-context"
@@ -8,7 +9,7 @@ export function CalendarWrapper({
   children,
 }: {
   events: EventType[]
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <CalendarProvider events={events}>

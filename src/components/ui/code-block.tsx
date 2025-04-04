@@ -7,7 +7,7 @@ import type { JSX } from "react"
 import type { BundledLanguage } from "shiki/bundle/web"
 
 import { Button } from "@/components/ui/button"
-import { highlight } from "./highlight"
+import { highlight } from "../highlight"
 
 function isBundledLanguage(value: unknown): value is BundledLanguage {
   return typeof value === "string" && value in bundledLanguages

@@ -2,11 +2,13 @@
 
 import { useEffect } from "react"
 
+import type { ReactNode } from "react"
+
 import { useIsDarkMode } from "@/hooks/use-mode"
 
 const defaultModes = ["light", "dark"]
 
-export function ModeProvider({ children }: { children: React.ReactNode }) {
+export function ModeProvider({ children }: { children: ReactNode }) {
   const isDarkMode = useIsDarkMode()
   const mode = isDarkMode ? "dark" : "light"
 

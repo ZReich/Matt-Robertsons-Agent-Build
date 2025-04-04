@@ -3,7 +3,7 @@
 import { useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DateTimePicker as DateTimePickerComponent } from "@/components/date-time-picker"
+import { DateTimePicker as DateTimePickerComponent } from "@/components/ui/date-time-picker"
 
 export function DateTimePicker() {
   const [dateTime, setDateTime] = useState<Date | undefined>()

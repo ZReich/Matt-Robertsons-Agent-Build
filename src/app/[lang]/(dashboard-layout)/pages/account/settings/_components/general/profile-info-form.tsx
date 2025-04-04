@@ -4,6 +4,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
+import type { ChangeEvent } from "react"
 import type { ProfileInfoFormType, UserType } from "../../../types"
 
 import { ProfileInfoSchema } from "../../_schemas/profile-info-form-schema"
@@ -53,7 +54,7 @@ export function ProfileInfoForm({ user }: { user: UserType }) {
     setPhotoPreview(user?.avatar) // Reset photoPreview to the initial state
   }
 
-  function handleUploadPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleUploadPhoto(e: ChangeEvent<HTMLInputElement>) {
     // Get the selected file from the file input
     const file = e.target.files?.[0]
 

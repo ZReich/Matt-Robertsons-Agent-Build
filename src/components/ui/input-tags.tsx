@@ -3,7 +3,7 @@
 import { useEffect, useImperativeHandle, useRef, useState } from "react"
 import { X } from "lucide-react"
 
-import type { KeyboardEvent } from "react"
+import type { ComponentProps, KeyboardEvent } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -21,7 +21,7 @@ import {
 import { Button } from "./button"
 import { ScrollArea } from "./scroll-area"
 
-export interface InputTagsProps extends React.ComponentProps<"input"> {
+export interface InputTagsProps extends ComponentProps<"input"> {
   placeholder?: string
   tags: string[]
   onTagsChange: (tags: string[]) => void
@@ -105,7 +105,7 @@ export function InputTags({
   )
 }
 
-interface InputTagsWithSuggestionsProps extends React.ComponentProps<"input"> {
+interface InputTagsWithSuggestionsProps extends ComponentProps<"input"> {
   placeholder?: string
   tags: string[]
   suggestions: string[]

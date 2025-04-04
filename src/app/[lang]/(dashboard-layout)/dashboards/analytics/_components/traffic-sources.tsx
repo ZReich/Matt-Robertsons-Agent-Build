@@ -7,7 +7,7 @@ import {
 import { TrafficSourcesChart } from "./traffic-sources-chart"
 import { TrafficSourcesTable } from "./traffic-sources-table"
 
-export async function TrafficSources() {
+export function TrafficSources() {
   return (
     <DashboardCard
       title="Traffic Sources"

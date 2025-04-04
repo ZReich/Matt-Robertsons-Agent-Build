@@ -1,10 +1,9 @@
 "use client"
 
-import { forwardRef } from "react"
 import { Archive, Clock, MoreVertical, Star, Tag, Trash2 } from "lucide-react"
 
-import type { ButtonProps } from "@/components/ui/button"
 import type { IconType } from "@/types"
+import type { ComponentProps } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -14,27 +13,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-interface ActionButtonProps extends ButtonProps {
+interface ActionButtonProps extends ComponentProps<typeof Button> {
   icon: IconType
   label: string
 }
 
-const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
-  ({ icon: Icon, label, ...props }, ref) => {
-    return (
-      <Button
-        ref={ref}
-        variant="ghost"
-        size="icon"
-        aria-label={label}
-        {...props}
-      >
-        <Icon className="h-4 w-4" />
-      </Button>
-    )
-  }
-)
-ActionButton.displayName = "ActionButton"
+export function ActionButton({
+  icon: Icon,
+  label,
+  ...props
+}: ActionButtonProps) {
+  return (
+    <Button variant="ghost" size="icon" aria-label={label} {...props}>
+      <Icon className="h-4 w-4" />
+    </Button>
+  )
+}
 
 export function EmailViewContentActions() {
   return (

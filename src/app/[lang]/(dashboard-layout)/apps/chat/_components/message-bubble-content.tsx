@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { MessageType } from "../types"
 
 import { cn } from "@/lib/utils"
@@ -13,7 +14,7 @@ export function MessageBubbleContent({
   message: MessageType
   isByCurrentUser: boolean
 }) {
-  let content: React.ReactNode
+  let content: ReactNode
 
   // Handle different types of message content
   if (message.text) {

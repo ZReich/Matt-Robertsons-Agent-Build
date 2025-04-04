@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Calendar",
 }
 
-export default async function CalendarPage() {
+export default function CalendarPage() {
   return (
     <CalendarWrapper events={eventsData}>
       <Card>

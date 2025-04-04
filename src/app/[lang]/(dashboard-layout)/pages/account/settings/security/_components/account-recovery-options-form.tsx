@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 
+import type { ComponentProps } from "react"
 import type { AccountRecoveryOptionsFormType, UserType } from "../../../types"
 
 import { AccountRecoveryOptionsSchema } from "../_schemas/account-recovery-options-schema"
@@ -19,8 +20,7 @@ import {
 } from "@/components/ui/form"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
-interface AccountRecoveryOptionsFormProps
-  extends React.HTMLAttributes<HTMLFormElement> {
+interface AccountRecoveryOptionsFormProps extends ComponentProps<"form"> {
   user: UserType
 }
 

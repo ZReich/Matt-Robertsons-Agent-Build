@@ -1,8 +1,10 @@
 import { Slot } from "@radix-ui/react-slot"
 
+import type { ComponentProps } from "react"
+
 import { cn } from "@/lib/utils"
 
-export interface CardProps extends React.ComponentProps<"div"> {
+interface CardProps extends ComponentProps<"div"> {
   asChild?: boolean
 }
 
@@ -21,10 +23,7 @@ export function Card({ className, asChild, ...props }: CardProps) {
   )
 }
 
-export function CardHeader({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function CardHeader({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-header"
@@ -34,7 +33,7 @@ export function CardHeader({
   )
 }
 
-export interface CardTitleProps extends React.ComponentProps<"div"> {
+interface CardTitleProps extends ComponentProps<"div"> {
   asChild?: boolean
 }
 
@@ -53,7 +52,7 @@ export function CardTitle({ className, asChild, ...props }: CardTitleProps) {
 export function CardDescription({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: ComponentProps<"div">) {
   return (
     <p
       data-slot="card-description"
@@ -63,10 +62,7 @@ export function CardDescription({
   )
 }
 
-export function CardContent({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function CardContent({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-action"
@@ -76,10 +72,7 @@ export function CardContent({
   )
 }
 
-export function CardFooter({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function CardFooter({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"

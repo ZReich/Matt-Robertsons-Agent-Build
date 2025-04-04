@@ -2,10 +2,8 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
-import type {
-  ChartConfig,
-  ChartTooltipContentProps,
-} from "@/components/ui/chart"
+import type { ChartConfig } from "@/components/ui/chart"
+import type { ComponentProps } from "react"
 import type { OverviewType } from "../../types"
 
 import { formatPercent } from "@/lib/utils"
@@ -17,7 +15,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+function ModifiedChartTooltipContent(
+  props: ComponentProps<typeof ChartTooltipContent>
+) {
   if (!props.payload || props.payload.length === 0) return null
 
   return (

@@ -7,6 +7,7 @@ import "../globals.css"
 import { Providers } from "@/providers"
 
 import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
 import { Toaster } from "@/components/ui/toaster"
 
@@ -30,11 +31,7 @@ const latoFont = Lato({
   variable: "--font-lato",
 })
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body

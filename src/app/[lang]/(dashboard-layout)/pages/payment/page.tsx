@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Payment",
 }
 
-export default async function PaymentPage() {
+export default function PaymentPage() {
   return (
     <section className="container p-4">
       <CardTitle className="pb-6">Payment</CardTitle>

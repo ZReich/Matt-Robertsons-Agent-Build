@@ -3,7 +3,7 @@
 import type { TaskType } from "../types"
 
 import { CardContent, CardDescription, CardTitle } from "@/components/ui/card"
-import { MediaGrid } from "@/components/media-grid"
+import { MediaGrid } from "@/components/ui/media-grid"
 
 interface KanbanTaskItemContentProps {
   task: TaskType

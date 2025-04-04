@@ -3,16 +3,15 @@
 import { useEffect, useState } from "react"
 import { Minus, Plus } from "lucide-react"
 
-import type { ButtonProps } from "@/components/ui/button"
-import type { ChangeEvent } from "react"
+import type { ChangeEvent, ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 
-export interface InputSpinProps
+interface InputSpinProps
   extends Omit<
-    React.ComponentProps<"input">,
+    ComponentProps<"input">,
     "onChange" | "value" | "min" | "max" | "step"
   > {
   value?: number
@@ -20,7 +19,7 @@ export interface InputSpinProps
   min?: number
   max?: number
   step?: number
-  buttonVariant?: ButtonProps["variant"]
+  buttonVariant?: ComponentProps<typeof Button>["variant"]
 }
 
 export function InputSpin({

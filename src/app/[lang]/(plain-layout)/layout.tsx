@@ -1,7 +1,5 @@
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+import type { ReactNode } from "react"
+
+export default function DashboardLayout({ children }: { children: ReactNode }) {
   return <main className="min-h-screen w-full">{children}</main>
 }

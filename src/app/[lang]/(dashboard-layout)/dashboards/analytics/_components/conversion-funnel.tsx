@@ -7,7 +7,7 @@ import {
 import { ConversionFunnelChart } from "./conversion-funnel-chart"
 import { ConversionFunnelList } from "./conversion-funnel-list"
 
-export async function ConversionFunnel() {
+export function ConversionFunnel() {
   return (
     <DashboardCard
       title="Conversion Funnel"

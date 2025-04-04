@@ -1,10 +1,8 @@
+import type { ComponentProps } from "react"
+
 import { cn } from "@/lib/utils"
 
-export function Input({
-  className,
-  type,
-  ...props
-}: React.ComponentProps<"input">) {
+export function Input({ className, type, ...props }: ComponentProps<"input">) {
   return (
     <input
       data-slot="input"

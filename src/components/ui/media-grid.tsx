@@ -2,6 +2,8 @@
 
 import Image from "next/image"
 
+import type { ComponentProps, MouseEvent } from "react"
+
 import { cn } from "@/lib/utils"
 
 export interface MediaType {
@@ -10,11 +12,11 @@ export interface MediaType {
   type?: "IMAGE" | "VIDEO"
 }
 
-export interface MediaGridProps extends React.HTMLAttributes<HTMLUListElement> {
+export interface MediaGridProps extends ComponentProps<"ul"> {
   data: Array<MediaType>
   limit?: number
-  onMoreButtonClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
-  onMediaClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onMoreButtonClick?: (event: MouseEvent<HTMLButtonElement>) => void
+  onMediaClick?: (event: MouseEvent<HTMLButtonElement>) => void
 }
 
 export function MediaGrid({

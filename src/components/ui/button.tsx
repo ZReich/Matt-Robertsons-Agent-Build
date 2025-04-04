@@ -4,6 +4,7 @@ import { LoaderCircle } from "lucide-react"
 
 import type { IconType } from "@/types"
 import type { VariantProps } from "class-variance-authority"
+import type { ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -36,8 +37,8 @@ export const buttonVariants = cva(
   }
 )
 
-export interface ButtonProps
-  extends React.ComponentProps<"button">,
+interface ButtonProps
+  extends ComponentProps<"button">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
@@ -60,7 +61,7 @@ export function Button({
   )
 }
 
-export interface ButtonLoadingProps extends ButtonProps {
+interface ButtonLoadingProps extends ButtonProps {
   isLoading: boolean
   loadingIconClassName?: string
   iconClassName?: string

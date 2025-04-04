@@ -1,7 +1,7 @@
 import { activityTimelineData } from "../_data/activity-timeline"
 
+import { DatePicker } from "@/components/ui/date-picker"
 import { DashboardCard } from "@/components/dashboards/dashboard-card"
-import { DatePicker } from "@/components/date-picker"
 import { ActivityTimelineList } from "./activity-timeline-list"
 
 export function ActivityTimeline() {

@@ -1,4 +1,4 @@
-import type { MediaType } from "@/components/media-grid"
+import type { MediaType } from "@/components/ui/media-grid"
 import type { DynamicIconNameType } from "@/types"
 import type { z } from "zod"
 import type { DeleteAccountSchema } from "./settings/_schemas/delete-account-schema"

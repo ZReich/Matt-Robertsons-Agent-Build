@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
 import { Separator } from "@/components/ui/separator"
 import { DocsBreadcrumb } from "./_components/docs-breadcrumb"
@@ -14,11 +15,7 @@ export const metadata: Metadata = {
   title: "Documentation",
 }
 
-export default async function DocsLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DocsLayout({ children }: { children: ReactNode }) {
   return (
     <div className="w-screen">
       <DocsHeader />

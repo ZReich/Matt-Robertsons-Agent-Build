@@ -6,7 +6,7 @@ import { useDirection } from "@radix-ui/react-direction"
 import * as RPNInputPrimitive from "react-phone-number-input"
 import { Check, ChevronsUpDown } from "lucide-react"
 
-import type { InputHTMLAttributes } from "react"
+import type { ComponentProps, ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -28,7 +28,7 @@ import {
 import { ScrollArea } from "./scroll-area"
 
 type InputPhoneProps = Omit<
-  InputHTMLAttributes<HTMLInputElement>,
+  ComponentPropsWithoutRef<"input">,
   "onChange" | "value"
 > &
   Omit<
@@ -64,10 +64,7 @@ export function InputPhone({ className, onChange, ...props }: InputPhoneProps) {
   )
 }
 
-function InputComponent({
-  className,
-  ...props
-}: React.ComponentProps<"input">) {
+function InputComponent({ className, ...props }: ComponentProps<"input">) {
   return (
     <Input
       className={cn("rounded-e-md rounded-s-none", className)}

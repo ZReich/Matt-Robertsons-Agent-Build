@@ -2,8 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis } from "recharts"
 
-import type { ChartTooltipContentProps } from "@/components/ui/chart"
-import type { CSSProperties } from "react"
+import type { CSSProperties, ComponentProps } from "react"
 import type { ChurnRateType } from "../types"
 
 import { camelCaseToTitleCase, formatPercent } from "@/lib/utils"
@@ -16,7 +15,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+function ModifiedChartTooltipContent(
+  props: ComponentProps<typeof ChartTooltipContent>
+) {
   if (!props.payload || props.payload.length === 0) return null
 
   return (

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { ChatType } from "../types"
 
 import { ChatProvider } from "../_contexts/chat-context"
@@ -8,7 +9,7 @@ export function ChatWrapper({
   children,
 }: {
   chatsData: ChatType[]
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <ChatProvider chatsData={chatsData}>

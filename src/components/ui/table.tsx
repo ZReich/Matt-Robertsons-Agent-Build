@@ -1,6 +1,8 @@
+import type { ComponentProps } from "react"
+
 import { cn } from "@/lib/utils"
 
-export function Table({ className, ...props }: React.ComponentProps<"table">) {
+export function Table({ className, ...props }: ComponentProps<"table">) {
   return (
     <div data-slot="table-container" className="relative w-full overflow-auto">
       <table
@@ -12,10 +14,7 @@ export function Table({ className, ...props }: React.ComponentProps<"table">) {
   )
 }
 
-export function TableHeader({
-  className,
-  ...props
-}: React.ComponentProps<"thead">) {
+export function TableHeader({ className, ...props }: ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
@@ -25,10 +24,7 @@ export function TableHeader({
   )
 }
 
-export function TableBody({
-  className,
-  ...props
-}: React.ComponentProps<"tbody">) {
+export function TableBody({ className, ...props }: ComponentProps<"tbody">) {
   return (
     <tbody
       data-slot="table-body"
@@ -38,10 +34,7 @@ export function TableBody({
   )
 }
 
-export function TableFooter({
-  className,
-  ...props
-}: React.ComponentProps<"tfoot">) {
+export function TableFooter({ className, ...props }: ComponentProps<"tfoot">) {
   return (
     <tfoot
       data-slot="table-footer"
@@ -54,7 +47,7 @@ export function TableFooter({
   )
 }
 
-export function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+export function TableRow({ className, ...props }: ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
@@ -67,7 +60,7 @@ export function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   )
 }
 
-export function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+export function TableHead({ className, ...props }: ComponentProps<"th">) {
   return (
     <th
       data-slot="table-head"
@@ -80,7 +73,7 @@ export function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   )
 }
 
-export function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+export function TableCell({ className, ...props }: ComponentProps<"td">) {
   return (
     <td
       data-slot="table-cell"
@@ -96,7 +89,7 @@ export function TableCell({ className, ...props }: React.ComponentProps<"td">) {
 export function TableCaption({
   className,
   ...props
-}: React.ComponentProps<"caption">) {
+}: ComponentProps<"caption">) {
   return (
     <caption
       data-slot="table-caption"

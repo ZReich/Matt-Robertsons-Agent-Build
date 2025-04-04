@@ -24,10 +24,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { MediaGrid } from "@/components/ui/media-grid"
 import { Separator } from "@/components/ui/separator"
 import { Toggle } from "@/components/ui/toggle"
 import { DynamicIcon } from "@/components/dynamic-icon"
-import { MediaGrid } from "@/components/media-grid"
 
 const visibilityIcons: Record<VisibilityType, DynamicIconNameType> = {
   public: "Globe",

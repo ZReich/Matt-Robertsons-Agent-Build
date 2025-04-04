@@ -5,7 +5,7 @@ import * as AvatarPrimitive from "@radix-ui/react-avatar"
 import { cva } from "class-variance-authority"
 
 import type { VariantProps } from "class-variance-authority"
-import type { HTMLAttributes, MouseEvent } from "react"
+import type { ComponentProps, MouseEvent } from "react"
 
 import { cn, getInitials } from "@/lib/utils"
 
@@ -19,7 +19,7 @@ import {
 export function Avatar({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
+}: ComponentProps<typeof AvatarPrimitive.Root>) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
@@ -32,7 +32,7 @@ export function Avatar({
 export function AvatarImage({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+}: ComponentProps<typeof AvatarPrimitive.Image>) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
@@ -48,7 +48,7 @@ export function AvatarImage({
 export function AvatarFallback({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: ComponentProps<typeof AvatarPrimitive.Fallback>) {
   return (
     <AvatarPrimitive.Fallback
       className={cn(
@@ -60,7 +60,7 @@ export function AvatarFallback({
   )
 }
 
-const avatarStackVariants = cva(
+export const avatarStackVariants = cva(
   "transition duration-300 hover:scale-105 hover:z-10",
   {
     variants: {
@@ -76,8 +76,8 @@ const avatarStackVariants = cva(
   }
 )
 
-export interface AvatarStackProps
-  extends HTMLAttributes<HTMLDivElement>,
+interface AvatarStackProps
+  extends ComponentProps<"div">,
     VariantProps<typeof avatarStackVariants> {
   avatars: { src?: string; alt: string; href?: string }[]
   limit?: number

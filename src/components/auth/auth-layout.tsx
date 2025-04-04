@@ -1,66 +1,66 @@
 "use client"
 
-import { forwardRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 
 import type { LocaleType } from "@/types"
-import type { HTMLAttributes } from "react"
+import type { ComponentProps } from "react"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
-interface AuthProps extends HTMLAttributes<HTMLDivElement> {
+interface AuthProps extends ComponentProps<"div"> {
   imgSrc?: string
   imgClassName?: string
 }
 
-const Auth = forwardRef<HTMLDivElement, AuthProps>(
-  ({ className, children, imgSrc, imgClassName, ...props }, ref) => {
-    const params = useParams()
-    const locale = params.lang as LocaleType
+export function Auth({
+  className,
+  children,
+  imgSrc,
+  imgClassName,
+  ...props
+}: AuthProps) {
+  const params = useParams()
+  const locale = params.lang as LocaleType
 
-    return (
-      <section
-        ref={ref}
-        className={cn(
-          "container relative min-h-screen w-full flex px-0",
-          className
-        )}
-        {...props}
+  return (
+    <section
+      className={cn(
+        "container relative min-h-screen w-full flex px-0",
+        className
+      )}
+      {...props}
+    >
+      <Link
+        href={ensureLocalizedPathname("/", locale)}
+        className="absolute top-4 start-4 flex text-foreground font-black z-50 hover:text-primary/90"
       >
-        <Link
-          href={ensureLocalizedPathname("/", locale)}
-          className="absolute top-4 start-4 flex text-foreground font-black z-50 hover:text-primary/90"
-        >
-          <Image
-            src="/images/icons/shadboard.svg"
-            alt=""
-            height={24}
-            width={24}
-            className="dark:invert"
-          />
-          <span>Shadboard</span>
-        </Link>
-        <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6">
-          {children}
-        </div>
-        {imgSrc && <AuthImage imgSrc={imgSrc} className={imgClassName} />}
-      </section>
-    )
-  }
-)
-Auth.displayName = "Auth"
+        <Image
+          src="/images/icons/shadboard.svg"
+          alt=""
+          height={24}
+          width={24}
+          className="dark:invert"
+        />
+        <span>Shadboard</span>
+      </Link>
+      <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6">
+        {children}
+      </div>
+      {imgSrc && <AuthImage imgSrc={imgSrc} className={imgClassName} />}
+    </section>
+  )
+}
 
-interface AuthImageProps extends HTMLAttributes<HTMLDivElement> {
+interface AuthImageProps extends ComponentProps<"div"> {
   imgSrc: string
 }
 
-const AuthImage = forwardRef<HTMLDivElement, AuthImageProps>(
-  ({ className, imgSrc, ...props }, ref) => (
+export function AuthImage({ className, imgSrc, ...props }: AuthImageProps) {
+  return (
     <div
-      ref={ref}
       className={cn(
         "relative hidden min-h-screen w-1/2 bg-muted md:block",
         className
@@ -77,67 +77,34 @@ const AuthImage = forwardRef<HTMLDivElement, AuthImageProps>(
       />
     </div>
   )
-)
-AuthImage.displayName = "AuthImage"
+}
 
-const AuthHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("space-y-2 text-center", className)}
+export function AuthHeader({ className, ...props }: ComponentProps<"div">) {
+  return <div className={cn("space-y-2 text-center", className)} {...props} />
+}
+
+export function AuthTitle({ className, ...props }: ComponentProps<"h1">) {
+  return (
+    <h1
+      className={cn(
+        "text-2xl font-semibold leading-none tracking-tight",
+        className
+      )}
       {...props}
     />
   )
-)
-AuthHeader.displayName = "AuthHeader"
+}
 
-const AuthTitle = forwardRef<
-  HTMLParagraphElement,
-  HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h1
-    ref={ref}
-    className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
-      className
-    )}
-    {...props}
-  />
-))
-AuthTitle.displayName = "AuthTitle"
-
-const AuthDescription = forwardRef<
-  HTMLParagraphElement,
-  HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-))
-AuthDescription.displayName = "AuthDescription"
-
-const AuthForm = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={className} {...props} />
+export function AuthDescription({ className, ...props }: ComponentProps<"p">) {
+  return (
+    <p className={cn("text-sm text-muted-foreground", className)} {...props} />
   )
-)
-AuthForm.displayName = "AuthForm"
+}
 
-const AuthFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("grid gap-6", className)} {...props} />
-  )
-)
-AuthFooter.displayName = "AuthFooter"
+export function AuthForm({ className, ...props }: ComponentProps<"div">) {
+  return <div className={className} {...props} />
+}
 
-export {
-  Auth,
-  AuthHeader,
-  AuthFooter,
-  AuthTitle,
-  AuthDescription,
-  AuthForm,
-  AuthImage,
+export function AuthFooter({ className, ...props }: ComponentProps<"div">) {
+  return <div className={cn("grid gap-6", className)} {...props} />
 }

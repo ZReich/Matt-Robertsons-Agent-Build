@@ -6,7 +6,7 @@ import {
 } from "@/components/dashboards/dashboard-card"
 import { TopProductsList } from "./top-products-list"
 
-export async function TopProducts() {
+export function TopProducts() {
   return (
     <DashboardCard
       title="Top Products"

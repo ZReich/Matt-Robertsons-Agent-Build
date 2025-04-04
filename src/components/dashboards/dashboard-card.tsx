@@ -1,10 +1,9 @@
-import { forwardRef } from "react"
 import { cva } from "class-variance-authority"
 import { EllipsisVertical } from "lucide-react"
 
 import type { FormatStyleType, IconType } from "@/types"
 import type { VariantProps } from "class-variance-authority"
-import type { ComponentPropsWithoutRef, HTMLAttributes, ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 
 import { cn, formatOverviewCardValue } from "@/lib/utils"
 
@@ -24,21 +23,24 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { PercentageChangeBadge } from "./percentage-change-badge"
 
-const cardContentVariants = cva("flex flex-col justify-between gap-y-6", {
-  variants: {
-    size: {
-      xs: "h-32",
-      sm: "h-64",
-      default: "h-96",
-      lg: "h-[29rem]",
+export const cardContentVariants = cva(
+  "flex flex-col justify-between gap-y-6",
+  {
+    variants: {
+      size: {
+        xs: "h-32",
+        sm: "h-64",
+        default: "h-96",
+        lg: "h-[29rem]",
+      },
     },
-  },
-  defaultVariants: {
-    size: "default",
-  },
-})
+    defaultVariants: {
+      size: "default",
+    },
+  }
+)
 
-interface DashboardCardProps extends HTMLAttributes<HTMLDivElement> {
+interface DashboardCardProps extends ComponentProps<"div"> {
   title: string
   period?: string
   action?: ReactNode
@@ -46,12 +48,17 @@ interface DashboardCardProps extends HTMLAttributes<HTMLDivElement> {
   size?: VariantProps<typeof cardContentVariants>["size"]
 }
 
-const DashboardCard = forwardRef<HTMLDivElement, DashboardCardProps>(
-  (
-    { title, period, action, children, contentClassName, size, ...props },
-    ref
-  ) => (
-    <Card ref={ref} asChild {...props}>
+export function DashboardCard({
+  title,
+  period,
+  action,
+  children,
+  contentClassName,
+  size,
+  ...props
+}: DashboardCardProps) {
+  return (
+    <Card asChild {...props}>
       <article>
         <div className="flex justify-between p-6">
           <div>
@@ -68,10 +75,9 @@ const DashboardCard = forwardRef<HTMLDivElement, DashboardCardProps>(
       </article>
     </Card>
   )
-)
-DashboardCard.displayName = "DashboardCard"
+}
 
-interface DashboardOverviewCardProps extends HTMLAttributes<HTMLDivElement> {
+interface DashboardOverviewCardProps extends ComponentProps<"div"> {
   data: {
     value: number
     percentageChange: number
@@ -84,56 +90,46 @@ interface DashboardOverviewCardProps extends HTMLAttributes<HTMLDivElement> {
   contentClassName?: string
 }
 
-const DashboardOverviewCard = forwardRef<
-  HTMLDivElement,
-  DashboardOverviewCardProps
->(
-  (
-    {
-      data,
-      title,
-      period,
-      action,
-      icon: Icon,
-      formatStyle = "regular",
-      className,
-      contentClassName,
-      ...props
-    },
-    ref
-  ) => {
-    const value = formatOverviewCardValue(data.value, formatStyle)
+export function DashboardOverviewCard({
+  data,
+  title,
+  period,
+  action,
+  icon: Icon,
+  formatStyle = "regular",
+  className,
+  contentClassName,
+  ...props
+}: DashboardOverviewCardProps) {
+  const value = formatOverviewCardValue(data.value, formatStyle)
 
-    return (
-      <Card
-        ref={ref}
-        className={cn("flex flex-col justify-between", className)}
-        asChild
-        {...props}
-      >
-        <article>
-          <div className="flex justify-between p-6">
-            <div>
-              <CardTitle className="inline-flex gap-x-1">
-                <Icon className="size-4" aria-hidden />
-                <span>{title}</span>
-              </CardTitle>
-              {period && <CardDescription>{period}</CardDescription>}
-            </div>
-            {action}
+  return (
+    <Card
+      className={cn("flex flex-col justify-between", className)}
+      asChild
+      {...props}
+    >
+      <article>
+        <div className="flex justify-between p-6">
+          <div>
+            <CardTitle className="inline-flex gap-x-1">
+              <Icon className="size-4" aria-hidden />
+              <span>{title}</span>
+            </CardTitle>
+            {period && <CardDescription>{period}</CardDescription>}
           </div>
-          <CardContent className={cn("space-y-1", contentClassName)}>
-            <p className="text-2xl font-semibold break-all">{value}</p>
-            <PercentageChangeBadge value={data.percentageChange} />
-          </CardContent>
-        </article>
-      </Card>
-    )
-  }
-)
-DashboardOverviewCard.displayName = "DashboardOverviewCard"
+          {action}
+        </div>
+        <CardContent className={cn("space-y-1", contentClassName)}>
+          <p className="text-2xl font-semibold break-all">{value}</p>
+          <PercentageChangeBadge value={data.percentageChange} />
+        </CardContent>
+      </article>
+    </Card>
+  )
+}
 
-interface DashboardOverviewCardV2Props extends HTMLAttributes<HTMLDivElement> {
+interface DashboardOverviewCardV2Props extends ComponentProps<"div"> {
   data: {
     value: number
     percentageChange: number
@@ -147,71 +143,61 @@ interface DashboardOverviewCardV2Props extends HTMLAttributes<HTMLDivElement> {
   contentClassName?: string
 }
 
-const DashboardOverviewCardV2 = forwardRef<
-  HTMLDivElement,
-  DashboardOverviewCardV2Props
->(
-  (
-    {
-      data,
-      title,
-      period,
-      action,
-      icon: Icon,
-      iconColor = "hsl(var(--primary))",
-      formatStyle = "regular",
-      className,
-      contentClassName,
-      ...props
-    },
-    ref
-  ) => {
-    const value = formatOverviewCardValue(data.value, formatStyle)
+export function DashboardOverviewCardV2({
+  data,
+  title,
+  period,
+  action,
+  icon: Icon,
+  iconColor = "hsl(var(--primary))",
+  formatStyle = "regular",
+  className,
+  contentClassName,
+  ...props
+}: DashboardOverviewCardV2Props) {
+  const value = formatOverviewCardValue(data.value, formatStyle)
 
-    return (
-      <Card
-        ref={ref}
-        className={cn("flex flex-col justify-between", className)}
-        asChild
-        {...props}
-      >
-        <article>
-          <div className="flex justify-between p-6">
-            <div className="flex items-center gap-x-2">
-              <Badge
-                style={{
-                  backgroundColor: iconColor,
-                }}
-                className="size-12 aspect-square"
-                aria-hidden
-              >
-                <Icon className="size-full" />
-              </Badge>
-              <div>
-                <CardDescription>{period}</CardDescription>
-                <PercentageChangeBadge
-                  variant="ghost"
-                  value={data.percentageChange}
-                  className="p-0"
-                />
-              </div>
+  return (
+    <Card
+      className={cn("flex flex-col justify-between", className)}
+      asChild
+      {...props}
+    >
+      <article>
+        <div className="flex justify-between p-6">
+          <div className="flex items-center gap-x-2">
+            <Badge
+              style={{
+                backgroundColor: iconColor,
+              }}
+              className="size-12 aspect-square"
+              aria-hidden
+            >
+              <Icon className="size-full" />
+            </Badge>
+            <div>
+              <CardDescription>{period}</CardDescription>
+              <PercentageChangeBadge
+                variant="ghost"
+                value={data.percentageChange}
+                className="p-0"
+              />
             </div>
-            {action}
           </div>
-          <CardContent className={cn("space-y-1", contentClassName)}>
-            <CardTitle className="text-muted-foreground font-normal">
-              {title}
-            </CardTitle>
-            <p className="text-2xl font-semibold break-all">{value}</p>
-          </CardContent>
-        </article>
-      </Card>
-    )
-  }
-)
-DashboardOverviewCardV2.displayName = "DashboardOverviewCardV2"
+          {action}
+        </div>
+        <CardContent className={cn("space-y-1", contentClassName)}>
+          <CardTitle className="text-muted-foreground font-normal">
+            {title}
+          </CardTitle>
+          <p className="text-2xl font-semibold break-all">{value}</p>
+        </CardContent>
+      </article>
+    </Card>
+  )
+}
 
-interface DashboardOverviewCardV3Props extends HTMLAttributes<HTMLDivElement> {
+interface DashboardOverviewCardV3Props extends ComponentProps<"div"> {
   data: {
     value: number
     percentageChange: number
@@ -223,68 +209,58 @@ interface DashboardOverviewCardV3Props extends HTMLAttributes<HTMLDivElement> {
   contentClassName?: string
 }
 
-const DashboardOverviewCardV3 = forwardRef<
-  HTMLDivElement,
-  DashboardOverviewCardV3Props
->(
-  (
-    {
-      data,
-      title,
-      action,
-      chart,
-      formatStyle = "regular",
-      contentClassName,
-      className,
-      ...props
-    },
-    ref
-  ) => {
-    const value = formatOverviewCardValue(data.value, formatStyle)
+export function DashboardOverviewCardV3({
+  data,
+  title,
+  action,
+  chart,
+  formatStyle = "regular",
+  contentClassName,
+  className,
+  ...props
+}: DashboardOverviewCardV3Props) {
+  const value = formatOverviewCardValue(data.value, formatStyle)
 
-    return (
-      <Card
-        ref={ref}
-        className={cn("flex flex-col justify-between", className)}
-        asChild
-        {...props}
-      >
-        <article>
-          <div className="flex justify-between p-6 pb-3">
-            <div>
-              <CardTitle className="text-muted-foreground font-normal">
-                {title}
-              </CardTitle>
-              <div className="inline-flex flex-wrap items-baseline gap-x-1">
-                <p className="text-2xl font-semibold break-all">{value}</p>
-                <PercentageChangeBadge
-                  variant="ghost"
-                  value={data.percentageChange}
-                  className="p-0"
-                />
-              </div>
+  return (
+    <Card
+      className={cn("flex flex-col justify-between", className)}
+      asChild
+      {...props}
+    >
+      <article>
+        <div className="flex justify-between p-6 pb-3">
+          <div>
+            <CardTitle className="text-muted-foreground font-normal">
+              {title}
+            </CardTitle>
+            <div className="inline-flex flex-wrap items-baseline gap-x-1">
+              <p className="text-2xl font-semibold break-all">{value}</p>
+              <PercentageChangeBadge
+                variant="ghost"
+                value={data.percentageChange}
+                className="p-0"
+              />
             </div>
-            {action}
           </div>
-          <CardContent
-            className={cn(
-              "flex justify-center items-center p-0",
-              contentClassName
-            )}
-          >
-            {chart}
-          </CardContent>
-        </article>
-      </Card>
-    )
-  }
-)
-DashboardOverviewCardV3.displayName = "DashboardOverviewCardV3"
+          {action}
+        </div>
+        <CardContent
+          className={cn(
+            "flex justify-center items-center p-0",
+            contentClassName
+          )}
+        >
+          {chart}
+        </CardContent>
+      </article>
+    </Card>
+  )
+}
 
-function DashboardCardActionsDropdown({
+export function DashboardCardActionsDropdown({
   children,
   ...props
-}: ComponentPropsWithoutRef<typeof DropdownMenu>) {
+}: ComponentProps<typeof DropdownMenu>) {
   return (
     <DropdownMenu {...props}>
       <DropdownMenuTrigger
@@ -310,12 +286,4 @@ function DashboardCardActionsDropdown({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
-
-export {
-  DashboardCard,
-  DashboardOverviewCard,
-  DashboardOverviewCardV2,
-  DashboardOverviewCardV3,
-  DashboardCardActionsDropdown,
 }

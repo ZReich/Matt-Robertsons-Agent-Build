@@ -13,6 +13,7 @@ import { KanbanTaskSchema } from "../../_schemas/kanban-task-schema"
 
 import { useKanbanContext } from "../../_hooks/use-kanban-context"
 import { ButtonLoading } from "@/components/ui/button"
+import { DatePicker } from "@/components/ui/date-picker"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import {
   Form,
@@ -40,7 +41,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/date-picker"
 
 const defaultValues = {
   title: "",

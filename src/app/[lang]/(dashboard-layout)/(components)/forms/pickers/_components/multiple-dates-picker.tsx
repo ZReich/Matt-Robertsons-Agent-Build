@@ -3,7 +3,7 @@
 import { useState } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MultipleDatesPicker as MultipleDatesPickerComponent } from "@/components/multiple-date-picker"
+import { MultipleDatesPicker as MultipleDatesPickerComponent } from "@/components/ui/multiple-date-picker"
 
 export function MultipleDatesPicker() {
   const [dates, setDates] = useState<Date[] | undefined>([])

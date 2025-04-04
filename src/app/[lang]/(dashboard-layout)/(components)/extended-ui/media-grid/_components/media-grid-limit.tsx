@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { MediaGrid } from "@/components/media-grid"
+import { MediaGrid } from "@/components/ui/media-grid"
 
 const mediaData = [
   { src: "/images/illustrations/scenes/scene-01.svg", alt: "" },

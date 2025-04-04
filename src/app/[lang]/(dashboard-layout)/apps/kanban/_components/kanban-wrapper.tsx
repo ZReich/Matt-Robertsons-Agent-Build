@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { ColumnType } from "../types"
 
 import { KanbanProvider } from "../_contexts/kanban-context"
@@ -8,7 +9,7 @@ export function KanbanWrapper({
   children,
 }: {
   kanbanData: ColumnType[]
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <KanbanProvider kanbanData={kanbanData}>

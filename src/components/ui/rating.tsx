@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 
 import { DynamicIcon } from "../dynamic-icon"
 
-const starVariants = cva(
+export const starVariants = cva(
   "transition-all duration-100 ease-in-out hover:scale-110",
   {
     variants: {
@@ -39,7 +39,7 @@ const starVariants = cva(
   }
 )
 
-export interface RatingProps
+interface RatingProps
   extends ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>,
     VariantProps<typeof starVariants> {
   length?: number
@@ -127,7 +127,7 @@ export function Rating({
   )
 }
 
-export interface RatingStarProps
+interface RatingStarProps
   extends RadioGroupPrimitive.RadioGroupItemProps,
     VariantProps<typeof starVariants> {
   onHoverValue: (rating: string) => void

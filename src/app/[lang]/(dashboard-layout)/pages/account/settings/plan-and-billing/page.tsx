@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Plan and Billing Settings",
 }
 
-export default async function PlanAndBillingPage() {
+export default function PlanAndBillingPage() {
   return (
     <div className="grid gap-4">
       <CurrentPlan />

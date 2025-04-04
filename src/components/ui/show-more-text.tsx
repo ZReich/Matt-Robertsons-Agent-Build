@@ -3,9 +3,17 @@
 import { useState } from "react"
 import { Slot } from "@radix-ui/react-slot"
 
+import type { ComponentProps } from "react"
+
 import { cn } from "@/lib/utils"
 
 import { Button } from "./button"
+
+type ShowMoreTextProps = ComponentProps<"p"> & {
+  text: string
+  maxLength?: number
+  asChild?: boolean
+}
 
 export function ShowMoreText({
   className,
@@ -13,11 +21,7 @@ export function ShowMoreText({
   maxLength = 250,
   asChild = false,
   ...props
-}: React.ComponentProps<"p"> & {
-  text: string
-  maxLength?: number
-  asChild?: boolean
-}) {
+}: ShowMoreTextProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const Comp = asChild ? Slot : "p"

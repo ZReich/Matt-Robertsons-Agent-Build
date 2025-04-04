@@ -2,12 +2,12 @@
 
 import { Menu } from "lucide-react"
 
-import type { ButtonProps } from "@/components/ui/button"
+import type { ComponentProps } from "react"
 
 import { useEmailContext } from "../_hooks/use-email-context"
 import { Button } from "@/components/ui/button"
 
-interface EmailMenuButtonProps extends ButtonProps {
+interface EmailMenuButtonProps extends ComponentProps<typeof Button> {
   isIcon?: boolean
 }
 

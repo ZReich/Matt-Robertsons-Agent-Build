@@ -1,6 +1,7 @@
 "use client"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
+import type { ReactNode } from "react"
 
 import { useIsVertical } from "@/hooks/use-is-vertical"
 import { Customizer } from "./customizer"
@@ -11,7 +12,7 @@ export function Layout({
   children,
   dictionary,
 }: {
-  children: React.ReactNode
+  children: ReactNode
   dictionary: DictionaryType
 }) {
   const isVertical = useIsVertical()

@@ -2,7 +2,7 @@
 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 
-import type { ChartTooltipContentProps } from "@/components/ui/chart"
+import type { ComponentProps } from "react"
 import type { DotProps } from "recharts"
 import type { SalesByCountryType } from "../types"
 
@@ -15,7 +15,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-function ModifiedChartTooltipContent(props: ChartTooltipContentProps) {
+function ModifiedChartTooltipContent(
+  props: ComponentProps<typeof ChartTooltipContent>
+) {
   if (!props.payload || props.payload.length === 0) return null
 
   return (

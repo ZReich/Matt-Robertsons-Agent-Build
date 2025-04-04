@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import { Theme } from "emoji-picker-react"
 import { Smile } from "lucide-react"
 
-import type { ButtonProps } from "@/components/ui/button"
+import type { Button } from "@/components/ui/button"
 import type { ComponentProps, ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
@@ -27,11 +27,11 @@ const Picker = dynamic(
   { ssr: false }
 )
 
-export interface EmojiPicker extends ComponentProps<typeof Picker> {
+interface EmojiPickerProps extends ComponentProps<typeof Picker> {
   popoverContentClassName?: string
   popoverContentOptions?: ComponentPropsWithoutRef<typeof PopoverContent>
   buttonClassName?: string
-  buttonOptions?: ButtonProps
+  buttonOptions?: ComponentProps<typeof Button>
   placeholder?: string
 }
 
@@ -41,7 +41,7 @@ export function EmojiPicker({
   buttonClassName,
   buttonOptions,
   ...props
-}: EmojiPicker) {
+}: EmojiPickerProps) {
   const isDarkMode = useIsDarkMode()
 
   const theme = isDarkMode ? Theme.DARK : Theme.LIGHT
@@ -75,7 +75,7 @@ export function ReactionPicker({
   buttonClassName,
   buttonOptions,
   ...props
-}: EmojiPicker) {
+}: EmojiPickerProps) {
   const isDarkMode = useIsDarkMode()
 
   const theme = isDarkMode ? Theme.DARK : Theme.LIGHT

@@ -1,11 +1,12 @@
 import type { LocaleType } from "@/types"
+import type { ReactNode } from "react"
 
 import { getDictionary } from "@/lib/get-dictionary"
 
 import { Layout } from "@/components/layout"
 
 export default async function DashboardLayout(props: {
-  children: React.ReactNode
+  children: ReactNode
   params: Promise<{ lang: LocaleType }>
 }) {
   const params = await props.params

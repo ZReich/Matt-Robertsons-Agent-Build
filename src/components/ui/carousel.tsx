@@ -11,7 +11,7 @@ import useEmblaCarousel from "embla-carousel-react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import type { UseEmblaCarouselType } from "embla-carousel-react"
-import type { KeyboardEvent } from "react"
+import type { ComponentProps, KeyboardEvent } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -58,7 +58,7 @@ export function Carousel({
   className,
   children,
   ...props
-}: React.ComponentProps<"div"> & CarouselProps) {
+}: ComponentProps<"div"> & CarouselProps) {
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
@@ -152,7 +152,7 @@ export function Carousel({
 export function CarouselContent({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: ComponentProps<"div">) {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -170,10 +170,7 @@ export function CarouselContent({
   )
 }
 
-export function CarouselItem({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function CarouselItem({ className, ...props }: ComponentProps<"div">) {
   const { orientation } = useCarousel()
 
   return (
@@ -196,7 +193,7 @@ export function CarouselPrevious({
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: ComponentProps<typeof Button>) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
@@ -226,7 +223,7 @@ export function CarouselNext({
   variant = "outline",
   size = "icon",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: ComponentProps<typeof Button>) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (

@@ -5,7 +5,7 @@ import type { MessageType } from "../types"
 import { cn, formatFileSize } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
-import { FileThumbnail } from "@/components/file-thumbnail"
+import { FileThumbnail } from "@/components/ui/file-thumbnail"
 
 export function MessageBubbleContentFiles({
   files,

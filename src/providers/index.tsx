@@ -1,5 +1,6 @@
 import type { DirectionType, LocaleType } from "@/types"
 import type { Session } from "next-auth"
+import type { ReactNode } from "react"
 
 import { SettingsProvider } from "@/contexts/settings-context"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -17,7 +18,7 @@ export function Providers({
   session: Session | null
   locale: LocaleType
   direction: DirectionType
-  children: React.ReactNode
+  children: ReactNode
 }>) {
   return (
     <SettingsProvider locale={locale}>

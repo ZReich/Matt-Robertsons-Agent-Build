@@ -1,4 +1,5 @@
-import type { ButtonProps } from "@/components/ui/button"
+import type { Button } from "@/components/ui/button"
+import type { ComponentProps, ReactNode } from "react"
 
 export interface PricingType {
   title: string
@@ -8,9 +9,9 @@ export interface PricingType {
   features: string[]
   isFeatured?: boolean
   isCurrentPlan?: boolean
-  buttonOptions?: ButtonProps
-  buttonContent?: React.ReactNode
-  content?: React.ReactNode
+  buttonOptions?: ComponentProps<typeof Button>
+  buttonContent?: ReactNode
+  content?: ReactNode
   href: string
   discountRate?: number | null
 }

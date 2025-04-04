@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Kanban",
 }
 
-export default async function KanbanPage() {
+export default function KanbanPage() {
   return (
     <KanbanWrapper kanbanData={kanbanData}>
       <Kanban />

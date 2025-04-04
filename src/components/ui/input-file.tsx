@@ -2,17 +2,16 @@
 
 import { useEffect, useImperativeHandle, useRef, useState } from "react"
 
-import type { ButtonProps } from "@/components/ui/button"
-import type { ChangeEvent } from "react"
+import type { ChangeEvent, ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 
-export interface InputFileProps
-  extends Omit<React.ComponentProps<"input">, "value" | "onChange"> {
+interface InputFileProps
+  extends Omit<ComponentProps<"input">, "value" | "onChange"> {
   containerClassName?: string
-  buttonVariant?: ButtonProps["variant"]
+  buttonVariant?: ComponentProps<typeof Button>["variant"]
   buttonLabel?: string
   placeholder?: string
   value?: FileList

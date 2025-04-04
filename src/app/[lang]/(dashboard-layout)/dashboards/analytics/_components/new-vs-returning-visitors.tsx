@@ -4,7 +4,7 @@ import { DashboardCard } from "@/components/dashboards/dashboard-card"
 import { NewVsReturningVisitorsChart } from "./new-vs-returning-visitors-chart"
 import { NewVsReturningVisitorsList } from "./new-vs-returning-visitors-list"
 
-export async function NewVsReturningVisitors() {
+export function NewVsReturningVisitors() {
   return (
     <DashboardCard
       title="New vs. Returning Visitors"

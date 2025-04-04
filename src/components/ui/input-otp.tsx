@@ -4,15 +4,19 @@ import { useContext } from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 import { Minus } from "lucide-react"
 
+import type { ComponentProps } from "react"
+
 import { cn } from "@/lib/utils"
+
+type InputOTPProps = ComponentProps<typeof OTPInput> & {
+  containerClassName?: string
+}
 
 export function InputOTP({
   className,
   containerClassName,
   ...props
-}: React.ComponentProps<typeof OTPInput> & {
-  containerClassName?: string
-}) {
+}: InputOTPProps) {
   return (
     <OTPInput
       data-slot="input-otp"
@@ -26,10 +30,7 @@ export function InputOTP({
   )
 }
 
-export function InputOTPGroup({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function InputOTPGroup({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="input-otp-group"
@@ -39,13 +40,15 @@ export function InputOTPGroup({
   )
 }
 
+type InputOTPSlotProps = ComponentProps<"div"> & {
+  index: number
+}
+
 export function InputOTPSlot({
   index,
   className,
   ...props
-}: React.ComponentProps<"div"> & {
-  index: number
-}) {
+}: InputOTPSlotProps) {
   const inputOTPContext = useContext(OTPInputContext)
   const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
 
@@ -69,7 +72,7 @@ export function InputOTPSlot({
   )
 }
 
-export function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
+export function InputOTPSeparator({ ...props }: ComponentProps<"div">) {
   return (
     <div data-slot="input-otp-separator" role="separator" {...props}>
       <Minus />
