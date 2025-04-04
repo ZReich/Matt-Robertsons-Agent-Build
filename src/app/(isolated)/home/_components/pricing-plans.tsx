@@ -4,7 +4,7 @@ import { PricingCardList } from "./pricing-card-list"
 
 export function PricingPlans() {
   return (
-    <section id="pricing-plans" className="container grid gap-6 py-16">
+    <section id="pricing-plans" className="container grid gap-8">
       <div className="space-y-6 text-center">
         <h1 className="text-2xl font-semibold">Pricing Plans</h1>
         <p className="max-w-prose mx-auto">

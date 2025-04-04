@@ -9,7 +9,7 @@ import { ToolsAndTechnologies } from "./_components/tools-and-technologies"
 
 export default function HomePage() {
   return (
-    <div className="bg-muted/40">
+    <div className="py-16 space-y-20 bg-muted/40">
       <Hero />
       <ThemeCustomization />
       <LayoutCustomization />

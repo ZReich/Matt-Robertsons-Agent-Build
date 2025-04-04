@@ -71,7 +71,9 @@ export function TypeWriterEffect({
   return (
     <>
       <span>{state.text}</span>
-      <span className={cn("select-none", state.isWaiting && "animate-blink")}>
+      <span
+        className={cn("select-none", state.isWaiting && "animate-caret-blink")}
+      >
         |
       </span>
     </>

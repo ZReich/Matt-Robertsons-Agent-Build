@@ -17,36 +17,14 @@ const words = [
 
 export function Hero() {
   return (
-    <section className="container relative p-8 pb-0! space-y-16 overflow-hidden md:p-16">
-      <svg
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-1/2 w-full fill-muted-foreground -z-10 [mask-image:radial-gradient(closest-side,white,transparent)] md:[mask-size:50%]"
-      >
-        <defs>
-          <pattern
-            id="dot-patter"
-            width={16}
-            height={16}
-            patternUnits="userSpaceOnUse"
-            patternContentUnits="userSpaceOnUse"
-            x={0}
-            y={0}
-          >
-            <circle id="pattern-circle" cx={1} cy={1} r={1} />
-          </pattern>
-        </defs>
-        <rect
-          width="100%"
-          height="100%"
-          strokeWidth={0}
-          fill="url(#dot-patter)"
-        />
-      </svg>
+    <section className="container my-0 space-y-6 overflow-hidden md:px-8">
       <div className="grid place-items-center text-center space-y-6">
         <h1 className="text-3xl font-semibold">
           Build Faster with {""}
           <br className="min-[560px]:hidden" />
-          <TypeWriterEffect textArray={words} />
+          <span className="[&>span]:first:text-primary">
+            <TypeWriterEffect textArray={words} />
+          </span>
         </h1>
         <p className="max-w-[50ch] w-full text-lg">
           A robust admin template built with React, Next.js, and Tailwind CSS
@@ -67,23 +45,25 @@ export function Hero() {
           </Link>
         </div>
       </div>
-      <div className="pointer-events-none aspect-16/7 relative [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
-        <Image
-          src="/images/misc/hero.jpg"
-          alt=""
-          fill
-          sizes="(max-width: 768px) 640px, 1080px"
-          priority
-          className="block border border-border rounded-lg object-cover object-top dark:hidden"
-        />
-        <Image
-          src="/images/misc/hero-dark.jpg"
-          alt=""
-          fill
-          sizes="(max-width: 768px) 640px, 1080px"
-          priority
-          className="hidden border border-border rounded-lg object-cover object-top dark:block"
-        />
+      <div className="px-10 pt-10 [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
+        <div className="pointer-events-none aspect-16/7 relative rounded-lg before:absolute before:inset-0 before:shadow-2xl before:shadow-primary before:animate-pulse">
+          <Image
+            src="/images/misc/hero.jpg"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 640px, 1080px"
+            priority
+            className="block border border-border rounded-lg object-cover object-top dark:hidden"
+          />
+          <Image
+            src="/images/misc/hero-dark.jpg"
+            alt=""
+            fill
+            sizes="(max-width: 768px) 640px, 1080px"
+            priority
+            className="hidden border border-border rounded-lg object-cover object-top dark:block"
+          />
+        </div>
       </div>
     </section>
   )

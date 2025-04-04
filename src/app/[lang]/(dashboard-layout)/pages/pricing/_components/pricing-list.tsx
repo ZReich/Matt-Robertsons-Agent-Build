@@ -12,9 +12,13 @@ export default function PricingList({
   isAnnual: boolean
 }) {
   const discountRate = isAnnual ? 0.15 : 0
+  const itemsCount = data.length
 
   return (
-    <ul className="space-y-8 md:grid md:grid-cols-3 md:gap-x-4 md:space-y-0">
+    <ul
+      style={{ gridTemplateColumns: `repeat(${itemsCount}, minmax(0, 1fr))` }}
+      className="grid gap-y-8 gap-x-4 max-md:!grid-cols-1"
+    >
       {data.map((item) => (
         <PricingItem
           key={item.title}
