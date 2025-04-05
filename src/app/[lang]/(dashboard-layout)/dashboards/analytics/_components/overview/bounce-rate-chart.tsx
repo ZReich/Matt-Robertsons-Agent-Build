@@ -47,7 +47,7 @@ export function BounceRateChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className="h-32 w-full rounded-md overflow-hidden"
+      className="h-32 w-full rounded-b-md overflow-hidden"
     >
       <LineChart
         accessibilityLayer
