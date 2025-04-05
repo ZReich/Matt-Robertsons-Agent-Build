@@ -20,7 +20,7 @@ export function ToolsAndTechnologiesItem({
         <div
           className={cn(
             buttonVariants({ variant: "outline", size: "icon" }),
-            "h-20 w-20"
+            "h-20 w-20 bg-card"
           )}
         >
           <item.icon className="h-8 w-8" />
