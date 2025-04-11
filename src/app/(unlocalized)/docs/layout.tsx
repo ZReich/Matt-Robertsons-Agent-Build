@@ -3,11 +3,11 @@ import type { ReactNode } from "react"
 
 import { Separator } from "@/components/ui/separator"
 import { DocsBreadcrumb } from "./_components/docs-breadcrumb"
-import { DocsFooter } from "./_components/docs-footer"
 import { DocsHeader } from "./_components/docs-header"
 import { DocsPagination } from "./_components/docs-pagination"
 import { DocsSidebar } from "./_components/docs-sidebar"
 import { Toc } from "./_components/toc"
+import { Footer } from "@/components/layout/footer"
 
 // Define metadata for the application
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
@@ -36,7 +36,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         </main>
         <Toc />
       </div>
-      <DocsFooter />
+      <Footer />
     </div>
   )
 }

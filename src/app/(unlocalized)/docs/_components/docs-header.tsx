@@ -1,8 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import { ModeDropdown } from "../../_components/mode-dropdown"
 import { DocsCommandMenu } from "./docs-command-menu"
+import { DocsModeDropdown } from "./docs-mode-dropdown"
 import { ToggleMobileSidebar } from "./toggle-mobile-sidebar"
 
 export function DocsHeader() {
@@ -23,7 +23,7 @@ export function DocsHeader() {
           <span>Shadboard</span>
         </Link>
         <DocsCommandMenu buttonClassName="ms-auto" />
-        <ModeDropdown />
+        <DocsModeDropdown />
         <ToggleMobileSidebar />
       </div>
     </header>

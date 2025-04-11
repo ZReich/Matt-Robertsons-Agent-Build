@@ -2,7 +2,6 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react"
 import { useParams, usePathname, useRouter } from "next/navigation"
-import { useMedia } from "react-use"
 import { ChevronDown, Search } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
@@ -57,7 +56,6 @@ export function CommandMenu({
   const pathname = usePathname()
   const params = useParams()
   const router = useRouter()
-  const isLargeOrLarger = useMedia("(min-width: 1024px)")
 
   const locale = params.lang as LocaleType
 
@@ -149,32 +147,20 @@ export function CommandMenu({
 
   return (
     <>
-      {isLargeOrLarger ? (
-        <Button
-          variant="outline"
-          className={cn(
-            "h-8 w-64 justify-start px-3 rounded-md bg-muted/50 text-muted-foreground",
-            buttonClassName
-          )}
-          onClick={() => setOpen(true)}
-          {...props}
-        >
-          <Search className="me-2 h-4 w-4" />
-          <span>{dictionary.search.search}</span>
-          <Keyboard className="ms-auto">K</Keyboard>
-        </Button>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className={buttonClassName}
-          onClick={() => setOpen(true)}
-          aria-label="Search"
-          {...props}
-        >
-          <Search className="h-4 w-4" />
-        </Button>
-      )}
+      <Button
+        variant="outline"
+        size="lg"
+        className={cn(
+          "max-w-64 w-full justify-start px-3 rounded-md bg-muted/50 text-muted-foreground",
+          buttonClassName
+        )}
+        onClick={() => setOpen(true)}
+        {...props}
+      >
+        <Search className="me-2 h-4 w-4" />
+        <span>{dictionary.search.search}</span>
+        <Keyboard className="ms-auto">K</Keyboard>
+      </Button>
       <CommandDialog open={open} onOpenChange={setOpen} {...props}>
         <DialogTitle className="sr-only">Search Menu</DialogTitle>
         <CommandInput placeholder={dictionary.search.typeCommand} />

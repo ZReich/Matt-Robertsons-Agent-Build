@@ -13,7 +13,7 @@ export function KanbanColumnList() {
   const { kanbanState, setKanbanAddColumnSidebarIsOpen } = useKanbanContext()
 
   return (
-    <ScrollArea orientation="horizontal" className="container p-0">
+    <ScrollArea orientation="horizontal" className="container flex-1 w-0 p-0">
       <Droppable
         droppableId="root" // Unique identifier for the droppable area. Used to track drag-and-drop events
         type="Column" // Specifies the type of draggable items this droppable area will accept. Helps differentiate between column and task movements

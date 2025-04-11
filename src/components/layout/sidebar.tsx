@@ -44,6 +44,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { CommandMenu } from "./command-menu"
 
 export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   const pathname = usePathname()
@@ -125,11 +126,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   }
 
   return (
-    <SidebarWrapper
-      side={isRTL ? "right" : "left"}
-      collapsible="none"
-      className="shrink-0 sticky inset-y-0 h-svh"
-    >
+    <SidebarWrapper side={isRTL ? "right" : "left"}>
       <SidebarHeader>
         <Link
           href={ensureLocalizedPathname("/", locale)}
@@ -145,6 +142,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
           />
           <span>Shadboard</span>
         </Link>
+        <CommandMenu dictionary={dictionary} buttonClassName="max-w-full" />
       </SidebarHeader>
       <ScrollArea>
         <SidebarContent className="gap-0">

@@ -22,7 +22,7 @@ export function Footer() {
       <p className="text-xs text-muted-foreground md:text-sm">
         Designed & Developed by{" "}
         <a
-          href="https://themeforest.net/user/qualiora"
+          href="https://github.com/Qualiora"
           target="_blank"
           rel="noopener noreferrer"
           className={cn(buttonVariants({ variant: "link" }), "inline p-0")}

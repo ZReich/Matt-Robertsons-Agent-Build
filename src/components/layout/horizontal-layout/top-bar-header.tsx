@@ -9,7 +9,7 @@ export function TopBarHeader({ dictionary }: { dictionary: DictionaryType }) {
   return (
     <div className="container hidden justify-between items-center py-1 lg:flex">
       <TopBarHeaderMenubar dictionary={dictionary} />
-      <CommandMenu dictionary={dictionary} />
+      <CommandMenu dictionary={dictionary} buttonClassName="h-8" />
     </div>
   )
 }

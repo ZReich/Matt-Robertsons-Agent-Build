@@ -23,7 +23,7 @@ const modeIcons = {
   system: SunMoon,
 }
 
-export function ModeDropdown() {
+export function DocsModeDropdown() {
   const { settings, updateSettings } = useSettings()
 
   const mode = settings.mode

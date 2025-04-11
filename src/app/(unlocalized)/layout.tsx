@@ -9,6 +9,7 @@ import { Providers } from "@/providers"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
+import { Toaster as Sonner } from "@/components/ui/sonner"
 import { Toaster } from "@/components/ui/toaster"
 
 // Define metadata for the application
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers locale="en" direction="ltr" session={null}>
           {children}
           <Toaster />
+          <Sonner />
         </Providers>
       </body>
     </html>

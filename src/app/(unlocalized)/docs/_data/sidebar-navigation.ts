@@ -65,11 +65,6 @@ export const sidebarNavigationData: NavigationType[] = [
         href: "/docs/miscellaneous/changelog",
         iconName: "Logs",
       },
-      {
-        title: "GitHub Access",
-        href: "/docs/miscellaneous/github-access",
-        iconName: "Github",
-      },
     ],
   },
 ]

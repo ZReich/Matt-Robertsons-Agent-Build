@@ -1,7 +1,7 @@
 {
-  "name": "shadboard-nextjs-admin-dashboard-template",
+  "name": "shadboard-nextjs-shadcn-ui-admin-dashboard-template",
   "version": "1.0.0",
-  "license": "Commercial",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

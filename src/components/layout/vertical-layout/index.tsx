@@ -15,14 +15,12 @@ export function VerticalLayout({
   return (
     <>
       <Sidebar dictionary={dictionary} />
-      <div className="min-h-screen w-full grid">
-        <div className="w-full grid md:grid-rows-[auto__1fr__auto]">
-          <VerticalLayoutHeader dictionary={dictionary} />
-          <main className="min-h-[calc(100vh-6.771rem)] bg-muted/40 border-x border-b border-sidebar-border overflow-x-hidden">
-            {children}
-          </main>
-          <Footer />
-        </div>
+      <div className="w-full">
+        <VerticalLayoutHeader dictionary={dictionary} />
+        <main className="min-h-[calc(100svh-6.82rem)] bg-muted/40">
+          {children}
+        </main>
+        <Footer />
       </div>
     </>
   )

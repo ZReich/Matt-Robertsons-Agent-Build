@@ -62,10 +62,6 @@ export default withAuth(
       }
     }
 
-    if (pathname.startsWith("/home") || pathname.startsWith("/docs")) {
-      return NextResponse.next()
-    }
-
     // Redirect to home if accessing the root or locale root
     if (!pathnameWithoutLocale) {
       return redirect(process.env.HOME_PATHNAME || "/", request)
@@ -95,7 +91,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      * - images folder
+     * - docs
+     * - homepage '/'
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images|docs).*)",
   ],
 }

@@ -13,8 +13,10 @@ export function KanbanWrapper({
 }) {
   return (
     <KanbanProvider kanbanData={kanbanData}>
-      <KanbanSidebar />
-      {children}
+      <div className="flex">
+        <KanbanSidebar />
+        {children}
+      </div>
     </KanbanProvider>
   )
 }

@@ -9,7 +9,6 @@ import type { LocaleType } from "@/types"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import { CommandMenu } from "@/components/layout/command-menu"
 import { FullscreenToggle } from "@/components/layout/full-screen-toggle"
 import { LanguageDropdown } from "@/components/layout/language-dropdown"
 import { ModeDropdown } from "@/components/layout/mode-dropdown"
@@ -42,7 +41,6 @@ export function BottomBarHeader({
         <span>Shadboard</span>
       </Link>
       <div className="flex gap-2">
-        <CommandMenu dictionary={dictionary} buttonClassName="lg:hidden" />
         <NotificationDropdown dictionary={dictionary} />
         <FullscreenToggle />
         <ModeDropdown dictionary={dictionary} />

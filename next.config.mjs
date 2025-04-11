@@ -17,11 +17,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: "/",
-        destination: process.env.HOME_PATHNAME || "/",
-        permanent: true,
-      },
-      {
         source: "/docs",
         destination: "/docs/overview/introduction",
         permanent: true,
