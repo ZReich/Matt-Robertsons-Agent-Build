@@ -29,7 +29,7 @@ export function BottomBarHeader({
       <ToggleMobileSidebar />
       <Link
         href={ensureLocalizedPathname("/", locale)}
-        className="hidden text-foreground font-black hover:text-primary/90 lg:flex"
+        className="hidden text-foreground font-black lg:flex"
       >
         <Image
           src="/images/icons/shadboard.svg"

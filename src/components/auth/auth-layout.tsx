@@ -35,7 +35,7 @@ export function Auth({
     >
       <Link
         href={ensureLocalizedPathname("/", locale)}
-        className="absolute top-4 start-4 flex text-foreground font-black z-50 hover:text-primary/90"
+        className="absolute top-4 start-4 flex text-foreground font-black z-50"
       >
         <Image
           src="/images/icons/shadboard.svg"

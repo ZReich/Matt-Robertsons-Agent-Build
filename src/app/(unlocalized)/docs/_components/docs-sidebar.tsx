@@ -34,7 +34,7 @@ export function DocsSidebar() {
       <SidebarHeader className={openMobile && isMobile ? "" : "hidden"}>
         <Link
           href="/"
-          className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
+          className="w-fit flex text-foreground font-black p-2 pb-0 mb-2"
           onClick={() => isMobile && setOpenMobile(!openMobile)}
         >
           <Image

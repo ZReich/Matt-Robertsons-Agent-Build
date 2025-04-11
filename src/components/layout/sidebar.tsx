@@ -130,7 +130,7 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
       <SidebarHeader>
         <Link
           href={ensureLocalizedPathname("/", locale)}
-          className="w-fit flex text-foreground font-black p-2 pb-0 mb-2 hover:text-primary/90"
+          className="w-fit flex text-foreground font-black p-2 pb-0 mb-2"
           onClick={() => isMobile && setOpenMobile(!openMobile)}
         >
           <Image
