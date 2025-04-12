@@ -37,9 +37,10 @@ export default withAuth(
 
     const locale = getLocaleFromPathname(pathname)
     const pathnameWithoutLocale = ensureWithoutPrefix(pathname, `/${locale}`)
+    const isNotPublic = !isPublicRoute(pathnameWithoutLocale)
 
     // Handle authentication for protected and guest routes
-    if (!isPublicRoute(pathnameWithoutLocale)) {
+    if (isNotPublic) {
       const isAuthenticated = !!request.nextauth.token
       const isGuest = isGuestRoute(pathnameWithoutLocale)
       const isProtected = !isGuest
@@ -91,8 +92,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      * - images folder
-     * - docs
      * - homepage '/'
+     * - docs
      */
     "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images|docs).*)",
   ],

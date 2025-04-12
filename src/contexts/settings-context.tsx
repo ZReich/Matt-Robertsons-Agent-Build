@@ -1,13 +1,6 @@
 "use client"
 
-import {
-  Suspense,
-  createContext,
-  useCallback,
-  useEffect,
-  useState,
-} from "react"
-import { useSearchParams } from "next/navigation"
+import { createContext, useCallback, useEffect, useState } from "react"
 import { useCookie } from "react-use"
 
 import type { LocaleType, SettingsType } from "@/types"
@@ -30,7 +23,7 @@ export const SettingsContext = createContext<
   | undefined
 >(undefined)
 
-function SettingsProviderContent({
+export function SettingsProvider({
   locale,
   children,
 }: {
@@ -40,41 +33,14 @@ function SettingsProviderContent({
   const [storedSettings, setStoredSettings, deleteStoredSettings] =
     useCookie("settings")
   const [settings, setSettings] = useState<SettingsType | null>(null)
-  const searchParams = useSearchParams()
 
   useEffect(() => {
-    let initialSettings = storedSettings
-      ? JSON.parse(storedSettings)
-      : { ...defaultSettings, locale }
-
-    const queryLayout = searchParams.get("layout")
-    const queryMode = searchParams.get("mode")
-    const queryRadius = searchParams.get("radius")
-
-    const validModes = ["light", "dark", "system"]
-    const validLayouts = ["vertical", "horizontal"]
-    const validRadii = [0, 0.3, 0.5, 0.75, 1]
-
-    if (
-      (queryLayout && validLayouts.includes(queryLayout)) ||
-      (queryMode && validModes.includes(queryMode)) ||
-      (queryRadius && validRadii.includes(parseFloat(queryRadius)))
-    ) {
-      initialSettings = {
-        ...initialSettings,
-        ...(queryLayout &&
-          validLayouts.includes(queryLayout) && { layout: queryLayout }),
-        ...(queryMode && validModes.includes(queryMode) && { mode: queryMode }),
-        ...(queryRadius &&
-          validRadii.includes(parseFloat(queryRadius)) && {
-            radius: parseFloat(queryRadius),
-          }),
-      }
-      setStoredSettings(JSON.stringify(initialSettings))
+    if (storedSettings) {
+      setSettings(JSON.parse(storedSettings))
+    } else {
+      setSettings({ ...defaultSettings, locale })
     }
-
-    setSettings(initialSettings)
-  }, [storedSettings, locale, searchParams, setStoredSettings])
+  }, [storedSettings, locale])
 
   const updateSettings = useCallback(
     (newSettings: SettingsType) => {
@@ -89,6 +55,7 @@ function SettingsProviderContent({
     setSettings(defaultSettings)
   }, [deleteStoredSettings])
 
+  // Render children only when settings are ready
   if (!settings) {
     return null
   }
@@ -99,21 +66,5 @@ function SettingsProviderContent({
     >
       {children}
     </SettingsContext.Provider>
-  )
-}
-
-export function SettingsProvider({
-  locale,
-  children,
-}: {
-  locale: LocaleType
-  children: ReactNode
-}) {
-  return (
-    <Suspense fallback={null}>
-      <SettingsProviderContent locale={locale}>
-        {children}
-      </SettingsProviderContent>
-    </Suspense>
   )
 }

@@ -84,23 +84,23 @@ export const navigationsData: NavigationType[] = [
         items: [
           {
             title: "Forgot Password",
-            href: "/pages/forgot-password",
+            href: "/forgot-password",
           },
           {
             title: "New Password",
-            href: "/pages/new-password",
+            href: "/new-password",
           },
           {
             title: "Verify Email",
-            href: "/pages/verify-email",
+            href: "/verify-email",
           },
           {
             title: "Register",
-            href: "/pages/register",
+            href: "/register",
           },
           {
             title: "Sign In",
-            href: "/pages/sign-in",
+            href: "/sign-in",
           },
         ],
       },

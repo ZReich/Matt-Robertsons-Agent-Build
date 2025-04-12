@@ -105,10 +105,10 @@ export function SignInForm() {
                       // Include redirect pathname if available, otherwise default to "/forgot-password"
                       redirectPathname
                         ? ensureRedirectPathname(
-                            "/pages/forgot-password",
+                            "/forgot-password",
                             redirectPathname
                           )
-                        : "/pages/forgot-password",
+                        : "/forgot-password",
                       locale
                     )}
                     className="ms-auto inline-block text-sm underline"
@@ -132,10 +132,10 @@ export function SignInForm() {
           Don&apos;t have an account?{" "}
           <Link
             href={ensureLocalizedPathname(
-              // Include redirect pathname if available, otherwise default to "/pages/register"
+              // Include redirect pathname if available, otherwise default to "/register"
               redirectPathname
-                ? ensureRedirectPathname("/pages/register", redirectPathname)
-                : "/pages/register",
+                ? ensureRedirectPathname("/register", redirectPathname)
+                : "/register",
               locale
             )}
             className="underline"
