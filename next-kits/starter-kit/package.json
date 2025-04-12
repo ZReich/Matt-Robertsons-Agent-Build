@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "license": "MIT",
   "private": true,
+  "author": {
+    "name": "Layth Alqadhi",
+    "url": "https://github.com/LaythAlqadhi"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
