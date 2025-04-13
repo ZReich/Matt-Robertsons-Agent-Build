@@ -2,8 +2,7 @@ name: Code Check (Lint, Format, Type Check)
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: ["*"]
 
 jobs:
   lint:
