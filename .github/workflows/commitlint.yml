@@ -1,4 +1,4 @@
-name: CI
+name: Commit Lint
 
 on: [push, pull_request]
 
