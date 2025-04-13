@@ -1,0 +1,93 @@
+name: Code Check (Lint, Format, Type Check)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies for full-kit
+        working-directory: full-kit
+        run: npm ci
+
+      - name: Install dependencies for starter-kit
+        working-directory: starter-kit
+        run: npm ci
+
+      - name: Run ESLint (npm lint) for full-kit
+        working-directory: full-kit
+        run: npm run lint
+
+      - name: Run ESLint (npm lint) for starter-kit
+        working-directory: starter-kit
+        run: npm run lint
+
+  format:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies for full-kit
+        working-directory: full-kit
+        run: npm install
+
+      - name: Install dependencies for starter-kit
+        working-directory: starter-kit
+        run: npm ci
+
+      - name: Run Prettier (npm format) check for full-kit
+        working-directory: full-kit
+        run: npm run format
+
+      - name: Run Prettier (npm format) check for starter-kit
+        working-directory: starter-kit
+        run: npm run format
+
+  type-check:
+    runs-on: ubuntu-latest
+    needs: format
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies for full-kit
+        working-directory: full-kit
+        run: npm ci
+
+      - name: Install dependencies for starter-kit
+        working-directory: starter-kit
+        run: npm ci
+
+      - name: Run TypeScript type check (npx tsc --noEmit) for full-kit
+        working-directory: full-kit
+        run: npx tsc --noEmit
+
+      - name: Run TypeScript type check (npx tsc --noEmit) for starter-kit
+        working-directory: starter-kit
+        run: npx tsc --noEmit
