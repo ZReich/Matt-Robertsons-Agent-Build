@@ -1,8 +1,6 @@
 name: Code Check (Lint, Format, Type Check)
 
-on:
-  pull_request:
-    branches: ["*"]
+on: [push, pull_request]
 
 jobs:
   lint:
