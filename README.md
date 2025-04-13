@@ -81,7 +81,7 @@ We welcome contributions from the community! If you’d like to report bugs, sug
 
 ## Live Demo
 
-See Shadboard in action by visiting the [live demo](https://shadboard.vercel.app/home) now!
+See Shadboard in action by visiting the [live demo](https://shadboard.vercel.app/) now!
 
 ## Get Started
 
