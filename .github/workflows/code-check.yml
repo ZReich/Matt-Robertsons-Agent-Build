@@ -9,22 +9,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install and lint full-kit
         working-directory: full-kit
         run: |
-          npm ci
-          npm run lint
+          pnpm install
+          pnpm run lint
 
       - name: Install and lint starter-kit
         working-directory: starter-kit
         run: |
-          npm ci
-          npm run lint
+          pnpm install
+          pnpm run lint
 
   format:
     runs-on: ubuntu-latest
@@ -32,22 +38,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install and check format for full-kit
         working-directory: full-kit
         run: |
-          npm ci
-          npm run format
+          pnpm install
+          pnpm run format
 
       - name: Install and check format for starter-kit
         working-directory: starter-kit
         run: |
-          npm ci
-          npm run format
+          pnpm install
+          pnpm run format
 
   type-check:
     runs-on: ubuntu-latest
@@ -55,19 +67,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install and type-check full-kit
         working-directory: full-kit
         run: |
-          npm ci
+          pnpm install
           npx tsc --noEmit
 
       - name: Install and type-check starter-kit
         working-directory: starter-kit
         run: |
-          npm ci
+          pnpm install
           npx tsc --noEmit
