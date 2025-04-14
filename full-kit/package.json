@@ -14,7 +14,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --ignore-path .gitignore --write .",
-    "migrate": "npx prisma migrate dev",
+    "migrate": "pnpm exec prisma migrate dev",
     "postinstall": "prisma generate"
   },
   "dependencies": {
