@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to **Shadboard**! We're excited to have you here and appreciate your willingness to help make this project better. 🎉
+Thank you for your interest in contributing to Shadboard! We're excited to have you join our open-source project and appreciate your willingness to help enhance it. Whether you're fixing bugs, adding new features, or improving documentation, every contribution makes a significant impact.
 
 Before submitting your first pull request, please review this document to help ensure that your contributions align with the project's goals and guidelines. We also encourage you to check for open issues and pull requests to avoid duplication of work.
 
