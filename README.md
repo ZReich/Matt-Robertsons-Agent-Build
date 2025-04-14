@@ -20,8 +20,6 @@
 
 ## Tools & Technologies
 
-**Shadboard** integrates cutting-edge technologies to provide a fast, reliable, and scalable solution for your projects. Here are the key tools and technologies used:
-
 - **React 19** 
 - **Next.js 15**
 - **Radix UI + shadcn/ui**
@@ -39,8 +37,6 @@
 > For more details on the tools and credits used in Shadboard, visit the [credits page](https://shadboard.vercel.app/docs/miscellaneous/credits).
 
 ## Apps & Pages
-
-**Shadboard** offers a collection of pre-built apps and pages that can be easily integrated into your project, saving you time and effort. Here’s a list of the available apps and pages:
 
 - **Email**
 - **Chat**
