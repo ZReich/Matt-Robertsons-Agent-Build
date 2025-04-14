@@ -7,84 +7,67 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: "lts/*"
+          cache: "npm"
 
-      - name: Install dependencies for full-kit
+      - name: Install and lint full-kit
         working-directory: full-kit
-        run: npm ci
+        run: |
+          npm ci
+          npm run lint
 
-      - name: Install dependencies for starter-kit
+      - name: Install and lint starter-kit
         working-directory: starter-kit
-        run: npm ci
-
-      - name: Run ESLint (npm lint) for full-kit
-        working-directory: full-kit
-        run: npm run lint
-
-      - name: Run ESLint (npm lint) for starter-kit
-        working-directory: starter-kit
-        run: npm run lint
+        run: |
+          npm ci
+          npm run lint
 
   format:
     runs-on: ubuntu-latest
-    needs: lint
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: "lts/*"
+          cache: "npm"
 
-      - name: Install dependencies for full-kit
+      - name: Install and check format for full-kit
         working-directory: full-kit
-        run: npm install
+        run: |
+          npm ci
+          npm run format
 
-      - name: Install dependencies for starter-kit
+      - name: Install and check format for starter-kit
         working-directory: starter-kit
-        run: npm ci
-
-      - name: Run Prettier (npm format) check for full-kit
-        working-directory: full-kit
-        run: npm run format
-
-      - name: Run Prettier (npm format) check for starter-kit
-        working-directory: starter-kit
-        run: npm run format
+        run: |
+          npm ci
+          npm run format
 
   type-check:
     runs-on: ubuntu-latest
-    needs: format
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: "lts/*"
+          cache: "npm"
 
-      - name: Install dependencies for full-kit
+      - name: Install and type-check full-kit
         working-directory: full-kit
-        run: npm ci
+        run: |
+          npm ci
+          npx tsc --noEmit
 
-      - name: Install dependencies for starter-kit
+      - name: Install and type-check starter-kit
         working-directory: starter-kit
-        run: npm ci
-
-      - name: Run TypeScript type check (npx tsc --noEmit) for full-kit
-        working-directory: full-kit
-        run: npx tsc --noEmit
-
-      - name: Run TypeScript type check (npx tsc --noEmit) for starter-kit
-        working-directory: starter-kit
-        run: npx tsc --noEmit
+        run: |
+          npm ci
+          npx tsc --noEmit
