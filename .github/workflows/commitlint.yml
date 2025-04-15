@@ -1,6 +1,6 @@
 name: Commit Lint
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   commitlint:
@@ -25,10 +25,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-
-      - name: Validate current commit (last commit) with commitlint
-        if: github.event_name == 'push'
-        run: pnpm exec commitlint --last --verbose
 
       - name: Validate PR commits with commitlint
         if: github.event_name == 'pull_request'
