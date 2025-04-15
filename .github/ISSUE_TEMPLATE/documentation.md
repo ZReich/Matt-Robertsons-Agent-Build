@@ -1,0 +1,21 @@
+name: Documentation Issue
+description: Report an error or suggest an improvement in the docs
+labels: [docs]
+title: "[Docs] "
+assignees: ''
+
+body:
+
+- type: textarea
+  id: issue
+  attributes:
+  label: What’s wrong or missing?
+  description: Tell us what needs to be fixed or clarified.
+  validations:
+  required: true
+
+- type: input
+  id: location
+  attributes:
+  label: Page or section
+  description: e.g., README.md > Installation
