@@ -68,7 +68,7 @@ Get started with detailed instructions and guides to help you integrate and cust
 
 ## Contributing
 
-We welcome contributions from the community! If you’d like to report bugs, suggest features, or contribute code, please check out our [contributing guidelines](https://github.com/Qualiora/shadboard/blob/main/.github/CONTRIBUTING.md) for everything you need to get started.
+We welcome contributions from the community! If you’d like to report bugs, suggest features, or contribute code, please check out our [contributing guidelines](https://github.com/Qualiora/shadboard/blob/main/CONTRIBUTING.md) for everything you need to get started.
 
 ## Live Demo
 
