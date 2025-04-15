@@ -43,4 +43,10 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          # Checkout the 'release' branch
+          git fetch origin release
+          git checkout release
+
+          # Run semantic-release
+          npx semantic-release --branches release
