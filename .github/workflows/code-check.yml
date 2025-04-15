@@ -1,4 +1,4 @@
-name: Code Check (Lint, Format, Type Check)
+name: Code Check
 
 on: [pull_request]
 
@@ -8,37 +8,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.8.1
           run_install: false
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: "lts/*"
+          cache: "pnpm"
 
-      - name: Install and lint full-kit
+      - name: Install dependencies and lint full-kit
         working-directory: full-kit
         run: |
           pnpm install
           pnpm run lint
 
-      - name: Install and lint starter-kit
+      - name: Install dependencies and lint starter-kit
         working-directory: starter-kit
         run: |
           pnpm install
@@ -49,37 +37,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.8.1
           run_install: false
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: "lts/*"
+          cache: "pnpm"
 
-      - name: Install and check format for full-kit
+      - name: Install dependencies and check format for full-kit
         working-directory: full-kit
         run: |
           pnpm install
           pnpm run format
 
-      - name: Install and check format for starter-kit
+      - name: Install dependencies and check format for starter-kit
         working-directory: starter-kit
         run: |
           pnpm install
@@ -90,38 +66,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "lts/*"
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.8.1
           run_install: false
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: "lts/*"
+          cache: "pnpm"
 
-      - name: Install and type-check full-kit
+      - name: Install dependencies and type-check full-kit
         working-directory: full-kit
         run: |
           pnpm install
-          npx tsc --noEmit
+          pnpm exec tsc --noEmit
 
-      - name: Install and type-check starter-kit
+      - name: Install dependencies and type-check starter-kit
         working-directory: starter-kit
         run: |
           pnpm install
-          npx tsc --noEmit
+          pnpm exec tsc --noEmit
