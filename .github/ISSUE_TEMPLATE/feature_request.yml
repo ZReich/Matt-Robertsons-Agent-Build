@@ -2,7 +2,6 @@ name: Feature Request
 description: Suggest a new component or functionality
 labels: [enhancement]
 title: "[Feature] "
-assignees: ''
 
 body:
 

@@ -2,7 +2,6 @@ name: Bug Report
 description: Report a bug in the dashboard
 labels: [bug]
 title: "[Bug] "
-assignees: ""
 
 body:
   - type: textarea
