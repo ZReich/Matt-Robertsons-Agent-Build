@@ -15,6 +15,11 @@
     "lint:fix": "next lint --fix",
     "format": "prettier --ignore-path .gitignore --write ."
   },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.8.1",
   "dependencies": {
     "@eslint/eslintrc": "3.2.0",
     "@radix-ui/react-alert-dialog": "1.1.1",
