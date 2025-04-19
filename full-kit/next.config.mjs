@@ -12,13 +12,18 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/:lang/apps/email",
-        destination: "/:lang/apps/email/inbox",
+        source: "/:lang",
+        destination: process.env.HOME_PATHNAME,
         permanent: true,
       },
       {
         source: "/docs",
         destination: "/docs/overview/introduction",
+        permanent: true,
+      },
+      {
+        source: "/:lang/apps/email",
+        destination: "/:lang/apps/email/inbox",
         permanent: true,
       },
     ]

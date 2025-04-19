@@ -63,15 +63,19 @@ export default withAuth(
       }
     }
 
-    // Redirect to home if accessing the root or locale root
-    if (!pathnameWithoutLocale) {
-      return redirect(process.env.HOME_PATHNAME || "/", request)
-    }
-
     // Redirect to localized URL if the pathname is missing a locale
     if (!locale) {
       return redirect(pathname, request)
     }
+
+    /**
+     * NOTE
+     * If your homepage is not '/', you need to configure a redirect
+     * in next.config.mjs using the redirects() function,
+     * and set the HOME_PATHNAME environment variable accordingly.
+     *
+     * See https://nextjs.org/docs/app/building-your-application/routing/redirecting#redirects-in-nextconfigjs
+     */
 
     return NextResponse.next()
   },
