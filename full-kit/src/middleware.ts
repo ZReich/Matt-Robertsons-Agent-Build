@@ -63,11 +63,6 @@ export default withAuth(
       }
     }
 
-    // Redirect to home if accessing the root or locale root
-    if (!pathnameWithoutLocale) {
-      return redirect(process.env.HOME_PATHNAME || "/", request)
-    }
-
     // Redirect to localized URL if the pathname is missing a locale
     if (!locale) {
       return redirect(pathname, request)
