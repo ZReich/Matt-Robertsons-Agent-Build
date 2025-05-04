@@ -30,6 +30,17 @@ cd full-kit
 git checkout -b my-new-branch
 ```
 
+### 5. Set Up Environment Variables
+
+Before running the project locally, you need to configure your environment variables. Use the provided `.env.example` file to create your own `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+* Make any necessary modifications to the `.env` file based on your local setup.
+* Never commit `.env` file—only `.env.example` should be tracked in version control.
+
 ### 5. Install dependencies
 
 ```bash
