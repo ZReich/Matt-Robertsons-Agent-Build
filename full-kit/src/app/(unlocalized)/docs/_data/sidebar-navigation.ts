@@ -56,14 +56,9 @@ export const sidebarNavigationData: NavigationType[] = [
     title: "Miscellaneous",
     items: [
       {
-        title: "Credits",
-        href: "/docs/miscellaneous/credits",
+        title: "Sources & Credits",
+        href: "/docs/miscellaneous/sources-and-credits",
         iconName: "LibraryBig",
-      },
-      {
-        title: "Changelog",
-        href: "/docs/miscellaneous/changelog",
-        iconName: "Logs",
       },
     ],
   },

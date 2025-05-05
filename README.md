@@ -34,7 +34,7 @@
 - **Embla Carousel** 
 - **FullCalendar**
 
-> For more details on the tools and credits used in Shadboard, visit the [credits page](https://shadboard.vercel.app/docs/miscellaneous/credits).
+> For more details on the sources and credits used in Shadboard, visit the [sources & credits page](https://shadboard.vercel.app/docs/miscellaneous/sources-and-credits).
 
 ## Apps & Pages
 
