@@ -28,6 +28,7 @@ The **Starter Kit** is a lightweight solution designed for developers who prefer
 │   ├── app/
 │   │   ├── (dashboard-layout)/
 │   │   ├── [...not-found]/
+│   │   ├── favicon.ico
 │   │   ├── global-error.tsx
 │   │   ├── globals.css
 │   │   └── layout.tsx
@@ -43,18 +44,19 @@ The **Starter Kit** is a lightweight solution designed for developers who prefer
 │   ├── lib/
 │   ├── providers/
 │   └── types.ts
-├── README.md
-├── .env
 ├── .env.example
 ├── .gitignore
+├── .npmrc
 ├── components.json
 ├── eslint.config.mjs
 ├── next-env.d.ts
 ├── next.config.mjs
 ├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
 ├── postcss.config.mjs
-├── svgr.d.ts
-├── tailwind.config.ts
+├── prettier.config.mjs
+├── README.md
 └── tsconfig.json
 ```
 
@@ -87,15 +89,26 @@ The **Full Kit** is a comprehensive solution that provides everything you need t
 │   └── images/
 ├── src/
 │   ├── app/
+│   │   ├── (unlocalized)/
+│   │   │   ├── docs/
+│   │   │   └── layout.tsx
 │   │   ├── [lang]/
 │   │   │   ├── (dashboard-layout)/
 │   │   │   ├── (plain-layout)/
-│   │   │   └── globals.css
-│   │   └── pages/
+│   │   │   ├── [...not-found]
+│   │   │   ├── global-error.tsx
+│   │   │   └── layout.tsx
+│   │   ├── api/
+│   │   │   ├── [...nextauth]
+│   │   │   └── sign-in/
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   └── themes.css
 │   ├── components/
 │   │   ├── dynamic-icon.tsx
 │   │   ├── auth/
 │   │   ├── layout/
+│   │   ├── dashboards/
 │   │   ├── pages/
 │   │   └── ui/
 │   ├── configs/
@@ -105,20 +118,23 @@ The **Full Kit** is a comprehensive solution that provides everything you need t
 │   ├── lib/
 │   ├── providers/
 │   ├── schemas/
+│   ├── mdx-components.tsx
 │   ├── middleware.ts
 │   └── types.ts
-├── README.md
-├── .env
 ├── .env.example
 ├── .gitignore
+├── .npmrc
 ├── components.json
 ├── eslint.config.mjs
+├── mdx.d.ts
 ├── next-env.d.ts
 ├── next.config.mjs
 ├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
 ├── postcss.config.mjs
-├── svgr.d.ts
-├── tailwind.config.ts
+├── prettier.config.mjs
+├── README.md
 └── tsconfig.json
 ```
 
