@@ -44,13 +44,13 @@ cp .env.example .env
 ### 5. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 6. Run the development server locally
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ## Keep `starter-kit` and `full-kit` in Sync
