@@ -4,11 +4,10 @@ labels: [ui, feedback]
 title: "[UI Feedback] "
 
 body:
-
-- type: textarea
-  id: feedback
-  attributes:
-  label: Describe the issue or suggestion
-  description: Be as detailed as possible. Feel free to include screenshots or mockups.
-  validations:
-  required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Describe the issue or suggestion
+      description: Be as detailed as possible. Feel free to include screenshots or mockups.
+    validations:
+      required: true
