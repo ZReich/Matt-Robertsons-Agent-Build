@@ -1,7 +1,7 @@
 name: UI/UX Feedback
 description: Share feedback about layout, usability, or design
-labels: [ui, feedback]
-title: "[UI Feedback] "
+labels: [ui]
+title: "[ui] "
 
 body:
   - type: textarea
