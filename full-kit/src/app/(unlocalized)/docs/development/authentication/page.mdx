@@ -118,8 +118,8 @@ Add the following scripts to the `scripts` section of your `package.json`:
 ```json
 "scripts": {
     ...
-    "migrate": "npx prisma migrate dev",
-    "postinstall": "prisma generate"
+    "migrate": "pnpm exec prisma migrate dev",
+    "postinstall": "pnpm exec prisma generate"
 }
 ```
 
@@ -130,7 +130,7 @@ Add the following scripts to the `scripts` section of your `package.json`:
 Run the following command to generate the Prisma client:
 
 ```bash
-npx prisma generate
+pnpm exec prisma generate
 ```
 
 ---
