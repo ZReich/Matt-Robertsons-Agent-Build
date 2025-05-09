@@ -30,7 +30,10 @@ export function DocsSidebar() {
   const { openMobile, setOpenMobile, isMobile } = useSidebar()
 
   return (
-    <SidebarWrapper className="sticky top-[4.25rem] h-svh" collapsible="none">
+    <SidebarWrapper
+      className="sticky top-[4.25rem] h-svh border-e border-sidebar-border"
+      collapsible="none"
+    >
       <SidebarHeader className={openMobile && isMobile ? "" : "hidden"}>
         <Link
           href="/"

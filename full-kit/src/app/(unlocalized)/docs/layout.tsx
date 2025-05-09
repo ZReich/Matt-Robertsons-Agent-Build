@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
-import { Separator } from "@/components/ui/separator"
 import { DocsBreadcrumb } from "./_components/docs-breadcrumb"
 import { DocsHeader } from "./_components/docs-header"
 import { DocsPagination } from "./_components/docs-pagination"
@@ -21,8 +20,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
       <DocsHeader />
       <div className="relative grid lg:grid-cols-[auto_1fr_auto]">
         <DocsSidebar />
-        <main className="grid bg-muted/40 border-x border-b border-sidebar-border">
-          <Separator className="sticky z-50 top-[4.25rem] hidden w-full h-[0.5px] md:block" />
+        <main className="grid bg-muted/40">
           <div className="justify-self-center p-4 z-10">
             <DocsBreadcrumb />
             <div
