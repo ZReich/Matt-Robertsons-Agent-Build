@@ -191,8 +191,18 @@ export const navigationsData: NavigationType[] = [
     ],
   },
   {
-    title: "Components",
+    title: "Design System",
     items: [
+      {
+        title: "Colors",
+        iconName: "SwatchBook",
+        href: "/colors",
+      },
+      {
+        title: "Typography",
+        iconName: "Type",
+        href: "/typography",
+      },
       {
         title: "UI",
         iconName: "LayoutGrid",
