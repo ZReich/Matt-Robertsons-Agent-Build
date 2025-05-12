@@ -29,6 +29,10 @@ const nextConfig = {
             type: "cookie",
             key: "next-auth.session-token",
           },
+          {
+            type: "cookie",
+            key: "__Secure-next-auth.session-token",
+          },
         ],
       },
       {
