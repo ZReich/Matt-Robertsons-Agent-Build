@@ -29,6 +29,13 @@ const nextConfig = {
             type: "cookie",
             key: "next-auth.session-token",
           },
+        ],
+      },
+      {
+        source: "/:lang",
+        destination: process.env.HOME_PATHNAME,
+        permanent: true,
+        has: [
           {
             type: "cookie",
             key: "__Secure-next-auth.session-token",
