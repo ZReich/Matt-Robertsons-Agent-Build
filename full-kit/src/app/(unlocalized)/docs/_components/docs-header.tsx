@@ -1,9 +1,9 @@
 import Image from "next/image"
 import Link from "next/link"
 
+import { ToggleMobileSidebar } from "@/components/layout/toggle-mobile-sidebar"
 import { DocsCommandMenu } from "./docs-command-menu"
 import { DocsModeDropdown } from "./docs-mode-dropdown"
-import { ToggleMobileSidebar } from "./toggle-mobile-sidebar"
 
 export function DocsHeader() {
   return (

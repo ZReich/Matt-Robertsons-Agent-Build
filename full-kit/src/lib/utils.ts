@@ -232,6 +232,13 @@ export function titleCaseToCamelCase(titleCaseStr: string) {
   return camelCaseStr
 }
 
+export function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with "-"
+    .replace(/^-+|-+$/g, "") // Remove leading/trailing dashes
+}
+
 export function ensureWithPrefix(value: string, prefix: string) {
   return value.startsWith(prefix) ? value : `${prefix}${value}`
 }
