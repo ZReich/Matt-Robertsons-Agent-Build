@@ -16,14 +16,14 @@ export function EmailListContent() {
   const searchParams = useSearchParams()
   const isMediumOrSmaller = useMedia("(max-width: 767px)")
 
-  const pageQuery = searchParams.get("page")
+  const page = searchParams.get("page")
     ? parseInt(searchParams.get("page") as string)
     : 1 // Get the current page from the search params, default to page 1
-  const filterParam = params.segment as string
+  const filter = params.filter as string
 
   useEffect(() => {
-    handleGetFilteredEmails(filterParam, pageQuery)
-  }, [pageQuery, filterParam, handleGetFilteredEmails])
+    handleGetFilteredEmails(filter, page)
+  }, [page, filter, handleGetFilteredEmails])
 
   return (
     <CardContent className="flex-1 h-full flex flex-col p-0">
