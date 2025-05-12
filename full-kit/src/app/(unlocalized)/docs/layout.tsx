@@ -5,7 +5,7 @@ import { DocsBreadcrumb } from "./_components/docs-breadcrumb"
 import { DocsHeader } from "./_components/docs-header"
 import { DocsPagination } from "./_components/docs-pagination"
 import { DocsSidebar } from "./_components/docs-sidebar"
-import { Toc } from "./_components/toc"
+import { DocsToc } from "./_components/docs-toc"
 import { Footer } from "@/components/layout/footer"
 
 // Define metadata for the application
@@ -32,7 +32,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
             <DocsPagination />
           </div>
         </main>
-        <Toc />
+        <DocsToc />
       </div>
       <Footer />
     </div>
