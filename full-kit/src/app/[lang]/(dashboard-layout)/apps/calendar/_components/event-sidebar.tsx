@@ -79,8 +79,8 @@ export function EventSidebar() {
         url: eventProps.url || "",
         description: extendedProps.description || "",
         category: extendedProps.category || "Miscellaneous",
-        start: eventProps.start || new Date(),
-        end: eventProps.end || new Date(),
+        start: eventProps.start ? new Date(eventProps.start) : new Date(),
+        end: eventProps.end ? new Date(eventProps.end) : new Date(),
         allDay: eventProps.allDay ?? true,
       })
     } else {
@@ -108,8 +108,8 @@ export function EventSidebar() {
       ...(data.url && { url: data.url }), // Optional URL
       title: data.title,
       allDay: data.allDay,
-      start: data.start,
-      end: data.end,
+      start: data.start.toISOString(),
+      end: data.end.toISOString(),
       extendedProps: {
         description: data.description,
         category: data.category,
