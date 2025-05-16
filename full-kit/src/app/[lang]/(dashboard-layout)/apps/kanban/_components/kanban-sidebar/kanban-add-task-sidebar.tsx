@@ -72,7 +72,15 @@ export function KanbanAddTaskSidebar() {
 
   function onSubmit(data: KanbanTaskFormType) {
     if (selectedColumn) {
-      handleAddTask(data, selectedColumn.id)
+      const temp = {
+        ...data,
+        dueDate: data.dueDate.toISOString(),
+        comments: data.comments.map((comment) => ({
+          ...comment,
+          createdAt: comment.createdAt.toISOString(),
+        })),
+      }
+      handleAddTask(temp, selectedColumn.id)
     }
 
     handleSidebarClose()
