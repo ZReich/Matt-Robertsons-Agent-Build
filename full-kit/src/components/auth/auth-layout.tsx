@@ -4,10 +4,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 
+import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
 import type { ComponentProps } from "react"
 
-import { DictionaryType } from "@/lib/get-dictionary"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
@@ -33,34 +33,33 @@ export function Auth({
   return (
     <section
       className={cn(
-        "container relative min-h-screen w-full flex px-0",
+        "container min-h-screen w-full flex justify-between px-0",
         className
       )}
       {...props}
     >
-      <Link
-        href={ensureLocalizedPathname("/", locale)}
-        className="absolute top-4 start-4 flex text-foreground font-black z-50"
-      >
-        <Image
-          src="/images/icons/shadboard.svg"
-          alt=""
-          height={24}
-          width={24}
-          className="dark:invert"
-        />
-        <span>Shadboard</span>
-      </Link>
-      <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6 relative">
-        {dictionary && (
-          <div className="absolute top-0 right-0">
-            <LanguageDropdown dictionary={dictionary} />
-          </div>
-        )}
-
-        {children}
+      <div className="flex-1 relative grid">
+        <div className="absolute top-0 inset-x-0 flex justify-between items-center px-4 py-2.5">
+          <Link
+            href={ensureLocalizedPathname("/", locale)}
+            className="flex text-foreground font-black z-50"
+          >
+            <Image
+              src="/images/icons/shadboard.svg"
+              alt=""
+              height={24}
+              width={24}
+              className="dark:invert"
+            />
+            <span>Shadboard</span>
+          </Link>
+          <LanguageDropdown dictionary={dictionary} />
+        </div>
+        <div className="max-w-[28rem] w-full m-auto px-6 py-12 space-y-6">
+          {children}
+        </div>
       </div>
-      {imgSrc && <AuthImage imgSrc={imgSrc} className={imgClassName} />}
+      {imgSrc && <AuthImage imgSrc={imgSrc} className={cn("", imgClassName)} />}
     </section>
   )
 }
@@ -73,7 +72,7 @@ export function AuthImage({ className, imgSrc, ...props }: AuthImageProps) {
   return (
     <div
       className={cn(
-        "relative hidden min-h-screen w-1/2 bg-muted md:block",
+        "basis-1/2 relative hidden min-h-screen bg-muted md:block",
         className
       )}
       {...props}

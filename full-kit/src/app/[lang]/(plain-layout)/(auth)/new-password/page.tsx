@@ -1,5 +1,5 @@
+import type { LocaleType } from "@/types"
 import type { Metadata } from "next"
-import { LocaleType } from "@/types"
 
 import { getDictionary } from "@/lib/get-dictionary"
 
