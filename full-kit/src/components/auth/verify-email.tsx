@@ -1,3 +1,5 @@
+import type { DictionaryType } from "@/lib/get-dictionary"
+
 import {
   Auth,
   AuthDescription,
@@ -7,9 +9,9 @@ import {
 } from "./auth-layout"
 import { VerifyEmailForm } from "./verify-email-form"
 
-export function VerifyEmail() {
+export function VerifyEmail({ dictionary }: { dictionary: DictionaryType }) {
   return (
-    <Auth>
+    <Auth dictionary={dictionary}>
       <AuthHeader>
         <AuthTitle>Verify Your Email</AuthTitle>
         <AuthDescription>

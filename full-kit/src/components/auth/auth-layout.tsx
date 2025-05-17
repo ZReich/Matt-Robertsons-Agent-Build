@@ -7,12 +7,16 @@ import { useParams } from "next/navigation"
 import type { LocaleType } from "@/types"
 import type { ComponentProps } from "react"
 
+import { DictionaryType } from "@/lib/get-dictionary"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
+
+import { LanguageDropdown } from "../language-dropdown"
 
 interface AuthProps extends ComponentProps<"div"> {
   imgSrc?: string
   imgClassName?: string
+  dictionary: DictionaryType
 }
 
 export function Auth({
@@ -20,6 +24,7 @@ export function Auth({
   children,
   imgSrc,
   imgClassName,
+  dictionary,
   ...props
 }: AuthProps) {
   const params = useParams()
@@ -46,7 +51,13 @@ export function Auth({
         />
         <span>Shadboard</span>
       </Link>
-      <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6">
+      <div className="w-full max-w-[28rem] m-auto px-6 py-12 space-y-6 relative">
+        {dictionary && (
+          <div className="absolute top-0 right-0">
+            <LanguageDropdown dictionary={dictionary} />
+          </div>
+        )}
+
         {children}
       </div>
       {imgSrc && <AuthImage imgSrc={imgSrc} className={imgClassName} />}

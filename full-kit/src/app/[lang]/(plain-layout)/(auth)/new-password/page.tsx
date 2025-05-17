@@ -1,4 +1,7 @@
 import type { Metadata } from "next"
+import { LocaleType } from "@/types"
+
+import { getDictionary } from "@/lib/get-dictionary"
 
 import { NewPassword } from "@/components/auth/new-passward"
 
@@ -8,6 +11,11 @@ export const metadata: Metadata = {
   title: "New Password",
 }
 
-export default function NewPasswordPage() {
-  return <NewPassword />
+export default async function NewPasswordPage(props: {
+  params: Promise<{ lang: LocaleType }>
+}) {
+  const params = await props.params
+  const dictionary = await getDictionary(params.lang)
+
+  return <NewPassword dictionary={dictionary} />
 }

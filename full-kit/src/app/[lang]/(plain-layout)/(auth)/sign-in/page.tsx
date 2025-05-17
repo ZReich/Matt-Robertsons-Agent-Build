@@ -1,4 +1,7 @@
 import type { Metadata } from "next"
+import { LocaleType } from "@/types"
+
+import { getDictionary } from "@/lib/get-dictionary"
 
 import { SignIn } from "@/components/auth/sign-in"
 
@@ -8,6 +11,11 @@ export const metadata: Metadata = {
   title: "Sign In",
 }
 
-export default function SignInPage() {
-  return <SignIn />
+export default async function SignInPage(props: {
+  params: Promise<{ lang: LocaleType }>
+}) {
+  const params = await props.params
+  const dictionary = await getDictionary(params.lang)
+
+  return <SignIn dictionary={dictionary} />
 }

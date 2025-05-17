@@ -1,3 +1,5 @@
+import type { DictionaryType } from "@/lib/get-dictionary"
+
 import {
   Auth,
   AuthDescription,
@@ -7,9 +9,9 @@ import {
 } from "./auth-layout"
 import { NewPasswordForm } from "./new-password-form"
 
-export function NewPassword() {
+export function NewPassword({ dictionary }: { dictionary: DictionaryType }) {
   return (
-    <Auth>
+    <Auth dictionary={dictionary}>
       <AuthHeader>
         <AuthTitle>New Password</AuthTitle>
         <AuthDescription>Enter your new password</AuthDescription>

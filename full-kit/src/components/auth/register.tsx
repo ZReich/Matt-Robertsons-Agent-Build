@@ -1,3 +1,5 @@
+import type { DictionaryType } from "@/lib/get-dictionary"
+
 import {
   Auth,
   AuthDescription,
@@ -7,9 +9,12 @@ import {
 } from "./auth-layout"
 import { RegisterForm } from "./register-form"
 
-export function Register() {
+export function Register({ dictionary }: { dictionary: DictionaryType }) {
   return (
-    <Auth imgSrc="/images/illustrations/misc/welcome.svg">
+    <Auth
+      imgSrc="/images/illustrations/misc/welcome.svg"
+      dictionary={dictionary}
+    >
       <AuthHeader>
         <AuthTitle>Sign Up</AuthTitle>
         <AuthDescription>

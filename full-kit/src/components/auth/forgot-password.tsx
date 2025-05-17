@@ -1,3 +1,5 @@
+import type { DictionaryType } from "@/lib/get-dictionary"
+
 import {
   Auth,
   AuthDescription,
@@ -7,9 +9,9 @@ import {
 } from "./auth-layout"
 import { ForgotPasswordForm } from "./forgot-password-form"
 
-export function ForgotPassword() {
+export function ForgotPassword({ dictionary }: { dictionary: DictionaryType }) {
   return (
-    <Auth>
+    <Auth dictionary={dictionary}>
       <AuthHeader>
         <AuthTitle>Forgot Password</AuthTitle>
         <AuthDescription>
