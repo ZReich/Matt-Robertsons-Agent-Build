@@ -8,7 +8,7 @@ export const notificationData: NotificationType = {
       iconName: "MessageSquare",
       content: "You have a new message from John",
       url: "",
-      date: new Date("2024-12-03T10:00:05Z"),
+      date: "2024-12-03T10:00:05Z",
       isRead: false,
     },
     {
@@ -16,7 +16,7 @@ export const notificationData: NotificationType = {
       iconName: "UserPlus",
       content: "John added you as a friend",
       url: "",
-      date: new Date("2024-12-03T09:00:00Z"),
+      date: "2024-12-03T09:00:00Z",
       isRead: false,
     },
     {
@@ -24,7 +24,7 @@ export const notificationData: NotificationType = {
       iconName: "ArrowUpRight",
       content: "Check out the new blog post",
       url: "",
-      date: new Date("2024-12-02T12:00:00Z"),
+      date: "2024-12-02T12:00:00Z",
       isRead: true,
     },
   ],
