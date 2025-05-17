@@ -1,4 +1,7 @@
 import type { Metadata } from "next"
+import { LocaleType } from "@/types"
+
+import { getDictionary } from "@/lib/get-dictionary"
 
 import { VerifyEmail } from "@/components/auth/verify-email"
 
@@ -8,6 +11,11 @@ export const metadata: Metadata = {
   title: "Verify Email",
 }
 
-export default function VerifyEmailPage() {
-  return <VerifyEmail />
+export default async function VerifyEmailPage(props: {
+  params: Promise<{ lang: LocaleType }>
+}) {
+  const params = await props.params
+  const dictionary = await getDictionary(params.lang)
+
+  return <VerifyEmail dictionary={dictionary} />
 }
