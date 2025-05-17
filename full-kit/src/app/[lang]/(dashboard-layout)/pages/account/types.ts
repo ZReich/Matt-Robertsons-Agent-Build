@@ -85,7 +85,7 @@ export interface CurrentPlanType {
     label: string
   }>
   billingInfo: {
-    nextBillingDate: Date
+    nextBillingDate: string
     amountDue: number
   }
 }
@@ -119,7 +119,7 @@ export type UserPostType = Pick<UserType, "name" | "avatar">
 export interface PostType {
   id: string
   user: UserPostType
-  updatedAt: Date
+  updatedAt: string
   text: string
   totalComments: number
   totalReposts: number

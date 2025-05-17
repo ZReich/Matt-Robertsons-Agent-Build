@@ -14,7 +14,7 @@ export interface CommentType {
   id: string
   userId: string
   text: string
-  createdAt: Date
+  createdAt: string
 }
 
 export interface TaskType {
@@ -26,7 +26,7 @@ export interface TaskType {
   label: string
   comments: CommentType[]
   assigned: UserType[]
-  dueDate: Date
+  dueDate: string
   attachments: FileType[]
 }
 
