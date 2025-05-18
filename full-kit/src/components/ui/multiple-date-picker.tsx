@@ -1,6 +1,5 @@
 "use client"
 
-import { Fragment } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
@@ -46,22 +45,12 @@ export function MultipleDatesPicker({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn(
-            "w-full px-3 text-start font-normal whitespace-normal overflow-hidden",
-            buttonClassName
-          )}
+          className={cn("w-full px-3 text-start font-normal overflow-hidden", buttonClassName)}
           {...buttonOptions}
         >
           {value && value.length > 0 ? (
             <div className="truncate me-1">
-              {value?.map((date, index) => {
-                return (
-                  <span key={index}>
-                    {format(date, formatStr)}
-                   {index < value.length - 1 && ", "}
-                  </span>
-                )
-              })}
+              {value?.map((date) => format(date, formatStr)).join(", ")}
             </div>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
