@@ -1,5 +1,6 @@
 "use client"
 
+import { Fragment } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
@@ -45,24 +46,25 @@ export function MultipleDatesPicker({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn("w-full px-3 text-start font-normal h-auto", buttonClassName)}
+          className={cn(
+            "flex w-full gap-2 px-3 font-normal overflow-hidden",
+            buttonClassName
+          )}
           {...buttonOptions}
         >
-          {value && value.length > 0 ? (
-            <span className="flex flex-wrap basis-[fit-content]">
-              {value?.map((date, index) => (
-                <div
-                  className="d-inline-block me-1 mb-1 rounded-md border px-2.5 py-0.5 text-foreground text-xs lg:text-sm"
-                  key={index}
-                >
-                  {format(date, formatStr)}
-                </div>
-              ))}
-            </span>
-          ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
-          )}
-          <CalendarIcon className="ms-auto h-4 w-4 text-muted-foreground" />
+          <span className="flex-1 truncate text-left">
+            {value && value.length > 0 ? (
+              value.map((date, index) => (
+                <Fragment key={index}>
+                  <span className="truncate">{format(date, formatStr)}</span>
+                  {index < value.length - 1 && <span className="mx-1">,</span>}
+                </Fragment>
+              ))
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )}
+          </span>
+          <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
