@@ -47,24 +47,26 @@ export function MultipleDatesPicker({
         <Button
           variant="outline"
           className={cn(
-            "flex w-full gap-2 px-3 font-normal overflow-hidden",
+            "w-full px-3 text-start font-normal whitespace-normal overflow-hidden",
             buttonClassName
           )}
           {...buttonOptions}
         >
-          <span className="flex-1 truncate text-left">
-            {value && value.length > 0 ? (
-              value.map((date, index) => (
-                <Fragment key={index}>
-                  <span className="truncate">{format(date, formatStr)}</span>
-                  {index < value.length - 1 && <span className="mx-1">,</span>}
-                </Fragment>
-              ))
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
-            )}
-          </span>
-          <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+          {value && value.length > 0 ? (
+            <div className="truncate me-1">
+              {value?.map((date, index) => {
+                return (
+                  <span key={index}>
+                    {format(date, formatStr)}
+                   {index < value.length - 1 && ", "}
+                  </span>
+                )
+              })}
+            </div>
+          ) : (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
+          <CalendarIcon className="shrink-0 ms-auto h-4 w-4 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
