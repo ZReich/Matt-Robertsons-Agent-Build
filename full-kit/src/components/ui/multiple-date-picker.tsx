@@ -50,7 +50,7 @@ export function MultipleDatesPicker({
         >
           {value && value.length > 0 ? (
             <div className="truncate me-1">
-              {value?.map((date) => format(date, formatStr)).join(", ")}
+              {value.map((date) => format(date, formatStr)).join(", ")}
             </div>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
