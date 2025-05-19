@@ -1,7 +1,7 @@
 export const fontFamiliesData = [
   {
     name: "Cairo",
-    class: "font-cario",
+    class: "font-cairo",
     language: "Arabic",
     example: "مرحبا بالعالم",
   },
