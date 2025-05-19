@@ -66,15 +66,15 @@ export interface CustomerSatisfactionType {
     avatar: string
     rating: number
     feedbackMessage: string
-    createdAt: Date
+    createdAt: string
   }>
 }
 
 export interface ActiveProjectType {
   name: string
   progress: number
-  startDate: Date
-  dueDate: Date
+  startDate: string
+  dueDate: string
   status: "On Track" | "At Risk" | "On Hold"
 }
 
