@@ -26,8 +26,8 @@ export const navigationsData: NavigationType[] = [
     items: [
       {
         title: "Landing",
-        href: "#",
-        label: "Soon",
+        href: "/pages/landing",
+        label: "New",
         iconName: "LayoutTemplate",
       },
       {
