@@ -31,48 +31,50 @@ export function LandingHeader({ dictionary }: { dictionary: DictionaryType }) {
   }, [params, pathname])
 
   return (
-    <header className="container sticky top-0 z-50 w-full grid grid-cols-3 items-center gap-2 py-2.5 bg-background border-b border-border">
-      <LandingSidebar fullPathname={fullPathname} />
-      <Link
-        href="/"
-        className="place-self-center w-fit flex text-foreground font-black hover:text-primary/90 lg:place-self-auto"
-      >
-        <Image
-          src="/images/icons/shadboard.svg"
-          alt=""
-          height={24}
-          width={24}
-          className="dark:invert"
-        />
-        <span>Shadboard</span>
-      </Link>
-      <ul className="place-self-center hidden gap-2 lg:flex">
-        {landingNavigationsData.map((nav) => {
-          const isActive = isActivePathname(nav.href, fullPathname, true)
-          return (
-            <li key={nav.href}>
-              <Link
-                href={nav.href}
-                className={buttonVariants({
-                  variant: isActive ? "secondary" : "ghost",
-                })}
-              >
-                {nav.title}
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
-      <div className="place-self-end flex gap-x-2">
-        <ModeDropdown dictionary={dictionary} />
-        <LanguageDropdown dictionary={dictionary} />
+    <header className="sticky top-0 z-50 w-full bg-background border-b border-sidebar-border">
+      <div className="container grid grid-cols-3 items-center gap-2 py-2.5">
+        <LandingSidebar fullPathname={fullPathname} />
         <Link
-          href={ensureLocalizedPathname("/register", locale)}
-          className={cn(buttonVariants(), "hidden lg:flex")}
+          href="/"
+          className="place-self-center w-fit flex text-foreground font-black hover:text-primary/90 lg:place-self-auto"
         >
-          <LogIn className="me-2 h-4 w-4" />
-          <span>Register</span>
+          <Image
+            src="/images/icons/shadboard.svg"
+            alt=""
+            height={24}
+            width={24}
+            className="dark:invert"
+          />
+          <span>Shadboard</span>
         </Link>
+        <ul className="place-self-center hidden gap-2 lg:flex">
+          {landingNavigationsData.map((nav) => {
+            const isActive = isActivePathname(nav.href, fullPathname, true)
+            return (
+              <li key={nav.href}>
+                <Link
+                  href={nav.href}
+                  className={buttonVariants({
+                    variant: isActive ? "secondary" : "ghost",
+                  })}
+                >
+                  {nav.title}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+        <div className="place-self-end flex gap-x-2">
+          <ModeDropdown dictionary={dictionary} />
+          <LanguageDropdown dictionary={dictionary} />
+          <Link
+            href={ensureLocalizedPathname("/register", locale)}
+            className={cn(buttonVariants(), "hidden lg:flex")}
+          >
+            <LogIn className="me-2 h-4 w-4" />
+            <span>Register</span>
+          </Link>
+        </div>
       </div>
     </header>
   )
