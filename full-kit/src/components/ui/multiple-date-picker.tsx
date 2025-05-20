@@ -45,7 +45,10 @@ export function MultipleDatesPicker({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn("w-full px-3 text-start font-normal overflow-hidden", buttonClassName)}
+          className={cn(
+            "w-full px-3 text-start font-normal overflow-hidden",
+            buttonClassName
+          )}
           {...buttonOptions}
         >
           {value && value.length > 0 ? (
