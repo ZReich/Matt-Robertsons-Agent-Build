@@ -9,8 +9,8 @@ import type { LocaleType } from "@/types"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 
+import { LanguageDropdown } from "@/components/language-dropdown"
 import { FullscreenToggle } from "@/components/layout/full-screen-toggle"
-import { LanguageDropdown } from "@/components/layout/language-dropdown"
 import { ModeDropdown } from "@/components/layout/mode-dropdown"
 import { NotificationDropdown } from "@/components/layout/notification-dropdown"
 import { UserDropdown } from "@/components/layout/user-dropdown"

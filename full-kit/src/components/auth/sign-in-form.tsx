@@ -34,7 +34,10 @@ export function SignInForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const redirectPathname = searchParams.get("redirectTo")
+  const redirectPathname =
+    searchParams.get("redirectTo") ||
+    process.env.NEXT_PUBLIC_HOME_PATHNAME ||
+    "/"
 
   const form = useForm<SignInFormType>({
     resolver: zodResolver(SignInSchema),
@@ -62,7 +65,7 @@ export function SignInForm() {
         throw new Error(result.error)
       }
 
-      router.push(redirectPathname || "/")
+      router.push(redirectPathname)
     } catch (error) {
       toast({
         variant: "destructive",

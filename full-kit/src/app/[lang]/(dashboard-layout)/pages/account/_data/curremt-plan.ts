@@ -46,7 +46,9 @@ export const currentPlanData: CurrentPlanType = {
     },
   ],
   billingInfo: {
-    nextBillingDate: new Date(new Date().setDate(new Date().getDate() + 2)), // 2 days from the current date
+    nextBillingDate: new Date(
+      new Date().setDate(new Date().getDate() + 2)
+    ).toISOString(), // 2 days from the current date
     amountDue: 49,
   },
 }

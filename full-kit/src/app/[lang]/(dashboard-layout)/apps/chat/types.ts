@@ -25,7 +25,7 @@ export interface MessageType {
   files?: FileType[]
   voiceMessage?: FileType
   status: string
-  createdAt: Date
+  createdAt: string
 }
 
 export type NewMessageType = Omit<
@@ -46,7 +46,7 @@ export interface UserType {
 
 export interface LastMessageType {
   content: string
-  createdAt: Date
+  createdAt: string
 }
 
 export interface ChatType {

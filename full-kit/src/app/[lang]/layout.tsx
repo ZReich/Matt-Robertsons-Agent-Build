@@ -39,7 +39,7 @@ const cairoFont = Cairo({
   subsets: ["arabic"],
   weight: ["400", "700"],
   style: ["normal"],
-  variable: "--font-cario",
+  variable: "--font-cairo",
 })
 
 export default async function RootLayout(props: {
@@ -57,7 +57,7 @@ export default async function RootLayout(props: {
     <html lang={params.lang} dir={direction} suppressHydrationWarning>
       <body
         className={cn(
-          "[&:lang(en)]:font-lato [&:lang(ar)]:font-cario", // Set font styles based on the language
+          "[&:lang(en)]:font-lato [&:lang(ar)]:font-cairo", // Set font styles based on the language
           "bg-background text-foreground antialiased overscroll-none", // Set background, text, , anti-aliasing styles, and overscroll behavior
           latoFont.variable, // Include Lato font variable
           cairoFont.variable // Include Cairo font variable

@@ -59,7 +59,10 @@ export function VerifyEmailForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-2">
         <Link
-          href={ensureLocalizedPathname("/", locale)}
+          href={ensureLocalizedPathname(
+            process.env.NEXT_PUBLIC_HOME_PATHNAME || "/",
+            locale
+          )}
           className={cn(buttonVariants({ variant: "default" }))}
         >
           Skip for now
