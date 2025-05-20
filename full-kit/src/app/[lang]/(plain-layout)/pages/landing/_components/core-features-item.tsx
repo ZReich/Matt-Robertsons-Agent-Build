@@ -2,7 +2,6 @@ import type { CoreFeatureType } from "../types"
 
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -15,10 +14,8 @@ export function CoreFeaturesItem({ item }: { item: CoreFeatureType }) {
         <CardHeader className="items-center">
           <item.icon className="h-8 w-8 text-primary" />
           <CardTitle>{item.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
           <CardDescription>{item.description}</CardDescription>
-        </CardContent>
+        </CardHeader>
       </li>
     </Card>
   )
