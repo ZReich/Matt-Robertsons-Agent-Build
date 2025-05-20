@@ -6,21 +6,34 @@ export interface LandingNavigationType {
   title: string
   href: string
 }
-export interface ToolAndTechnologieType {
-  title: string
-  href: string
-  icon: IconType
-}
+
 export interface CoreFeatureType {
   title: string
   description: string
   icon: IconType
 }
+
+export interface WhatPeopleSayType {
+  name: string
+  role: string
+  company: string
+  quote: string
+  avatar: string
+  rating: number
+}
+
+export interface ToolAndTechnologieType {
+  title: string
+  href: string
+  icon: IconType
+}
+
 export interface FaqType {
   question: string
   answer: ReactNode
 }
-export interface PricingCardType {
+
+export interface PricingPlansType {
   title: string
   description: string
   period?: string

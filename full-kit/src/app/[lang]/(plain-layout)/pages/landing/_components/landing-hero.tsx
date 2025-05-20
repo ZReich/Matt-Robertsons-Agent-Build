@@ -34,7 +34,7 @@ export function LandingHero() {
 
 function LandingHeroImage() {
   return (
-    <div className="px-10 pt-13 [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
+    <div className="px-13 pt-13 [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
       <div className="pointer-events-none aspect-16/7 relative rounded-lg before:absolute before:inset-0 before:shadow-2xl before:shadow-primary">
         <Image
           src="/images/misc/hero.png"
