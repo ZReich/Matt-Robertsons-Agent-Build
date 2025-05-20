@@ -5,9 +5,9 @@ import { buttonVariants } from "@/components/ui/button"
 
 export function LandingHero() {
   return (
-    <section className="container my-0 space-y-6 overflow-hidden md:px-8">
-      <div className="grid place-items-center text-center space-y-6">
-        <h1 className="text-3xl font-semibold">Build Faster with Shadboard</h1>
+    <section className="container my-0 space-y-3 overflow-hidden md:px-8">
+      <div className="grid place-items-center text-center space-y-3">
+        <h1 className="text-4xl font-black">Build Faster with Shadboard</h1>
         <p className="max-w-prose w-full text-lg text-muted-foreground">
           A robust admin template built with React, Next.js, and Tailwind CSS
           designed for seamless customization and reliable performance.
@@ -34,8 +34,8 @@ export function LandingHero() {
 
 function LandingHeroImage() {
   return (
-    <div className="px-10 pt-10 [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
-      <div className="pointer-events-none aspect-16/7 relative rounded-lg before:absolute before:inset-0 before:shadow-2xl before:shadow-primary before:animate-pulse">
+    <div className="px-10 pt-13 [mask-image:linear-gradient(to_bottom,white,transparent_75%)]">
+      <div className="pointer-events-none aspect-16/7 relative rounded-lg before:absolute before:inset-0 before:shadow-2xl before:shadow-primary">
         <Image
           src="/images/misc/hero.png"
           alt=""

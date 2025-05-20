@@ -71,7 +71,7 @@ export function LandingSidebar({ fullPathname }: { fullPathname: string }) {
             </Link>
             <Link
               href={ensureLocalizedPathname("/register", locale)}
-              className={buttonVariants()}
+              className={buttonVariants({ size: "lg" })}
             >
               <LogIn className="me-2 h-4 w-4" />
               <span>Register</span>
