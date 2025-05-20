@@ -1,6 +1,8 @@
 import { CoreFeatures } from "./_components/core-features"
+import { Faqs } from "./_components/faqs"
 import { LandingHero } from "./_components/landing-hero"
 import { PricingPlans } from "./_components/pricing-plans"
+import { ReadyToBuild } from "./_components/ready-to-build"
 import { WhatPeopleSay } from "./_components/what-people-say"
 
 export default function LandingPage() {
@@ -9,7 +11,9 @@ export default function LandingPage() {
       <LandingHero />
       <CoreFeatures />
       <WhatPeopleSay />
+      <ReadyToBuild />
       <PricingPlans />
+      <Faqs />
     </div>
   )
 }

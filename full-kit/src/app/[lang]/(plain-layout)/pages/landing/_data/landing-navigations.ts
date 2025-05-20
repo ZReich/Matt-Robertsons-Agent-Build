@@ -15,6 +15,6 @@ export const landingNavigationsData: LandingNavigationType[] = [
   },
   {
     title: "Contact Us",
-    href: "/pages/landing/contact-us",
+    href: "/pages/landing#contact-us",
   },
 ]
