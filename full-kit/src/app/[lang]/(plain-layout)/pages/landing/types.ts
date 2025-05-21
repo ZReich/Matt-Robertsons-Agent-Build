@@ -1,6 +1,10 @@
 import type { Button } from "@/components/ui/button"
 import type { IconType } from "@/types"
 import type { ComponentProps, ReactNode } from "react"
+import type { z } from "zod"
+import type { ContactUsSchema } from "./_schemas/contact-us-schema"
+
+export type ContactUsType = z.infer<typeof ContactUsSchema>
 
 export interface LandingNavigationType {
   title: string

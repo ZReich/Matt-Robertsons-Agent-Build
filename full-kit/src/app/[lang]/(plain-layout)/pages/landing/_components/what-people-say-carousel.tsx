@@ -43,7 +43,7 @@ export function WhatPeopleSayCarousel() {
     >
       <CarouselContent>
         {whatPeopleSayData.map((person) => (
-          <CarouselItem key={person.name} className="basis-1/3">
+          <CarouselItem key={person.name} className="md:basis-1/3">
             <Card className="flex flex-col">
               <CardHeader className="flex-row items-center gap-4 p-3">
                 <Avatar className="h-12 w-12">

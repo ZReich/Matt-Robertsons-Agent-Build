@@ -1,3 +1,4 @@
+import { ContactUs } from "./_components/contact-us"
 import { CoreFeatures } from "./_components/core-features"
 import { Faqs } from "./_components/faqs"
 import { LandingHero } from "./_components/landing-hero"
@@ -11,9 +12,10 @@ export default function LandingPage() {
       <LandingHero />
       <CoreFeatures />
       <WhatPeopleSay />
-      <ReadyToBuild />
       <PricingPlans />
       <Faqs />
+      <ReadyToBuild />
+      <ContactUs />
     </div>
   )
 }
