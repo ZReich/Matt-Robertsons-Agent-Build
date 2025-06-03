@@ -149,7 +149,8 @@
     }
   },
   "label": {
-    "soon": "Soon"
+    "soon": "Soon",
+    "new": "New"
   },
   "search": {
     "search": "Search...",
