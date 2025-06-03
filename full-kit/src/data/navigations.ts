@@ -26,8 +26,8 @@ export const navigationsData: NavigationType[] = [
     items: [
       {
         title: "Landing",
-        href: "#",
-        label: "Soon",
+        href: "/pages/landing",
+        label: "New",
         iconName: "LayoutTemplate",
       },
       {
@@ -453,6 +453,18 @@ export const navigationsData: NavigationType[] = [
           {
             title: "Timeline",
             href: "/extended-ui/timeline",
+          },
+          {
+            title: "Sticky Layout",
+            href: "/extended-ui/sticky-layout",
+          },
+          {
+            title: "Bento Grid",
+            href: "/extended-ui/bento-grid",
+          },
+          {
+            title: "Mockups",
+            href: "/extended-ui/mockups",
           },
         ],
       },

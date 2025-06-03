@@ -12,7 +12,7 @@ import { PricingPlans } from "@/components/pricing-plans"
 
 const DISCOUNT_RATE = 0.15
 
-export function Pricing({ data }: { data: PricingPlansType[] }) {
+export function PricingPlansList({ data }: { data: PricingPlansType[] }) {
   const [discountRate, setDiscountRate] = useState(0)
 
   const hasDiscount = discountRate !== 0
