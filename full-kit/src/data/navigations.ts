@@ -454,6 +454,10 @@ export const navigationsData: NavigationType[] = [
             title: "Timeline",
             href: "/extended-ui/timeline",
           },
+          {
+            title: "Sticky Layout",
+            href: "/extended-ui/sticky-layout",
+          },
         ],
       },
       {
