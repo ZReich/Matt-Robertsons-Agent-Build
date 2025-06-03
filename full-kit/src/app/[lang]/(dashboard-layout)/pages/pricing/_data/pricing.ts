@@ -1,6 +1,6 @@
-import type { PricingType } from "../types"
+import type { PricingPlansType } from "@/components/pricing-plans"
 
-export const pricingData: PricingType[] = [
+export const pricingData: PricingPlansType[] = [
   {
     title: "Starter",
     description:
