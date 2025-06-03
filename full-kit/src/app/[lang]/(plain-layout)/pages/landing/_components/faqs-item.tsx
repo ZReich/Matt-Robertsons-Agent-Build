@@ -11,9 +11,7 @@ import {
 export function FaqsItem({ faq }: { faq: FaqType }) {
   return (
     <AccordionItem value={faq.question}>
-      <AccordionTrigger className="text-start font-semibold">
-        {faq.question}
-      </AccordionTrigger>
+      <AccordionTrigger>{faq.question}</AccordionTrigger>
       <AccordionContent>{faq.answer}</AccordionContent>
     </AccordionItem>
   )

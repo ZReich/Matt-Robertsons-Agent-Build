@@ -1,17 +1,24 @@
 import type { CoreFeatureType } from "../types"
 
-import { Card, CardDescription, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import {
+  BentoContent,
+  BentoDescription,
+  BentoItem,
+  BentoTitle,
+} from "@/components/ui/bento-grid"
 
-export function CoreFeaturesItem({ item }: { item: CoreFeatureType }) {
+export function CoreFeaturesItem({ feature }: { feature: CoreFeatureType }) {
   return (
-    <Card asChild>
-      <li className="p-6 space-y-3">
-        <div className="flex items-center gap-2">
-          <item.icon className="shrink-0 h-8 w-8 text-primary" />
-          <CardTitle>{item.title}</CardTitle>
-        </div>
-        <CardDescription>{item.description}</CardDescription>
-      </li>
-    </Card>
+    <BentoItem className={feature.className}>
+      <BentoContent>
+        <Badge className="size-12 aspect-square" aria-hidden>
+          <feature.icon className="size-full" />
+        </Badge>
+        <BentoTitle>{feature.title}</BentoTitle>
+        <BentoDescription>{feature.description}</BentoDescription>
+      </BentoContent>
+      {feature?.header && feature.header}
+    </BentoItem>
   )
 }

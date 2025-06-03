@@ -15,7 +15,7 @@ export function Layout({
     <div className="grow">
       <LandingHeader dictionary={dictionary} />
       <main>{children}</main>
-      <LandingFooter dictionary={dictionary} />
+      <LandingFooter />
     </div>
   )
 }

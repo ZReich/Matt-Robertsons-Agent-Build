@@ -9,7 +9,7 @@ import { LogIn } from "lucide-react"
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
 
-import { landingNavigationsData } from "../../_data/landing-navigations"
+import { headerNavigationData } from "../../_data/header-navigation"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn, isActivePathname } from "@/lib/utils"
@@ -47,23 +47,25 @@ export function LandingHeader({ dictionary }: { dictionary: DictionaryType }) {
           />
           <span>Shadboard</span>
         </Link>
-        <ul className="place-self-center hidden gap-2 lg:flex">
-          {landingNavigationsData.map((nav) => {
-            const isActive = isActivePathname(nav.href, fullPathname, true)
-            return (
-              <li key={nav.href}>
-                <Link
-                  href={nav.href}
-                  className={buttonVariants({
-                    variant: isActive ? "secondary" : "ghost",
-                  })}
-                >
-                  {nav.title}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
+        <nav className="hidden lg:block">
+          <ul className="place-self-center flex gap-2">
+            {headerNavigationData.map((nav) => {
+              const isActive = isActivePathname(nav.href, fullPathname, true)
+              return (
+                <li key={nav.href}>
+                  <Link
+                    href={nav.href}
+                    className={buttonVariants({
+                      variant: isActive ? "secondary" : "ghost",
+                    })}
+                  >
+                    {nav.label}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
         <div className="place-self-end flex gap-x-2">
           <ModeDropdown dictionary={dictionary} />
           <LanguageDropdown dictionary={dictionary} />

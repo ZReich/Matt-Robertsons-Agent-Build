@@ -1,20 +1,35 @@
 "use client"
 
-import type { PricingPlansType } from "../types"
+import { useState } from "react"
 
-import { PricingPlansItem } from "./pricing-plans-item"
+import type { PricingPlansType } from "@/components/pricing-plans"
+
+import { ratingToPercentage } from "@/lib/utils"
+
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { PricingPlans } from "@/components/pricing-plans"
+
+const DISCOUNT_RATE = 0.15
 
 export function PricingPlansList({ data }: { data: PricingPlansType[] }) {
-  const itemsCount = data.length
+  const [discountRate, setDiscountRate] = useState(0)
+
+  const hasDiscount = discountRate !== 0
+  const formattedDiscount = ratingToPercentage(DISCOUNT_RATE, 1)
+  const toggleDiscount = () => setDiscountRate(hasDiscount ? 0 : DISCOUNT_RATE)
 
   return (
-    <ul
-      style={{ gridTemplateColumns: `repeat(${itemsCount}, minmax(0, 1fr))` }}
-      className="grid gap-y-8 gap-x-4 max-md:!grid-cols-1"
-    >
-      {data.map((item) => (
-        <PricingPlansItem key={item.title} {...item} />
-      ))}
-    </ul>
+    <>
+      <Label
+        htmlFor="annual-billing"
+        className="flex items-center justify-center gap-2"
+      >
+        <span>Monthly</span>
+        <Switch checked={hasDiscount} onCheckedChange={toggleDiscount} />
+        <span>Yearly (Save {formattedDiscount})</span>
+      </Label>
+      <PricingPlans data={data} discountRate={discountRate} />
+    </>
   )
 }

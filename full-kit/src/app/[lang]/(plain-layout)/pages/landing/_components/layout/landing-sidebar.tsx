@@ -7,7 +7,7 @@ import { LogIn, PanelLeft } from "lucide-react"
 
 import type { LocaleType } from "@/types"
 
-import { landingNavigationsData } from "../../_data/landing-navigations"
+import { headerNavigationData } from "../../_data/header-navigation"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { isActivePathname } from "@/lib/utils"
@@ -81,19 +81,19 @@ export function LandingSidebar({ fullPathname }: { fullPathname: string }) {
         <ScrollArea className="p-2">
           <SidebarContent>
             <SidebarMenu>
-              {landingNavigationsData.map((nav) => {
+              {headerNavigationData.map((nav) => {
                 const isActive = isActivePathname(nav.href, fullPathname, true)
 
                 if (nav.href) {
                   return (
-                    <SidebarMenuItem key={nav.title}>
+                    <SidebarMenuItem key={nav.label}>
                       <SidebarMenuButton
                         isActive={isActive}
                         onClick={() => setOpenMobile(!openMobile)}
                         asChild
                       >
                         <Link href={nav.href}>
-                          <span>{nav.title}</span>
+                          <span>{nav.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
