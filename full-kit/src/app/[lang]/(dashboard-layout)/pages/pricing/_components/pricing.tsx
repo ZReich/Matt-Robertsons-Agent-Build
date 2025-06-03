@@ -2,18 +2,34 @@
 
 import { useState } from "react"
 
-import type { PricingType } from "../types"
+import type { PricingPlansType } from "@/components/pricing-plans"
 
-import { PricingHeader } from "./pricing-header"
-import PricingCardList from "./pricing-list"
+import { ratingToPercentage } from "@/lib/utils"
 
-export function Pricing({ data }: { data: PricingType[] }) {
-  const [isAnnual, setIsAnnual] = useState(false)
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { PricingPlans } from "@/components/pricing-plans"
+
+const DISCOUNT_RATE = 0.15
+
+export function Pricing({ data }: { data: PricingPlansType[] }) {
+  const [discountRate, setDiscountRate] = useState(0)
+
+  const hasDiscount = discountRate !== 0
+  const formattedDiscount = ratingToPercentage(DISCOUNT_RATE, 1)
+  const toggleDiscount = () => setDiscountRate(hasDiscount ? 0 : DISCOUNT_RATE)
 
   return (
     <>
-      <PricingHeader isAnnual={isAnnual} setIsAnnual={setIsAnnual} />
-      <PricingCardList isAnnual={isAnnual} data={data} />
+      <Label
+        htmlFor="annual-billing"
+        className="flex items-center justify-center gap-2"
+      >
+        <span>Monthly</span>
+        <Switch checked={hasDiscount} onCheckedChange={toggleDiscount} />
+        <span>Yearly (Save {formattedDiscount})</span>
+      </Label>
+      <PricingPlans data={data} discountRate={discountRate} />
     </>
   )
 }

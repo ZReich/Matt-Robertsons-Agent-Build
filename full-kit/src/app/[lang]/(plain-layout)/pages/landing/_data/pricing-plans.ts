@@ -1,4 +1,4 @@
-import type { PricingPlansType } from "../types"
+import type { PricingPlansType } from "@/components/pricing-plans"
 
 export const pricingPlansData: PricingPlansType[] = [
   {
@@ -15,6 +15,7 @@ export const pricingPlansData: PricingPlansType[] = [
     ],
     period: "month",
     href: "",
+    buttonContent: "Subscribe",
   },
   {
     title: "Company",
@@ -32,6 +33,7 @@ export const pricingPlansData: PricingPlansType[] = [
     isFeatured: true,
     period: "month",
     href: "",
+    buttonContent: "Subscribe",
   },
   {
     title: "Enterprise",
@@ -49,5 +51,6 @@ export const pricingPlansData: PricingPlansType[] = [
     ],
     period: "month",
     href: "",
+    buttonContent: "Subscribe",
   },
 ]

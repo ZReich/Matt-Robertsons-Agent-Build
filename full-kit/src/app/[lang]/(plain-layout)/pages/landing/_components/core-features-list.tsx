@@ -1,13 +1,14 @@
 import { coreFeaturesData } from "../_data/core-features"
 
+import { BentoGrid } from "@/components/ui/bento-grid"
 import { CoreFeaturesItem } from "./core-features-item"
 
 export function CoreFeaturesList() {
   return (
-    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {coreFeaturesData.map((item) => (
-        <CoreFeaturesItem key={item.title} item={item} />
+    <BentoGrid>
+      {coreFeaturesData.map((feature) => (
+        <CoreFeaturesItem key={feature.title} feature={feature} />
       ))}
-    </ul>
+    </BentoGrid>
   )
 }
