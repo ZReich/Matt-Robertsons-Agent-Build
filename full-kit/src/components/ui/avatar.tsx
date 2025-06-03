@@ -80,6 +80,7 @@ interface AvatarStackProps
   extends ComponentProps<"div">,
     VariantProps<typeof avatarStackVariants> {
   avatars: { src?: string; alt: string; href?: string }[]
+  avatarClassName?: string
   limit?: number
   onMoreButtonClick?: (event: MouseEvent<HTMLButtonElement>) => void
 }
@@ -90,6 +91,7 @@ export function AvatarStack({
   size,
   onMoreButtonClick,
   className,
+  avatarClassName,
   ...props
 }: AvatarStackProps) {
   const limitedAvatars = avatars.slice(0, limit)
@@ -106,7 +108,12 @@ export function AvatarStack({
             <TooltipTrigger className="-ms-1 -me-1">
               {avatar.href ? (
                 <Link href={avatar.href}>
-                  <Avatar className={avatarStackVariants({ size })}>
+                  <Avatar
+                    className={cn(
+                      avatarStackVariants({ size }),
+                      avatarClassName
+                    )}
+                  >
                     <AvatarImage
                       src={avatar.src}
                       className="border-2 border-background"
@@ -117,7 +124,9 @@ export function AvatarStack({
                   </Avatar>
                 </Link>
               ) : (
-                <Avatar className={avatarStackVariants({ size })}>
+                <Avatar
+                  className={cn(avatarStackVariants({ size }), avatarClassName)}
+                >
                   <AvatarImage
                     src={avatar.src}
                     className="border-2 border-background"
@@ -143,7 +152,9 @@ export function AvatarStack({
           className="-ms-1 -me-1"
           aria-label="Show more"
         >
-          <Avatar className={avatarStackVariants({ size })}>
+          <Avatar
+            className={cn(avatarStackVariants({ size }), avatarClassName)}
+          >
             <AvatarFallback className="border-2 border-background">
               +{remainingCount}
             </AvatarFallback>
