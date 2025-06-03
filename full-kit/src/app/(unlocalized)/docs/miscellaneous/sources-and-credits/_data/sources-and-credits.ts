@@ -355,6 +355,11 @@ export const sourcesAndCreditsData = [
     license: "MIT",
   },
   {
+    name: "Logoipsum",
+    url: "https://logoipsum.com",
+    license: "Custom Fair Use License",
+  },
+  {
     name: "lucide-react",
     url: "https://github.com/lucide-icons/lucide",
     license: "MIT",
