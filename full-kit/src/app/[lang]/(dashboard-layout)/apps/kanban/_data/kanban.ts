@@ -45,7 +45,7 @@ export const kanbanData: ColumnType[] = [
             avatar: "/images/avatars/female-03.svg",
           },
         ],
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(),
         attachments: [
           {
             id: "attachment-0",
@@ -67,7 +67,7 @@ export const kanbanData: ColumnType[] = [
             id: "comment-0",
             userId: "member-0",
             text: "Let's start gathering data.",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
         ],
       },
@@ -104,20 +104,20 @@ export const kanbanData: ColumnType[] = [
             avatar: "/images/avatars/female-02.svg",
           },
         ],
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(),
         attachments: [],
         comments: [
           {
             id: "comment-1",
             userId: "member-0",
             text: "We need to focus on user experience.",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
           {
             id: "comment-2",
             userId: "member-2",
             text: "Can we add more options for users?",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
         ],
       },
@@ -149,7 +149,7 @@ export const kanbanData: ColumnType[] = [
             avatar: "/images/avatars/female-01.svg",
           },
         ],
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(),
         attachments: [
           {
             id: "attachment-2",
@@ -199,13 +199,13 @@ export const kanbanData: ColumnType[] = [
             id: "comment-3",
             userId: "member-2",
             text: "I started on the endpoints.",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
           {
             id: "comment-4",
             userId: "member-3",
             text: "Let me know if you need help!",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
         ],
       },
@@ -224,14 +224,14 @@ export const kanbanData: ColumnType[] = [
             avatar: "/images/avatars/male-01.svg",
           },
         ],
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(),
         attachments: [],
         comments: [
           {
             id: "comment-5",
             userId: "member-0",
             text: "What do you think about the new color scheme?",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
         ],
       },
@@ -269,7 +269,7 @@ export const kanbanData: ColumnType[] = [
             avatar: "/images/avatars/female-03.svg",
           },
         ],
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(),
         attachments: [
           {
             id: "attachment-8",
@@ -284,13 +284,13 @@ export const kanbanData: ColumnType[] = [
             id: "comment-6",
             userId: "member-2",
             text: "Documentation is complete!",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
           {
             id: "comment-7",
             userId: "member-3",
             text: "Looks good, ready for review.",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
         ],
       },
@@ -327,7 +327,7 @@ export const kanbanData: ColumnType[] = [
             avatar: "/images/avatars/female-02.svg",
           },
         ],
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(),
         attachments: [
           {
             id: "attachment-9",
@@ -342,13 +342,13 @@ export const kanbanData: ColumnType[] = [
             id: "comment-8",
             userId: "member-1",
             text: "All bugs have been fixed.",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
           {
             id: "comment-9",
             userId: "member-0",
             text: "Great teamwork!",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
         ],
       },
@@ -379,7 +379,7 @@ export const kanbanData: ColumnType[] = [
             avatar: "/images/avatars/male-01.svg",
           },
         ],
-        dueDate: new Date().toISOString(),
+        dueDate: new Date(),
         attachments: [
           {
             id: "attachment-10",
@@ -394,13 +394,13 @@ export const kanbanData: ColumnType[] = [
             id: "comment-10",
             userId: "member-1",
             text: "The campaign is live!",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
           {
             id: "comment-11",
             userId: "member-2",
             text: "Let’s monitor the response closely.",
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           },
         ],
       },

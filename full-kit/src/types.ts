@@ -81,7 +81,7 @@ export interface NotificationType {
     iconName: DynamicIconNameType
     content: string
     url: string
-    date: string
+    date: Date
     isRead: boolean
   }>
 }
