@@ -17,7 +17,7 @@ export const ChatReducer = (
         senderId: "1", // Assuming "1" represents the current user
         text: action.text, // Set the text content
         status: "DELIVERED", // Message delivery status
-        createdAt: new Date().toISOString(), // Set the current timestamp
+        createdAt: new Date(), // Set the current timestamp
       }
 
       const { id, messages } = state.selectedChat
@@ -48,7 +48,7 @@ export const ChatReducer = (
         senderId: "1",
         images: action.images, // Attach the images to the message
         status: "DELIVERED",
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
       }
 
       const { id, messages } = state.selectedChat
@@ -79,7 +79,7 @@ export const ChatReducer = (
         senderId: "1",
         files: action.files, // Attach the files to the message
         status: "DELIVERED",
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
       }
 
       const { id, messages } = state.selectedChat

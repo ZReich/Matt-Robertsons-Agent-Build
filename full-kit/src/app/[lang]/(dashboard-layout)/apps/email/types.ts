@@ -18,7 +18,7 @@ export interface EmailType {
   content: string
   read: boolean
   starred: boolean
-  createdAt: string
+  createdAt: Date
   label?: "personal" | "important" | "work"
   isDraft: boolean
   isSent: boolean

@@ -29,8 +29,8 @@ export type EventType = {
   url?: string
   title: string
   allDay: boolean
-  end: string
-  start: string
+  end: Date
+  start: Date
   extendedProps: {
     category: CategoryType
     description?: string

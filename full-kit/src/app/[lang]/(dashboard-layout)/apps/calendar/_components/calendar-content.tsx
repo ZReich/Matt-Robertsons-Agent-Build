@@ -47,26 +47,13 @@ export function CalendarContent() {
 
   // Function to parse and transform an event from FullCalendar's internal event representation to a structured format
   const parseEvent = (event: EventImpl): EventType => {
-    let startDateString: string
-    let endDateString: string
-    if (event.start) {
-      startDateString = new Date(event.start).toISOString()
-    } else {
-      startDateString = new Date().toISOString()
-    }
-    if (event.end) {
-      endDateString = new Date(event.end).toISOString()
-    } else {
-      endDateString = startDateString
-    }
-
     return {
       id: event.id,
       ...(event.url && { url: event.url }), // Include URL property if it exists
       title: event.title,
       allDay: event.allDay,
-      start: startDateString,
-      end: endDateString,
+      start: event.start || new Date(),
+      end: event.end || event.start || new Date(),
       extendedProps: {
         category: event.extendedProps.category,
         ...(event.extendedProps.description && {

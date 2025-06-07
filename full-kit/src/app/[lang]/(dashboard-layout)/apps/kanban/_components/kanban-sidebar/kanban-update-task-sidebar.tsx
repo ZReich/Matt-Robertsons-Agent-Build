@@ -78,15 +78,8 @@ export function KanbanUpdateTaskSidebar() {
         description: selectedTask?.description,
         label: selectedTask?.label,
         assigned: selectedTask?.assigned || [],
-        comments: selectedTask?.comments
-          ? selectedTask.comments.map((comment) => ({
-              ...comment,
-              createdAt: new Date(comment.createdAt),
-            }))
-          : [],
-        dueDate: selectedTask?.dueDate
-          ? new Date(selectedTask.dueDate)
-          : new Date(),
+        comments: selectedTask?.comments || [],
+        dueDate: selectedTask?.dueDate,
         attachments: selectedTask?.attachments || [],
       })
     }
@@ -99,11 +92,7 @@ export function KanbanUpdateTaskSidebar() {
         id: selectedTask.id,
         columnId: selectedTask.columnId,
         order: selectedTask.order,
-        comments: data.comments.map((comment) => ({
-          ...comment,
-          createdAt: comment.createdAt.toISOString(),
-        })),
-        dueDate: data.dueDate.toISOString(),
+        comments: selectedTask.comments,
       })
     }
 
