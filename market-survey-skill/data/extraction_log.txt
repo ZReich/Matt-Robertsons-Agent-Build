@@ -1,0 +1,14 @@
+Extraction Log — 2026-03-08T09:41:20.893427
+Source: ../market survey and flyers/Flyers part 2 test
+PDFs: 7, Extracted: 7
+
+OK: 1130 Rockies Circle, Rock Springs, WY 82901 _ Crexi.com.pdf -> 1130 Rockies Circle, Rock Springs, WY 82901
+OK: 1160 Signal Dr, Rock Springs, WY 82901 _ Crexi.com.pdf -> 1160 Signal Dr, Rock Springs, WY 82901
+OK: 17 WILKINS PEAK BOOK  2.pdf -> 210 B Street, Suite 1 
+Rock Springs, WY 82901
+OK: 17 Wilkins Peak Dr, Rock Springs, WY 82901 _ Crexi.com.pdf -> 17 Wilkins Peak Dr, Rock Springs, WY 82901
+OK: 38 PURPLE SAGE1 (1).pdf -> 210 B Street, Suite 1 
+Rock Springs, WY 82901
+OK: 38 PURPLE SAGE1.pdf -> 210 B Street, Suite 1 
+Rock Springs, WY 82901
+OK: 38 Purple Sage Rd, Rock Springs, WY 82901 _ Crexi.com.pdf -> 38 Purple Sage Rd, Rock Springs, WY 82901

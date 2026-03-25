@@ -1,0 +1,114 @@
+[
+  {
+    "address": "1265 Sannon Blvd, Billings, MT 59105",
+    "sf": "10000",
+    "price": "7500",
+    "year_built": "2003",
+    "door_counts": "4 dock, 2 drive-in",
+    "property_type": "Office/Industrial",
+    "notes": "Class A warehouse/office. 67,300 SF total building, 40,000 SF vacant. 30' ceilings, 7 loading docks, 2 drive-ins, 25 parking. Renovated 2020. $9/SF/yr ($0.75/SF/mo). Divisible 10,000-65,000 SF. County location, no city zoning restrictions.",
+    "hero_photo_path": "./data/temp_images/1265 Sannon Blvd, Billings, MT 59105 _ Crexi.com_page_1.jpg",
+    "image_paths": [
+      "./data/temp_images/1265 Sannon Blvd, Billings, MT 59105 _ Crexi.com_page_1.jpg",
+      "./data/temp_images/1265 Sannon Blvd, Billings, MT 59105 _ Crexi.com_page_2.jpg",
+      "./data/temp_images/1265 Sannon Blvd, Billings, MT 59105 _ Crexi.com_page_3.jpg"
+    ],
+    "source_file": "1265 Sannon Blvd, Billings, MT 59105 _ Crexi.com.pdf"
+  },
+  {
+    "address": "1347 Johnson Ln, Billings, MT 59101",
+    "sf": "15000",
+    "price": "",
+    "year_built": "2026",
+    "door_counts": "6 overhead (14'x16')",
+    "property_type": "Industrial",
+    "notes": "Brand new 15,000 SF steel warehouse on 6 acres. 17'6\" clear height, 3-phase power, drive-through capability. Fenced industrial yard. Close to I-90/I-94. Lease rate undisclosed, NNN. Single tenant.",
+    "hero_photo_path": "./data/temp_images/1347 Johnson Ln, Billings, MT 59101 _ Crexi.com_page_1.jpg",
+    "image_paths": [
+      "./data/temp_images/1347 Johnson Ln, Billings, MT 59101 _ Crexi.com_page_1.jpg",
+      "./data/temp_images/1347 Johnson Ln, Billings, MT 59101 _ Crexi.com_page_2.jpg",
+      "./data/temp_images/1347 Johnson Ln, Billings, MT 59101 _ Crexi.com_page_3.jpg"
+    ],
+    "source_file": "1347 Johnson Ln, Billings, MT 59101 _ Crexi.com.pdf"
+  },
+  {
+    "address": "2401 Tande Drive, Billings, MT 59101",
+    "sf": "8000",
+    "price": "8333",
+    "year_built": "2024",
+    "door_counts": "4 overhead (14')",
+    "property_type": "Warehouse/Distribution",
+    "notes": "New construction warehouse in Harnish subdivision. Two 16,000 SF bays (divisible to 8,000 SF). 24' clear height, 6\" concrete slab, 5-ton cranes. $12.50/SF/yr NNN. 2.558 acre lot with additional south lot for storage.",
+    "hero_photo_path": "./data/temp_images/2401 Tande_page_1.jpg",
+    "image_paths": [
+      "./data/temp_images/2401 Tande_page_1.jpg",
+      "./data/temp_images/2401 Tande_page_2.jpg",
+      "./data/temp_images/2401 Tande_page_3.jpg"
+    ],
+    "source_file": "2401 Tande.pdf"
+  },
+  {
+    "address": "2575 N Frontage Rd, Billings, MT 59101",
+    "sf": "22972",
+    "price": "14358",
+    "year_built": "1995",
+    "door_counts": "1 dock, multiple drive-in (16')",
+    "property_type": "Warehouse/Distribution",
+    "notes": "Industrial warehouse off I-90 in Lockwood. 22,972 SF on 20.63 acres. 19' clear height, fire suppression, radiant tube heating, fenced and secured. Paved yard space. $7.50/SF/yr NNN, OpEx ~$2.35/SF/yr.",
+    "hero_photo_path": "./data/temp_images/2575 N Frontage Rd - 22,972sf_page_1.jpg",
+    "image_paths": [
+      "./data/temp_images/2575 N Frontage Rd - 22,972sf_page_1.jpg",
+      "./data/temp_images/2575 N Frontage Rd - 22,972sf_page_2.jpg",
+      "./data/temp_images/2575 N Frontage Rd - 22,972sf_page_3.jpg"
+    ],
+    "source_file": "2575 N Frontage Rd - 22,972sf.pdf"
+  },
+  {
+    "address": "6765 Trade Center Avenue, Billings, MT 59101",
+    "sf": "12500",
+    "price": "8854",
+    "year_built": "",
+    "door_counts": "Multiple drive-through bays",
+    "property_type": "Industrial",
+    "notes": "12,500 SF industrial building on 2.89 acres in Trade Center corridor. Multiple drive-through bays, 6 private offices, break room, radiant heat. Excellent condition. Near I-90. $8.50/SF/yr NNN.",
+    "hero_photo_path": "./data/temp_images/6567 Trade Center Ave Brochure_page_1.jpg",
+    "image_paths": [
+      "./data/temp_images/6567 Trade Center Ave Brochure_page_1.jpg",
+      "./data/temp_images/6567 Trade Center Ave Brochure_page_2.jpg",
+      "./data/temp_images/6567 Trade Center Ave Brochure_page_3.jpg"
+    ],
+    "source_file": "6567 Trade Center Ave Brochure.pdf"
+  },
+  {
+    "address": "719 4th Ave N, Billings, MT 59101",
+    "sf": "10640",
+    "price": "4877",
+    "year_built": "",
+    "door_counts": "Dock + ground level",
+    "property_type": "Warehouse",
+    "notes": "Central Billings warehouse. 8,940 SF warehouse + 1,700 SF office. Dock and ground level access. New flooring and paint in office. Ample staging and parking. $5.50/SF/yr NNN.",
+    "hero_photo_path": "./data/temp_images/719 4th Ave N - 10,640sf_page_1.jpg",
+    "image_paths": [
+      "./data/temp_images/719 4th Ave N - 10,640sf_page_1.jpg",
+      "./data/temp_images/719 4th Ave N - 10,640sf_page_2.jpg",
+      "./data/temp_images/719 4th Ave N - 10,640sf_page_3.jpg"
+    ],
+    "source_file": "719 4th Ave N - 10,640sf.pdf"
+  },
+  {
+    "address": "7225 Entryway Drive, Billings, MT 59101",
+    "sf": "19200",
+    "price": "10000",
+    "year_built": "",
+    "door_counts": "12'x14' drive-in overhead",
+    "property_type": "Warehouse",
+    "notes": "19,200 SF drive-in warehouse on 5.93 acres. 20'+ clear height, existing racking, outside fenced storage. Part of 111,186 SF building complex. $6.25/SF/yr NNN, OpEx $2.32/SF/yr.",
+    "hero_photo_path": "./data/temp_images/7225 Entryway Dr - 19,200sf_page_1.jpg",
+    "image_paths": [
+      "./data/temp_images/7225 Entryway Dr - 19,200sf_page_1.jpg",
+      "./data/temp_images/7225 Entryway Dr - 19,200sf_page_2.jpg",
+      "./data/temp_images/7225 Entryway Dr - 19,200sf_page_3.jpg"
+    ],
+    "source_file": "7225 Entryway Dr - 19,200sf.pdf"
+  }
+]

@@ -1,0 +1,272 @@
+{
+  "listings": [
+    {
+      "listing_id": 1,
+      "source_file": "1 Bowker.png",
+      "address": "1 Bowker Rd, Rock Springs, WY 82901",
+      "price": "Upon Request",
+      "sf": "14000",
+      "year_built": "1981",
+      "door_counts": "6",
+      "notes": "14,000 SF industrial warehouse on 1.41 AC. 6 drive-in bays, freeway access, excellent visibility. Partial build-out, extra equipment provided. Available now.",
+      "hero_photo_path": "../market survey and flyers/Flyers part 2 test/1 Bowker.png",
+      "image_paths": [],
+      "fields": {
+        "address": {
+          "value": "1 Bowker Rd, Rock Springs, WY 82901",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        },
+        "sf": {
+          "value": "14000",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        },
+        "price": {
+          "value": "Upon Request",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        },
+        "year_built": {
+          "value": "1981",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        },
+        "door_counts": {
+          "value": "6",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        }
+      },
+      "quality_flags": {
+        "missing_required": [],
+        "low_confidence_critical": [],
+        "parse_warnings": []
+      }
+    },
+    {
+      "listing_id": 2,
+      "source_file": "1130 Rockies Circle, Rock Springs, WY 82901 _ Crexi.com.pdf",
+      "address": "1130 Rockies Circle, Rock Springs, WY 82901",
+      "price": "$9,800/mo",
+      "sf": "12500",
+      "year_built": "2005",
+      "door_counts": "3",
+      "notes": "12,500 SF on 4.91 acres. Mix of reception/retail, office, and shop. 3 16' bay doors and a loading dock. Building in great condition.",
+      "hero_photo_path": "data/temp_images/1130 Rockies Circle, Rock Springs, WY 82901 _ Crexi.com_page_1.jpg",
+      "image_paths": [],
+      "fields": {
+        "address": {
+          "value": "1130 Rockies Circle, Rock Springs, WY 82901",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "sf": {
+          "value": "12500",
+          "confidence": 0.75,
+          "citation_span": "text match"
+        },
+        "price": {
+          "value": "$9,800/mo",
+          "confidence": 0.75,
+          "citation_span": "text match"
+        },
+        "year_built": {
+          "value": "2005",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "door_counts": {
+          "value": "3",
+          "confidence": 0.75,
+          "citation_span": "text match"
+        }
+      },
+      "quality_flags": {
+        "missing_required": [],
+        "low_confidence_critical": [],
+        "parse_warnings": []
+      }
+    },
+    {
+      "listing_id": 3,
+      "source_file": "1160 Signal Dr, Rock Springs, WY 82901 _ Crexi.com.pdf",
+      "address": "1160 Signal Dr, Rock Springs, WY 82901",
+      "price": "$1,300,000",
+      "sf": "",
+      "year_built": "2006",
+      "door_counts": "",
+      "notes": "Combines location, infrastructure, and industrial zoning. Well-suited for uses where visibility, shop access, and yard storage are operational needs.",
+      "hero_photo_path": "data/temp_images/1160 Signal Dr, Rock Springs, WY 82901 _ Crexi.com_page_1.jpg",
+      "image_paths": [],
+      "fields": {
+        "address": {
+          "value": "1160 Signal Dr, Rock Springs, WY 82901",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "sf": {
+          "value": "",
+          "confidence": 0.0,
+          "citation_span": "not found"
+        },
+        "price": {
+          "value": "$1,300,000",
+          "confidence": 0.65,
+          "citation_span": "text match"
+        },
+        "year_built": {
+          "value": "2006",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "door_counts": {
+          "value": "",
+          "confidence": 0.0,
+          "citation_span": "not found"
+        }
+      },
+      "quality_flags": {
+        "missing_required": [
+          "sf"
+        ],
+        "low_confidence_critical": [],
+        "parse_warnings": []
+      }
+    },
+    {
+      "listing_id": 4,
+      "source_file": "17 Wilkins Peak Dr, Rock Springs, WY 82901 _ Crexi.com.pdf",
+      "address": "17 Wilkins Peak Dr, Rock Springs, WY 82901",
+      "price": "$995,000",
+      "sf": "10500",
+      "year_built": "2005",
+      "door_counts": "",
+      "notes": "10,500 SF heavy industrial steel building on one acre fenced lot. Easy accessibility. Nice office, reception and conference area. Large shop with mezzanine storage.",
+      "hero_photo_path": "data/temp_images/17 Wilkins Peak Dr, Rock Springs, WY 82901 _ Crexi.com_page_1.jpg",
+      "image_paths": [],
+      "fields": {
+        "address": {
+          "value": "17 Wilkins Peak Dr, Rock Springs, WY 82901",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "sf": {
+          "value": "10500",
+          "confidence": 0.75,
+          "citation_span": "text match"
+        },
+        "price": {
+          "value": "$995,000",
+          "confidence": 0.75,
+          "citation_span": "cross-referenced"
+        },
+        "year_built": {
+          "value": "2005",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "door_counts": {
+          "value": "",
+          "confidence": 0.0,
+          "citation_span": "not found"
+        }
+      },
+      "quality_flags": {
+        "missing_required": [],
+        "low_confidence_critical": [],
+        "parse_warnings": []
+      }
+    },
+    {
+      "listing_id": 5,
+      "source_file": "38 Purple Sage Rd, Rock Springs, WY 82901 _ Crexi.com.pdf",
+      "address": "38 Purple Sage Rd, Rock Springs, WY 82901",
+      "price": "$1,100,000",
+      "sf": "18868",
+      "year_built": "1977",
+      "door_counts": "",
+      "notes": "18,868 SF industrial building on 2.36 acre fenced, partially paved lot. Offices, break room, secured parts storage, large shop with crane and loading dock.",
+      "hero_photo_path": "data/temp_images/38 Purple Sage Rd, Rock Springs, WY 82901 _ Crexi.com_page_1.jpg",
+      "image_paths": [],
+      "fields": {
+        "address": {
+          "value": "38 Purple Sage Rd, Rock Springs, WY 82901",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "sf": {
+          "value": "18868",
+          "confidence": 0.75,
+          "citation_span": "text match"
+        },
+        "price": {
+          "value": "$1,100,000",
+          "confidence": 0.75,
+          "citation_span": "cross-referenced"
+        },
+        "year_built": {
+          "value": "1977",
+          "confidence": 0.85,
+          "citation_span": "text match"
+        },
+        "door_counts": {
+          "value": "",
+          "confidence": 0.0,
+          "citation_span": "not found"
+        }
+      },
+      "quality_flags": {
+        "missing_required": [],
+        "low_confidence_critical": [],
+        "parse_warnings": []
+      }
+    },
+    {
+      "listing_id": 6,
+      "source_file": "45 Lagoon Road.png",
+      "address": "45 Lagoon Rd, Rock Springs, WY 82901",
+      "price": "$11.40/SF/YR",
+      "sf": "10000",
+      "year_built": "",
+      "door_counts": "",
+      "notes": "10,000 SF industrial warehouse. Includes 1,533 SF dedicated office space. Reception area, 3 offices, 2 bathrooms, kitchen, conference and storage. Main shop with mezzanine. Excellent condition.",
+      "hero_photo_path": "../market survey and flyers/Flyers part 2 test/45 Lagoon Road.png",
+      "image_paths": [],
+      "fields": {
+        "address": {
+          "value": "45 Lagoon Rd, Rock Springs, WY 82901",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        },
+        "sf": {
+          "value": "10000",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        },
+        "price": {
+          "value": "$11.40/SF/YR",
+          "confidence": 0.95,
+          "citation_span": "vision"
+        },
+        "year_built": {
+          "value": "",
+          "confidence": 0.0,
+          "citation_span": "not found"
+        },
+        "door_counts": {
+          "value": "",
+          "confidence": 0.0,
+          "citation_span": "not found"
+        }
+      },
+      "quality_flags": {
+        "missing_required": [],
+        "low_confidence_critical": [],
+        "parse_warnings": []
+      }
+    }
+  ],
+  "extracted_at": "2026-03-07T18:14:32.486311",
+  "source_dir": "../market survey and flyers/Flyers part 2 test"
+}

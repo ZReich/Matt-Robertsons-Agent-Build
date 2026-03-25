@@ -1,0 +1,33 @@
+{
+  "listings": [
+    {
+      "listing_id": 1,
+      "source_file": "123 Main St - 10,000sf.pdf",
+      "address": "123 Main St, Billings, MT 59101",
+      "price": "$1,500/mo",
+      "sf": "10000",
+      "year_built": "2010",
+      "door_counts": "2",
+      "notes": "Excellent location with high visibility.",
+      "hero_photo_path": "./data/temp_images/123_Main_St_page_1.jpg",
+      "image_paths": [
+        "./data/temp_images/123_Main_St_page_1.jpg",
+        "./data/temp_images/123_Main_St_page_2.jpg"
+      ],
+      "fields": {
+        "address": { "value": "123 Main St, Billings, MT 59101", "confidence": 0.85, "citation_span": "text match" },
+        "sf": { "value": "10000", "confidence": 0.80, "citation_span": "filename" },
+        "price": { "value": "$1,500/mo", "confidence": 0.75, "citation_span": "text match" },
+        "year_built": { "value": "2010", "confidence": 0.85, "citation_span": "text match" },
+        "door_counts": { "value": "2", "confidence": 0.70, "citation_span": "text match" }
+      },
+      "quality_flags": {
+        "missing_required": [],
+        "low_confidence_critical": [],
+        "parse_warnings": []
+      }
+    }
+  ],
+  "extracted_at": "2026-03-07T17:00:00",
+  "source_dir": "./flyers"
+}

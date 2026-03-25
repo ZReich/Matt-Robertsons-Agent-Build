@@ -1,0 +1,37 @@
+{
+  "1265 sannon blvd, billings, mt 59105": {
+    "lat": 45.8230391,
+    "lon": -108.4504352,
+    "source": "google"
+  },
+  "1347 johnson ln, billings, mt 59101": {
+    "lat": 45.8222397,
+    "lon": -108.4133481,
+    "source": "google"
+  },
+  "2401 tande drive, billings, mt 59101": {
+    "lat": 45.727393,
+    "lon": -108.59226,
+    "source": "google"
+  },
+  "2575 n frontage rd, billings, mt 59101": {
+    "lat": 45.8145365,
+    "lon": -108.4200439,
+    "source": "google"
+  },
+  "6765 trade center avenue, billings, mt 59101": {
+    "lat": 45.7345979,
+    "lon": -108.5848536,
+    "source": "google"
+  },
+  "719 4th ave n, billings, mt 59101": {
+    "lat": 45.7971342,
+    "lon": -108.4838696,
+    "source": "google"
+  },
+  "7225 entryway drive, billings, mt 59101": {
+    "lat": 45.7289843,
+    "lon": -108.5979641,
+    "source": "google"
+  }
+}

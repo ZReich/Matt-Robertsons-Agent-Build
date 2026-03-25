@@ -1,25 +1,38 @@
 import type { Metadata } from "next"
+import { Calendar } from "lucide-react"
 
-import { eventsData } from "./_data/events"
+import { listNotes } from "@/lib/vault"
+import type { MeetingMeta } from "@/lib/vault"
 
-import { Card } from "@/components/ui/card"
-import { CalendarContent } from "./_components/calendar-content"
-import { CalendarHeader } from "./_components/calendar-header"
-import { CalendarWrapper } from "./_components/calendar-wrapper"
+import { CalendarView } from "./_components/calendar-view"
 
-// Define metadata for the page
-// More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 export const metadata: Metadata = {
-  title: "Calendar",
+  title: "Meetings",
 }
 
-export default function CalendarPage() {
+export default async function CalendarPage() {
+  const meetings = await listNotes<MeetingMeta>("meetings")
+
+  const upcoming = meetings.filter(
+    (m) => new Date(m.meta.date) >= new Date()
+  ).length
+  const total = meetings.length
+
   return (
-    <CalendarWrapper events={eventsData}>
-      <Card>
-        <CalendarHeader />
-        <CalendarContent />
-      </Card>
-    </CalendarWrapper>
+    <section className="container max-w-3xl grid gap-6 p-6">
+      <div className="flex items-center gap-3">
+        <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+          <Calendar className="size-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold">Meetings</h1>
+          <p className="text-sm text-muted-foreground">
+            {upcoming} upcoming &middot; {total - upcoming} in the last 30 days
+          </p>
+        </div>
+      </div>
+
+      <CalendarView meetings={meetings} />
+    </section>
   )
 }

@@ -1,0 +1,37 @@
+{
+  "renderMode": "mapbox-style-native",
+  "providers": {
+    "mapbox": {
+      "styleId": "zach-reichert/cmmjpz3lz004201skddu00nb1",
+      "fallbackStyleId": "mapbox/satellite-v9"
+    }
+  },
+  "framing": {
+    "paddingFactor": 1.24,
+    "zoomOutSteps": 1,
+    "minZoom": 10,
+    "maxZoom": 18,
+    "centerOffsetXPct": 0.0,
+    "centerOffsetYPct": 0.04,
+    "boundsMarginDeg": 0.012
+  },
+  "pins": {
+    "radius": 13,
+    "fontSize": 15,
+    "minSeparationPx": 34
+  },
+  "output": {
+    "width": 1200,
+    "height": 800,
+    "cropBottomPx": 50
+  },
+  "geocoding": {
+    "cacheFile": "./data/geocode_cache.json",
+    "enableCache": true,
+    "primary": "google",
+    "fallbacks": [
+      "nominatim",
+      "census"
+    ]
+  }
+}

@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/sidebar"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { CommandMenu } from "./command-menu"
+import { ViewModeToggle } from "./view-mode-toggle"
 
 export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
   const pathname = usePathname()
@@ -140,9 +141,12 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
             width={24}
             className="dark:invert"
           />
-          <span>Shadboard</span>
+          <span>CRE Agent</span>
         </Link>
         <CommandMenu dictionary={dictionary} buttonClassName="max-w-full" />
+        <div className="px-2 pb-1">
+          <ViewModeToggle />
+        </div>
       </SidebarHeader>
       <ScrollArea>
         <SidebarContent className="gap-0">
