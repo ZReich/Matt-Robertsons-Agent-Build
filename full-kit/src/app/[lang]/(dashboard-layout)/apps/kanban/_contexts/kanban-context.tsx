@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useReducer, useState } from "react"
+import { createContext, useMemo, useReducer, useState } from "react"
 
 import type { ReactNode } from "react"
 import type {
@@ -33,6 +33,29 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     selectedColumn: undefined,
     selectedTask: undefined,
   })
+
+  // Pipeline search / filter state
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterPropertyType, setFilterPropertyType] = useState<string | null>(
+    null
+  )
+
+  const filteredColumns = useMemo(() => {
+    return kanbanState.columns.map((col) => ({
+      ...col,
+      tasks: col.tasks.filter((task) => {
+        const q = searchQuery.toLowerCase()
+        const matchesSearch =
+          !q ||
+          task.title.toLowerCase().includes(q) ||
+          task.dealClientName?.toLowerCase().includes(q) ||
+          task.description?.toLowerCase().includes(q)
+        const matchesType =
+          !filterPropertyType || task.dealPropertyType === filterPropertyType
+        return matchesSearch && matchesType
+      }),
+    }))
+  }, [kanbanState.columns, searchQuery, filterPropertyType])
 
   // Sidebar state management
   const [kanbanAddTaskSidebarIsOpen, setKanbanAddTaskSidebarIsOpen] =
@@ -119,6 +142,11 @@ export function KanbanProvider({ kanbanData, children }: KanbanProviderProps) {
     <KanbanContext.Provider
       value={{
         kanbanState,
+        searchQuery,
+        setSearchQuery,
+        filterPropertyType,
+        setFilterPropertyType,
+        filteredColumns,
         kanbanAddTaskSidebarIsOpen,
         setKanbanAddTaskSidebarIsOpen,
         kanbanUpdateTaskSidebarIsOpen,

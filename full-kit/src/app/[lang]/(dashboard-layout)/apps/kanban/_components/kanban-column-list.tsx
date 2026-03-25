@@ -10,7 +10,8 @@ import { KanbanAddNewColumnButton } from "./kanban-add-new-column-button"
 import { KanbanColumnItem } from "./kanban-column-item"
 
 export function KanbanColumnList() {
-  const { kanbanState, setKanbanAddColumnSidebarIsOpen } = useKanbanContext()
+  const { filteredColumns, setKanbanAddColumnSidebarIsOpen } =
+    useKanbanContext()
 
   return (
     <ScrollArea orientation="horizontal" className="container flex-1 w-0 p-0">
@@ -26,7 +27,7 @@ export function KanbanColumnList() {
             {...provided.droppableProps} // Droppable props for drag-and-drop functionality
             className="flex gap-x-4 p-4"
           >
-            {kanbanState.columns.map((column, index) => (
+            {filteredColumns.map((column, index) => (
               <KanbanColumnItem key={column.id} column={column} index={index} />
             ))}
             {/* Placeholder for maintaining layout integrity by creating a visual space for the dragged item */}

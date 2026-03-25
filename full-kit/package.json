@@ -85,6 +85,7 @@
     "embla-carousel-autoplay": "8.5.1",
     "embla-carousel-react": "8.5.1",
     "emoji-picker-react": "4.12.2",
+    "gray-matter": "^4.0.3",
     "input-otp": "1.4.2",
     "lucide-react": "0.446.0",
     "negotiator": "0.6.3",

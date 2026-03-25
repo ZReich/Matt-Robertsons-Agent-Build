@@ -3,6 +3,7 @@ import type { Session } from "next-auth"
 import type { ReactNode } from "react"
 
 import { SettingsProvider } from "@/contexts/settings-context"
+import { ViewProvider } from "@/contexts/view-context"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { DirectionProvider } from "./direction-provider"
 import { ModeProvider } from "./mode-provider"
@@ -22,15 +23,17 @@ export function Providers({
 }>) {
   return (
     <SettingsProvider locale={locale}>
-      <ModeProvider>
-        <ThemeProvider>
-          <DirectionProvider direction={direction}>
-            <NextAuthProvider session={session}>
-              <SidebarProvider>{children}</SidebarProvider>
-            </NextAuthProvider>
-          </DirectionProvider>
-        </ThemeProvider>
-      </ModeProvider>
+      <ViewProvider>
+        <ModeProvider>
+          <ThemeProvider>
+            <DirectionProvider direction={direction}>
+              <NextAuthProvider session={session}>
+                <SidebarProvider>{children}</SidebarProvider>
+              </NextAuthProvider>
+            </DirectionProvider>
+          </ThemeProvider>
+        </ModeProvider>
+      </ViewProvider>
     </SettingsProvider>
   )
 }

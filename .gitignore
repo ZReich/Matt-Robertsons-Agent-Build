@@ -35,3 +35,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Craft Agent workspace files
+.craft-dashboard-dev.log
+sources/
+
+# Local planning docs
+PLAN.md
+SDD-PLAN.md
+
+# Windows artifacts
+nul
+
+# Market survey outputs
+market-survey-skill/output/
+market survey and flyers/
+
+# Prisma SQLite (using Postgres now)
+prisma/dev.db

@@ -28,6 +28,12 @@ export interface TaskType {
   assigned: UserType[]
   dueDate: Date
   attachments: FileType[]
+  // CRE Deal extensions — present when this task represents a vault deal
+  dealPath?: string
+  dealValue?: number
+  dealPropertyType?: string
+  dealClientName?: string
+  dealListedDate?: string
 }
 
 export interface ColumnType {
@@ -81,6 +87,11 @@ export type KanbanActionType =
 
 export interface KanbanContextType {
   kanbanState: KanbanStateType
+  searchQuery: string
+  setSearchQuery: (q: string) => void
+  filterPropertyType: string | null
+  setFilterPropertyType: (t: string | null) => void
+  filteredColumns: ColumnType[]
   kanbanAddTaskSidebarIsOpen: boolean
   setKanbanAddTaskSidebarIsOpen: (value: boolean) => void
   kanbanUpdateTaskSidebarIsOpen: boolean
