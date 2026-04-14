@@ -24,8 +24,8 @@ import Link from "next/link"
 
 import { useParams } from "next/navigation"
 
-import type { CommunicationMeta, TodoMeta, VaultNote } from "@/lib/vault"
-import { normalizeEntityRef, toSlug } from "@/lib/vault"
+import type { CommunicationMeta, TodoMeta, VaultNote } from "@/lib/vault/shared"
+import { normalizeEntityRef, toSlug } from "@/lib/vault/shared"
 import { parseSections } from "@/lib/parse-sections"
 
 import { Badge } from "@/components/ui/badge"

@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react"
 import { Check, Copy, Mail, Search, X } from "lucide-react"
 
-import type { TemplateMeta, VaultNote } from "@/lib/vault"
+import type { TemplateMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import type { CommunicationMeta, TodoMeta, VaultNote } from "@/lib/vault"
+import type { CommunicationMeta, TodoMeta, VaultNote } from "@/lib/vault/shared"
 
 import {
   ResizablePanelGroup,

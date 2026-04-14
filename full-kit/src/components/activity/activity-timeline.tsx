@@ -22,8 +22,8 @@ import type {
   MeetingMeta,
   TodoMeta,
   VaultNote,
-} from "@/lib/vault"
-import { normalizeEntityRef } from "@/lib/vault"
+} from "@/lib/vault/shared"
+import { normalizeEntityRef } from "@/lib/vault/shared"
 import { parseSections } from "@/lib/parse-sections"
 import type { TranscriptMatch } from "@/lib/transcript-matching"
 

@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react"
 
-import type { CommunicationMeta, VaultNote } from "@/lib/vault"
+import type { CommunicationMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

@@ -16,7 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 
-import type { VaultNote, AgentActionMeta } from "@/lib/vault"
+import type { VaultNote, AgentActionMeta } from "@/lib/vault/shared"
 
 interface Props {
   actions: VaultNote<AgentActionMeta>[]

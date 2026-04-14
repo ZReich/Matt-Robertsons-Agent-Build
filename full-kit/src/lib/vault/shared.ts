@@ -1,15 +1,10 @@
-export { parseVaultNote, serializeVaultNote } from "./parser"
-export {
-  readNote,
-  listNotes,
-  listNotesByCategory,
-  listNotesByType,
-  updateNote,
-  createNote,
-  deleteNote,
-  archiveNote,
-  searchNotes,
-} from "./reader"
+/**
+ * Client-safe vault exports — types and utilities only.
+ * No Node.js fs/path imports. Safe for "use client" components.
+ *
+ * Import from "@/lib/vault/shared" in client components instead of "@/lib/vault".
+ */
+
 export type {
   VaultCategory,
   DealStage,
@@ -34,6 +29,7 @@ export type {
   AgentActionMeta,
   AgentMemoryMeta,
 } from "./types"
+
 export { DEAL_STAGE_LABELS } from "./types"
-export { normalizeEntityRef, toSlug, sanitizeFilename } from "./utils"
-export { validateVaultPath } from "./utils-server"
+
+export { normalizeEntityRef, toSlug } from "./utils"

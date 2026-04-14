@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-import type { VaultNote, AgentActionMeta, AgentMemoryMeta } from "@/lib/vault"
+import type { VaultNote, AgentActionMeta, AgentMemoryMeta } from "@/lib/vault/shared"
 
 import { AgentQueue } from "./agent-queue"
 import { AgentActivityLog } from "./agent-activity-log"
