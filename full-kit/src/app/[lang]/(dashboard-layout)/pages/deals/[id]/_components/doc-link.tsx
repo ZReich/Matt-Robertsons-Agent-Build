@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Check, Copy, ExternalLink } from "lucide-react"
+
 import { Badge } from "@/components/ui/badge"
 
 interface DocLinkProps {
@@ -12,9 +13,9 @@ interface DocLinkProps {
 function isLocalPath(value: string): boolean {
   return (
     /^[a-zA-Z]:[/\\]/.test(value) || // Windows: C:\ or C:/
-    value.startsWith("/") ||           // Unix absolute
-    value.startsWith("~/") ||          // Unix home-relative
-    value.startsWith("\\\\")           // Windows UNC share
+    value.startsWith("/") || // Unix absolute
+    value.startsWith("~/") || // Unix home-relative
+    value.startsWith("\\\\") // Windows UNC share
   )
 }
 

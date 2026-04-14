@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote } from "@/lib/vault"
 import type { AgentActionMeta } from "@/lib/vault"
+
+import { createNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET(req: Request) {
   try {
@@ -90,7 +91,12 @@ export async function POST(req: Request) {
       }),
     }
 
-    const note = await createNote<AgentActionMeta>(subdir, filename, meta, content)
+    const note = await createNote<AgentActionMeta>(
+      subdir,
+      filename,
+      meta,
+      content
+    )
     return NextResponse.json(note, { status: 201 })
   } catch (e) {
     console.error("Error creating agent action:", e)

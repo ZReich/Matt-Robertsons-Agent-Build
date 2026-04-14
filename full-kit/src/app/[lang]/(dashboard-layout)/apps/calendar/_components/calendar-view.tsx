@@ -9,7 +9,6 @@ import type { MeetingMeta, VaultNote } from "@/lib/vault/shared"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-
 import { MonthCalendar } from "./month-calendar"
 import { WeekStrip } from "./week-strip"
 

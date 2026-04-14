@@ -1,7 +1,9 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { BookOpen, Brain, FileText, Users, Sparkles } from "lucide-react"
+import { useMemo, useState } from "react"
+import { BookOpen, Brain, FileText, Sparkles, Users } from "lucide-react"
+
+import type { AgentMemoryMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -14,8 +16,6 @@ import {
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-
-import type { VaultNote, AgentMemoryMeta } from "@/lib/vault/shared"
 
 interface Props {
   memory: VaultNote<AgentMemoryMeta>[]
@@ -93,9 +93,7 @@ export function AgentMemoryPanel({ memory }: Props) {
               return (
                 <div key={type} className="mb-3">
                   <div className="mb-1 flex items-center gap-1.5 px-2">
-                    <config.icon
-                      className={`h-3.5 w-3.5 ${config.color}`}
-                    />
+                    <config.icon className={`h-3.5 w-3.5 ${config.color}`} />
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {config.label}
                     </span>
@@ -142,7 +140,10 @@ export function AgentMemoryPanel({ memory }: Props) {
             <Separator />
             <CardContent className="pt-4">
               <ScrollArea className="h-[460px]">
-                <MarkdownRenderer content={selectedNote.content} size="compact" />
+                <MarkdownRenderer
+                  content={selectedNote.content}
+                  size="compact"
+                />
               </ScrollArea>
             </CardContent>
           </>

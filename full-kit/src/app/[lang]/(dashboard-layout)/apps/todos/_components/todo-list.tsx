@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo, useState } from "react"
 import { format, isBefore, startOfDay } from "date-fns"
 import { CheckCircle2, Circle } from "lucide-react"
 
@@ -8,13 +8,13 @@ import type { TodoMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type TodoNote = VaultNote<TodoMeta>
 
@@ -53,9 +53,7 @@ function TodoItem({ note }: { note: TodoNote }) {
   const [loading, setLoading] = useState(false)
   const today = startOfDay(new Date())
   const isOverdue =
-    !done &&
-    note.meta.due_date &&
-    isBefore(new Date(note.meta.due_date), today)
+    !done && note.meta.due_date && isBefore(new Date(note.meta.due_date), today)
   const dealName = note.meta.deal?.replace(/\[\[|\]\]/g, "")
 
   async function toggle() {

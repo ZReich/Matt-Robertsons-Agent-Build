@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, type ReactNode } from "react"
+import { useMemo, useState } from "react"
 import { format, isToday, isYesterday } from "date-fns"
 import {
   ArrowDownLeft,
@@ -17,17 +17,18 @@ import {
 } from "lucide-react"
 
 import type { CommunicationMeta, VaultNote } from "@/lib/vault/shared"
+import type { ReactNode } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DocumentViewer } from "@/components/ui/document-viewer"
-import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 
 type CommNote = VaultNote<CommunicationMeta>
 
@@ -166,9 +167,7 @@ export function CommsFeed({ notes }: CommsFeedProps) {
           <DropdownMenuContent align="end">
             {CATEGORIES.map((c) => (
               <DropdownMenuItem key={c} onClick={() => setCategory(c)}>
-                {c === "all"
-                  ? "All"
-                  : c.charAt(0).toUpperCase() + c.slice(1)}
+                {c === "all" ? "All" : c.charAt(0).toUpperCase() + c.slice(1)}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -201,10 +200,16 @@ export function CommsFeed({ notes }: CommsFeedProps) {
                   const hasContent = !!note.content?.trim()
 
                   return (
-                    <div key={note.path} className="rounded-lg border bg-card overflow-hidden">
+                    <div
+                      key={note.path}
+                      className="rounded-lg border bg-card overflow-hidden"
+                    >
                       {/* Summary row */}
                       <button
-                        onClick={() => hasContent && setExpandedPath(isExpanded ? null : note.path)}
+                        onClick={() =>
+                          hasContent &&
+                          setExpandedPath(isExpanded ? null : note.path)
+                        }
                         className={`flex items-start gap-3 p-4 w-full text-left transition-colors ${
                           hasContent ? "hover:bg-accent/50 cursor-pointer" : ""
                         }`}
@@ -213,9 +218,7 @@ export function CommsFeed({ notes }: CommsFeedProps) {
                         <div
                           className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${config?.color ?? "bg-gray-100 text-gray-600"}`}
                         >
-                          {config?.icon ?? (
-                            <MessageSquare className="size-4" />
-                          )}
+                          {config?.icon ?? <MessageSquare className="size-4" />}
                         </div>
 
                         {/* Content */}
@@ -254,13 +257,12 @@ export function CommsFeed({ notes }: CommsFeedProps) {
                           <span className="text-xs text-muted-foreground">
                             {format(new Date(note.meta.date), "h:mm a")}
                           </span>
-                          {hasContent && (
-                            isExpanded ? (
+                          {hasContent &&
+                            (isExpanded ? (
                               <ChevronUp className="size-4 text-muted-foreground" />
                             ) : (
                               <ChevronDown className="size-4 text-muted-foreground" />
-                            )
-                          )}
+                            ))}
                         </div>
                       </button>
 
@@ -275,7 +277,10 @@ export function CommsFeed({ notes }: CommsFeedProps) {
                               channel: note.meta.channel,
                               contact: contactName,
                               date: note.meta.date,
-                              direction: note.meta.direction as "inbound" | "outbound" | undefined,
+                              direction: note.meta.direction as
+                                | "inbound"
+                                | "outbound"
+                                | undefined,
                               deal: dealName,
                               tags: note.meta.tags,
                             }}

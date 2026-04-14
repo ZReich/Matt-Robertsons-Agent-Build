@@ -1,6 +1,5 @@
-import type { Metadata } from "next"
-import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
+import { format } from "date-fns"
 import {
   Building2,
   Calendar,
@@ -12,9 +11,7 @@ import {
   Smartphone,
   Tag,
 } from "lucide-react"
-import { format } from "date-fns"
 
-import { listNotes, normalizeEntityRef } from "@/lib/vault"
 import type {
   ClientMeta,
   CommunicationMeta,
@@ -22,15 +19,18 @@ import type {
   MeetingMeta,
   TodoMeta,
 } from "@/lib/vault"
-import { DEAL_STAGE_LABELS } from "@/lib/vault"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
-import { ActivityTimeline } from "@/components/activity/activity-timeline"
 import { matchTranscriptsToMeetings } from "@/lib/transcript-matching"
+import { DEAL_STAGE_LABELS, listNotes, normalizeEntityRef } from "@/lib/vault"
+
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ActivityTimeline } from "@/components/activity/activity-timeline"
 
 interface ClientDetailPageProps {
   params: Promise<{ id: string; lang: string }>
@@ -40,7 +40,9 @@ export async function generateMetadata({
   params,
 }: ClientDetailPageProps): Promise<Metadata> {
   const { id } = await params
-  return { title: id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) }
+  return {
+    title: id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+  }
 }
 
 const STAGE_COLORS: Record<string, string> = {
@@ -118,7 +120,10 @@ export default async function ClientDetailPage({
     )
 
   // Auto-match Plaud call transcripts to meetings
-  const transcriptMatches = matchTranscriptsToMeetings(clientComms, clientMeetings)
+  const transcriptMatches = matchTranscriptsToMeetings(
+    clientComms,
+    clientMeetings
+  )
 
   const totalActivity =
     clientComms.length + clientMeetings.length + clientTodos.length
@@ -166,17 +171,16 @@ export default async function ClientDetailPage({
       <Tabs defaultValue="overview">
         <TabsList className="w-full justify-start flex-wrap h-auto gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="deals">
-            Deals ({clientDeals.length})
-          </TabsTrigger>
-          <TabsTrigger value="activity">
-            Activity ({totalActivity})
-          </TabsTrigger>
+          <TabsTrigger value="deals">Deals ({clientDeals.length})</TabsTrigger>
+          <TabsTrigger value="activity">Activity ({totalActivity})</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="mt-4 grid gap-4 sm:grid-cols-2">
+        <TabsContent
+          value="overview"
+          className="mt-4 grid gap-4 sm:grid-cols-2"
+        >
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -229,8 +233,10 @@ export default async function ClientDetailPage({
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Value</span>
                 <span className="font-semibold">
-                  {clientDeals.reduce((sum, d) => sum + (d.meta.value ?? 0), 0) >
-                  0
+                  {clientDeals.reduce(
+                    (sum, d) => sum + (d.meta.value ?? 0),
+                    0
+                  ) > 0
                     ? `$${(clientDeals.reduce((sum, d) => sum + (d.meta.value ?? 0), 0) / 1_000_000).toFixed(1)}M`
                     : "—"}
                 </span>
@@ -251,7 +257,9 @@ export default async function ClientDetailPage({
               </CardHeader>
               <CardContent className="space-y-2">
                 {clientComms.slice(0, 3).map((c) => {
-                  const dealName = c.meta.deal ? normalizeEntityRef(c.meta.deal) : null
+                  const dealName = c.meta.deal
+                    ? normalizeEntityRef(c.meta.deal)
+                    : null
                   return (
                     <div
                       key={c.path}
@@ -266,7 +274,10 @@ export default async function ClientDetailPage({
                         {c.meta.subject ?? c.meta.channel}
                       </span>
                       {dealName && (
-                        <Badge variant="outline" className="text-xs py-0 shrink-0">
+                        <Badge
+                          variant="outline"
+                          className="text-xs py-0 shrink-0"
+                        >
                           {dealName}
                         </Badge>
                       )}
@@ -349,10 +360,7 @@ export default async function ClientDetailPage({
                   {deal.meta.closing_date && (
                     <p className="text-xs text-muted-foreground mt-2">
                       Closing:{" "}
-                      {format(
-                        new Date(deal.meta.closing_date),
-                        "MMM d, yyyy"
-                      )}
+                      {format(new Date(deal.meta.closing_date), "MMM d, yyyy")}
                     </p>
                   )}
                 </CardContent>

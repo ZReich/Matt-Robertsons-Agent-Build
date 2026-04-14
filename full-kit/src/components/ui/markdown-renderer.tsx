@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm"
 import type { ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
+
 import { Checkbox } from "@/components/ui/checkbox"
 
 interface MarkdownRendererProps extends ComponentProps<"div"> {
@@ -36,9 +37,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
   ...props
 }: MarkdownRendererProps) {
   if (!content?.trim()) {
-    return (
-      <p className="text-sm italic text-muted-foreground">No content</p>
-    )
+    return <p className="text-sm italic text-muted-foreground">No content</p>
   }
 
   return (
@@ -95,7 +94,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
         remarkPlugins={[remarkGfm]}
         components={{
           // Custom checkbox rendering for task lists
-          input: ({ node, ...inputProps }) => {
+          input: ({ node: _node, ...inputProps }) => {
             if (inputProps.type === "checkbox") {
               return (
                 <Checkbox
@@ -109,7 +108,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({
           },
 
           // Open links in new tab
-          a: ({ node, ...anchorProps }) => (
+          a: ({ node: _node, ...anchorProps }) => (
             <a {...anchorProps} target="_blank" rel="noopener noreferrer" />
           ),
         }}

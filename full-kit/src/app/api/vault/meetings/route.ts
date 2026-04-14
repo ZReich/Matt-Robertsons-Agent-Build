@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote, deleteNote } from "@/lib/vault"
 import type { MeetingMeta } from "@/lib/vault"
+
+import { createNote, deleteNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET(req: Request) {
   try {
@@ -51,7 +52,10 @@ export async function POST(req: Request) {
       )
     }
 
-    const titleSlug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+    const titleSlug = title
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
     const filename = `${date}-${titleSlug}.md`
 
     const meta: MeetingMeta = {
@@ -66,7 +70,12 @@ export async function POST(req: Request) {
       created: new Date().toISOString().split("T")[0],
     }
 
-    const note = await createNote<MeetingMeta>("meetings", filename, meta, content)
+    const note = await createNote<MeetingMeta>(
+      "meetings",
+      filename,
+      meta,
+      content
+    )
     return NextResponse.json(note, { status: 201 })
   } catch (e) {
     console.error("Error creating meeting:", e)
@@ -83,10 +92,7 @@ export async function PATCH(req: Request) {
     const { path, ...updates } = body as { path: string } & Partial<MeetingMeta>
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     const updated = await updateNote<MeetingMeta>(path, updates)
@@ -105,10 +111,7 @@ export async function DELETE(req: Request) {
     const { path } = (await req.json()) as { path: string }
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     await deleteNote(path)

@@ -2,9 +2,10 @@
 
 import { useContext } from "react"
 
-import { ViewContext } from "@/contexts/view-context"
 import type { ViewMode } from "@/contexts/view-context"
 import type { VaultCategory } from "@/lib/vault/types"
+
+import { ViewContext } from "@/contexts/view-context"
 
 export function useViewMode() {
   const context = useContext(ViewContext)

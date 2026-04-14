@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote, archiveNote } from "@/lib/vault"
 import type { DealMeta, DealStage } from "@/lib/vault"
+
+import { archiveNote, createNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET(req: Request) {
   try {
@@ -11,9 +12,7 @@ export async function GET(req: Request) {
     const notes = await listNotes<DealMeta>("clients")
     const deals = notes.filter((n) => n.meta.type === "deal")
 
-    const filtered = stage
-      ? deals.filter((d) => d.meta.stage === stage)
-      : deals
+    const filtered = stage ? deals.filter((d) => d.meta.stage === stage) : deals
 
     return NextResponse.json(filtered)
   } catch (e) {
@@ -90,10 +89,7 @@ export async function PATCH(req: Request) {
     const { path, ...updates } = body as { path: string } & Partial<DealMeta>
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     const updated = await updateNote<DealMeta>(path, updates)
@@ -112,10 +108,7 @@ export async function DELETE(req: Request) {
     const { path } = (await req.json()) as { path: string }
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     const archived = await archiveNote<DealMeta>(path)

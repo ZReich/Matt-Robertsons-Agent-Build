@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { useState } from "react"
 import { Check, Copy, Mail, Search, X } from "lucide-react"
 
 import type { TemplateMeta, VaultNote } from "@/lib/vault/shared"
+import type { ReactNode } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

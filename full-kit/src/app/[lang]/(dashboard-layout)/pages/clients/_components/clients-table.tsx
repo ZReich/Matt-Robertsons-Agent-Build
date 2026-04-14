@@ -8,15 +8,10 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
-  type ColumnDef,
-  type SortingState,
 } from "@tanstack/react-table"
-import {
-  ArrowUpDown,
-  ChevronDown,
-  ChevronUp,
-  Search,
-} from "lucide-react"
+import { ArrowUpDown, ChevronDown, ChevronUp, Search } from "lucide-react"
+
+import type { ColumnDef, SortingState } from "@tanstack/react-table"
 
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -59,9 +54,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
         header: ({ column }) => (
           <button
             className="flex items-center gap-1 hover:text-foreground"
-            onClick={() =>
-              column.toggleSorting(column.getIsSorted() === "asc")
-            }
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Name
             {column.getIsSorted() === "asc" ? (
@@ -118,9 +111,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
         header: ({ column }) => (
           <button
             className="flex items-center gap-1 hover:text-foreground"
-            onClick={() =>
-              column.toggleSorting(column.getIsSorted() === "asc")
-            }
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Active Deals
             {column.getIsSorted() === "asc" ? (

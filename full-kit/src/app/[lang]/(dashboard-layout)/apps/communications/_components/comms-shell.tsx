@@ -5,13 +5,12 @@ import { useState } from "react"
 import type { CommunicationMeta, TodoMeta, VaultNote } from "@/lib/vault/shared"
 
 import {
-  ResizablePanelGroup,
-  ResizablePanel,
   ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
 } from "@/components/ui/resizable"
-
-import { CommsList } from "./comms-list"
 import { CommsDetail, CommsDetailEmpty } from "./comms-detail"
+import { CommsList } from "./comms-list"
 
 type CommNote = VaultNote<CommunicationMeta>
 type TodoNote = VaultNote<TodoMeta>
@@ -108,10 +107,7 @@ export function CommsShell({ notes, todos }: CommsShellProps) {
 
         <ResizablePanel defaultSize={65} minSize={40}>
           {selectedPath ? (
-            <CommsDetail
-              selectedPath={selectedPath}
-              allTodos={todos}
-            />
+            <CommsDetail selectedPath={selectedPath} allTodos={todos} />
           ) : (
             <CommsDetailEmpty />
           )}

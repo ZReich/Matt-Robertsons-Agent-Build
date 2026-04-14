@@ -1,8 +1,9 @@
-import type { Metadata } from "next"
 import { FileText } from "lucide-react"
 
-import { listNotes } from "@/lib/vault"
 import type { TemplateMeta } from "@/lib/vault"
+import type { Metadata } from "next"
+
+import { listNotes } from "@/lib/vault"
 
 import { TemplateViewer } from "./_components/template-viewer"
 

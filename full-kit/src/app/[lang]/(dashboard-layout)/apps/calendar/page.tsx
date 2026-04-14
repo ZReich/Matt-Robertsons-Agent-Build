@@ -1,8 +1,9 @@
-import type { Metadata } from "next"
 import { Calendar } from "lucide-react"
 
-import { listNotes } from "@/lib/vault"
 import type { MeetingMeta } from "@/lib/vault"
+import type { Metadata } from "next"
+
+import { listNotes } from "@/lib/vault"
 
 import { CalendarView } from "./_components/calendar-view"
 

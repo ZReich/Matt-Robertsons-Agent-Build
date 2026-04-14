@@ -1,6 +1,6 @@
 "use client"
 
-import { format, startOfWeek, addDays, isToday } from "date-fns"
+import { addDays, format, isToday, startOfWeek } from "date-fns"
 
 interface WeekStripProps {
   /** ISO date strings of days that have meetings */

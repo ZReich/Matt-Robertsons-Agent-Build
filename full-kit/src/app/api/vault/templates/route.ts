@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote, deleteNote } from "@/lib/vault"
 import type { TemplateMeta } from "@/lib/vault"
+
+import { createNote, deleteNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET() {
   try {
@@ -23,13 +24,13 @@ export async function POST(req: Request) {
     const { name, subject, use_case, content = "" } = body
 
     if (!name) {
-      return NextResponse.json(
-        { error: "name is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "name is required" }, { status: 400 })
     }
 
-    const filename = `${name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}.md`
+    const filename = `${name
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")}.md`
     const today = new Date().toISOString().split("T")[0]
 
     const meta: TemplateMeta = {
@@ -41,7 +42,12 @@ export async function POST(req: Request) {
       created: today,
     }
 
-    const note = await createNote<TemplateMeta>("templates", filename, meta, content)
+    const note = await createNote<TemplateMeta>(
+      "templates",
+      filename,
+      meta,
+      content
+    )
     return NextResponse.json(note, { status: 201 })
   } catch (e) {
     console.error("Error creating template:", e)
@@ -55,13 +61,12 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json()
-    const { path, ...updates } = body as { path: string } & Partial<TemplateMeta>
+    const { path, ...updates } = body as {
+      path: string
+    } & Partial<TemplateMeta>
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     const updated = await updateNote<TemplateMeta>(path, updates)
@@ -80,10 +85,7 @@ export async function DELETE(req: Request) {
     const { path } = (await req.json()) as { path: string }
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     await deleteNote(path)

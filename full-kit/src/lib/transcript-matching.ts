@@ -4,6 +4,7 @@
  */
 
 import type { CommunicationMeta, MeetingMeta, VaultNote } from "@/lib/vault"
+
 import { normalizeEntityRef } from "@/lib/vault"
 
 export interface TranscriptMatch {

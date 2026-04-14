@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useState, type ReactNode } from "react"
-import { format, isToday, isYesterday, isPast } from "date-fns"
+import { useMemo, useState } from "react"
+import { format, isPast, isToday, isYesterday } from "date-fns"
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -17,15 +17,17 @@ import {
   Smartphone,
 } from "lucide-react"
 
+import type { TranscriptMatch } from "@/lib/transcript-matching"
 import type {
   CommunicationMeta,
   MeetingMeta,
   TodoMeta,
   VaultNote,
 } from "@/lib/vault/shared"
-import { normalizeEntityRef } from "@/lib/vault/shared"
+import type { ReactNode } from "react"
+
 import { parseSections } from "@/lib/parse-sections"
-import type { TranscriptMatch } from "@/lib/transcript-matching"
+import { normalizeEntityRef } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -161,9 +163,7 @@ function TimelineEntry({ event }: { event: ActivityEvent }) {
   if (event.type === "communication") {
     const comm = event.data
     const contactName = normalizeEntityRef(comm.meta.contact)
-    const dealName = comm.meta.deal
-      ? normalizeEntityRef(comm.meta.deal)
-      : null
+    const dealName = comm.meta.deal ? normalizeEntityRef(comm.meta.deal) : null
     const isInbound = comm.meta.direction !== "outbound"
     const hasContent = !!comm.content?.trim()
     const parsed = hasContent ? parseSections(comm.content) : null
@@ -366,10 +366,7 @@ function TimelineEntry({ event }: { event: ActivityEvent }) {
             </Badge>
           )}
         {isOverdue && (
-          <Badge
-            variant="destructive"
-            className="text-[10px] px-1 py-0"
-          >
+          <Badge variant="destructive" className="text-[10px] px-1 py-0">
             overdue
           </Badge>
         )}
@@ -495,8 +492,7 @@ export function ActivityTimeline({
       if (filter === "texts")
         return (
           e.type === "communication" &&
-          (e.data.meta.channel === "text" ||
-            e.data.meta.channel === "whatsapp")
+          (e.data.meta.channel === "text" || e.data.meta.channel === "whatsapp")
         )
       if (filter === "meetings") return e.type === "meeting"
       if (filter === "todos") return e.type === "todo"

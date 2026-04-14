@@ -1,6 +1,5 @@
-import type { Metadata } from "next"
-import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
+import { format } from "date-fns"
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -23,9 +22,7 @@ import {
   Smartphone,
   User,
 } from "lucide-react"
-import { format } from "date-fns"
 
-import { listNotes, DEAL_STAGE_LABELS } from "@/lib/vault"
 import type {
   CommunicationMeta,
   DealDocument,
@@ -33,29 +30,39 @@ import type {
   MeetingMeta,
   TodoMeta,
 } from "@/lib/vault"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
-import { DocLink } from "./_components/doc-link"
+import { DEAL_STAGE_LABELS, listNotes } from "@/lib/vault"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DocLink } from "./_components/doc-link"
 
 interface DealDetailPageProps {
   params: Promise<{ id: string; lang: string }>
 }
 
 const STAGE_COLORS: Record<string, string> = {
-  prospecting: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  prospecting:
+    "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
   listing: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
-  marketing: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300",
-  showings: "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300",
+  marketing:
+    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300",
+  showings:
+    "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300",
   offer: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
-  "under-contract": "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300",
-  "due-diligence": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-  closing: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
-  closed: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+  "under-contract":
+    "bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300",
+  "due-diligence":
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+  closing:
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+  closed:
+    "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
 }
 
 const PROPERTY_TYPE_COLORS: Record<string, string> = {
@@ -145,9 +152,7 @@ export async function generateMetadata({
   return { title: deal?.meta.property_address ?? "Deal Detail" }
 }
 
-export default async function DealDetailPage({
-  params,
-}: DealDetailPageProps) {
+export default async function DealDetailPage({ params }: DealDetailPageProps) {
   const { id } = await params
 
   const [dealNotes, todoNotes, commNotes, meetingNotes] = await Promise.all([
@@ -167,15 +172,13 @@ export default async function DealDetailPage({
 
   // Fixed: strip [[...]] brackets when matching deal field
   const dealTodos = todoNotes.filter(
-    (t) =>
-      t.meta.deal?.replace(/\[\[|\]\]/g, "") === deal.property_address
+    (t) => t.meta.deal?.replace(/\[\[|\]\]/g, "") === deal.property_address
   )
 
   // Communications linked to this deal
   const dealComms = commNotes
     .filter(
-      (c) =>
-        c.meta.deal?.replace(/\[\[|\]\]/g, "") === deal.property_address
+      (c) => c.meta.deal?.replace(/\[\[|\]\]/g, "") === deal.property_address
     )
     .sort(
       (a, b) =>
@@ -186,8 +189,7 @@ export default async function DealDetailPage({
   const now = new Date()
   const dealMeetings = meetingNotes
     .filter(
-      (m) =>
-        m.meta.deal?.replace(/\[\[|\]\]/g, "") === deal.property_address
+      (m) => m.meta.deal?.replace(/\[\[|\]\]/g, "") === deal.property_address
     )
     .sort(
       (a, b) =>
@@ -251,9 +253,7 @@ export default async function DealDetailPage({
           <TabsTrigger value="files">
             Files ({(deal.documents ?? []).length})
           </TabsTrigger>
-          <TabsTrigger value="todos">
-            Todos ({dealTodos.length})
-          </TabsTrigger>
+          <TabsTrigger value="todos">Todos ({dealTodos.length})</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
 
@@ -290,7 +290,9 @@ export default async function DealDetailPage({
               {deal.value && (
                 <div className="flex items-center gap-2 text-sm">
                   <DollarSign className="size-4 text-muted-foreground shrink-0" />
-                  <span className="font-semibold">{formatValue(deal.value)}</span>
+                  <span className="font-semibold">
+                    {formatValue(deal.value)}
+                  </span>
                 </div>
               )}
             </CardContent>
@@ -388,10 +390,7 @@ export default async function DealDetailPage({
             </p>
           ) : (
             dealComms.map((comm) => {
-              const contactName = comm.meta.contact?.replace(
-                /\[\[|\]\]/g,
-                ""
-              )
+              const contactName = comm.meta.contact?.replace(/\[\[|\]\]/g, "")
               const isInbound = comm.meta.direction !== "outbound"
               return (
                 <Card key={comm.path}>
@@ -448,10 +447,7 @@ export default async function DealDetailPage({
             dealMeetings.map((meeting) => {
               const isPast = new Date(meeting.meta.date) < now
               return (
-                <Card
-                  key={meeting.path}
-                  className={isPast ? "opacity-75" : ""}
-                >
+                <Card key={meeting.path} className={isPast ? "opacity-75" : ""}>
                   <CardContent className="p-4 flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold">{meeting.meta.title}</p>
@@ -507,8 +503,7 @@ export default async function DealDetailPage({
             </p>
           ) : (
             (deal.documents ?? []).map((doc, i) => {
-              const cfg =
-                DOC_TYPE_CONFIG[doc.type] ?? DOC_TYPE_CONFIG.other
+              const cfg = DOC_TYPE_CONFIG[doc.type] ?? DOC_TYPE_CONFIG.other
               return (
                 <Card key={i}>
                   <CardContent className="p-4 flex items-start gap-3">

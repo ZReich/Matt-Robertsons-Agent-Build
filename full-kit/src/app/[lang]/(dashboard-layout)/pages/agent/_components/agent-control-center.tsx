@@ -2,14 +2,17 @@
 
 import { useState } from "react"
 
+import type {
+  AgentActionMeta,
+  AgentMemoryMeta,
+  VaultNote,
+} from "@/lib/vault/shared"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-import type { VaultNote, AgentActionMeta, AgentMemoryMeta } from "@/lib/vault/shared"
-
-import { AgentQueue } from "./agent-queue"
 import { AgentActivityLog } from "./agent-activity-log"
-import { AgentMemoryPanel } from "./agent-memory-panel"
 import { AgentConfig } from "./agent-config"
+import { AgentMemoryPanel } from "./agent-memory-panel"
+import { AgentQueue } from "./agent-queue"
 
 interface Props {
   initialActions: VaultNote<AgentActionMeta>[]

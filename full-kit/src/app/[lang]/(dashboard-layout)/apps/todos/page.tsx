@@ -1,8 +1,9 @@
-import type { Metadata } from "next"
 import { ListTodo } from "lucide-react"
 
-import { listNotes } from "@/lib/vault"
 import type { TodoMeta } from "@/lib/vault"
+import type { Metadata } from "next"
+
+import { listNotes } from "@/lib/vault"
 
 import { TodoList } from "./_components/todo-list"
 
@@ -35,8 +36,8 @@ export default async function TodosPage({ params }: TodosPageProps) {
         <div>
           <h1 className="text-xl font-semibold">Todos</h1>
           <p className="text-sm text-muted-foreground">
-            {activeTotal} active &middot; {activeBusiness} business, {activePersonal}{" "}
-            personal
+            {activeTotal} active &middot; {activeBusiness} business,{" "}
+            {activePersonal} personal
           </p>
         </div>
       </div>

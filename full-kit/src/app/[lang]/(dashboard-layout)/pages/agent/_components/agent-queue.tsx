@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Check, X, Clock, AlertTriangle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { AlertTriangle, Check, Clock, X } from "lucide-react"
+
+import type { AgentActionMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -15,8 +17,6 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-
-import type { VaultNote, AgentActionMeta } from "@/lib/vault/shared"
 
 interface Props {
   actions: VaultNote<AgentActionMeta>[]
@@ -44,8 +44,7 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
 
 const TIER_COLORS: Record<string, string> = {
   auto: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-  "log-only":
-    "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  "log-only": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   approve:
     "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   blocked: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
@@ -55,10 +54,7 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({})
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({})
 
-  async function handleAction(
-    path: string,
-    status: "approved" | "rejected"
-  ) {
+  async function handleAction(path: string, status: "approved" | "rejected") {
     setLoadingMap((prev) => ({ ...prev, [path]: true }))
 
     try {

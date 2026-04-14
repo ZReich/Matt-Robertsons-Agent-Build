@@ -1,8 +1,8 @@
+import type { DealMeta, DealStage } from "@/lib/vault"
 import type { Metadata } from "next"
+import type { ColumnType, TaskType } from "./types"
 
 import { DEAL_STAGE_LABELS, listNotes } from "@/lib/vault"
-import type { DealMeta, DealStage } from "@/lib/vault"
-import type { ColumnType, TaskType } from "./types"
 
 import { Kanban } from "./_components/kanban"
 import { KanbanWrapper } from "./_components/kanban-wrapper"
