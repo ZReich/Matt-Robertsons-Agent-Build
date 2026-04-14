@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import type { VaultNote, AgentActionMeta } from "@/lib/vault"
+import type { VaultNote, AgentActionMeta } from "@/lib/vault/shared"
 
 interface Props {
   actions: VaultNote<AgentActionMeta>[]

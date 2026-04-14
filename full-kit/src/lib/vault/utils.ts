@@ -1,4 +1,6 @@
-import path from "path"
+/**
+ * Client-safe vault utilities — no Node.js imports.
+ */
 
 /**
  * Strip [[wiki-link]] brackets and optional alias/heading fragments from vault entity references.
@@ -37,20 +39,3 @@ export function sanitizeFilename(name: string): string {
     .replace(/[^a-zA-Z0-9._-]/g, "")
     .trim()
 }
-
-/**
- * Validate that a vault-relative path does not escape the vault root.
- * Returns the resolved path if safe, or null if it's a traversal attempt.
- */
-export function validateVaultPath(
-  vaultRoot: string,
-  relativePath: string
-): string | null {
-  const resolved = path.resolve(vaultRoot, relativePath)
-  const normalizedRoot = path.resolve(vaultRoot)
-  if (!resolved.startsWith(normalizedRoot + path.sep) && resolved !== normalizedRoot) {
-    return null
-  }
-  return resolved
-}
-

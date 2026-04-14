@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { format, isBefore, startOfDay } from "date-fns"
 import { CheckCircle2, Circle } from "lucide-react"
 
-import type { TodoMeta, VaultNote } from "@/lib/vault"
+import type { TodoMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

@@ -16,7 +16,7 @@ import {
 } from "date-fns"
 import { ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react"
 
-import type { MeetingMeta, VaultNote } from "@/lib/vault"
+import type { MeetingMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"

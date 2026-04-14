@@ -15,7 +15,7 @@ import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 
-import type { VaultNote, AgentMemoryMeta } from "@/lib/vault"
+import type { VaultNote, AgentMemoryMeta } from "@/lib/vault/shared"
 
 interface Props {
   memory: VaultNote<AgentMemoryMeta>[]
