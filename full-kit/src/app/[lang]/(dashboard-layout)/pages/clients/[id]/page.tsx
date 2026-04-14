@@ -2,15 +2,11 @@ import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Building2,
   Calendar,
-  CheckSquare,
   Clock,
   FileText,
   Mail,
-  MapPin,
   MessageSquare,
   Phone,
   Smartphone,
@@ -18,7 +14,7 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 
-import { listNotes } from "@/lib/vault"
+import { listNotes, normalizeEntityRef } from "@/lib/vault"
 import type {
   ClientMeta,
   CommunicationMeta,
@@ -28,8 +24,11 @@ import type {
 } from "@/lib/vault"
 import { DEAL_STAGE_LABELS } from "@/lib/vault"
 
+import { ActivityTimeline } from "@/components/activity/activity-timeline"
+import { matchTranscriptsToMeetings } from "@/lib/transcript-matching"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -89,45 +88,40 @@ export default async function ClientDetailPage({
   const clientDeals = dealNotes.filter(
     (d) =>
       d.meta.type === "deal" &&
-      d.meta.client?.replace(/\[\[|\]\]/g, "") === client.name
+      normalizeEntityRef(d.meta.client ?? "") === client.name
   )
 
   const dealAddresses = new Set(
     clientDeals.map((d) => d.meta.property_address).filter(Boolean)
   )
 
-  // Fixed: strip [[...]] brackets when matching
-  const clientTodos = todoNotes.filter(
-    (t) =>
-      t.meta.contact?.replace(/\[\[|\]\]/g, "") === client.name ||
-      (t.meta.deal &&
-        dealAddresses.has(t.meta.deal.replace(/\[\[|\]\]/g, "")))
+  const matchesClient = (contact?: string, deal?: string) =>
+    normalizeEntityRef(contact ?? "") === client.name ||
+    (deal && dealAddresses.has(normalizeEntityRef(deal)))
+
+  const clientTodos = todoNotes.filter((t) =>
+    matchesClient(t.meta.contact, t.meta.deal)
   )
 
-  // Communications for this client (by contact name or deal)
   const clientComms = commNotes
-    .filter(
-      (c) =>
-        c.meta.contact?.replace(/\[\[|\]\]/g, "") === client.name ||
-        (c.meta.deal && dealAddresses.has(c.meta.deal.replace(/\[\[|\]\]/g, "")))
-    )
+    .filter((c) => matchesClient(c.meta.contact, c.meta.deal))
     .sort(
       (a, b) =>
         new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
     )
 
-  // Meetings for this client
-  const now = new Date()
   const clientMeetings = meetingNotes
-    .filter(
-      (m) =>
-        m.meta.contact === client.name ||
-        (m.meta.deal && dealAddresses.has(m.meta.deal.replace(/\[\[|\]\]/g, "")))
-    )
+    .filter((m) => matchesClient(m.meta.contact, m.meta.deal))
     .sort(
       (a, b) =>
         new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
     )
+
+  // Auto-match Plaud call transcripts to meetings
+  const transcriptMatches = matchTranscriptsToMeetings(clientComms, clientMeetings)
+
+  const totalActivity =
+    clientComms.length + clientMeetings.length + clientTodos.length
 
   const activeDeals = clientDeals.filter((d) => d.meta.stage !== "closed")
   const closedDeals = clientDeals.filter((d) => d.meta.stage === "closed")
@@ -175,14 +169,8 @@ export default async function ClientDetailPage({
           <TabsTrigger value="deals">
             Deals ({clientDeals.length})
           </TabsTrigger>
-          <TabsTrigger value="comms">
-            Communications ({clientComms.length})
-          </TabsTrigger>
-          <TabsTrigger value="meetings">
-            Meetings ({clientMeetings.length})
-          </TabsTrigger>
-          <TabsTrigger value="todos">
-            Todos ({clientTodos.length})
+          <TabsTrigger value="activity">
+            Activity ({totalActivity})
           </TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
@@ -263,7 +251,7 @@ export default async function ClientDetailPage({
               </CardHeader>
               <CardContent className="space-y-2">
                 {clientComms.slice(0, 3).map((c) => {
-                  const dealName = c.meta.deal?.replace(/\[\[|\]\]/g, "")
+                  const dealName = c.meta.deal ? normalizeEntityRef(c.meta.deal) : null
                   return (
                     <div
                       key={c.path}
@@ -319,9 +307,7 @@ export default async function ClientDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-                  {clientNote.content}
-                </p>
+                <MarkdownRenderer content={clientNote.content} size="compact" />
               </CardContent>
             </Card>
           )}
@@ -375,163 +361,19 @@ export default async function ClientDetailPage({
           )}
         </TabsContent>
 
-        {/* Communications Tab */}
-        <TabsContent value="comms" className="mt-4 space-y-3">
-          {clientComms.length === 0 ? (
+        {/* Activity Tab — unified timeline of comms, meetings, and todos */}
+        <TabsContent value="activity" className="mt-4">
+          {totalActivity === 0 ? (
             <p className="text-muted-foreground text-sm py-4">
-              No communications logged for this client yet.
+              No activity recorded for this client yet.
             </p>
           ) : (
-            clientComms.map((comm) => {
-              const dealName = comm.meta.deal?.replace(/\[\[|\]\]/g, "")
-              const isInbound = comm.meta.direction !== "outbound"
-              return (
-                <Card key={comm.path}>
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <div className="shrink-0 mt-0.5">
-                      {CHANNEL_ICONS[comm.meta.channel] ?? (
-                        <MessageSquare className="size-4 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">
-                          {comm.meta.subject ?? comm.meta.channel}
-                        </span>
-                        {comm.meta.direction && (
-                          <span
-                            className={`flex items-center gap-0.5 text-xs ${isInbound ? "text-green-600" : "text-blue-600"}`}
-                          >
-                            {isInbound ? (
-                              <ArrowDownLeft className="size-3" />
-                            ) : (
-                              <ArrowUpRight className="size-3" />
-                            )}
-                            {isInbound ? "Inbound" : "Outbound"}
-                          </span>
-                        )}
-                        {dealName && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs py-0"
-                          >
-                            {dealName}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {format(new Date(comm.meta.date), "MMMM d, yyyy · h:mm a")}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })
-          )}
-        </TabsContent>
-
-        {/* Meetings Tab */}
-        <TabsContent value="meetings" className="mt-4 space-y-3">
-          {clientMeetings.length === 0 ? (
-            <p className="text-muted-foreground text-sm py-4">
-              No meetings recorded for this client.
-            </p>
-          ) : (
-            clientMeetings.map((meeting) => {
-              const isPast = new Date(meeting.meta.date) < now
-              const dealName = meeting.meta.deal?.replace(/\[\[|\]\]/g, "")
-              return (
-                <Card key={meeting.path} className={isPast ? "opacity-75" : ""}>
-                  <CardContent className="p-4 flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold">{meeting.meta.title}</p>
-                        {dealName && (
-                          <Badge variant="outline" className="text-xs py-0">
-                            {dealName}
-                          </Badge>
-                        )}
-                      </div>
-                      {meeting.meta.location && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                          <MapPin className="size-3" />
-                          {meeting.meta.location}
-                        </div>
-                      )}
-                      {meeting.meta.duration_minutes && (
-                        <p className="text-xs text-muted-foreground">
-                          {meeting.meta.duration_minutes} min
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-medium">
-                        {format(new Date(meeting.meta.date), "MMM d, yyyy")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(meeting.meta.date), "h:mm a")}
-                      </p>
-                      {isPast && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs mt-1 text-muted-foreground"
-                        >
-                          Past
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })
-          )}
-        </TabsContent>
-
-        {/* Todos Tab */}
-        <TabsContent value="todos" className="mt-4 space-y-3">
-          {clientTodos.length === 0 ? (
-            <p className="text-muted-foreground text-sm py-4">
-              No todos linked to this client.
-            </p>
-          ) : (
-            clientTodos.map((todo) => (
-              <Card key={todo.path}>
-                <CardContent className="p-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <CheckSquare
-                      className={`size-4 shrink-0 ${todo.meta.status === "done" ? "text-green-600" : "text-muted-foreground"}`}
-                    />
-                    <div>
-                      <p
-                        className={`text-sm font-medium ${todo.meta.status === "done" ? "line-through text-muted-foreground" : ""}`}
-                      >
-                        {todo.meta.title}
-                      </p>
-                      {todo.meta.due_date && (
-                        <p className="text-xs text-muted-foreground">
-                          Due{" "}
-                          {format(new Date(todo.meta.due_date), "MMM d, yyyy")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {todo.meta.priority && (
-                    <Badge
-                      variant="outline"
-                      className={`text-xs capitalize shrink-0 ${
-                        todo.meta.priority === "urgent"
-                          ? "border-red-400 text-red-600"
-                          : todo.meta.priority === "high"
-                            ? "border-orange-400 text-orange-600"
-                            : ""
-                      }`}
-                    >
-                      {todo.meta.priority}
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-            ))
+            <ActivityTimeline
+              communications={clientComms}
+              meetings={clientMeetings}
+              todos={clientTodos}
+              transcriptMatches={transcriptMatches}
+            />
           )}
         </TabsContent>
 
@@ -540,9 +382,7 @@ export default async function ClientDetailPage({
           <Card>
             <CardContent className="p-6">
               {clientNote.content ? (
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {clientNote.content}
-                </p>
+                <MarkdownRenderer content={clientNote.content} />
               ) : (
                 <p className="text-muted-foreground text-sm">
                   No notes for this client yet.

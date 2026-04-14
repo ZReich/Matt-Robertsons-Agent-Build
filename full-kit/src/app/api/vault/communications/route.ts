@@ -1,13 +1,37 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote, deleteNote } from "@/lib/vault"
+import {
+  listNotes,
+  readNote,
+  updateNote,
+  createNote,
+  deleteNote,
+} from "@/lib/vault"
 import type { CommunicationMeta } from "@/lib/vault"
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
+    const notePath = searchParams.get("path")
     const channel = searchParams.get("channel")
     const category = searchParams.get("category")
+
+    // If a specific path is requested, return that single note (with full body)
+    if (notePath) {
+      // Security: ensure path stays within communications directory
+      if (
+        !notePath.startsWith("communications/") ||
+        notePath.includes("..") ||
+        /[\\]/.test(notePath)
+      ) {
+        return NextResponse.json(
+          { error: "Invalid path" },
+          { status: 400 }
+        )
+      }
+      const note = await readNote<CommunicationMeta>(notePath)
+      return NextResponse.json(note)
+    }
 
     let notes = await listNotes<CommunicationMeta>("communications")
 
@@ -57,8 +81,12 @@ export async function POST(req: Request) {
     }
 
     const commDate = date || new Date().toISOString().split("T")[0]
-    const contactSlug = contact.toLowerCase().replace(/\s+/g, "-")
-    const filename = `${commDate}-${channel}-${contactSlug}.md`
+    const contactSlug = contact
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "") // strip path separators and special chars
+    const channelSlug = String(channel).replace(/[^a-z0-9-]/g, "")
+    const filename = `${commDate}-${channelSlug}-${contactSlug}.md`
 
     const meta: CommunicationMeta = {
       type: "communication",
@@ -89,14 +117,23 @@ export async function POST(req: Request) {
   }
 }
 
+/** Validate that a vault path stays within the communications directory */
+function isValidCommPath(p: string): boolean {
+  return (
+    p.startsWith("communications/") &&
+    !p.includes("..") &&
+    !/[\\]/.test(p)
+  )
+}
+
 export async function PATCH(req: Request) {
   try {
     const body = await req.json()
     const { path, ...updates } = body as { path: string } & Partial<CommunicationMeta>
 
-    if (!path) {
+    if (!path || !isValidCommPath(path)) {
       return NextResponse.json(
-        { error: "path is required" },
+        { error: "Invalid or missing path" },
         { status: 400 }
       )
     }
@@ -116,7 +153,7 @@ export async function DELETE(req: Request) {
   try {
     const { path } = (await req.json()) as { path: string }
 
-    if (!path) {
+    if (!path || !isValidCommPath(path)) {
       return NextResponse.json(
         { error: "path is required" },
         { status: 400 }

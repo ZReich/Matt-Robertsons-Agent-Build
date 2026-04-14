@@ -2,38 +2,43 @@ import type { Metadata } from "next"
 import { MessageSquare } from "lucide-react"
 
 import { listNotes } from "@/lib/vault"
-import type { CommunicationMeta } from "@/lib/vault"
+import type { CommunicationMeta, TodoMeta } from "@/lib/vault"
 
-import { CommsFeed } from "./_components/comms-feed"
+import { CommsShell } from "./_components/comms-shell"
 
 export const metadata: Metadata = {
   title: "Communications",
 }
 
 export default async function CommunicationsPage() {
-  const notes = await listNotes<CommunicationMeta>("communications")
+  // Fetch communications and todos in parallel
+  const [commNotes, todoNotes] = await Promise.all([
+    listNotes<CommunicationMeta>("communications"),
+    listNotes<TodoMeta>("todos"),
+  ])
 
-  // Sort by date descending
-  const sorted = [...notes].sort(
+  // Sort communications by date descending
+  const sortedComms = [...commNotes].sort(
     (a, b) =>
       new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
   )
 
   return (
-    <section className="container max-w-3xl grid gap-6 p-6">
-      <div className="flex items-center gap-3">
+    <section className="p-6 h-full">
+      <div className="flex items-center gap-3 mb-4">
         <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
           <MessageSquare className="size-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold">Activity Log</h1>
+          <h1 className="text-xl font-semibold">Communications</h1>
           <p className="text-sm text-muted-foreground">
-            {sorted.length} communication{sorted.length !== 1 ? "s" : ""} logged
+            {sortedComms.length} communication
+            {sortedComms.length !== 1 ? "s" : ""} logged
           </p>
         </div>
       </div>
 
-      <CommsFeed notes={sorted} />
+      <CommsShell notes={sortedComms} todos={todoNotes} />
     </section>
   )
 }

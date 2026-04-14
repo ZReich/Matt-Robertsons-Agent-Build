@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 
@@ -141,9 +142,7 @@ export function AgentMemoryPanel({ memory }: Props) {
             <Separator />
             <CardContent className="pt-4">
               <ScrollArea className="h-[460px]">
-                <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-sm">
-                  {selectedNote.content}
-                </div>
+                <MarkdownRenderer content={selectedNote.content} size="compact" />
               </ScrollArea>
             </CardContent>
           </>

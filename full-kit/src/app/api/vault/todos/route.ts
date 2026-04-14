@@ -52,6 +52,7 @@ export async function POST(req: Request) {
       status = "pending",
       deal,
       contact,
+      source_communication,
       content = "",
     } = body
 
@@ -75,6 +76,7 @@ export async function POST(req: Request) {
       ...(due_date && { due_date }),
       ...(deal && { deal }),
       ...(contact && { contact }),
+      ...(source_communication && { source_communication }),
       created: today,
     }
 
@@ -89,14 +91,23 @@ export async function POST(req: Request) {
   }
 }
 
+/** Validate that a vault path stays within the todos directory */
+function isValidTodoPath(p: string): boolean {
+  return (
+    p.startsWith("todos/") &&
+    !p.includes("..") &&
+    !/[\\]/.test(p)
+  )
+}
+
 export async function PATCH(req: Request) {
   try {
     const body = await req.json()
     const { path, ...updates } = body as { path: string } & Partial<TodoMeta>
 
-    if (!path) {
+    if (!path || !isValidTodoPath(path)) {
       return NextResponse.json(
-        { error: "path is required" },
+        { error: "Invalid or missing path" },
         { status: 400 }
       )
     }
@@ -116,9 +127,9 @@ export async function DELETE(req: Request) {
   try {
     const { path } = (await req.json()) as { path: string }
 
-    if (!path) {
+    if (!path || !isValidTodoPath(path)) {
       return NextResponse.json(
-        { error: "path is required" },
+        { error: "Invalid or missing path" },
         { status: 400 }
       )
     }

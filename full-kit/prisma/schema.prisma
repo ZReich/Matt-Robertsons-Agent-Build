@@ -5,8 +5,100 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum Category {
+  business
+  personal
+}
+
+enum DealStage {
+  prospecting
+  listing
+  marketing
+  showings
+  offer
+  under_contract
+  due_diligence
+  closing
+  closed
+}
+
+enum PropertyType {
+  office
+  retail
+  industrial
+  multifamily
+  land
+  mixed_use
+  hospitality
+  medical
+  other
+}
+
+enum CommunicationChannel {
+  email
+  call
+  text
+  whatsapp
+  meeting
+}
+
+enum Direction {
+  inbound
+  outbound
+}
+
+enum TodoStatus {
+  pending
+  in_progress
+  done
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum AgentTier {
+  auto
+  log_only
+  approve
+  blocked
+}
+
+enum AgentActionStatus {
+  pending
+  approved
+  rejected
+  executed
+}
+
+enum MemoryType {
+  rule
+  preference
+  playbook
+  client_note
+  style_guide
+}
+
+enum SyncStatus {
+  synced
+  failed
+  pending
+}
+
+// =============================================================================
+// AUTH MODELS (existing — do not modify, required by NextAuth/PrismaAdapter)
+// =============================================================================
 
 model User {
   id                   String          @id @default(uuid())
@@ -81,4 +173,364 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// =============================================================================
+// CRE BUSINESS MODELS
+// =============================================================================
+
+/// Unified people table — both business clients and personal contacts.
+/// Use `category` to distinguish business vs personal.
+model Contact {
+  id               String    @id @default(uuid())
+  name             String
+  company          String?
+  email            String?
+  phone            String?
+  role             String?   // e.g., "investor", "tenant", "dentist", "family"
+  preferredContact String?   @map("preferred_contact") // email, phone, text, whatsapp
+  address          String?
+  notes            String?   @db.Text
+  category         Category  @default(business)
+  tags             Json?     @default("[]") // JSON array of tag strings
+  createdBy        String?   @map("created_by") // "user:<id>" or "agent"
+  archivedAt       DateTime? @map("archived_at")
+
+  // Relations
+  deals            Deal[]
+  communications   Communication[]
+  meetings         MeetingAttendee[]
+  todos            Todo[]
+  agentMemories    AgentMemory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([email])
+  @@index([company])
+  @@index([category])
+  @@map("contacts")
+}
+
+/// CRE deals — the core pipeline entity
+model Deal {
+  id              String       @id @default(uuid())
+  contactId       String       @map("contact_id")
+  propertyAddress String       @map("property_address")
+  propertyType    PropertyType @map("property_type")
+  squareFeet      Int?         @map("square_feet")
+  stage           DealStage    @default(prospecting)
+  value           Decimal?     @db.Decimal(14, 2)
+  listedDate      DateTime?    @map("listed_date")
+  closingDate     DateTime?    @map("closing_date")
+  keyContacts     Json?        @default("{}") @map("key_contacts") // { role: name }
+  category        Category     @default(business)
+  tags            Json?        @default("[]")
+  notes           String?      @db.Text
+  createdBy       String?      @map("created_by")
+  archivedAt      DateTime?    @map("archived_at")
+
+  // Relations
+  contact        Contact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  documents      DealDocument[]
+  communications Communication[]
+  meetings       Meeting[]
+  todos          Todo[]
+  agentMemories  AgentMemory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([contactId])
+  @@index([stage])
+  @@index([propertyType])
+  @@index([propertyAddress])
+  @@index([listedDate])
+  @@index([closingDate])
+  @@map("deals")
+}
+
+/// Documents/files attached to deals
+model DealDocument {
+  id        String  @id @default(uuid())
+  dealId    String  @map("deal_id")
+  name      String
+  docType   String  @map("doc_type") // contract, inspection, financial, title, marketing, correspondence, other
+  url       String? // cloud storage URL (Google Drive, S3, etc.)
+  notes     String?
+  dateAdded DateTime @default(now()) @map("date_added")
+
+  // Relations
+  deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dealId])
+  @@index([docType])
+  @@map("deal_documents")
+}
+
+/// All communications: calls, texts, emails, WhatsApp, etc.
+/// Primary table for Plaud transcripts, email bodies, SMS content.
+model Communication {
+  id                String               @id @default(uuid())
+  channel           CommunicationChannel
+  subject           String?
+  body              String?              @db.Text // full transcript, email body, text content
+  date              DateTime
+  direction         Direction?
+  category          Category             @default(business)
+  tags              Json?                @default("[]")
+  metadata          Json?                @default("{}") // flexible: extra channel-specific data
+  durationSeconds   Int?                 @map("duration_seconds") // for calls
+  externalMessageId String?              @map("external_message_id") // gmail msg id, etc.
+  createdBy         String?              @map("created_by")
+  archivedAt        DateTime?            @map("archived_at")
+
+  // Who and what this relates to
+  contactId String? @map("contact_id")
+  dealId    String? @map("deal_id")
+
+  // Which agent action created this (if auto-generated)
+  agentActionId String? @unique @map("agent_action_id")
+
+  // Relations
+  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal        Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  agentAction AgentAction? @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+
+  // Link to external sync record (for Plaud, Gmail, etc.)
+  externalSyncId String?       @unique @map("external_sync_id")
+  externalSync   ExternalSync? @relation(fields: [externalSyncId], references: [id])
+
+  // Todos that were created from this communication
+  todos Todo[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([channel])
+  @@index([date])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([direction])
+  @@index([category])
+  @@index([externalMessageId])
+  @@map("communications")
+}
+
+/// Calendar events and meetings
+model Meeting {
+  id              String    @id @default(uuid())
+  title           String
+  date            DateTime
+  endDate         DateTime? @map("end_date")
+  durationMinutes Int?      @map("duration_minutes")
+  location        String?
+  notes           String?   @db.Text
+  category        Category  @default(business)
+  tags            Json?     @default("[]")
+  metadata        Json?     @default("{}") // { google_calendar_id, zoom_link, etc. }
+  createdBy       String?   @map("created_by")
+  archivedAt      DateTime? @map("archived_at")
+
+  dealId    String? @map("deal_id")
+
+  // Which agent action created this (if auto-generated)
+  agentActionId String? @unique @map("agent_action_id")
+
+  // Relations
+  deal        Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  agentAction AgentAction?     @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+  attendees   MeetingAttendee[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@index([dealId])
+  @@index([category])
+  @@map("meetings")
+}
+
+/// Meeting attendees — supports multiple participants per meeting
+model MeetingAttendee {
+  id        String  @id @default(uuid())
+  meetingId String  @map("meeting_id")
+  contactId String? @map("contact_id")
+  role      String? // organizer, attendee, optional
+
+  meeting Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@unique([meetingId, contactId])
+  @@map("meeting_attendees")
+}
+
+/// Tasks / to-do items
+model Todo {
+  id       String      @id @default(uuid())
+  title    String
+  body     String?     @db.Text
+  status   TodoStatus  @default(pending)
+  priority Priority    @default(medium)
+  dueDate  DateTime?   @map("due_date")
+  category Category    @default(business)
+  tags     Json?       @default("[]")
+  createdBy String?    @map("created_by")
+  archivedAt DateTime? @map("archived_at")
+
+  // What this todo relates to
+  contactId       String? @map("contact_id")
+  dealId          String? @map("deal_id")
+  communicationId String? @map("communication_id")
+
+  // Which agent action created this (if auto-generated)
+  agentActionId String? @unique @map("agent_action_id")
+
+  // Relations
+  contact       Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal          Deal?          @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  communication Communication? @relation(fields: [communicationId], references: [id], onDelete: SetNull)
+  agentAction   AgentAction?   @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([communicationId])
+  @@index([category])
+  @@map("todos")
+}
+
+/// Reusable message templates (emails, texts, follow-ups)
+model Template {
+  id      String                @id @default(uuid())
+  name    String                @unique
+  channel CommunicationChannel?
+  subject String?
+  useCase String?               @map("use_case")
+  body    String                @db.Text
+  tags    Json?                 @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([useCase])
+  @@index([channel])
+  @@map("templates")
+}
+
+// =============================================================================
+// AGENT SYSTEM
+// =============================================================================
+
+/// Agent actions — the approval queue for AI-generated tasks
+model AgentAction {
+  id           String            @id @default(uuid())
+  actionType   String            @map("action_type") // create-todo, update-deal, send-email, etc.
+  tier         AgentTier
+  status       AgentActionStatus @default(pending)
+  summary      String            // human-readable description
+  targetEntity String?           @map("target_entity") // e.g., "deal:<uuid>" or "contact:<uuid>"
+  payload      Json?             @default("{}") // structured action data
+  feedback     String?           @db.Text
+
+  executedAt DateTime? @map("executed_at")
+
+  // Relations: which entity did this action create?
+  todo          Todo?
+  communication Communication?
+  meeting       Meeting?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([tier])
+  @@index([actionType])
+  @@index([createdAt])
+  @@map("agent_actions")
+}
+
+/// Agent memory — rules, preferences, playbooks, style guides
+model AgentMemory {
+  id         String     @id @default(uuid())
+  memoryType MemoryType @map("memory_type")
+  title      String
+  content    String     @db.Text // markdown content
+  priority   Priority?
+  tags       Json?      @default("[]")
+
+  // Optional: link memory to a specific client or deal
+  contactId String? @map("contact_id")
+  dealId    String? @map("deal_id")
+
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal    Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastUsedAt DateTime? @map("last_used_at")
+
+  @@index([memoryType])
+  @@index([priority])
+  @@index([contactId])
+  @@index([dealId])
+  @@map("agent_memory")
+}
+
+// =============================================================================
+// EXTERNAL INTEGRATIONS / SYNC TRACKING
+// =============================================================================
+
+/// Tracks external records imported from Plaud, Gmail, Google Calendar, etc.
+/// Prevents duplicate imports and enables incremental sync.
+model ExternalSync {
+  id         String     @id @default(uuid())
+  source     String     // plaud, gmail, google-calendar, twilio, etc.
+  externalId String     @map("external_id") // ID from the external system
+  entityType String?    @map("entity_type") // communication, meeting, todo, deal
+  entityId   String?    @map("entity_id") // UUID of the created entity
+  syncedAt   DateTime   @default(now()) @map("synced_at")
+  rawData    Json?      @map("raw_data") // original API response for debugging
+  status     SyncStatus @default(synced)
+  errorMsg   String?    @map("error_msg") @db.Text
+
+  // Direct link back to communication (most common case)
+  communication Communication?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([source, externalId])
+  @@index([source])
+  @@index([syncedAt])
+  @@index([status])
+  @@index([entityType, entityId])
+  @@map("external_sync")
+}
+
+/// Integration credentials — store API tokens for external services
+/// NOTE: The `credentials` JSON MUST be encrypted at the application layer
+/// before writing. Never store plaintext tokens.
+model IntegrationCredential {
+  id            String    @id @default(uuid())
+  service       String    @unique // plaud, gmail, google-calendar, etc.
+  credentials   Json      // { accessToken, refreshToken, expiresAt, ... } — ENCRYPTED
+  scopes        String[]  @default([]) // permissions this credential grants
+  encryptedAt   DateTime? @map("encrypted_at") // when credentials were last encrypted
+  lastRefreshed DateTime? @map("last_refreshed")
+  isActive      Boolean   @default(true) @map("is_active")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("integration_credentials")
 }

@@ -146,6 +146,8 @@ export interface TodoMeta extends VaultNoteMeta {
   due_date?: string
   deal?: string
   contact?: string
+  /** Vault path of the communication that generated this todo */
+  source_communication?: string
 }
 
 /** Email template frontmatter (vault/templates/*.md) */

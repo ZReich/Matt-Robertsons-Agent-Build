@@ -38,6 +38,7 @@ import { DocLink } from "./_components/doc-link"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -606,9 +607,7 @@ export default async function DealDetailPage({
           <Card>
             <CardContent className="p-6">
               {dealNote.content ? (
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {dealNote.content}
-                </p>
+                <MarkdownRenderer content={dealNote.content} />
               ) : (
                 <p className="text-muted-foreground text-sm">
                   No notes for this deal yet.

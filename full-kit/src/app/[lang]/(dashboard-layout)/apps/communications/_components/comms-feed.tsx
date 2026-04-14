@@ -6,6 +6,8 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Calendar,
+  ChevronDown,
+  ChevronUp,
   Mail,
   MessageSquare,
   Phone,
@@ -18,6 +20,7 @@ import type { CommunicationMeta, VaultNote } from "@/lib/vault"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { DocumentViewer } from "@/components/ui/document-viewer"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -88,6 +91,7 @@ export function CommsFeed({ notes }: CommsFeedProps) {
   const [search, setSearch] = useState("")
   const [channel, setChannel] = useState("all")
   const [category, setCategory] = useState("all")
+  const [expandedPath, setExpandedPath] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     return notes.filter((n) => {
@@ -193,55 +197,93 @@ export function CommsFeed({ notes }: CommsFeedProps) {
                   const dealName = note.meta.deal?.replace(/\[\[|\]\]/g, "")
                   const isInbound = note.meta.direction !== "outbound"
 
-                  return (
-                    <div
-                      key={note.path}
-                      className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      {/* Channel icon */}
-                      <div
-                        className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${config?.color ?? "bg-gray-100 text-gray-600"}`}
-                      >
-                        {config?.icon ?? (
-                          <MessageSquare className="size-4" />
-                        )}
-                      </div>
+                  const isExpanded = expandedPath === note.path
+                  const hasContent = !!note.content?.trim()
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm">
-                            {contactName}
-                          </span>
-                          {note.meta.direction && (
-                            <span
-                              className={`flex items-center gap-0.5 text-xs ${isInbound ? "text-green-600" : "text-blue-600"}`}
-                            >
-                              {isInbound ? (
-                                <ArrowDownLeft className="size-3" />
-                              ) : (
-                                <ArrowUpRight className="size-3" />
-                              )}
-                              {isInbound ? "Inbound" : "Outbound"}
-                            </span>
-                          )}
-                          {dealName && (
-                            <Badge variant="outline" className="text-xs py-0">
-                              {dealName}
-                            </Badge>
+                  return (
+                    <div key={note.path} className="rounded-lg border bg-card overflow-hidden">
+                      {/* Summary row */}
+                      <button
+                        onClick={() => hasContent && setExpandedPath(isExpanded ? null : note.path)}
+                        className={`flex items-start gap-3 p-4 w-full text-left transition-colors ${
+                          hasContent ? "hover:bg-accent/50 cursor-pointer" : ""
+                        }`}
+                      >
+                        {/* Channel icon */}
+                        <div
+                          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${config?.color ?? "bg-gray-100 text-gray-600"}`}
+                        >
+                          {config?.icon ?? (
+                            <MessageSquare className="size-4" />
                           )}
                         </div>
-                        {note.meta.subject && (
-                          <p className="text-sm text-muted-foreground mt-0.5 truncate">
-                            {note.meta.subject}
-                          </p>
-                        )}
-                      </div>
 
-                      {/* Time */}
-                      <span className="text-xs text-muted-foreground shrink-0 pt-0.5">
-                        {format(new Date(note.meta.date), "h:mm a")}
-                      </span>
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">
+                              {contactName}
+                            </span>
+                            {note.meta.direction && (
+                              <span
+                                className={`flex items-center gap-0.5 text-xs ${isInbound ? "text-green-600" : "text-blue-600"}`}
+                              >
+                                {isInbound ? (
+                                  <ArrowDownLeft className="size-3" />
+                                ) : (
+                                  <ArrowUpRight className="size-3" />
+                                )}
+                                {isInbound ? "Inbound" : "Outbound"}
+                              </span>
+                            )}
+                            {dealName && (
+                              <Badge variant="outline" className="text-xs py-0">
+                                {dealName}
+                              </Badge>
+                            )}
+                          </div>
+                          {note.meta.subject && (
+                            <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                              {note.meta.subject}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Time + expand indicator */}
+                        <div className="flex items-center gap-2 shrink-0 pt-0.5">
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(note.meta.date), "h:mm a")}
+                          </span>
+                          {hasContent && (
+                            isExpanded ? (
+                              <ChevronUp className="size-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="size-4 text-muted-foreground" />
+                            )
+                          )}
+                        </div>
+                      </button>
+
+                      {/* Expanded content with DocumentViewer */}
+                      {isExpanded && hasContent && (
+                        <div className="border-t px-4 pb-4 pt-2">
+                          <DocumentViewer
+                            content={note.content}
+                            bare
+                            meta={{
+                              title: note.meta.subject,
+                              channel: note.meta.channel,
+                              contact: contactName,
+                              date: note.meta.date,
+                              direction: note.meta.direction as "inbound" | "outbound" | undefined,
+                              deal: dealName,
+                              tags: note.meta.tags,
+                            }}
+                            showPrint
+                            showCopy
+                          />
+                        </div>
+                      )}
                     </div>
                   )
                 })}
