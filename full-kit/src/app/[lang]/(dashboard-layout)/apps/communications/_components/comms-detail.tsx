@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState, useCallback, type ReactNode } from "react"
+import { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 import { format } from "date-fns"
 import {
   ArrowDownLeft,
@@ -20,13 +22,12 @@ import {
   Printer,
   Smartphone,
 } from "lucide-react"
-import Link from "next/link"
-
-import { useParams } from "next/navigation"
 
 import type { CommunicationMeta, TodoMeta, VaultNote } from "@/lib/vault/shared"
-import { normalizeEntityRef, toSlug } from "@/lib/vault/shared"
+import type { ReactNode } from "react"
+
 import { parseSections } from "@/lib/parse-sections"
+import { normalizeEntityRef, toSlug } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -144,9 +145,7 @@ export function CommsDetail({
 
   const contactName = normalizeEntityRef(note.meta.contact)
   const contactSlug = toSlug(contactName)
-  const dealName = note.meta.deal
-    ? normalizeEntityRef(note.meta.deal)
-    : null
+  const dealName = note.meta.deal ? normalizeEntityRef(note.meta.deal) : null
   const isInbound = note.meta.direction !== "outbound"
   const parsed = parseSections(note.content)
 
@@ -164,9 +163,7 @@ export function CommsDetail({
           const todoContact = t.meta.contact
             ? normalizeEntityRef(t.meta.contact)
             : null
-          const todoDeal = t.meta.deal
-            ? normalizeEntityRef(t.meta.deal)
-            : null
+          const todoDeal = t.meta.deal ? normalizeEntityRef(t.meta.deal) : null
           return (
             todoContact === contactName &&
             dealName !== null &&
@@ -227,7 +224,10 @@ export function CommsDetail({
                 href={`/${lang}/pages/${note.meta.category === "personal" ? "contacts" : "clients"}/${contactSlug}`}
                 className="hover:underline"
               >
-                <Badge variant="secondary" className="font-normal cursor-pointer">
+                <Badge
+                  variant="secondary"
+                  className="font-normal cursor-pointer"
+                >
                   {contactName}
                   <ExternalLink className="size-3 ml-1" />
                 </Badge>

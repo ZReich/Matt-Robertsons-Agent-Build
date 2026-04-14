@@ -1,8 +1,9 @@
-import type { Metadata } from "next"
 import { MessageSquare } from "lucide-react"
 
-import { listNotes } from "@/lib/vault"
 import type { CommunicationMeta, TodoMeta } from "@/lib/vault"
+import type { Metadata } from "next"
+
+import { listNotes } from "@/lib/vault"
 
 import { CommsShell } from "./_components/comms-shell"
 
@@ -19,8 +20,7 @@ export default async function CommunicationsPage() {
 
   // Sort communications by date descending
   const sortedComms = [...commNotes].sort(
-    (a, b) =>
-      new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
+    (a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
   )
 
   return (

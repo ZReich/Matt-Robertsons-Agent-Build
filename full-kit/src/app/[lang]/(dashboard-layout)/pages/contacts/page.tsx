@@ -1,10 +1,12 @@
-import type { Metadata } from "next"
 import { Users } from "lucide-react"
 
-import { listNotes } from "@/lib/vault"
 import type { ContactMeta } from "@/lib/vault"
+import type { Metadata } from "next"
+import type { ContactRow } from "./_components/contacts-table"
 
-import { ContactsTable, type ContactRow } from "./_components/contacts-table"
+import { listNotes } from "@/lib/vault"
+
+import { ContactsTable } from "./_components/contacts-table"
 
 export const metadata: Metadata = {
   title: "Contacts",

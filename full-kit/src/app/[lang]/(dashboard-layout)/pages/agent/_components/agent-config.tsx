@@ -1,11 +1,6 @@
 "use client"
 
-import {
-  Shield,
-  Bell,
-  Clock,
-  Power,
-} from "lucide-react"
+import { Bell, Clock, Power, Shield } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -23,7 +18,8 @@ const ACTION_TIERS = [
     name: "Auto",
     description: "Read data, search vault, check calendar, draft responses",
     examples: "Searching deals, reading client info, checking schedule",
-    badge: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+    badge:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
   },
   {
     name: "Log-Only",
@@ -35,7 +31,8 @@ const ACTION_TIERS = [
     name: "Approve",
     description: "Actions requiring Matt's explicit approval",
     examples: "Send email, schedule meeting, create deal, move pipeline stage",
-    badge: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+    badge:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   },
   {
     name: "Blocked",
@@ -56,7 +53,8 @@ export function AgentConfig() {
             <CardTitle className="text-base">Action Tiers</CardTitle>
           </div>
           <CardDescription>
-            Configure what the agent can do autonomously vs. what needs approval.
+            Configure what the agent can do autonomously vs. what needs
+            approval.
           </CardDescription>
         </CardHeader>
         <Separator />
@@ -134,9 +132,7 @@ export function AgentConfig() {
             <Clock className="h-5 w-5 text-primary" />
             <CardTitle className="text-base">Schedule</CardTitle>
           </div>
-          <CardDescription>
-            Set when the agent is active.
-          </CardDescription>
+          <CardDescription>Set when the agent is active.</CardDescription>
         </CardHeader>
         <Separator />
         <CardContent className="grid gap-4 pt-4">

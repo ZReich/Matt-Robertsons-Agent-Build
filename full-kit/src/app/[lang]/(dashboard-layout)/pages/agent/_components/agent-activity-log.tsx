@@ -1,14 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import {
-  Check,
-  X,
-  Play,
-  Clock,
-  Filter,
-} from "lucide-react"
+import { useMemo, useState } from "react"
 import { format } from "date-fns"
+import { Check, Clock, Filter, Play, X } from "lucide-react"
+
+import type { AgentActionMeta, VaultNote } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,8 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-import type { VaultNote, AgentActionMeta } from "@/lib/vault/shared"
 
 interface Props {
   actions: VaultNote<AgentActionMeta>[]
@@ -163,10 +157,7 @@ export function AgentActivityLog({ actions }: Props) {
                                 "h:mm a"
                               )}
                               {action.meta.target_entity && (
-                                <>
-                                  {" "}
-                                  &middot; {action.meta.target_entity}
-                                </>
+                                <> &middot; {action.meta.target_entity}</>
                               )}
                             </CardDescription>
                           </div>

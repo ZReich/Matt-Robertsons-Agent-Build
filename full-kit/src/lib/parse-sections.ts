@@ -46,7 +46,12 @@ const CHECKBOX_RE = /^[-*]\s+\[([ xX])\]\s+(.+)$/
  */
 export function parseSections(markdown: string): ParsedSections {
   if (!markdown?.trim()) {
-    return { summary: null, actionItems: [], sections: [], remainingContent: "" }
+    return {
+      summary: null,
+      actionItems: [],
+      sections: [],
+      remainingContent: "",
+    }
   }
 
   const lines = markdown.split("\n")

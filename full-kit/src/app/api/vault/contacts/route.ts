@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote, deleteNote } from "@/lib/vault"
 import type { ContactMeta } from "@/lib/vault"
+
+import { createNote, deleteNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET() {
   try {
@@ -23,10 +24,7 @@ export async function POST(req: Request) {
     const { name, role, company, email, phone, address, content = "" } = body
 
     if (!name) {
-      return NextResponse.json(
-        { error: "name is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "name is required" }, { status: 400 })
     }
 
     const today = new Date().toISOString().split("T")[0]
@@ -43,7 +41,12 @@ export async function POST(req: Request) {
       created: today,
     }
 
-    const note = await createNote<ContactMeta>("contacts", `${name}.md`, meta, content)
+    const note = await createNote<ContactMeta>(
+      "contacts",
+      `${name}.md`,
+      meta,
+      content
+    )
     return NextResponse.json(note, { status: 201 })
   } catch (e) {
     console.error("Error creating contact:", e)
@@ -60,10 +63,7 @@ export async function PATCH(req: Request) {
     const { path, ...updates } = body as { path: string } & Partial<ContactMeta>
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     const updated = await updateNote<ContactMeta>(path, updates)
@@ -82,10 +82,7 @@ export async function DELETE(req: Request) {
     const { path } = (await req.json()) as { path: string }
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     await deleteNote(path)

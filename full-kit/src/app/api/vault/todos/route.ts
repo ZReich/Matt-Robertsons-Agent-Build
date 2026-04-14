@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote, deleteNote } from "@/lib/vault"
 import type { TodoMeta } from "@/lib/vault"
+
+import { createNote, deleteNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET(req: Request) {
   try {
@@ -26,18 +27,19 @@ export async function GET(req: Request) {
       const pb = priorityOrder[b.meta.priority ?? "medium"]
       if (pa !== pb) return pa - pb
 
-      const da = a.meta.due_date ? new Date(a.meta.due_date).getTime() : Infinity
-      const db = b.meta.due_date ? new Date(b.meta.due_date).getTime() : Infinity
+      const da = a.meta.due_date
+        ? new Date(a.meta.due_date).getTime()
+        : Infinity
+      const db = b.meta.due_date
+        ? new Date(b.meta.due_date).getTime()
+        : Infinity
       return da - db
     })
 
     return NextResponse.json(notes)
   } catch (e) {
     console.error("Error reading todos:", e)
-    return NextResponse.json(
-      { error: "Failed to read todos" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Failed to read todos" }, { status: 500 })
   }
 }
 
@@ -57,14 +59,14 @@ export async function POST(req: Request) {
     } = body
 
     if (!title) {
-      return NextResponse.json(
-        { error: "title is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "title is required" }, { status: 400 })
     }
 
     const subdir = `todos/${category === "personal" ? "personal" : "business"}`
-    const filename = `${title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}.md`
+    const filename = `${title
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")}.md`
     const today = new Date().toISOString().split("T")[0]
 
     const meta: TodoMeta = {
@@ -93,11 +95,7 @@ export async function POST(req: Request) {
 
 /** Validate that a vault path stays within the todos directory */
 function isValidTodoPath(p: string): boolean {
-  return (
-    p.startsWith("todos/") &&
-    !p.includes("..") &&
-    !/[\\]/.test(p)
-  )
+  return p.startsWith("todos/") && !p.includes("..") && !/[\\]/.test(p)
 }
 
 export async function PATCH(req: Request) {

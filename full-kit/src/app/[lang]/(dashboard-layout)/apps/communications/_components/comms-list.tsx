@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, type ReactNode } from "react"
+import { useMemo } from "react"
 import { format, isToday, isYesterday } from "date-fns"
 import {
   ArrowDownLeft,
@@ -15,18 +15,19 @@ import {
 } from "lucide-react"
 
 import type { CommunicationMeta, VaultNote } from "@/lib/vault/shared"
+import type { ReactNode } from "react"
+
 import { normalizeEntityRef } from "@/lib/vault/shared"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 type CommNote = VaultNote<CommunicationMeta>
 
@@ -54,12 +55,14 @@ const CHANNEL_CONFIG: Record<
   call: {
     icon: <Phone className="size-3.5" />,
     label: "Call",
-    color: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+    color:
+      "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
   },
   text: {
     icon: <MessageSquare className="size-3.5" />,
     label: "Text",
-    color: "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300",
+    color:
+      "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300",
   },
   whatsapp: {
     icon: <Smartphone className="size-3.5" />,
@@ -69,7 +72,8 @@ const CHANNEL_CONFIG: Record<
   meeting: {
     icon: <Calendar className="size-3.5" />,
     label: "Meeting",
-    color: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
+    color:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
   },
 }
 
@@ -177,9 +181,7 @@ export function CommsList({
             <DropdownMenuContent align="start">
               {CATEGORIES.map((c) => (
                 <DropdownMenuItem key={c} onClick={() => onCategoryChange(c)}>
-                  {c === "all"
-                    ? "All"
-                    : c.charAt(0).toUpperCase() + c.slice(1)}
+                  {c === "all" ? "All" : c.charAt(0).toUpperCase() + c.slice(1)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

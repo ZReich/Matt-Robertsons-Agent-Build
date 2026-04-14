@@ -1,8 +1,9 @@
 import fs from "fs/promises"
 import path from "path"
 
-import { parseVaultNote, serializeVaultNote } from "./parser"
 import type { VaultCategory, VaultNote, VaultNoteMeta } from "./types"
+
+import { parseVaultNote, serializeVaultNote } from "./parser"
 
 /** Resolve the vault root directory. Defaults to `vault/` in project root. */
 function getVaultRoot(): string {
@@ -37,7 +38,9 @@ export async function listNotes<T extends VaultNoteMeta = VaultNoteMeta>(
   const notes = await Promise.all(
     files.map(async (filePath) => {
       const raw = await fs.readFile(filePath, "utf-8")
-      const relativePath = path.relative(vaultRoot, filePath).replace(/\\/g, "/")
+      const relativePath = path
+        .relative(vaultRoot, filePath)
+        .replace(/\\/g, "/")
       return parseVaultNote<T>(raw, relativePath)
     })
   )
@@ -185,7 +188,6 @@ export async function searchNotes<T extends VaultNoteMeta = VaultNoteMeta>(
   query: string,
   subdirs?: string[]
 ): Promise<VaultNote<T>[]> {
-  const vaultRoot = getVaultRoot()
   const searchDirs = subdirs ?? [
     "clients",
     "contacts",

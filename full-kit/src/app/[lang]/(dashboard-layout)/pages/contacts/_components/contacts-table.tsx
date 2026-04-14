@@ -8,10 +8,10 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
-  type ColumnDef,
-  type SortingState,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, ChevronUp, Search } from "lucide-react"
+
+import type { ColumnDef, SortingState } from "@tanstack/react-table"
 
 import { Input } from "@/components/ui/input"
 import {
@@ -52,9 +52,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
         header: ({ column }) => (
           <button
             className="flex items-center gap-1 hover:text-foreground"
-            onClick={() =>
-              column.toggleSorting(column.getIsSorted() === "asc")
-            }
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             Name
             {column.getIsSorted() === "asc" ? (
@@ -173,9 +171,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
                   key={row.id}
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() =>
-                    router.push(
-                      `/${lang}/pages/contacts/${row.original.slug}`
-                    )
+                    router.push(`/${lang}/pages/contacts/${row.original.slug}`)
                   }
                 >
                   {row.getVisibleCells().map((cell) => (

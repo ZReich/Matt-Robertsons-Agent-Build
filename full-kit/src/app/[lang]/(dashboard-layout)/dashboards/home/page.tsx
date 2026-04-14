@@ -1,12 +1,10 @@
-import type { Metadata } from "next"
-import type { ReactNode } from "react"
 import Link from "next/link"
 import {
   format,
-  isToday,
-  isBefore,
-  startOfDay,
   formatDistanceToNow,
+  isBefore,
+  isToday,
+  startOfDay,
 } from "date-fns"
 import {
   ArrowRight,
@@ -18,17 +16,19 @@ import {
   Smartphone,
 } from "lucide-react"
 
-import { listNotes, DEAL_STAGE_LABELS } from "@/lib/vault"
 import type {
   CommunicationMeta,
   DealMeta,
   MeetingMeta,
   TodoMeta,
 } from "@/lib/vault"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
+
+import { DEAL_STAGE_LABELS, listNotes } from "@/lib/vault"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
 import { TodoCheckbox } from "./_components/todo-checkbox"
 
 export const metadata: Metadata = {
@@ -115,8 +115,7 @@ export default async function HomePage() {
         t.meta.status !== "done" &&
         (t.meta.priority === "urgent" ||
           t.meta.priority === "high" ||
-          (t.meta.due_date &&
-            isBefore(new Date(t.meta.due_date), todayStart)))
+          (t.meta.due_date && isBefore(new Date(t.meta.due_date), todayStart)))
     )
     .sort(
       (a, b) =>
@@ -164,7 +163,9 @@ export default async function HomePage() {
           <CardContent className="flex-1 space-y-3">
             <div className="flex justify-between items-baseline">
               <span className="text-3xl font-bold">{activeDeals.length}</span>
-              <span className="text-sm text-muted-foreground">active deals</span>
+              <span className="text-sm text-muted-foreground">
+                active deals
+              </span>
             </div>
             {totalValue > 0 && (
               <p className="text-lg font-semibold text-primary">
@@ -175,7 +176,9 @@ export default async function HomePage() {
               {Object.entries(stageCounts).map(([stage, count]) => (
                 <div key={stage} className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {DEAL_STAGE_LABELS[stage as keyof typeof DEAL_STAGE_LABELS] ?? stage}
+                    {DEAL_STAGE_LABELS[
+                      stage as keyof typeof DEAL_STAGE_LABELS
+                    ] ?? stage}
                   </span>
                   <span className="font-medium">{count}</span>
                 </div>

@@ -1,10 +1,12 @@
-import type { Metadata } from "next"
 import { Building2 } from "lucide-react"
 
-import { listNotes } from "@/lib/vault"
 import type { ClientMeta, DealMeta } from "@/lib/vault"
+import type { Metadata } from "next"
+import type { ClientRow } from "./_components/clients-table"
 
-import { ClientsTable, type ClientRow } from "./_components/clients-table"
+import { listNotes } from "@/lib/vault"
+
+import { ClientsTable } from "./_components/clients-table"
 
 export const metadata: Metadata = {
   title: "Clients",

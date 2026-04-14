@@ -2,33 +2,29 @@
 
 import { useState } from "react"
 import {
-  FileText,
-  Phone,
-  Mail,
-  MessageSquare,
+  ArrowDownLeft,
+  ArrowUpRight,
   Calendar,
-  Printer,
-  Copy,
   Check,
   Clock,
-  ArrowUpRight,
-  ArrowDownLeft,
+  Copy,
+  FileText,
+  Mail,
+  MessageSquare,
+  Phone,
+  Printer,
   Tag,
 } from "lucide-react"
 
 import type { ComponentProps } from "react"
 
 import { cn } from "@/lib/utils"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Card, CardContent } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
+import { Separator } from "@/components/ui/separator"
 
 /** Channel icons for communication types */
 const CHANNEL_ICONS: Record<string, typeof Phone> = {
@@ -173,9 +169,7 @@ export function DocumentViewer({
                           ) : (
                             <ArrowUpRight className="h-3 w-3 text-blue-500" />
                           )}
-                          {meta.direction === "inbound"
-                            ? "Received"
-                            : "Sent"}
+                          {meta.direction === "inbound" ? "Received" : "Sent"}
                         </span>
                       )}
                     </p>
@@ -293,9 +287,7 @@ export function DocumentViewer({
       className={cn("print:shadow-none print:border-none", className)}
       {...props}
     >
-      <CardContent className="p-6">
-        {inner}
-      </CardContent>
+      <CardContent className="p-6">{inner}</CardContent>
     </Card>
   )
 }

@@ -1,6 +1,5 @@
-import type { Metadata } from "next"
-import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
+import { format } from "date-fns"
 import {
   Calendar,
   Mail,
@@ -10,18 +9,20 @@ import {
   Smartphone,
   User,
 } from "lucide-react"
-import { format } from "date-fns"
 
-import { listNotes, normalizeEntityRef } from "@/lib/vault"
 import type { CommunicationMeta, ContactMeta, MeetingMeta } from "@/lib/vault"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 
-import { ActivityTimeline } from "@/components/activity/activity-timeline"
 import { matchTranscriptsToMeetings } from "@/lib/transcript-matching"
+import { listNotes, normalizeEntityRef } from "@/lib/vault"
+
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ActivityTimeline } from "@/components/activity/activity-timeline"
 
 interface ContactDetailPageProps {
   params: Promise<{ id: string; lang: string }>
@@ -131,9 +132,7 @@ export default async function ContactDetailPage({
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="activity">
-            Activity ({totalActivity})
-          </TabsTrigger>
+          <TabsTrigger value="activity">Activity ({totalActivity})</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
 

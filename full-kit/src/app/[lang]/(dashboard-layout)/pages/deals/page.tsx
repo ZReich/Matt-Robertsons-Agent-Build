@@ -1,10 +1,11 @@
-import type { Metadata } from "next"
 import Link from "next/link"
-import { Building2, Clock, DollarSign } from "lucide-react"
 import { differenceInDays } from "date-fns"
+import { Building2, Clock } from "lucide-react"
 
-import { listNotes, DEAL_STAGE_LABELS } from "@/lib/vault"
 import type { DealMeta, DealStage } from "@/lib/vault"
+import type { Metadata } from "next"
+
+import { DEAL_STAGE_LABELS, listNotes } from "@/lib/vault"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -112,10 +113,7 @@ export default async function DealsPage({ params }: DealsPageProps) {
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {stageDeals.map((deal) => {
                   const dealId = makeTaskId(deal.path)
-                  const clientName = deal.meta.client?.replace(
-                    /\[\[|\]\]/g,
-                    ""
-                  )
+                  const clientName = deal.meta.client?.replace(/\[\[|\]\]/g, "")
                   const daysInStage = deal.meta.listed_date
                     ? differenceInDays(
                         new Date(),

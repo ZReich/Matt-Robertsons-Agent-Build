@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote, archiveNote } from "@/lib/vault"
 import type { ClientMeta } from "@/lib/vault"
+
+import { archiveNote, createNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET() {
   try {
@@ -21,13 +22,18 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { name, company, email, phone, role, preferred_contact, content = "" } = body
+    const {
+      name,
+      company,
+      email,
+      phone,
+      role,
+      preferred_contact,
+      content = "",
+    } = body
 
     if (!name) {
-      return NextResponse.json(
-        { error: "name is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "name is required" }, { status: 400 })
     }
 
     const slug = name
@@ -71,10 +77,7 @@ export async function PATCH(req: Request) {
     const { path, ...updates } = body as { path: string } & Partial<ClientMeta>
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     const updated = await updateNote<ClientMeta>(path, updates)
@@ -93,10 +96,7 @@ export async function DELETE(req: Request) {
     const { path } = (await req.json()) as { path: string }
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     const archived = await archiveNote<ClientMeta>(path)

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server"
 
+import type { CommunicationMeta } from "@/lib/vault"
+
 import {
+  createNote,
+  deleteNote,
   listNotes,
   readNote,
   updateNote,
-  createNote,
-  deleteNote,
 } from "@/lib/vault"
-import type { CommunicationMeta } from "@/lib/vault"
 
 export async function GET(req: Request) {
   try {
@@ -24,10 +25,7 @@ export async function GET(req: Request) {
         notePath.includes("..") ||
         /[\\]/.test(notePath)
       ) {
-        return NextResponse.json(
-          { error: "Invalid path" },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: "Invalid path" }, { status: 400 })
       }
       const note = await readNote<CommunicationMeta>(notePath)
       return NextResponse.json(note)
@@ -119,17 +117,15 @@ export async function POST(req: Request) {
 
 /** Validate that a vault path stays within the communications directory */
 function isValidCommPath(p: string): boolean {
-  return (
-    p.startsWith("communications/") &&
-    !p.includes("..") &&
-    !/[\\]/.test(p)
-  )
+  return p.startsWith("communications/") && !p.includes("..") && !/[\\]/.test(p)
 }
 
 export async function PATCH(req: Request) {
   try {
     const body = await req.json()
-    const { path, ...updates } = body as { path: string } & Partial<CommunicationMeta>
+    const { path, ...updates } = body as {
+      path: string
+    } & Partial<CommunicationMeta>
 
     if (!path || !isValidCommPath(path)) {
       return NextResponse.json(
@@ -154,10 +150,7 @@ export async function DELETE(req: Request) {
     const { path } = (await req.json()) as { path: string }
 
     if (!path || !isValidCommPath(path)) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     await deleteNote(path)

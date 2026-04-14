@@ -1,13 +1,14 @@
 "use client"
 
-import { Clock, DollarSign, GripVertical } from "lucide-react"
-import { differenceInDays } from "date-fns"
 import { useParams, useRouter } from "next/navigation"
+import { differenceInDays } from "date-fns"
+import { Clock, DollarSign, GripVertical } from "lucide-react"
 
 import type { DraggableProvided } from "@hello-pangea/dnd"
 import type { TaskType } from "../types"
 
 import { cn } from "@/lib/utils"
+
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -82,12 +83,7 @@ export function DealCard({ task, provided }: DealCardProps) {
           >
             <GripVertical className="size-4" />
           </div>
-          <Badge
-            className={cn(
-              "text-xs capitalize",
-              propertyTypeColor
-            )}
-          >
+          <Badge className={cn("text-xs capitalize", propertyTypeColor)}>
             {(task.dealPropertyType ?? task.label).replace("-", " ")}
           </Badge>
         </div>

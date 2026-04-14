@@ -1,7 +1,7 @@
+import type { AgentActionMeta, AgentMemoryMeta } from "@/lib/vault"
 import type { Metadata } from "next"
 
 import { listNotes } from "@/lib/vault"
-import type { AgentActionMeta, AgentMemoryMeta } from "@/lib/vault"
 
 import { AgentControlCenter } from "./_components/agent-control-center"
 

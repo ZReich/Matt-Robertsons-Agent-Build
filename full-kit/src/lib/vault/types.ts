@@ -42,7 +42,12 @@ export type PropertyType =
 export type ContactMethod = "email" | "phone" | "text" | "whatsapp"
 
 /** Communication channel types */
-export type CommunicationType = "email" | "call" | "text" | "whatsapp" | "meeting"
+export type CommunicationType =
+  | "email"
+  | "call"
+  | "text"
+  | "whatsapp"
+  | "meeting"
 
 /** Base frontmatter shared by all vault notes */
 export interface VaultNoteMeta {
@@ -172,11 +177,7 @@ export interface VaultNote<T extends VaultNoteMeta = VaultNoteMeta> {
 export type AgentActionTier = "auto" | "log-only" | "approve" | "blocked"
 
 /** Agent action status */
-export type AgentActionStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "executed"
+export type AgentActionStatus = "pending" | "approved" | "rejected" | "executed"
 
 /** Agent action types */
 export type AgentActionType =
@@ -215,7 +216,12 @@ export interface AgentActionMeta extends VaultNoteMeta {
 export interface AgentMemoryMeta extends VaultNoteMeta {
   type: "agent-memory"
   category: "business"
-  memory_type: "rule" | "preference" | "playbook" | "client-note" | "style-guide"
+  memory_type:
+    | "rule"
+    | "preference"
+    | "playbook"
+    | "client-note"
+    | "style-guide"
   title: string
   priority?: "critical" | "high" | "medium" | "low"
   last_updated?: string

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-import { listNotes, updateNote, createNote } from "@/lib/vault"
 import type { AgentMemoryMeta } from "@/lib/vault"
+
+import { createNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET(req: Request) {
   try {
@@ -36,10 +37,7 @@ export async function POST(req: Request) {
     } = body
 
     if (!title) {
-      return NextResponse.json(
-        { error: "title is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "title is required" }, { status: 400 })
     }
 
     const today = new Date().toISOString().split("T")[0]
@@ -61,7 +59,12 @@ export async function POST(req: Request) {
       created: today,
     }
 
-    const note = await createNote<AgentMemoryMeta>(basePath, filename, meta, content)
+    const note = await createNote<AgentMemoryMeta>(
+      basePath,
+      filename,
+      meta,
+      content
+    )
     return NextResponse.json(note, { status: 201 })
   } catch (e) {
     console.error("Error creating agent memory:", e)
@@ -75,13 +78,12 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json()
-    const { path, ...updates } = body as { path: string } & Partial<AgentMemoryMeta>
+    const { path, ...updates } = body as {
+      path: string
+    } & Partial<AgentMemoryMeta>
 
     if (!path) {
-      return NextResponse.json(
-        { error: "path is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "path is required" }, { status: 400 })
     }
 
     // Always update last_updated
