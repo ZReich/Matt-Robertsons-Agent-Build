@@ -17,7 +17,9 @@ import {
 } from "lucide-react"
 
 import type {
+  ClientMeta,
   CommunicationMeta,
+  ContactMeta,
   DealMeta,
   MeetingMeta,
   TodoMeta,
@@ -26,10 +28,11 @@ import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
 import { DEAL_STAGE_LABELS, listNotes } from "@/lib/vault"
+import { resolveAllTodoContexts } from "@/lib/vault/resolve-context"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TodoCheckbox } from "./_components/todo-checkbox"
+import { UrgentTodosCard } from "./_components/urgent-todos-card"
 
 export const metadata: Metadata = {
   title: "Home",
@@ -60,12 +63,30 @@ export default async function HomePage() {
   const now = new Date()
   const todayStart = startOfDay(now)
 
-  const [dealNotes, todoNotes, meetingNotes, commNotes] = await Promise.all([
+  const [
+    dealNotes,
+    todoNotes,
+    meetingNotes,
+    commNotes,
+    clientNotes,
+    contactNotes,
+  ] = await Promise.all([
     listNotes<DealMeta>("clients"),
     listNotes<TodoMeta>("todos"),
     listNotes<MeetingMeta>("meetings"),
     listNotes<CommunicationMeta>("communications"),
+    listNotes<ClientMeta>("clients"),
+    listNotes<ContactMeta>("contacts"),
   ])
+
+  // Resolve context for todos used in urgent/today sections
+  const todoContexts = resolveAllTodoContexts(
+    todoNotes,
+    clientNotes,
+    contactNotes,
+    dealNotes,
+    commNotes
+  )
 
   // --- Pipeline data ---
   const activeDeals = dealNotes.filter(
@@ -248,58 +269,12 @@ export default async function HomePage() {
           </CardContent>
         </Card>
 
-        {/* ── 3. Urgent Todos ── */}
-        <Card className="flex flex-col">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Urgent Todos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1">
-            {urgentTodos.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">
-                All clear — no urgent items.
-              </p>
-            ) : (
-              <div className="space-y-2.5">
-                {urgentTodos.map((t) => {
-                  const isOverdue =
-                    t.meta.due_date &&
-                    isBefore(new Date(t.meta.due_date), todayStart)
-                  return (
-                    <div key={t.path} className="flex items-start gap-2">
-                      <TodoCheckbox path={t.path} done={false} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium leading-tight truncate">
-                          {t.meta.title}
-                        </p>
-                        {t.meta.due_date && (
-                          <p
-                            className={`text-xs ${isOverdue ? "text-red-500 font-medium" : "text-muted-foreground"}`}
-                          >
-                            {isOverdue ? "Overdue · " : "Due "}
-                            {format(new Date(t.meta.due_date), "MMM d")}
-                          </p>
-                        )}
-                      </div>
-                      {t.meta.priority === "urgent" && (
-                        <div className="size-2 rounded-full bg-red-500 mt-1.5 shrink-0" />
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </CardContent>
-          <div className="px-6 pb-4">
-            <Link
-              href="../apps/todos"
-              className="text-xs text-primary flex items-center gap-1 hover:underline"
-            >
-              All Todos <ArrowRight className="size-3" />
-            </Link>
-          </div>
-        </Card>
+        {/* ── 3. Urgent Todos (client component with drawer) ── */}
+        <UrgentTodosCard
+          todos={urgentTodos}
+          contexts={todoContexts}
+          lang="en"
+        />
 
         {/* ── 4. Recent Activity ── */}
         <Card className="flex flex-col">
