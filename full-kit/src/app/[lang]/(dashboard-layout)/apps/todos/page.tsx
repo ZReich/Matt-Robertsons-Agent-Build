@@ -1,9 +1,16 @@
 import { ListTodo } from "lucide-react"
 
-import type { TodoMeta } from "@/lib/vault"
+import type {
+  ClientMeta,
+  CommunicationMeta,
+  ContactMeta,
+  DealMeta,
+  TodoMeta,
+} from "@/lib/vault"
 import type { Metadata } from "next"
 
 import { listNotes } from "@/lib/vault"
+import { resolveAllTodoContexts } from "@/lib/vault/resolve-context"
 
 import { TodoList } from "./_components/todo-list"
 
@@ -17,12 +24,30 @@ interface TodosPageProps {
 
 export default async function TodosPage({ params }: TodosPageProps) {
   const { lang } = await params
-  const notes = await listNotes<TodoMeta>("todos")
 
-  const activeBusiness = notes.filter(
+  // Fetch todos + context data in parallel
+  const [todoNotes, clientNotes, contactNotes, dealNotes, commNotes] =
+    await Promise.all([
+      listNotes<TodoMeta>("todos"),
+      listNotes<ClientMeta>("clients"),
+      listNotes<ContactMeta>("contacts"),
+      listNotes<DealMeta>("clients"), // deals live under clients/
+      listNotes<CommunicationMeta>("communications"),
+    ])
+
+  // Resolve context for every todo on the server
+  const contexts = resolveAllTodoContexts(
+    todoNotes,
+    clientNotes,
+    contactNotes,
+    dealNotes,
+    commNotes
+  )
+
+  const activeBusiness = todoNotes.filter(
     (n) => n.meta.category === "business" && n.meta.status !== "done"
   ).length
-  const activePersonal = notes.filter(
+  const activePersonal = todoNotes.filter(
     (n) => n.meta.category === "personal" && n.meta.status !== "done"
   ).length
   const activeTotal = activeBusiness + activePersonal
@@ -42,7 +67,7 @@ export default async function TodosPage({ params }: TodosPageProps) {
         </div>
       </div>
 
-      <TodoList notes={notes} lang={lang} />
+      <TodoList notes={todoNotes} contexts={contexts} lang={lang} />
     </section>
   )
 }

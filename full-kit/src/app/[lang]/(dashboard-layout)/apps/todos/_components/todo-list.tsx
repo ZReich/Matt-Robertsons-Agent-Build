@@ -2,9 +2,12 @@
 
 import { useMemo, useState } from "react"
 import { format, isBefore, startOfDay } from "date-fns"
-import { CheckCircle2, Circle } from "lucide-react"
+import { CheckCircle2, Circle, FileText, User } from "lucide-react"
 
+import type { TodoResolvedContext } from "@/lib/vault/resolve-context"
 import type { TodoMeta, VaultNote } from "@/lib/vault/shared"
+
+import { normalizeEntityRef } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -15,11 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TodoDetailDrawer } from "@/components/todos/todo-detail-drawer"
 
 type TodoNote = VaultNote<TodoMeta>
 
 interface TodoListProps {
   notes: TodoNote[]
+  contexts: Record<string, TodoResolvedContext>
   lang: string
 }
 
@@ -48,15 +53,28 @@ function sortTodos(todos: TodoNote[]): TodoNote[] {
   })
 }
 
-function TodoItem({ note }: { note: TodoNote }) {
+function TodoItem({
+  note,
+  context: _context,
+  onSelect,
+}: {
+  note: TodoNote
+  context?: TodoResolvedContext
+  onSelect: () => void
+}) {
   const [done, setDone] = useState(note.meta.status === "done")
   const [loading, setLoading] = useState(false)
   const today = startOfDay(new Date())
   const isOverdue =
     !done && note.meta.due_date && isBefore(new Date(note.meta.due_date), today)
-  const dealName = note.meta.deal?.replace(/\[\[|\]\]/g, "")
+  const dealName = note.meta.deal ? normalizeEntityRef(note.meta.deal) : null
+  const contactName = note.meta.contact
+    ? normalizeEntityRef(note.meta.contact)
+    : null
+  const hasNotes = !!note.content?.trim()
 
-  async function toggle() {
+  async function toggle(e: React.MouseEvent) {
+    e.stopPropagation() // Prevent opening the drawer
     if (done || loading) return
     setLoading(true)
     setDone(true)
@@ -74,21 +92,22 @@ function TodoItem({ note }: { note: TodoNote }) {
   }
 
   return (
-    <div
-      className={`flex items-start gap-3 p-4 rounded-lg border bg-card transition-opacity ${done ? "opacity-60" : ""}`}
+    <button
+      onClick={onSelect}
+      className={`flex items-start gap-3 p-4 rounded-lg border bg-card transition-all w-full text-left hover:bg-accent/50 ${done ? "opacity-60" : ""}`}
     >
-      <button
+      <div
         onClick={toggle}
-        disabled={loading || done}
-        className="mt-0.5 shrink-0 text-muted-foreground hover:text-green-600 transition-colors disabled:opacity-50"
-        aria-label={done ? "Done" : "Mark as done"}
+        role="checkbox"
+        aria-checked={done}
+        className="mt-0.5 shrink-0 text-muted-foreground hover:text-green-600 transition-colors"
       >
         {done ? (
           <CheckCircle2 className="size-4 text-green-600" />
         ) : (
           <Circle className="size-4" />
         )}
-      </button>
+      </div>
 
       <div className="flex-1 min-w-0">
         <p
@@ -105,11 +124,18 @@ function TodoItem({ note }: { note: TodoNote }) {
               {format(new Date(note.meta.due_date), "MMM d, yyyy")}
             </span>
           )}
+          {contactName && (
+            <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+              <User className="size-3" />
+              {contactName}
+            </span>
+          )}
           {dealName && (
             <Badge variant="outline" className="text-xs py-0">
               {dealName}
             </Badge>
           )}
+          {hasNotes && <FileText className="size-3 text-muted-foreground" />}
         </div>
       </div>
 
@@ -121,14 +147,16 @@ function TodoItem({ note }: { note: TodoNote }) {
           {note.meta.priority}
         </Badge>
       )}
-    </div>
+    </button>
   )
 }
 
-export function TodoList({ notes }: TodoListProps) {
+export function TodoList({ notes, contexts, lang }: TodoListProps) {
   const [statusFilter, setStatusFilter] = useState<"active" | "done" | "all">(
     "active"
   )
+  const [selectedTodo, setSelectedTodo] = useState<TodoNote | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const businessNotes = useMemo(
     () => notes.filter((n) => n.meta.category === "business"),
@@ -145,6 +173,11 @@ export function TodoList({ notes }: TodoListProps) {
     if (statusFilter === "done")
       return list.filter((t) => t.meta.status === "done")
     return list
+  }
+
+  function handleSelectTodo(note: TodoNote) {
+    setSelectedTodo(note)
+    setDrawerOpen(true)
   }
 
   function renderList(list: TodoNote[]) {
@@ -171,7 +204,12 @@ export function TodoList({ notes }: TodoListProps) {
     return (
       <div className="space-y-2">
         {toShow.map((note) => (
-          <TodoItem key={note.path} note={note} />
+          <TodoItem
+            key={note.path}
+            note={note}
+            context={contexts[note.path]}
+            onSelect={() => handleSelectTodo(note)}
+          />
         ))}
       </div>
     )
@@ -185,51 +223,61 @@ export function TodoList({ notes }: TodoListProps) {
         : "All"
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              {statusLabel}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setStatusFilter("active")}>
-              Active
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatusFilter("done")}>
-              Completed
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatusFilter("all")}>
-              All
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <>
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                {statusLabel}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setStatusFilter("active")}>
+                Active
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("done")}>
+                Completed
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                All
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <Tabs defaultValue="business">
+          <TabsList>
+            <TabsTrigger value="business">
+              Business ({applyFilter(businessNotes).length})
+            </TabsTrigger>
+            <TabsTrigger value="personal">
+              Personal ({applyFilter(personalNotes).length})
+            </TabsTrigger>
+            <TabsTrigger value="all">
+              All ({applyFilter(notes).length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="business" className="mt-4">
+            {renderList(businessNotes)}
+          </TabsContent>
+          <TabsContent value="personal" className="mt-4">
+            {renderList(personalNotes)}
+          </TabsContent>
+          <TabsContent value="all" className="mt-4">
+            {renderList(notes)}
+          </TabsContent>
+        </Tabs>
       </div>
 
-      <Tabs defaultValue="business">
-        <TabsList>
-          <TabsTrigger value="business">
-            Business ({applyFilter(businessNotes).length})
-          </TabsTrigger>
-          <TabsTrigger value="personal">
-            Personal ({applyFilter(personalNotes).length})
-          </TabsTrigger>
-          <TabsTrigger value="all">
-            All ({applyFilter(notes).length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="business" className="mt-4">
-          {renderList(businessNotes)}
-        </TabsContent>
-        <TabsContent value="personal" className="mt-4">
-          {renderList(personalNotes)}
-        </TabsContent>
-        <TabsContent value="all" className="mt-4">
-          {renderList(notes)}
-        </TabsContent>
-      </Tabs>
-    </div>
+      <TodoDetailDrawer
+        todo={selectedTodo}
+        context={selectedTodo ? (contexts[selectedTodo.path] ?? null) : null}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        lang={lang}
+      />
+    </>
   )
 }
