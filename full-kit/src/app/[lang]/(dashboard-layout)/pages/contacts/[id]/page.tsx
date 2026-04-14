@@ -2,8 +2,6 @@ import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   Calendar,
   Mail,
   MapPin,
@@ -14,11 +12,14 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 
-import { listNotes } from "@/lib/vault"
+import { listNotes, normalizeEntityRef } from "@/lib/vault"
 import type { CommunicationMeta, ContactMeta, MeetingMeta } from "@/lib/vault"
 
+import { ActivityTimeline } from "@/components/activity/activity-timeline"
+import { matchTranscriptsToMeetings } from "@/lib/transcript-matching"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -68,29 +69,31 @@ export default async function ContactDetailPage({
   const contact = contactNote.meta
 
   const contactMeetings = meetingNotes
-    .filter((m) => m.meta.contact === contact.name)
+    .filter((m) => normalizeEntityRef(m.meta.contact ?? "") === contact.name)
     .sort(
       (a, b) =>
         new Date(a.meta.date).getTime() - new Date(b.meta.date).getTime()
     )
 
-  // Communications for this contact
   const contactComms = commNotes
-    .filter(
-      (c) => c.meta.contact?.replace(/\[\[|\]\]/g, "") === contact.name
-    )
+    .filter((c) => normalizeEntityRef(c.meta.contact ?? "") === contact.name)
     .sort(
       (a, b) =>
         new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
     )
 
+  // Auto-match Plaud call transcripts to meetings
+  const transcriptMatches = matchTranscriptsToMeetings(
+    contactComms,
+    contactMeetings
+  )
+
   const now = new Date()
   const upcomingMeetings = contactMeetings.filter(
     (m) => new Date(m.meta.date) >= now
   )
-  const pastMeetings = contactMeetings.filter(
-    (m) => new Date(m.meta.date) < now
-  )
+
+  const totalActivity = contactComms.length + contactMeetings.length
 
   return (
     <section className="container max-w-3xl grid gap-6 p-6">
@@ -115,7 +118,8 @@ export default async function ContactDetailPage({
             )}
             {contactComms.length > 0 && (
               <Badge variant="outline">
-                {contactComms.length} comm{contactComms.length !== 1 ? "s" : ""}
+                {contactComms.length} comm
+                {contactComms.length !== 1 ? "s" : ""}
               </Badge>
             )}
           </div>
@@ -127,11 +131,8 @@ export default async function ContactDetailPage({
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="comms">
-            Communications ({contactComms.length})
-          </TabsTrigger>
-          <TabsTrigger value="meetings">
-            Meetings ({contactMeetings.length})
+          <TabsTrigger value="activity">
+            Activity ({totalActivity})
           </TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
@@ -221,110 +222,19 @@ export default async function ContactDetailPage({
           )}
         </TabsContent>
 
-        {/* Communications */}
-        <TabsContent value="comms" className="mt-4 space-y-3">
-          {contactComms.length === 0 ? (
+        {/* Activity Tab — unified timeline */}
+        <TabsContent value="activity" className="mt-4">
+          {totalActivity === 0 ? (
             <p className="text-muted-foreground text-sm py-4">
-              No communications logged for this contact.
+              No activity recorded for this contact yet.
             </p>
           ) : (
-            contactComms.map((comm) => {
-              const dealName = comm.meta.deal?.replace(/\[\[|\]\]/g, "")
-              const isInbound = comm.meta.direction !== "outbound"
-              return (
-                <Card key={comm.path}>
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <div className="shrink-0 mt-0.5">
-                      {CHANNEL_ICONS[comm.meta.channel] ?? (
-                        <MessageSquare className="size-4 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">
-                          {comm.meta.subject ?? comm.meta.channel}
-                        </span>
-                        {comm.meta.direction && (
-                          <span
-                            className={`flex items-center gap-0.5 text-xs ${isInbound ? "text-green-600" : "text-blue-600"}`}
-                          >
-                            {isInbound ? (
-                              <ArrowDownLeft className="size-3" />
-                            ) : (
-                              <ArrowUpRight className="size-3" />
-                            )}
-                            {isInbound ? "Inbound" : "Outbound"}
-                          </span>
-                        )}
-                        {dealName && (
-                          <Badge variant="outline" className="text-xs py-0">
-                            {dealName}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {format(
-                          new Date(comm.meta.date),
-                          "MMMM d, yyyy · h:mm a"
-                        )}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })
-          )}
-        </TabsContent>
-
-        {/* Meetings */}
-        <TabsContent value="meetings" className="mt-4 space-y-3">
-          {contactMeetings.length === 0 ? (
-            <p className="text-muted-foreground text-sm py-4">
-              No meetings recorded for this contact.
-            </p>
-          ) : (
-            contactMeetings.map((meeting) => {
-              const isPast = new Date(meeting.meta.date) < now
-              return (
-                <Card
-                  key={meeting.path}
-                  className={isPast ? "opacity-70" : ""}
-                >
-                  <CardContent className="p-4 flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-semibold">{meeting.meta.title}</p>
-                      {meeting.meta.location && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                          <MapPin className="size-3" />
-                          {meeting.meta.location}
-                        </div>
-                      )}
-                      {meeting.meta.duration_minutes && (
-                        <p className="text-xs text-muted-foreground">
-                          {meeting.meta.duration_minutes} min
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-medium">
-                        {format(new Date(meeting.meta.date), "MMM d, yyyy")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(meeting.meta.date), "h:mm a")}
-                      </p>
-                      {isPast && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs mt-1 text-muted-foreground"
-                        >
-                          Past
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })
+            <ActivityTimeline
+              communications={contactComms}
+              meetings={contactMeetings}
+              todos={[]}
+              transcriptMatches={transcriptMatches}
+            />
           )}
         </TabsContent>
 
@@ -333,9 +243,7 @@ export default async function ContactDetailPage({
           <Card>
             <CardContent className="p-6">
               {contactNote.content ? (
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {contactNote.content}
-                </p>
+                <MarkdownRenderer content={contactNote.content} />
               ) : (
                 <p className="text-muted-foreground text-sm">
                   No notes for this contact yet.

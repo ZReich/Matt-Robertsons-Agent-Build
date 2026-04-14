@@ -35,3 +35,9 @@ export type {
   AgentMemoryMeta,
 } from "./types"
 export { DEAL_STAGE_LABELS } from "./types"
+export {
+  normalizeEntityRef,
+  toSlug,
+  sanitizeFilename,
+  validateVaultPath,
+} from "./utils"
