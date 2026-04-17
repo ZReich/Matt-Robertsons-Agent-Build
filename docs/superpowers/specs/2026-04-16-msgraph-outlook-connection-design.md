@@ -63,7 +63,7 @@ full-kit/
 
 ### `config.ts`
 
-Reads and validates the following env vars at module load. Throws a descriptive error naming the missing variable if any are absent. Module-load validation means misconfiguration surfaces when `pnpm dev` starts, not when a cron job hits Graph at 3 AM.
+Reads and validates the following env vars at first import. Throws a descriptive error naming the missing variable if any are absent. (Note: Next.js lazy-loads server modules, so this validation runs on first server-side use of the module, not on process startup. That is sufficient — misconfiguration still surfaces on the first dev request that touches this code, with a clear error, rather than with a cryptic failure deep inside a Graph call.)
 
 | Variable | Purpose |
 |---|---|
@@ -72,6 +72,7 @@ Reads and validates the following env vars at module load. Throws a descriptive 
 | `MSGRAPH_CLIENT_SECRET` | Client secret value, from Dereck. Expires 2028-04-15. |
 | `MSGRAPH_TARGET_UPN` | Matt's Microsoft login (e.g. `matt.robertson@nai...`). Stored as env, not hardcoded, so we can point at a sandbox mailbox without a code change. |
 | `MSGRAPH_TEST_ADMIN_TOKEN` | Long random string. Required as `x-admin-token` header on the test endpoint. |
+| `MSGRAPH_TEST_ROUTE_ENABLED` | `"true"` to enable the test route. Any other value (including absent) disables the route entirely — it returns `404`. Hard kill-switch so an accidental Vercel deploy cannot expose the route even if `MSGRAPH_TEST_ADMIN_TOKEN` leaked. |
 
 ### `token-manager.ts`
 
@@ -96,7 +97,7 @@ export const tokenManager = new TokenManager();
 
 1. If `cached` exists and `cached.expiresAt > Date.now() + 5 * 60 * 1000` → return `cached.token`.
 2. If `inflight` is set → `await inflight` (dedup concurrent refresh).
-3. Otherwise → set `inflight = fetchNewToken()`, await, populate `cached`, clear `inflight`, return token.
+3. Otherwise → set `inflight = fetchNewToken()`. Use `try { await inflight; populate cached } finally { inflight = null }`. **`inflight` must be cleared in `finally`**, not after a successful await — otherwise a failed token fetch leaves every future caller awaiting a rejected promise forever.
 
 **`fetchNewToken()` logic:**
 
@@ -144,8 +145,10 @@ export async function graphFetch<T>(
 1. Acquires a valid access token via `tokenManager.getAccessToken()`.
 2. Prefixes `https://graph.microsoft.com/v1.0` to the `path` argument so callers pass relative paths.
 3. Sets `Authorization: Bearer <token>`, `Content-Type: application/json` where applicable.
-4. On **429** — reads `Retry-After` header, sleeps that duration, retries once. If the retry also 429s, throws.
-5. On **401** — treats as stale token mid-flight. Clears the token cache (`tokenManager.invalidate()`), retries once. If the retry also 401s, throws.
+4. On **429 / 503 / 504 / network error** — retry **once**, then throw. Uses the same one-retry bucket for all transient failures. Before retrying:
+   - If `Retry-After` header is present: parse as either (a) delta-seconds (e.g. `"30"`) or (b) HTTP-date (e.g. `"Wed, 21 Oct 2026 07:28:00 GMT"`). Use the parsed value, clamped to a reasonable max (e.g. 60 seconds — if Graph wants us to wait longer than that, we'd rather fail fast and let a cron retry later than hang a request).
+   - If `Retry-After` is absent or unparseable: default to a short wait (e.g. 2 seconds).
+5. On **401** — treats as stale token mid-flight. Calls `tokenManager.invalidate()`, retries once. If the retry also 401s, throws.
 6. On **403** — throws immediately. 403 indicates a permissions or access-policy problem that retrying cannot fix.
 7. On any other non-2xx — parses Graph's structured error JSON (`{ error: { code, message } }`), throws `GraphError` with status, code, path, and message.
 8. On 2xx — returns `await res.json() as T`.
@@ -153,11 +156,11 @@ export async function graphFetch<T>(
 **Helper functions** (in `client.ts` for this spec; may split out later as surface grows):
 
 ```ts
-export interface GraphUser {
-  id: string;
-  displayName: string;
-  mail: string | null;              // Graph returns null for some mailbox configurations
-  userPrincipalName: string;
+export interface GraphMailboxInfo {
+  id: string;                       // folder id of Inbox
+  displayName: string;              // "Inbox" — confirms mailbox is reachable
+  totalItemCount: number;
+  unreadItemCount: number;
 }
 
 export interface GraphMessage {
@@ -169,11 +172,13 @@ export interface GraphMessage {
   receivedDateTime: string;         // ISO 8601 string
 }
 
-export async function getUser(upn: string): Promise<GraphUser>;
+export async function getMailboxInfo(upn: string): Promise<GraphMailboxInfo>;
 export async function listRecentMessages(upn: string, top: number): Promise<GraphMessage[]>;
 ```
 
 These are **narrow** — only the fields the code actually consumes. If a future feature needs more (body, attachments, conversationId, etc.), it extends the interface at that point. This keeps the type surface honest about what the code touches.
+
+**Why `getMailboxInfo` instead of `getUser`:** `GET /users/{upn}` requires `User.Read.All` as an Application permission, which is *not* in the set we asked Dereck for (`Mail.ReadWrite`, `Contacts.Read`, `Calendars.ReadWrite`). Rather than go back to NAI for a permission we don't actually need, the preflight hits `GET /users/{upn}/mailFolders/inbox` — covered by `Mail.ReadWrite`, and still gives a clean "can we reach the mailbox at all" signal distinct from the messages list.
 
 `listRecentMessages` uses the Graph query `?$top={top}&$select=id,subject,from,receivedDateTime&$orderby=receivedDateTime desc` — `$select` minimizes payload size, `$orderby` pins the sort order so "most recent 10" actually means that.
 
@@ -182,9 +187,9 @@ These are **narrow** — only the fields the code actually consumes. If a future
 Public barrel export:
 
 ```ts
-export { graphFetch, getUser, listRecentMessages } from "./client";
+export { graphFetch, getMailboxInfo, listRecentMessages } from "./client";
 export { GraphError } from "./errors";
-export type { GraphUser, GraphMessage } from "./client";
+export type { GraphMailboxInfo, GraphMessage } from "./client";
 ```
 
 Nothing else in the app imports from subpaths of `@/lib/msgraph`.
@@ -193,18 +198,24 @@ Nothing else in the app imports from subpaths of `@/lib/msgraph`.
 
 **`GET /api/integrations/msgraph/test`**
 
-**Auth:** requires header `x-admin-token: <MSGRAPH_TEST_ADMIN_TOKEN>`. Missing or wrong → `401 { ok: false, error: "unauthorized" }`. The header is compared with a constant-time string comparison (`timingSafeEqual` on `Buffer`s of equal length) to avoid timing-side-channel probing — overkill for a dev test route, but costs nothing.
+**Kill switch (evaluated first, before any other logic):** if `MSGRAPH_TEST_ROUTE_ENABLED !== "true"`, respond with `404` as if the route does not exist. Do not reveal that the route is gated; a `404` is indistinguishable from a route that was never deployed. This is a defense-in-depth measure so a stray Vercel deploy without the flag set cannot expose the route even if `MSGRAPH_TEST_ADMIN_TOKEN` leaked.
+
+**Auth:** requires header `x-admin-token: <MSGRAPH_TEST_ADMIN_TOKEN>`. Missing or wrong → `401 { ok: false, error: "unauthorized" }`. Comparison sequence:
+
+1. Check header is present and is a string.
+2. Check `Buffer.byteLength(header) === Buffer.byteLength(expected)`. If not, return `401` immediately. (Skipping this step is a bug: `timingSafeEqual` throws on mismatched lengths, which both leaks length via the throw and turns into an unhandled exception.)
+3. Only if lengths match, call `crypto.timingSafeEqual(Buffer.from(header), Buffer.from(expected))`.
 
 **Handler:**
 
-1. Call `getUser(MSGRAPH_TARGET_UPN)`.
+1. Call `getMailboxInfo(MSGRAPH_TARGET_UPN)`.
 2. Call `listRecentMessages(MSGRAPH_TARGET_UPN, 10)`.
 3. Return:
 
 ```json
 {
   "ok": true,
-  "user": { "displayName": "...", "mail": "..." },
+  "mailbox": { "displayName": "Inbox", "totalItemCount": 12345, "unreadItemCount": 42 },
   "recentMessages": [
     { "id": "...", "subject": "...", "from": "...", "receivedAt": "..." },
     ...
@@ -214,28 +225,30 @@ Nothing else in the app imports from subpaths of `@/lib/msgraph`.
 
 **On `GraphError`:** respond with matching HTTP status and `{ ok: false, status, code, path, message }` so failures are debuggable by reading the response body directly.
 
-**Why `getUser` first, then `listRecentMessages`:** splitting the two calls isolates failure modes. If auth or tenant scoping is wrong, `getUser` fails with an unambiguous error. If we only called `listRecentMessages`, a failure could mean auth broken OR wrong UPN OR empty inbox, and diagnosis would require more digging.
+**Why `getMailboxInfo` first, then `listRecentMessages`:** splitting the two calls isolates failure modes. If auth or access policy is wrong, `getMailboxInfo` fails with an unambiguous error. If we only called `listRecentMessages`, a failure could mean auth broken OR wrong UPN OR empty inbox, and diagnosis would require more digging.
 
 ## Data flow
 
 ```
 Browser → GET /api/integrations/msgraph/test (with x-admin-token)
        ↓
-route.ts verifies header
+route.ts checks MSGRAPH_TEST_ROUTE_ENABLED → if not "true", 404.
        ↓
-route.ts calls getUser(upn) → client.graphFetch("/users/{upn}")
+route.ts verifies x-admin-token header (length check + timingSafeEqual).
+       ↓
+route.ts calls getMailboxInfo(upn) → client.graphFetch("/users/{upn}/mailFolders/inbox")
                                 ↓
                             tokenManager.getAccessToken()
                               ├─ cache hit? return token.
                               └─ cache miss → POST login.microsoftonline.com/{tenant}/oauth2/v2.0/token
                                              ← access_token, expires_in
                                 ↓
-                            fetch("graph.microsoft.com/v1.0/users/{upn}") with Bearer
-                              ← user JSON
+                            fetch("graph.microsoft.com/v1.0/users/{upn}/mailFolders/inbox") with Bearer
+                              ← mailbox JSON
        ↓
 route.ts calls listRecentMessages(upn, 10) → [same flow, different endpoint]
        ↓
-route.ts returns { ok: true, user, recentMessages }
+route.ts returns { ok: true, mailbox, recentMessages }
 ```
 
 ## Error handling summary
@@ -246,8 +259,9 @@ route.ts returns { ok: true, user, recentMessages }
 | Token fetch non-2xx | `token-manager.ts` | Throws `GraphError`. Secret/token never logged. |
 | Graph 401 on a request | `client.ts` | Invalidate cache, retry once, then throw. |
 | Graph 403 on a request | `client.ts` | Throw immediately (not retryable). |
-| Graph 429 on a request | `client.ts` | Honor `Retry-After`, retry once, then throw. |
+| Graph 429 / 503 / 504 / network error | `client.ts` | Parse `Retry-After` (delta-seconds or HTTP date, clamped to 60s; default 2s if absent), retry once, then throw. |
 | Other Graph non-2xx | `client.ts` | Throw `GraphError` with parsed `error.code`. |
+| `MSGRAPH_TEST_ROUTE_ENABLED` not `"true"` | `route.ts` | `404`, no body. Indistinguishable from an unrouted URL. |
 | Missing/wrong admin token on test route | `route.ts` | `401 { ok: false, error: "unauthorized" }`. |
 | Any `GraphError` reaching the test route | `route.ts` | Respond with matching HTTP status and error details. |
 
@@ -255,12 +269,13 @@ route.ts returns { ok: true, user, recentMessages }
 
 Run in order. Every step must pass before the slice is considered done.
 
-1. `pnpm dev` starts without error → confirms `config.ts` found every env var.
-2. `GET /api/integrations/msgraph/test` *without* `x-admin-token` → returns `401`. Confirms the auth gate.
-3. `GET /api/integrations/msgraph/test` *with* correct `x-admin-token` → returns `{ ok: true, user: {...}, recentMessages: [...10 items...] }` containing Matt's real display name and real subject lines. **This is the decisive test.** If it passes, end-to-end plumbing is proven: tenant, app registration, secret, consent, access policy, network path, token exchange, Graph API call, response parsing.
-4. Failure-mode sanity checks (optional but recommended):
-   - Set `MSGRAPH_CLIENT_SECRET` to a garbage value → endpoint returns `401` with a clear error.
-   - Set `MSGRAPH_TARGET_UPN` to `doesnotexist@example.com` → endpoint returns `404` with Graph's `User not found`.
+1. `pnpm dev` starts without error, and the first request to `/api/integrations/msgraph/test` either succeeds or fails with a clear env-var-missing error (not a cryptic deep stack trace) → confirms `config.ts` validation works.
+2. With `MSGRAPH_TEST_ROUTE_ENABLED` unset or not `"true"`: `GET /api/integrations/msgraph/test` returns `404`. Confirms the kill switch.
+3. With `MSGRAPH_TEST_ROUTE_ENABLED="true"` but *without* `x-admin-token`: returns `401`. Confirms the auth gate.
+4. With both the flag set and correct `x-admin-token`: returns `{ ok: true, mailbox: {...}, recentMessages: [...10 items...] }` containing real Inbox counts and real subject lines from Matt's mailbox. **This is the decisive test.** If it passes, end-to-end plumbing is proven: tenant, app registration, secret, consent, access policy, network path, token exchange, Graph API call, response parsing.
+5. Failure-mode sanity checks (optional but recommended):
+   - Set `MSGRAPH_CLIENT_SECRET` to a garbage value → endpoint returns a clear non-2xx auth error. (Azure's token endpoint typically returns `400 invalid_client` in this case, not `401` — the point is that the error surface is readable, not a specific status code.)
+   - Set `MSGRAPH_TARGET_UPN` to `doesnotexist@example.com` → endpoint returns `404` with Graph's `ResourceNotFound` / user-not-found error.
 
 ## Security notes
 
@@ -284,7 +299,7 @@ Run in order. Every step must pass before the slice is considered done.
 ## Assumptions to verify against Dereck's reply
 
 1. Permissions added as **Application** (not Delegated).
-2. Admin consent granted for all three.
+2. Admin consent granted for all three (`Mail.ReadWrite`, `Contacts.Read`, `Calendars.ReadWrite`). Note: we are **not** asking for `User.Read.All` — the design was reworked after code review to use mailbox-scoped endpoints only, so we never hit `/users/{upn}` without a mailbox subpath.
 3. **Application Access Policy** restricts the app to Matt's mailbox.
 4. No IP allowlisting / Conditional Access restrictions that would block a Vercel IP.
 5. Confirm Matt's exact UPN.
