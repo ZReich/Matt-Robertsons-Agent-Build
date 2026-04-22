@@ -286,15 +286,45 @@ Run in order. Every step must pass before the slice is considered done.
 
 ## Open items tracked for follow-up specs
 
-- **Signal-vs-noise filtering policy** — Matt's mailbox has ~140K messages, 64% unread. A "ingest everything" approach fills the DB with promotional/automated/list-serve noise that has no business value and actively buries real signal. Every ingestion-related spec below inherits a filtering requirement: define what counts as "worth ingesting" before writing data. Signals include: `List-Unsubscribe` / `Precedence: bulk` headers, `noreply@`/`donotreply@` sender patterns, Matt's Outlook categories and flags, whether Matt replied, whether sender is in his Contacts, and folder placement (Archived/Deleted/custom folders). Must be decided before the email-ingestion spec can be written.
-- **Contact seeding** — one-time import of Matt's Outlook Contacts (the list he explicitly curates) into the `Contact` table. Email-discovered contacts (addresses that appear in `from`/`to`/`cc` but aren't in Outlook Contacts) are gated by the filtering policy above.
-- **Email ingestion (DB only)** — transform a filtered Graph message payload into a `Communication` row with contact resolution. **Does not include a vault mirror** — see "Vault scope clarification" below.
-- **Historical email backfill** — apply the ingestion pipeline over Matt's existing inbox, subject to the same filtering policy. Separate spec because of different concerns: rate limiting, progress tracking, restart-after-interrupt, which date ranges to start with.
-- **Ongoing sync** — Graph webhook subscriptions vs. delta-query cron; reconciliation on missed events; same filtering policy as backfill.
-- **Outbound email capture** — reading Sent Items so outbound messages land in `Communication` with `direction=outbound`. Most outbound mail is high-signal by default (Matt wrote it on purpose) so filtering is lighter here.
-- **Calendar writes** — using `Calendars.ReadWrite` to auto-create events from call transcripts / agent actions.
-- **Credential encryption + `IntegrationCredential` migration** — move `MSGRAPH_CLIENT_SECRET` from `.env.local` into the DB with app-layer encryption. Non-urgent; do before production deploy.
-- **Agent actions** — Graph failures feeding into the `AgentAction` approval queue where appropriate.
+Ordered by intended implementation sequence. Each gets its own brainstorm → spec → plan → execute cycle.
+
+1. **Contact seeding** *(next spec)* — one-time import of Matt's Outlook Contacts (the list he explicitly curates) into the `Contact` table via `Contacts.Read`. No filtering needed (Outlook Contacts are 100% curated by Matt). Establishes the contact lookup table every downstream spec depends on. Pipeline-pattern warm-up for the larger email specs. Matt's Supabase is currently empty, so no `key_contacts`-from-existing-`Deal` merge is in scope.
+
+2. **Signal-vs-noise filtering policy** — Matt's mailbox has ~140K messages, 64% unread; an "ingest everything" approach would bury real signal under promotional noise. Defines a three-tier filter:
+   - **Tier 1 (rule-based):** `List-Unsubscribe`/`Precedence: bulk` headers, `noreply@`/`donotreply@`/`updates@` sender patterns, Outlook Junk/Deleted folders, known bulk-sender domains.
+   - **Tier 2 (behavioral scoring):** Matt replied? flagged? moved out of Inbox? sender in `Contact`? sender on active `Deal`? age + untouched-for-X-days?
+   - **Tier 3 (Codex Spark classification):** for AMBIGUOUS emails, call `gpt-5.3-codex-spark` via the `codex:codex-rescue` subagent with `--model spark --effort low`. Batches of ~50 emails, throttled to 4 batches/minute during backfill (Spark is fast — ~1200 tokens/sec). Output is CRE-tuned: labels `{actionable, informational, low_value, noise}` with a one-line reason and confidence. Noise bucket **still ingested** (option B) with a `classification: "noise"` tag for auditability, just never surfaced in default queries. Prompt uses XML-tagged operator-style contract per `codex:gpt-5-4-prompting`, with explicit `<action_safety>` to defend against prompt injection.
+
+3. **Email ingestion (DB only)** — transform a filtered Graph message payload into a `Communication` row with contact resolution. Uses Tier 1/2 filters directly, queues AMBIGUOUS rows for Tier 3 classification, writes the label back alongside. **Includes signature parsing as an output of the same Spark call** — classifier returns an `extracted_signature` field (name, title, company, phone, email, address) that's stored on the `Communication` row for later enrichment. **Does not include a vault mirror** — see "Vault scope clarification" below.
+
+4. **Contact enrichment** — consume the `extracted_signature` data produced by #3 and update `Contact` records. Scoped to **only contacts linked to an active `Deal`** to prevent random-sender noise from polluting real contact data. Uses the `AgentAction` approval queue: fills *null* fields automatically (tier `auto`), but conflicting values (phone A → phone B) go to tier `approve` for Matt's review. The `Contact` schema currently has a single `phone` field; if multi-phone cases become common, a schema migration to a `phones[]` shape is a follow-on.
+
+5. **"Missed opportunity" surfacer** — one-time report over backfill results. Surfaces AMBIGUOUS + HIGH-behavioral-score rows that Matt never engaged with. Day-one product payoff: "here are 8 emails from known contacts over the last 90 days that look actionable and haven't been read."
+
+6. **Historical email backfill** — apply the ingestion pipeline over Matt's full existing inbox. Separate spec because of different concerns: rate limiting, progress tracking, restart-after-interrupt, which date ranges to start with. Runs locally via Codex Spark, not on Vercel.
+
+7. **Ongoing sync** — Graph webhook subscriptions vs. delta-query cron; reconciliation on missed events. Volume is tiny (~50–200 messages/day) so classification cost is negligible. Runs locally alongside backfill or on a cheap always-on process — deferred decision.
+
+8. **Outbound email capture** — reading Sent Items so outbound messages land in `Communication` with `direction=outbound`. Most outbound mail is high-signal by default (Matt wrote it on purpose) so filtering is lighter here.
+
+9. **Calendar writes** — using `Calendars.ReadWrite` to auto-create events from call transcripts / agent actions. Independent of the ingestion pipeline; slot in whenever a use-case materializes.
+
+10. **Credential encryption + `IntegrationCredential` migration** — move `MSGRAPH_CLIENT_SECRET` from `.env.local` into the DB with app-layer encryption. Non-urgent; do before production deploy.
+
+11. **Agent actions** — Graph failures feeding into the `AgentAction` approval queue where appropriate. Cross-cutting concern that each earlier spec contributes to.
+
+### Security guardrails inherited by every ingestion-related spec
+
+- **No attachment download or parsing, ever.** Metadata only (filename, size, content-type).
+- **No URL resolution, no remote-image loading, no external fetches triggered by ingestion.**
+- **LLM classifier has no tool access** — output is a label + reason string, nothing more. Email content is treated as data, not instructions.
+- **Prompt injection defense** — every classifier call includes an `<action_safety>` block telling the model to treat email body text as data, not commands.
+- **UI rendering** (later spec) — email bodies rendered as plain text or via aggressive HTML sanitization; no auto-loading of remote content.
+- **High-phishing-risk classifications gate agent actions** — such emails never auto-create todos or calendar events.
+
+### Wire-fraud detection — deferred
+
+CRE brokers are a known target for wire-fraud scams (impersonated title-company "updated wiring instructions" mid-closing). Flagging this as a distinct classifier output is explicitly deferred per user request (2026-04-22). Worth revisiting once the base pipeline is stable.
 
 ### Vault scope clarification (supersedes earlier "vault markdown mirror" item)
 
