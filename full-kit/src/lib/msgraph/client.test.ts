@@ -194,6 +194,17 @@ describe("graphFetch", () => {
     );
   });
 
+  it("accepts absolute graph URL regardless of hostname case", async () => {
+    const { mod } = await loadClientWithTokenManager();
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    // Mixed-case hostname — URL spec says hostnames are case-insensitive
+    const upper = "https://GRAPH.MICROSOFT.COM/v1.0/users/x";
+    await mod.graphFetch(upper);
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects absolute URLs to non-graph.microsoft.com hosts", async () => {
     const { mod } = await loadClientWithTokenManager();
 
