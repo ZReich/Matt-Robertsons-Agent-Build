@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { GraphError } from "./errors";
-
 // We want a fresh, deterministic TokenManager in each test.
 // Inject via the internal factory so we don't touch real env.
 import { TokenManager } from "./token-manager";
@@ -97,7 +95,11 @@ describe("graphFetch", () => {
       graphErrorResponse(403, "Authorization_RequestDenied"),
     );
 
-    await expect(mod.graphFetch("/users/x")).rejects.toBeInstanceOf(GraphError);
+    await expect(mod.graphFetch("/users/x")).rejects.toMatchObject({
+      name: "GraphError",
+      status: 403,
+      code: "Authorization_RequestDenied",
+    });
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
