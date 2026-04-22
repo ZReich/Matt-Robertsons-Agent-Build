@@ -96,7 +96,20 @@ async function doGraphFetch<T>(
   }
 
   if (res.ok) {
-    return (await res.json()) as T;
+    try {
+      return (await res.json()) as T;
+    } catch {
+      // Graph normally returns JSON on 2xx, but maintenance pages or
+      // proxy errors can occasionally produce HTML with a 200 status.
+      // Surface as a typed GraphError so callers' `err instanceof GraphError`
+      // branches handle it uniformly.
+      throw new GraphError(
+        res.status,
+        "MalformedResponse",
+        path,
+        "Graph returned a non-JSON body on a 2xx response",
+      );
+    }
   }
 
   // --- error handling ---

@@ -12,8 +12,9 @@ describe("msgraph config", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
-    // Reset module cache so config re-evaluates env each test.
-    // (zod schemas run at import time.)
+    // Clear MSGRAPH_* env vars so each test starts from a known empty baseline.
+    // loadMsgraphConfig() re-reads process.env on every call, so no module
+    // reset is needed — in-process mutation is observed directly.
     for (const key of REQUIRED_VARS) delete process.env[key];
     delete process.env.MSGRAPH_TEST_ROUTE_ENABLED;
   });
