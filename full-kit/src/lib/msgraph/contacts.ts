@@ -244,7 +244,7 @@ export async function upsertContact(graphContact: GraphContact): Promise<UpsertO
       ...createOnly,
       ...partial,
     };
-    const outcome = await db.$transaction(async (tx) => {
+    const outcome = await db.$transaction(async (tx: Prisma.TransactionClient) => {
       const contact = await tx.contact.create({ data: createData });
       await tx.externalSync.create({
         data: {
@@ -284,7 +284,7 @@ export async function upsertContact(graphContact: GraphContact): Promise<UpsertO
     updateData.archivedAt = null;
   }
 
-  await db.$transaction(async (tx) => {
+  await db.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.contact.update({
       where: { id: contact.id },
       data: updateData,
