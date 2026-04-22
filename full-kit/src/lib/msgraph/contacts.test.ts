@@ -97,6 +97,15 @@ describe("mapGraphToContact", () => {
     expect(partial.company).toBe("Acme Inc.");
   });
 
+  it("emailAddresses empty array sets partial.email to null (key present, no value)", () => {
+    const { partial } = mapGraphToContact({
+      id: "X",
+      emailAddresses: [],
+    });
+    expect(partial.email).toBeNull();
+    expect("email" in partial).toBe(true);
+  });
+
   it("formats businessAddress, skipping empty parts", () => {
     const { partial } = mapGraphToContact({
       id: "X",
