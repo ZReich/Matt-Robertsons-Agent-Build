@@ -58,7 +58,22 @@ async function doGraphFetch<T>(
   const tm = activeTokenManager();
   const token = await tm.getAccessToken();
 
-  const url = new URL(GRAPH_BASE + path);
+  // Resolve absolute vs. relative. Absolute URLs must be on graph.microsoft.com
+  // so we never leak a bearer token to an unexpected host.
+  let url: URL;
+  if (path.startsWith("https://") || path.startsWith("http://")) {
+    if (!path.startsWith("https://graph.microsoft.com/")) {
+      throw new GraphError(
+        0,
+        "BadURL",
+        path,
+        "absolute URL must target graph.microsoft.com",
+      );
+    }
+    url = new URL(path);
+  } else {
+    url = new URL(GRAPH_BASE + path);
+  }
   if (options.query) {
     for (const [k, v] of Object.entries(options.query)) {
       url.searchParams.set(k, v);
