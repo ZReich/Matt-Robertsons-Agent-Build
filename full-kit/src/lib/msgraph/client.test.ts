@@ -180,4 +180,25 @@ describe("graphFetch", () => {
     await assertion;
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
+
+  it("uses absolute graph.microsoft.com URL verbatim", async () => {
+    const { mod } = await loadClientWithTokenManager();
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    const absolute = "https://graph.microsoft.com/v1.0/users/x/contacts/delta?$deltatoken=abc";
+    await mod.graphFetch(absolute);
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      absolute,
+      expect.anything(),
+    );
+  });
+
+  it("rejects absolute URLs to non-graph.microsoft.com hosts", async () => {
+    const { mod } = await loadClientWithTokenManager();
+
+    await expect(
+      mod.graphFetch("https://evil.example.com/steal-token"),
+    ).rejects.toThrow(/absolute URL/i);
+  });
 });
