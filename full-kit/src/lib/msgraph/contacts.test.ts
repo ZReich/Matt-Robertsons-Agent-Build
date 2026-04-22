@@ -242,6 +242,15 @@ describe("cursor helpers", () => {
     expect(result).toBeNull();
   });
 
+  it("loadCursor returns null when rawData has an empty deltaLink string", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      rawData: { deltaLink: "" },
+    });
+
+    const result = await loadCursor();
+    expect(result).toBeNull();
+  });
+
   it("saveCursor upserts the cursor row", async () => {
     (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
 

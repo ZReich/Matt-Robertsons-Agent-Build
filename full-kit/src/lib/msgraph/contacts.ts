@@ -183,7 +183,8 @@ export async function loadCursor(): Promise<Cursor | null> {
     raw &&
     typeof raw === "object" &&
     !Array.isArray(raw) &&
-    typeof (raw as Record<string, unknown>).deltaLink === "string"
+    typeof (raw as Record<string, unknown>).deltaLink === "string" &&
+    (raw as Record<string, string>).deltaLink.length > 0
   ) {
     return { deltaLink: (raw as Record<string, string>).deltaLink };
   }
