@@ -221,3 +221,77 @@ export async function deleteCursor(): Promise<void> {
     if ((err as { code?: string })?.code !== "P2025") throw err;
   }
 }
+
+// =============================================================================
+// Per-item operations
+// =============================================================================
+
+export type UpsertOutcome = "created" | "updated" | "unarchived";
+
+export async function upsertContact(graphContact: GraphContact): Promise<UpsertOutcome> {
+  const { partial, createOnly } = mapGraphToContact(graphContact);
+
+  const existing = await db.externalSync.findUnique({
+    where: {
+      source_externalId: { source: SOURCE, externalId: graphContact.id },
+    },
+  });
+
+  if (!existing) {
+    // CREATE path — Contact + ExternalSync in one transaction
+    const createData = {
+      ...createOnly,
+      ...partial,
+    };
+    const outcome = await db.$transaction(async (tx) => {
+      const contact = await tx.contact.create({ data: createData });
+      await tx.externalSync.create({
+        data: {
+          source: SOURCE,
+          externalId: graphContact.id,
+          entityType: "contact",
+          entityId: contact.id,
+          status: "synced",
+          rawData: { graphContact },
+        },
+      });
+      return "created" as const;
+    });
+    return outcome;
+  }
+
+  // UPDATE path
+  const contact = await db.contact.findUnique({ where: { id: existing.entityId! } });
+  if (!contact) {
+    throw new Error(
+      `ExternalSync for Graph contact ${graphContact.id} points to missing Contact row ${existing.entityId}. Refusing to guess — manual DB repair needed.`,
+    );
+  }
+
+  // Only clear archivedAt if the ExternalSync.status was "removed" (Graph-origin archive).
+  // A manual archive (status="synced" but archivedAt set) is preserved.
+  const graphOriginArchive = existing.status === "removed";
+  const shouldUnarchive = graphOriginArchive;
+
+  const updateData: Record<string, unknown> = { ...partial };
+  if (shouldUnarchive) {
+    updateData.archivedAt = null;
+  }
+
+  await db.$transaction(async (tx) => {
+    await tx.contact.update({
+      where: { id: contact.id },
+      data: updateData,
+    });
+    await tx.externalSync.update({
+      where: { id: existing.id },
+      data: {
+        status: "synced",
+        syncedAt: new Date(),
+        rawData: { graphContact },
+      },
+    });
+  });
+
+  return shouldUnarchive ? "unarchived" : "updated";
+}
