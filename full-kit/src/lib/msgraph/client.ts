@@ -59,10 +59,13 @@ async function doGraphFetch<T>(
   const token = await tm.getAccessToken();
 
   // Resolve absolute vs. relative. Absolute URLs must be on graph.microsoft.com
-  // so we never leak a bearer token to an unexpected host.
+  // so we never leak a bearer token to an unexpected host. Parse first so the
+  // hostname check is case-normalized (URL spec treats hostnames as case-insensitive)
+  // and safe against subdomain tricks like graph.microsoft.com.evil.example.
   let url: URL;
   if (path.startsWith("https://") || path.startsWith("http://")) {
-    if (!path.startsWith("https://graph.microsoft.com/")) {
+    url = new URL(path);
+    if (url.hostname !== "graph.microsoft.com") {
       throw new GraphError(
         0,
         "BadURL",
@@ -70,7 +73,6 @@ async function doGraphFetch<T>(
         "absolute URL must target graph.microsoft.com",
       );
     }
-    url = new URL(path);
   } else {
     url = new URL(GRAPH_BASE + path);
   }
