@@ -1,6 +1,56 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mapGraphToContact } from "./contacts";
+// ---- Prisma mock shared across this test file ----
+vi.mock("@/lib/prisma", () => {
+  return {
+    db: {
+      externalSync: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        upsert: vi.fn(),
+      },
+      contact: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      $transaction: vi.fn(async (arg) => {
+        if (typeof arg === "function") return await arg((await import("@/lib/prisma")).db);
+        return await Promise.all(arg);
+      }),
+      $queryRaw: vi.fn(),
+    },
+  };
+});
+
+import { db } from "@/lib/prisma";
+import {
+  deleteCursor,
+  loadCursor,
+  mapGraphToContact,
+  saveCursor,
+} from "./contacts";
+
+function clearDbMocks() {
+  for (const svc of [db.externalSync, db.contact] as const) {
+    for (const fn of Object.values(svc)) {
+      if (typeof fn === "function" && "mockReset" in fn) {
+        (fn as ReturnType<typeof vi.fn>).mockReset();
+      }
+    }
+  }
+  (db.$transaction as ReturnType<typeof vi.fn>).mockReset();
+  (db.$queryRaw as ReturnType<typeof vi.fn>).mockReset();
+  // Restore $transaction default behavior.
+  (db.$transaction as ReturnType<typeof vi.fn>).mockImplementation(async (arg: unknown) => {
+    if (typeof arg === "function") {
+      return await (arg as (tx: typeof db) => Promise<unknown>)(db);
+    }
+    return await Promise.all(arg as Promise<unknown>[]);
+  });
+}
 
 describe("mapGraphToContact", () => {
   it("returns partial with only fields present in the payload", () => {
@@ -144,5 +194,91 @@ describe("mapGraphToContact", () => {
     expect(
       mapGraphToContact({ id: "X", personalNotes: "" }).createOnly.notes,
     ).toBeNull();
+  });
+});
+
+describe("cursor helpers", () => {
+  beforeEach(() => clearDbMocks());
+
+  it("loadCursor returns null when no row exists", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const result = await loadCursor();
+
+    expect(result).toBeNull();
+    expect(db.externalSync.findUnique).toHaveBeenCalledWith({
+      where: { source_externalId: { source: "msgraph-contacts", externalId: "__cursor__" } },
+    });
+  });
+
+  it("loadCursor returns deltaLink when row has valid rawData", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      rawData: { deltaLink: "https://graph.microsoft.com/v1.0/.../delta?$deltatoken=abc" },
+    });
+
+    const result = await loadCursor();
+
+    expect(result).toEqual({
+      deltaLink: "https://graph.microsoft.com/v1.0/.../delta?$deltatoken=abc",
+    });
+  });
+
+  it("loadCursor returns null when rawData is malformed (missing deltaLink)", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      rawData: { notADeltaLink: "oops" },
+    });
+
+    const result = await loadCursor();
+
+    expect(result).toBeNull();
+  });
+
+  it("loadCursor returns null when rawData is not an object", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      rawData: "corrupted-string",
+    });
+
+    const result = await loadCursor();
+    expect(result).toBeNull();
+  });
+
+  it("saveCursor upserts the cursor row", async () => {
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    await saveCursor("https://graph.microsoft.com/v1.0/.../delta?$deltatoken=xyz");
+
+    expect(db.externalSync.upsert).toHaveBeenCalledWith({
+      where: { source_externalId: { source: "msgraph-contacts", externalId: "__cursor__" } },
+      create: {
+        source: "msgraph-contacts",
+        externalId: "__cursor__",
+        entityType: "cursor",
+        entityId: null,
+        rawData: { deltaLink: "https://graph.microsoft.com/v1.0/.../delta?$deltatoken=xyz" },
+        status: "synced",
+      },
+      update: {
+        rawData: { deltaLink: "https://graph.microsoft.com/v1.0/.../delta?$deltatoken=xyz" },
+        syncedAt: expect.any(Date),
+        status: "synced",
+      },
+    });
+  });
+
+  it("deleteCursor removes the cursor row (no-op if missing)", async () => {
+    (db.externalSync.delete as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    await deleteCursor();
+
+    expect(db.externalSync.delete).toHaveBeenCalledWith({
+      where: { source_externalId: { source: "msgraph-contacts", externalId: "__cursor__" } },
+    });
+  });
+
+  it("deleteCursor swallows P2025 (record not found) from Prisma", async () => {
+    const err = Object.assign(new Error("not found"), { code: "P2025" });
+    (db.externalSync.delete as ReturnType<typeof vi.fn>).mockRejectedValue(err);
+
+    await expect(deleteCursor()).resolves.toBeUndefined();
   });
 });
