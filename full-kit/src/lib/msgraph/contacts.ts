@@ -1,3 +1,5 @@
+import { db } from "@/lib/prisma";
+
 // =============================================================================
 // Graph contact payload shapes (narrow — only fields we consume)
 // =============================================================================
@@ -159,8 +161,6 @@ function formatAddress(addr: GraphContactAddress): string | null {
 function nullish(v: string | null | undefined): string | null {
   return v === undefined || v === null || v === "" ? null : v;
 }
-
-import { db } from "@/lib/prisma";
 
 // =============================================================================
 // Cursor helpers — one special ExternalSync row with externalId="__cursor__"
