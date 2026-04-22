@@ -159,3 +159,64 @@ function formatAddress(addr: GraphContactAddress): string | null {
 function nullish(v: string | null | undefined): string | null {
   return v === undefined || v === null || v === "" ? null : v;
 }
+
+import { db } from "@/lib/prisma";
+
+// =============================================================================
+// Cursor helpers — one special ExternalSync row with externalId="__cursor__"
+// =============================================================================
+
+const SOURCE = "msgraph-contacts";
+const CURSOR_EXTERNAL_ID = "__cursor__";
+
+export interface Cursor {
+  deltaLink: string;
+}
+
+export async function loadCursor(): Promise<Cursor | null> {
+  const row = await db.externalSync.findUnique({
+    where: { source_externalId: { source: SOURCE, externalId: CURSOR_EXTERNAL_ID } },
+  });
+  if (!row) return null;
+  const raw = row.rawData as unknown;
+  if (
+    raw &&
+    typeof raw === "object" &&
+    !Array.isArray(raw) &&
+    typeof (raw as Record<string, unknown>).deltaLink === "string"
+  ) {
+    return { deltaLink: (raw as Record<string, string>).deltaLink };
+  }
+  // Malformed rawData — force the caller into bootstrap mode.
+  return null;
+}
+
+export async function saveCursor(deltaLink: string): Promise<void> {
+  await db.externalSync.upsert({
+    where: { source_externalId: { source: SOURCE, externalId: CURSOR_EXTERNAL_ID } },
+    create: {
+      source: SOURCE,
+      externalId: CURSOR_EXTERNAL_ID,
+      entityType: "cursor",
+      entityId: null,
+      rawData: { deltaLink },
+      status: "synced",
+    },
+    update: {
+      rawData: { deltaLink },
+      syncedAt: new Date(),
+      status: "synced",
+    },
+  });
+}
+
+export async function deleteCursor(): Promise<void> {
+  try {
+    await db.externalSync.delete({
+      where: { source_externalId: { source: SOURCE, externalId: CURSOR_EXTERNAL_ID } },
+    });
+  } catch (err) {
+    // P2025 = "an operation failed because it depends on one or more records that were required but not found"
+    if ((err as { code?: string })?.code !== "P2025") throw err;
+  }
+}
