@@ -1,5 +1,5 @@
 import { db } from "@/lib/prisma";
-import type { Prisma } from ".prisma/client";
+import type { Prisma, SyncStatus } from ".prisma/client";
 
 // =============================================================================
 // Graph contact payload shapes (narrow — only fields we consume)
@@ -300,4 +300,27 @@ export async function upsertContact(graphContact: GraphContact): Promise<UpsertO
   });
 
   return shouldUnarchive ? "unarchived" : "updated";
+}
+
+export async function archiveContact(graphId: string): Promise<boolean> {
+  const existing = await db.externalSync.findUnique({
+    where: { source_externalId: { source: SOURCE, externalId: graphId } },
+  });
+  if (!existing) return false;                  // never knew about it
+  if (existing.status === "removed") return false; // replayed tombstone — no-op
+  if (!existing.entityId) return false;         // defensive: contact-type row missing entityId
+
+  const entityId = existing.entityId;
+
+  await db.$transaction(async (tx: Prisma.TransactionClient) => {
+    await tx.contact.update({
+      where: { id: entityId },
+      data: { archivedAt: new Date() },
+    });
+    await tx.externalSync.update({
+      where: { id: existing.id },
+      data: { status: "removed" as SyncStatus, syncedAt: new Date() },
+    });
+  });
+  return true;
 }
