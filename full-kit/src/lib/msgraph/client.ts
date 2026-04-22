@@ -41,6 +41,7 @@ interface GraphFetchOptions {
   method?: string;
   body?: unknown;
   query?: Record<string, string>;
+  headers?: Record<string, string>;
 }
 
 export async function graphFetch<T>(
@@ -82,7 +83,10 @@ async function doGraphFetch<T>(
     }
   }
 
+  // Merge caller-supplied headers first, then force Authorization ours.
+  // Caller cannot override Authorization.
   const headers: Record<string, string> = {
+    ...(options.headers ?? {}),
     Authorization: `Bearer ${token}`,
   };
   let body: string | undefined;
