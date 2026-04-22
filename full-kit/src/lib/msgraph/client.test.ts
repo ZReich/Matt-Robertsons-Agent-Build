@@ -153,8 +153,31 @@ describe("graphFetch", () => {
       .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"));
 
     const promise = mod.graphFetch("/users/x");
+    // Attach the rejection assertion BEFORE advancing timers to ensure
+    // the rejection handler is registered synchronously, avoiding
+    // a PromiseRejectionHandledWarning.
+    const assertion = expect(promise).rejects.toMatchObject({ status: 503 });
     await vi.advanceTimersByTimeAsync(3000); // past default 2s fallback
-    await expect(promise).rejects.toMatchObject({ status: 503 });
+    await assertion;
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries once on network error, then throws a NetworkError GraphError", async () => {
+    const { mod } = await loadClientWithTokenManager();
+    const netErr = new Error("Connection refused");
+    fetchSpy
+      .mockRejectedValueOnce(netErr)
+      .mockRejectedValueOnce(netErr);
+
+    const promise = mod.graphFetch("/users/x");
+    // Register the rejection handler before advancing timers.
+    const assertion = expect(promise).rejects.toMatchObject({
+      name: "GraphError",
+      status: 0,
+      code: "NetworkError",
+    });
+    await vi.advanceTimersByTimeAsync(3000); // past default 2s retry sleep
+    await assertion;
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 });
