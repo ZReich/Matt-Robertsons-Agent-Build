@@ -25,6 +25,21 @@ vi.mock("@/lib/prisma", () => {
   };
 });
 
+// ---- Mock graphFetch / loadMsgraphConfig ----
+vi.mock("./client", () => ({
+  graphFetch: vi.fn(),
+}));
+vi.mock("./config", () => ({
+  loadMsgraphConfig: vi.fn(() => ({
+    tenantId: "t",
+    clientId: "c",
+    clientSecret: "s",
+    targetUpn: "matt@example.com",
+    testAdminToken: "x".repeat(32),
+    testRouteEnabled: false,
+  })),
+}));
+
 import { db } from "@/lib/prisma";
 import {
   deleteCursor,
@@ -32,6 +47,7 @@ import {
   mapGraphToContact,
   saveCursor,
 } from "./contacts";
+import { graphFetch } from "./client";
 
 function clearDbMocks() {
   for (const svc of [db.externalSync, db.contact] as const) {
@@ -645,5 +661,260 @@ describe("processOneItemWithRetry", () => {
         update: expect.objectContaining({ status: "failed" }),
       }),
     );
+  });
+});
+
+describe("syncMicrosoftContacts (orchestrator)", () => {
+  beforeEach(() => {
+    clearDbMocks();
+    vi.useFakeTimers();
+    // Default: advisory lock is acquired.
+    (db.$queryRaw as ReturnType<typeof vi.fn>).mockImplementation(async (strings: TemplateStringsArray) => {
+      const sql = strings.join("");
+      if (sql.includes("pg_try_advisory_lock")) return [{ got: true }];
+      if (sql.includes("pg_advisory_unlock")) return [{ released: true }];
+      return [];
+    });
+    // Reset graphFetch mock
+    (graphFetch as ReturnType<typeof vi.fn>).mockReset();
+    process.env.MSGRAPH_TENANT_ID = "t";
+    process.env.MSGRAPH_CLIENT_ID = "c";
+    process.env.MSGRAPH_CLIENT_SECRET = "s";
+    process.env.MSGRAPH_TARGET_UPN = "matt@example.com";
+    process.env.MSGRAPH_TEST_ADMIN_TOKEN = "x".repeat(32);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function deltaResponse(body: unknown) {
+    return body;
+  }
+
+  it("returns skippedLocked when advisory lock not acquired", async () => {
+    (db.$queryRaw as ReturnType<typeof vi.fn>).mockImplementation(async (strings: TemplateStringsArray) => {
+      const sql = strings.join("");
+      if (sql.includes("pg_try_advisory_lock")) return [{ got: false }];
+      return [];
+    });
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    const result = await syncMicrosoftContacts();
+
+    expect(result.skippedLocked).toBe(true);
+    expect(result.created).toBe(0);
+    expect(result.updated).toBe(0);
+  });
+
+  it("bootstrap: no cursor → fetches delta from scratch → writes cursor on success", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockImplementation(async ({ where }: { where: { source_externalId: { externalId: string } } }) => {
+      if (where.source_externalId.externalId === "__cursor__") return null;
+      return null;
+    });
+    (db.contact.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new" });
+    (db.externalSync.create as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    (graphFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      deltaResponse({
+        value: [{ id: "g-1", displayName: "Alice" }],
+        "@odata.deltaLink": "https://graph.microsoft.com/v1.0/users/matt@example.com/contacts/delta?$deltatoken=NEW",
+      }),
+    );
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    const result = await syncMicrosoftContacts();
+
+    expect(result.isBootstrap).toBe(true);
+    expect(result.bootstrapReason).toBe("no-cursor");
+    expect(result.created).toBe(1);
+    expect(result.cursorAdvanced).toBe(true);
+    // saveCursor via upsert
+    expect(db.externalSync.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { source_externalId: { source: "msgraph-contacts", externalId: "__cursor__" } },
+      }),
+    );
+  });
+
+  it("delta-empty: cursor present, value=[], cursor still advances to new deltaLink", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockImplementation(async ({ where }: { where: { source_externalId: { externalId: string } } }) => {
+      if (where.source_externalId.externalId === "__cursor__") {
+        return {
+          rawData: {
+            deltaLink: "https://graph.microsoft.com/v1.0/users/matt@example.com/contacts/delta?$deltatoken=OLD",
+          },
+        };
+      }
+      return null;
+    });
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    (graphFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      deltaResponse({
+        value: [],
+        "@odata.deltaLink": "https://graph.microsoft.com/v1.0/users/matt@example.com/contacts/delta?$deltatoken=NEW",
+      }),
+    );
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    const result = await syncMicrosoftContacts();
+
+    expect(result.isBootstrap).toBe(false);
+    expect(result.created).toBe(0);
+    expect(result.updated).toBe(0);
+    expect(result.cursorAdvanced).toBe(true);
+  });
+
+  it("pagination: follows @odata.nextLink; cursor only written after final @odata.deltaLink", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (db.contact.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new" });
+    (db.externalSync.create as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    (graphFetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(
+        deltaResponse({
+          value: [{ id: "g-1", displayName: "Alice" }],
+          "@odata.nextLink":
+            "https://graph.microsoft.com/v1.0/users/matt@example.com/contacts/delta?$skiptoken=PAGE2",
+        }),
+      )
+      .mockResolvedValueOnce(
+        deltaResponse({
+          value: [{ id: "g-2", displayName: "Bob" }],
+          "@odata.deltaLink":
+            "https://graph.microsoft.com/v1.0/users/matt@example.com/contacts/delta?$deltatoken=FINAL",
+        }),
+      );
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    const result = await syncMicrosoftContacts();
+
+    expect(result.created).toBe(2);
+    expect(result.cursorAdvanced).toBe(true);
+    // Cursor upsert should have been called exactly ONCE (at the end), not after page 1.
+    const cursorUpserts = (db.externalSync.upsert as ReturnType<typeof vi.fn>).mock.calls.filter(
+      (c) => c[0].where.source_externalId.externalId === "__cursor__",
+    );
+    expect(cursorUpserts.length).toBe(1);
+  });
+
+  it("410 syncStateNotFound: deletes cursor, restarts as bootstrap, reports bootstrapReason=delta-expired", async () => {
+    const { GraphError } = await import("./errors");
+    // First call: findUnique returns the stored cursor.
+    // After 410 + deleteCursor, recursive call returns null (cursor gone).
+    let findUniqueCount = 0;
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockImplementation(async ({ where }: { where: { source_externalId: { externalId: string } } }) => {
+      if (where.source_externalId.externalId === "__cursor__") {
+        findUniqueCount++;
+        if (findUniqueCount === 1) {
+          return {
+            rawData: {
+              deltaLink: "https://graph.microsoft.com/v1.0/users/matt@example.com/contacts/delta?$deltatoken=OLD",
+            },
+          };
+        }
+        return null;
+      }
+      return null;
+    });
+    (db.externalSync.delete as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    (graphFetch as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(
+        new GraphError(410, "syncStateNotFound", "/contacts/delta", "expired"),
+      )
+      // After recursion, second run starts fresh
+      .mockResolvedValueOnce(
+        deltaResponse({
+          value: [],
+          "@odata.deltaLink":
+            "https://graph.microsoft.com/v1.0/users/matt@example.com/contacts/delta?$deltatoken=FRESH",
+        }),
+      );
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    const result = await syncMicrosoftContacts();
+
+    expect(result.isBootstrap).toBe(true);
+    expect(result.bootstrapReason).toBe("delta-expired");
+    expect(db.externalSync.delete).toHaveBeenCalled();
+  });
+
+  it("persistent per-item failure: cursorAdvanced=false, errors[] populated", async () => {
+    // First findUnique for cursor → null (bootstrap).
+    // Then per-item findUnique (for upsertContact) always throws.
+    let cursorChecked = false;
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockImplementation(async ({ where }: { where: { source_externalId: { externalId: string } } }) => {
+      if (where.source_externalId.externalId === "__cursor__") {
+        cursorChecked = true;
+        return null;
+      }
+      throw new Error("persistent db error");
+    });
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    (graphFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      deltaResponse({
+        value: [{ id: "g-bad", displayName: "Bad" }],
+        "@odata.deltaLink": "https://graph.microsoft.com/v1.0/.../delta?$deltatoken=END",
+      }),
+    );
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    const promise = syncMicrosoftContacts();
+    await vi.advanceTimersByTimeAsync(50 + 200 + 800 + 100);
+    const result = await promise;
+
+    expect(cursorChecked).toBe(true);
+    expect(result.errors.length).toBe(1);
+    expect(result.errors[0].graphId).toBe("g-bad");
+    expect(result.cursorAdvanced).toBe(false);
+    // Cursor upsert for "__cursor__" key should NOT have been called
+    const cursorUpserts = (db.externalSync.upsert as ReturnType<typeof vi.fn>).mock.calls.filter(
+      (c) => c[0].where.source_externalId.externalId === "__cursor__",
+    );
+    expect(cursorUpserts.length).toBe(0);
+  });
+
+  it("sends Prefer: IdType=ImmutableId header on the delta request", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    (graphFetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      deltaResponse({
+        value: [],
+        "@odata.deltaLink": "https://graph.microsoft.com/v1.0/.../delta?$deltatoken=END",
+      }),
+    );
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    await syncMicrosoftContacts();
+
+    const deltaCall = (graphFetch as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: unknown[]) => typeof c[0] === "string" && (c[0] as string).includes("/contacts/delta"),
+    );
+    expect(deltaCall).toBeDefined();
+    const headers = (deltaCall![1] as { headers?: Record<string, string> }).headers;
+    expect(headers?.Prefer).toBe('IdType="ImmutableId"');
+  });
+
+  it("releases advisory lock even on error (finally block)", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error("boom"),
+    );
+
+    (graphFetch as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    const { syncMicrosoftContacts } = await import("./contacts");
+    await expect(syncMicrosoftContacts()).rejects.toThrow();
+
+    const unlockCalls = (db.$queryRaw as ReturnType<typeof vi.fn>).mock.calls.filter((c: unknown[]) => {
+      const sql = (c[0] as TemplateStringsArray).join("");
+      return sql.includes("pg_advisory_unlock");
+    });
+    expect(unlockCalls.length).toBeGreaterThan(0);
   });
 });
