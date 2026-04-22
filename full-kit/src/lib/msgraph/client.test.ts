@@ -212,4 +212,33 @@ describe("graphFetch", () => {
       mod.graphFetch("https://evil.example.com/steal-token"),
     ).rejects.toThrow(/absolute URL/i);
   });
+
+  it("merges caller-supplied headers with defaults", async () => {
+    const { mod } = await loadClientWithTokenManager();
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    await mod.graphFetch("/users/x", {
+      headers: { Prefer: 'IdType="ImmutableId"' },
+    });
+
+    const call = fetchSpy.mock.calls[0];
+    const opts = call[1] as RequestInit;
+    const headers = opts.headers as Record<string, string>;
+    expect(headers["Prefer"]).toBe('IdType="ImmutableId"');
+    expect(headers["Authorization"]).toBe("Bearer test-access-token");
+  });
+
+  it("does not allow caller to override Authorization header", async () => {
+    const { mod } = await loadClientWithTokenManager();
+    fetchSpy.mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    await mod.graphFetch("/users/x", {
+      headers: { Authorization: "Bearer attacker-token" },
+    });
+
+    const call = fetchSpy.mock.calls[0];
+    const opts = call[1] as RequestInit;
+    const headers = opts.headers as Record<string, string>;
+    expect(headers["Authorization"]).toBe("Bearer test-access-token");
+  });
 });
