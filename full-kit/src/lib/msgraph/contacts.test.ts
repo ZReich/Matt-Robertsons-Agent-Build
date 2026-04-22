@@ -475,3 +475,56 @@ describe("upsertContact", () => {
     expect(extSyncUpdate.data.rawData).toEqual({ graphContact: payload });
   });
 });
+
+describe("archiveContact", () => {
+  beforeEach(() => clearDbMocks());
+
+  it("returns false when Graph id is not tracked (never seen before)", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const { archiveContact } = await import("./contacts");
+    const result = await archiveContact("unknown-graph-id");
+
+    expect(result).toBe(false);
+    expect(db.contact.update).not.toHaveBeenCalled();
+  });
+
+  it("returns false when ExternalSync.status is already 'removed' (replayed tombstone)", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "ext-sync-uuid",
+      entityId: "contact-uuid",
+      status: "removed",
+    });
+
+    const { archiveContact } = await import("./contacts");
+    const result = await archiveContact("graph-bob-1");
+
+    expect(result).toBe(false);
+    expect(db.contact.update).not.toHaveBeenCalled();
+    expect(db.externalSync.update).not.toHaveBeenCalled();
+  });
+
+  it("archives live contact transactionally — sets archivedAt and status='removed'", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "ext-sync-uuid",
+      entityId: "contact-uuid",
+      status: "synced",
+    });
+    (db.contact.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (db.externalSync.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    const { archiveContact } = await import("./contacts");
+    const result = await archiveContact("graph-bob-1");
+
+    expect(result).toBe(true);
+    expect(db.$transaction).toHaveBeenCalledTimes(1);
+
+    const contactUpdate = (db.contact.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(contactUpdate.where).toEqual({ id: "contact-uuid" });
+    expect(contactUpdate.data.archivedAt).toBeInstanceOf(Date);
+
+    const extSyncUpdate = (db.externalSync.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(extSyncUpdate.where).toEqual({ id: "ext-sync-uuid" });
+    expect(extSyncUpdate.data.status).toBe("removed");
+  });
+});
