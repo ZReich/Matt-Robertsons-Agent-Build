@@ -286,15 +286,32 @@ Run in order. Every step must pass before the slice is considered done.
 
 ## Open items tracked for follow-up specs
 
-- **Credential encryption + `IntegrationCredential` migration** — move `MSGRAPH_CLIENT_SECRET` from `.env.local` into the DB with app-layer encryption.
-- **Email ingestion** — transform a Graph message payload into a `Communication` row, with contact resolution.
-- **Contact seeding** — one-time import of Matt's Outlook contacts into the `Contact` table.
-- **Historical email backfill** — strategy for sweeping existing inbox; volume estimate; rate limits; contact-creation aggressiveness.
-- **Ongoing sync** — Graph webhook subscriptions vs. delta query cron; reconciliation on missed events.
-- **Vault markdown mirror** — when a `Communication` is created, write a corresponding file to `vault/communications/YYYY-MM-DD-email-<slug>.md`.
+- **Signal-vs-noise filtering policy** — Matt's mailbox has ~140K messages, 64% unread. A "ingest everything" approach fills the DB with promotional/automated/list-serve noise that has no business value and actively buries real signal. Every ingestion-related spec below inherits a filtering requirement: define what counts as "worth ingesting" before writing data. Signals include: `List-Unsubscribe` / `Precedence: bulk` headers, `noreply@`/`donotreply@` sender patterns, Matt's Outlook categories and flags, whether Matt replied, whether sender is in his Contacts, and folder placement (Archived/Deleted/custom folders). Must be decided before the email-ingestion spec can be written.
+- **Contact seeding** — one-time import of Matt's Outlook Contacts (the list he explicitly curates) into the `Contact` table. Email-discovered contacts (addresses that appear in `from`/`to`/`cc` but aren't in Outlook Contacts) are gated by the filtering policy above.
+- **Email ingestion (DB only)** — transform a filtered Graph message payload into a `Communication` row with contact resolution. **Does not include a vault mirror** — see "Vault scope clarification" below.
+- **Historical email backfill** — apply the ingestion pipeline over Matt's existing inbox, subject to the same filtering policy. Separate spec because of different concerns: rate limiting, progress tracking, restart-after-interrupt, which date ranges to start with.
+- **Ongoing sync** — Graph webhook subscriptions vs. delta-query cron; reconciliation on missed events; same filtering policy as backfill.
+- **Outbound email capture** — reading Sent Items so outbound messages land in `Communication` with `direction=outbound`. Most outbound mail is high-signal by default (Matt wrote it on purpose) so filtering is lighter here.
 - **Calendar writes** — using `Calendars.ReadWrite` to auto-create events from call transcripts / agent actions.
-- **Outbound email capture** — reading Sent Items so outbound messages land in `Communication` with `direction=outbound`.
+- **Credential encryption + `IntegrationCredential` migration** — move `MSGRAPH_CLIENT_SECRET` from `.env.local` into the DB with app-layer encryption. Non-urgent; do before production deploy.
 - **Agent actions** — Graph failures feeding into the `AgentAction` approval queue where appropriate.
+
+### Vault scope clarification (supersedes earlier "vault markdown mirror" item)
+
+Original plan proposed mirroring every ingested `Communication` to a markdown file in `vault/communications/`. **This is out of scope for transactional data** for three reasons:
+
+1. **Vercel filesystem is read-only at runtime.** Any ingestion running on a Vercel cron or webhook handler cannot write to the vault. The only workarounds (local-only ingestion, GitHub API commits per message, separate always-on server) introduce significant complexity.
+2. **Storage duplication with no information gain.** The DB already has the data, with better indexing and full-text search via Postgres.
+3. **Sync complexity.** Every write to two stores creates reconciliation problems and a "source of truth" ambiguity.
+
+**The vault is retained for curated, human-authored content where markdown genuinely earns its place:**
+
+- `vault/agent-memory/` — rules, playbooks, style guides (source of truth: vault; synced to `AgentMemory` table for runtime query)
+- `vault/templates/` — reusable message scaffolds (source of truth: vault; synced to `Template` table)
+- `vault/clients/` — optional long-form client dossiers and narrative notes
+- Ad-hoc reference material, SOPs
+
+If Matt later wants to browse his emails specifically inside Obsidian, a local-machine export tool can generate markdown on demand. That is a small separate utility, not a runtime feature of the deployed app.
 
 ## Assumptions to verify against Dereck's reply
 
