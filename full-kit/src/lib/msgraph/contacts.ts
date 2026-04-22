@@ -336,3 +336,80 @@ export async function archiveContact(graphId: string): Promise<boolean> {
   });
   return true;
 }
+
+// =============================================================================
+// Per-item retry wrapper
+// =============================================================================
+
+export interface ItemError {
+  graphId: string;
+  message: string;
+  attempts: number;
+}
+
+export type ProcessOutcome =
+  | { kind: "created" | "updated" | "unarchived" }
+  | { kind: "archived" | "archiveNoop" }
+  | { kind: "failed"; error: ItemError };
+
+const RETRY_BACKOFFS_MS = [50, 200, 800];
+
+export async function processOneItemWithRetry(
+  entry: GraphContact | GraphContactRemoved,
+): Promise<ProcessOutcome> {
+  const isRemoved = "@removed" in entry;
+  const graphId = entry.id;
+  let lastErr: unknown;
+
+  for (let attempt = 0; attempt < RETRY_BACKOFFS_MS.length; attempt++) {
+    try {
+      if (isRemoved) {
+        const archived = await archiveContact(graphId);
+        return { kind: archived ? "archived" : "archiveNoop" };
+      }
+      const outcome = await upsertContact(entry as GraphContact);
+      return { kind: outcome };
+    } catch (err) {
+      lastErr = err;
+      const isFinalAttempt = attempt === RETRY_BACKOFFS_MS.length - 1;
+      if (!isFinalAttempt) {
+        await sleep(RETRY_BACKOFFS_MS[attempt]);
+      }
+    }
+  }
+
+  // All attempts failed. Best-effort: mark ExternalSync.status = "failed".
+  try {
+    await db.externalSync.upsert({
+      where: { source_externalId: { source: SOURCE, externalId: graphId } },
+      create: {
+        source: SOURCE,
+        externalId: graphId,
+        entityType: "contact",
+        entityId: null, // no Contact was created
+        status: "failed",
+        rawData: { lastError: String(lastErr) },
+      },
+      update: {
+        status: "failed",
+        syncedAt: new Date(),
+        rawData: { lastError: String(lastErr) },
+      },
+    });
+  } catch {
+    // Best-effort — if even this fails, the caller already has the error in summary.
+  }
+
+  return {
+    kind: "failed",
+    error: {
+      graphId,
+      message: lastErr instanceof Error ? lastErr.message : String(lastErr),
+      attempts: RETRY_BACKOFFS_MS.length,
+    },
+  };
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

@@ -561,3 +561,89 @@ describe("archiveContact", () => {
     expect(db.contact.update).not.toHaveBeenCalled();
   });
 });
+
+describe("processOneItemWithRetry", () => {
+  beforeEach(() => {
+    clearDbMocks();
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("dispatches @removed entries to archiveContact", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const { processOneItemWithRetry } = await import("./contacts");
+    const result = await processOneItemWithRetry({
+      id: "graph-x",
+      "@removed": { reason: "deleted" },
+    });
+
+    expect(result.kind).toBe("archiveNoop"); // archiveContact returned false
+  });
+
+  it("dispatches live entries to upsertContact", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    (db.contact.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new-uuid" });
+    (db.externalSync.create as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    const { processOneItemWithRetry } = await import("./contacts");
+    const result = await processOneItemWithRetry({
+      id: "graph-bob",
+      displayName: "Bob",
+    });
+
+    expect(result.kind).toBe("created");
+  });
+
+  it("retries on transient failure and succeeds on second attempt", async () => {
+    let callCount = 0;
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) throw new Error("transient db error");
+      return null;
+    });
+    (db.contact.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new-uuid" });
+    (db.externalSync.create as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    const { processOneItemWithRetry } = await import("./contacts");
+    const promise = processOneItemWithRetry({ id: "graph-bob", displayName: "Bob" });
+
+    await vi.advanceTimersByTimeAsync(100); // past 50ms backoff
+    const result = await promise;
+
+    expect(result.kind).toBe("created");
+    expect(callCount).toBe(2);
+  });
+
+  it("returns 'failed' with attempts=3 and records error when all 3 attempts fail", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error("persistent db error"),
+    );
+    (db.externalSync.upsert as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+    const { processOneItemWithRetry } = await import("./contacts");
+    const promise = processOneItemWithRetry({ id: "graph-bob", displayName: "Bob" });
+
+    await vi.advanceTimersByTimeAsync(50 + 200 + 800 + 100); // all three backoffs + buffer
+    const result = await promise;
+
+    expect(result.kind).toBe("failed");
+    if (result.kind === "failed") {
+      expect(result.error.graphId).toBe("graph-bob");
+      expect(result.error.attempts).toBe(3);
+      expect(result.error.message).toMatch(/persistent db error/);
+    }
+
+    // Should have attempted to mark ExternalSync.status = "failed"
+    expect(db.externalSync.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          source_externalId: { source: "msgraph-contacts", externalId: "graph-bob" },
+        },
+        update: expect.objectContaining({ status: "failed" }),
+      }),
+    );
+  });
+});
