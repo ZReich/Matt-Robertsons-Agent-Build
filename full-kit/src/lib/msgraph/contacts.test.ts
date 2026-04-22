@@ -661,6 +661,11 @@ describe("processOneItemWithRetry", () => {
         update: expect.objectContaining({ status: "failed" }),
       }),
     );
+
+    // Also verify errorMsg column populated (not just rawData.lastError)
+    const upsertCall = (db.externalSync.upsert as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(upsertCall.update.errorMsg).toMatch(/persistent db error/);
+    expect(upsertCall.create.errorMsg).toMatch(/persistent db error/);
   });
 });
 
