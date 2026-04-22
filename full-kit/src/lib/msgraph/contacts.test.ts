@@ -510,6 +510,10 @@ describe("archiveContact", () => {
       entityId: "contact-uuid",
       status: "synced",
     });
+    (db.contact.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "contact-uuid",
+      archivedAt: null,
+    });
     (db.contact.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
     (db.externalSync.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
 
@@ -526,5 +530,34 @@ describe("archiveContact", () => {
     const extSyncUpdate = (db.externalSync.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
     expect(extSyncUpdate.where).toEqual({ id: "ext-sync-uuid" });
     expect(extSyncUpdate.data.status).toBe("removed");
+  });
+
+  it("throws when ExternalSync has no entityId (schema invariant violation)", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "ext-sync-uuid",
+      entityId: null,
+      status: "synced",
+    });
+
+    const { archiveContact } = await import("./contacts");
+    await expect(archiveContact("graph-bob-1")).rejects.toThrow(
+      /no entityId/i,
+    );
+    expect(db.contact.update).not.toHaveBeenCalled();
+  });
+
+  it("throws when ExternalSync points to a Contact that no longer exists", async () => {
+    (db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "ext-sync-uuid",
+      entityId: "orphan-contact-uuid",
+      status: "synced",
+    });
+    (db.contact.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+    const { archiveContact } = await import("./contacts");
+    await expect(archiveContact("graph-bob-1")).rejects.toThrow(
+      /missing Contact row/i,
+    );
+    expect(db.contact.update).not.toHaveBeenCalled();
   });
 });
