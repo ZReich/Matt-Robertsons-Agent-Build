@@ -391,11 +391,13 @@ export async function processOneItemWithRetry(
         entityType: "contact",
         entityId: null, // no Contact was created
         status: "failed",
+        errorMsg: lastErr instanceof Error ? lastErr.message : String(lastErr),
         rawData: { lastError: String(lastErr) },
       },
       update: {
         status: "failed",
         syncedAt: new Date(),
+        errorMsg: lastErr instanceof Error ? lastErr.message : String(lastErr),
         rawData: { lastError: String(lastErr) },
       },
     });
@@ -442,9 +444,12 @@ interface ContactsDeltaResponse {
 
 const LOCK_KEY_LABEL = "msgraph-contacts";
 
-export async function syncMicrosoftContacts(
-  internalBootstrapReason?: "delta-expired",
-): Promise<SyncResult> {
+/**
+ * Public entry point. Owns the advisory-lock lifecycle; delegates the sync
+ * loop to `runSync`, which can safely recurse on 410 without re-acquiring
+ * the lock.
+ */
+export async function syncMicrosoftContacts(): Promise<SyncResult> {
   const t0 = Date.now();
   const emptyResult = (partial: Partial<SyncResult>): SyncResult => ({
     isBootstrap: false,
@@ -468,92 +473,103 @@ export async function syncMicrosoftContacts(
   }
 
   try {
-    const cfg = loadMsgraphConfig();
-    const cursor = await loadCursor();
-    const isBootstrap = cursor === null;
-    const startUrl =
-      cursor?.deltaLink ??
-      `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(cfg.targetUpn)}/contacts/delta`;
-
-    let url: string | null = startUrl;
-    let finalDeltaLink: string | null = null;
-    const summary = {
-      created: 0,
-      updated: 0,
-      archived: 0,
-      unarchived: 0,
-      errors: [] as ItemError[],
-    };
-
-    while (url !== null) {
-      let response: ContactsDeltaResponse;
-      try {
-        response = await graphFetch<ContactsDeltaResponse>(url, {
-          headers: { Prefer: 'IdType="ImmutableId"' },
-        });
-      } catch (err) {
-        if (
-          err instanceof GraphError &&
-          err.status === 410 &&
-          (err.code?.toLowerCase().includes("syncstate") ?? false)
-        ) {
-          await deleteCursor();
-          // Recurse as fresh bootstrap
-          const retry = await syncMicrosoftContacts("delta-expired");
-          return { ...retry, durationMs: Date.now() - t0 };
-        }
-        throw err;
-      }
-
-      for (const entry of response.value) {
-        const outcome = await processOneItemWithRetry(entry);
-        switch (outcome.kind) {
-          case "created":
-            summary.created++;
-            break;
-          case "updated":
-            summary.updated++;
-            break;
-          case "unarchived":
-            summary.unarchived++;
-            break;
-          case "archived":
-            summary.archived++;
-            break;
-          case "archiveNoop":
-            // no counter; tombstone for unknown or already-removed contact
-            break;
-          case "failed":
-            summary.errors.push(outcome.error);
-            break;
-        }
-      }
-
-      url = response["@odata.nextLink"] ?? null;
-      if (response["@odata.deltaLink"]) {
-        finalDeltaLink = response["@odata.deltaLink"];
-      }
-    }
-
-    let cursorAdvanced = false;
-    if (summary.errors.length === 0 && finalDeltaLink) {
-      await saveCursor(finalDeltaLink);
-      cursorAdvanced = true;
-    }
-
-    return {
-      isBootstrap,
-      bootstrapReason: internalBootstrapReason ?? (isBootstrap ? "no-cursor" : undefined),
-      skippedLocked: false,
-      created: summary.created,
-      updated: summary.updated,
-      archived: summary.archived,
-      unarchived: summary.unarchived,
-      errors: summary.errors,
-      cursorAdvanced,
-      durationMs: Date.now() - t0,
-    };
+    const result = await runSync();
+    return { ...result, durationMs: Date.now() - t0 };
   } finally {
     await db.$queryRaw`SELECT pg_advisory_unlock(hashtext(${LOCK_KEY_LABEL}))`;
   }
+}
+
+/**
+ * Internal sync loop. Does NOT acquire or release the advisory lock.
+ * Called by `syncMicrosoftContacts` once the lock is held, and can safely
+ * recurse on 410 (delta-expired) without touching the lock again.
+ */
+async function runSync(
+  internalBootstrapReason?: "delta-expired",
+): Promise<SyncResult> {
+  const cfg = loadMsgraphConfig();
+  const cursor = await loadCursor();
+  const isBootstrap = cursor === null;
+  const startUrl =
+    cursor?.deltaLink ??
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(cfg.targetUpn)}/contacts/delta`;
+
+  let url: string | null = startUrl;
+  let finalDeltaLink: string | null = null;
+  const summary = {
+    created: 0,
+    updated: 0,
+    archived: 0,
+    unarchived: 0,
+    errors: [] as ItemError[],
+  };
+
+  while (url !== null) {
+    let response: ContactsDeltaResponse;
+    try {
+      response = await graphFetch<ContactsDeltaResponse>(url, {
+        headers: { Prefer: 'IdType="ImmutableId"' },
+      });
+    } catch (err) {
+      if (
+        err instanceof GraphError &&
+        err.status === 410 &&
+        (err.code?.toLowerCase().includes("syncstate") ?? false)
+      ) {
+        await deleteCursor();
+        // Recurse within the same lock — runSync does NOT manage the lock.
+        return runSync("delta-expired");
+      }
+      throw err;
+    }
+
+    for (const entry of response.value) {
+      const outcome = await processOneItemWithRetry(entry);
+      switch (outcome.kind) {
+        case "created":
+          summary.created++;
+          break;
+        case "updated":
+          summary.updated++;
+          break;
+        case "unarchived":
+          summary.unarchived++;
+          break;
+        case "archived":
+          summary.archived++;
+          break;
+        case "archiveNoop":
+          // no counter; tombstone for unknown or already-removed contact
+          break;
+        case "failed":
+          summary.errors.push(outcome.error);
+          break;
+      }
+    }
+
+    url = response["@odata.nextLink"] ?? null;
+    if (response["@odata.deltaLink"]) {
+      finalDeltaLink = response["@odata.deltaLink"];
+    }
+  }
+
+  let cursorAdvanced = false;
+  if (summary.errors.length === 0 && finalDeltaLink) {
+    await saveCursor(finalDeltaLink);
+    cursorAdvanced = true;
+  }
+
+  return {
+    isBootstrap,
+    bootstrapReason: internalBootstrapReason ?? (isBootstrap ? "no-cursor" : undefined),
+    skippedLocked: false,
+    created: summary.created,
+    updated: summary.updated,
+    archived: summary.archived,
+    unarchived: summary.unarchived,
+    errors: summary.errors,
+    cursorAdvanced,
+    durationMs: 0, // overridden by the caller
+  };
 }
