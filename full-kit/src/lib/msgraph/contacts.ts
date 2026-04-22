@@ -306,11 +306,23 @@ export async function archiveContact(graphId: string): Promise<boolean> {
   const existing = await db.externalSync.findUnique({
     where: { source_externalId: { source: SOURCE, externalId: graphId } },
   });
-  if (!existing) return false;                  // never knew about it
+  if (!existing) return false;                    // never knew about it
   if (existing.status === "removed") return false; // replayed tombstone — no-op
-  if (!existing.entityId) return false;         // defensive: contact-type row missing entityId
 
+  // Fail-loud on schema-invariant violations — matches upsertContact.
+  if (!existing.entityId) {
+    throw new Error(
+      `ExternalSync (id=${existing.id}) for Graph contact ${graphId} has no entityId. This violates the schema invariant for contact-type rows. Manual DB repair needed.`,
+    );
+  }
   const entityId = existing.entityId;
+
+  const contact = await db.contact.findUnique({ where: { id: entityId } });
+  if (!contact) {
+    throw new Error(
+      `ExternalSync (id=${existing.id}) for Graph contact ${graphId} points to missing Contact row ${entityId}. Refusing to guess — manual DB repair needed.`,
+    );
+  }
 
   await db.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.contact.update({
