@@ -1,4 +1,5 @@
 import { db } from "@/lib/prisma";
+import type { Prisma } from ".prisma/client";
 
 // =============================================================================
 // Graph contact payload shapes (narrow — only fields we consume)
@@ -261,10 +262,15 @@ export async function upsertContact(graphContact: GraphContact): Promise<UpsertO
   }
 
   // UPDATE path
-  const contact = await db.contact.findUnique({ where: { id: existing.entityId! } });
+  if (!existing.entityId) {
+    throw new Error(
+      `ExternalSync (id=${existing.id}) for Graph contact ${graphContact.id} has no entityId. This violates the schema invariant for contact-type rows. Manual DB repair needed.`,
+    );
+  }
+  const contact = await db.contact.findUnique({ where: { id: existing.entityId } });
   if (!contact) {
     throw new Error(
-      `ExternalSync for Graph contact ${graphContact.id} points to missing Contact row ${existing.entityId}. Refusing to guess — manual DB repair needed.`,
+      `ExternalSync (id=${existing.id}) for Graph contact ${graphContact.id} points to missing Contact row ${existing.entityId}. Refusing to guess — manual DB repair needed.`,
     );
   }
 
@@ -273,7 +279,7 @@ export async function upsertContact(graphContact: GraphContact): Promise<UpsertO
   const graphOriginArchive = existing.status === "removed";
   const shouldUnarchive = graphOriginArchive;
 
-  const updateData: Record<string, unknown> = { ...partial };
+  const updateData: Prisma.ContactUpdateInput = { ...partial };
   if (shouldUnarchive) {
     updateData.archivedAt = null;
   }
