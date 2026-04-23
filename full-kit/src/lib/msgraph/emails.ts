@@ -583,3 +583,201 @@ export async function processOneMessage(
     ? lastError
     : new Error(String(lastError));
 }
+
+// ---------------------------------------------------------------------------
+// Top-level orchestrator
+// ---------------------------------------------------------------------------
+
+export interface SyncEmailOptions {
+  daysBack?: number;
+  forceBootstrap?: boolean;
+}
+
+export interface FolderSyncSummary {
+  created: number;
+  updated: number;
+  classification: { signal: number; noise: number; uncertain: number };
+  platformExtracted: { crexiLead: number; loopnetLead: number; buildoutEvent: number };
+  errors: Array<{ graphId: string; message: string; attempts: number }>;
+}
+
+export interface SyncEmailResult {
+  isBootstrap: boolean;
+  bootstrapReason?: "no-cursor" | "delta-expired" | "forced";
+  skippedLocked: boolean;
+  perFolder: Record<EmailFolder, FolderSyncSummary>;
+  contactsCreated: number;
+  leadsCreated: number;
+  durationMs: number;
+  cursorAdvanced: boolean;
+}
+
+const ADVISORY_LOCK_KEY = "msgraph-email";
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function emptyFolderSummary(): FolderSyncSummary {
+  return {
+    created: 0,
+    updated: 0,
+    classification: { signal: 0, noise: 0, uncertain: 0 },
+    platformExtracted: { crexiLead: 0, loopnetLead: 0, buildoutEvent: 0 },
+    errors: [],
+  };
+}
+
+function emptyResult(skippedLocked: boolean, durationMs: number): SyncEmailResult {
+  return {
+    isBootstrap: false,
+    skippedLocked,
+    perFolder: { inbox: emptyFolderSummary(), sentitems: emptyFolderSummary() },
+    contactsCreated: 0,
+    leadsCreated: 0,
+    durationMs,
+    cursorAdvanced: false,
+  };
+}
+
+async function tryAdvisoryLock(): Promise<boolean> {
+  const rows = await db.$queryRaw<Array<{ got: boolean }>>`
+    SELECT pg_try_advisory_lock(hashtext(${ADVISORY_LOCK_KEY})) AS got
+  `;
+  return !!rows[0]?.got;
+}
+
+async function releaseAdvisoryLock(): Promise<void> {
+  await db.$queryRaw`
+    SELECT pg_advisory_unlock(hashtext(${ADVISORY_LOCK_KEY}))
+  `;
+}
+
+export async function syncEmails(
+  options: SyncEmailOptions = {},
+): Promise<SyncEmailResult> {
+  const t0 = Date.now();
+  const daysBack = options.daysBack ?? 90;
+  const sinceIso = new Date(Date.now() - daysBack * MS_PER_DAY).toISOString();
+
+  const locked = await tryAdvisoryLock();
+  if (!locked) {
+    return emptyResult(true, Date.now() - t0);
+  }
+
+  try {
+    if (options.forceBootstrap) {
+      await deleteEmailCursor("inbox");
+      await deleteEmailCursor("sentitems");
+    }
+
+    const inboxHadCursor = !!(await loadEmailCursor("inbox"));
+    const sentHadCursor = !!(await loadEmailCursor("sentitems"));
+    const isBootstrap = !inboxHadCursor || !sentHadCursor;
+
+    let contactsCreated = 0;
+    let leadsCreated = 0;
+    let deltaExpiredSomewhere = false;
+
+    const result: SyncEmailResult = {
+      isBootstrap,
+      bootstrapReason: options.forceBootstrap
+        ? "forced"
+        : isBootstrap
+          ? "no-cursor"
+          : undefined,
+      skippedLocked: false,
+      perFolder: { inbox: emptyFolderSummary(), sentitems: emptyFolderSummary() },
+      contactsCreated: 0,
+      leadsCreated: 0,
+      durationMs: 0,
+      cursorAdvanced: false,
+    };
+
+    const folders: EmailFolder[] = ["inbox", "sentitems"];
+    let cursorAdvanced = true;
+
+    for (const folder of folders) {
+      const summary = result.perFolder[folder];
+      let finalDeltaLink: string | undefined;
+      try {
+        for await (const { page } of fetchEmailDelta(folder, sinceIso)) {
+          for (const rawMsg of page.value) {
+            try {
+              const res = await processOneMessage(rawMsg, folder);
+              summary.classification[res.classification]++;
+              if (res.inserted) summary.created++;
+              if (res.extractedPlatform === "crexi") summary.platformExtracted.crexiLead++;
+              if (res.extractedPlatform === "loopnet") summary.platformExtracted.loopnetLead++;
+              if (res.extractedPlatform === "buildout") summary.platformExtracted.buildoutEvent++;
+              if (res.contactCreated) contactsCreated++;
+              if (res.leadCreated) leadsCreated++;
+            } catch (err) {
+              summary.errors.push({
+                graphId: rawMsg.id,
+                message: err instanceof Error ? err.message : String(err),
+                attempts: 3,
+              });
+              await db.externalSync
+                .upsert({
+                  where: {
+                    source_externalId: {
+                      source: "msgraph-email",
+                      externalId: rawMsg.id,
+                    },
+                  },
+                  create: {
+                    source: "msgraph-email",
+                    externalId: rawMsg.id,
+                    entityType: "communication",
+                    status: "failed",
+                    errorMsg:
+                      err instanceof Error ? err.message : String(err),
+                  },
+                  update: {
+                    status: "failed",
+                    errorMsg:
+                      err instanceof Error ? err.message : String(err),
+                  },
+                })
+                .catch(() => {
+                  /* best-effort */
+                });
+            }
+          }
+          if (page["@odata.deltaLink"]) {
+            finalDeltaLink = page["@odata.deltaLink"];
+          }
+        }
+      } catch (err) {
+        if (
+          err instanceof GraphError &&
+          err.status === 410 &&
+          /sync\s*state/i.test(err.code ?? "")
+        ) {
+          await deleteEmailCursor(folder);
+          deltaExpiredSomewhere = true;
+          cursorAdvanced = false;
+          continue;
+        }
+        throw err;
+      }
+
+      if (summary.errors.length === 0 && finalDeltaLink) {
+        await saveEmailCursor(folder, finalDeltaLink);
+      } else {
+        cursorAdvanced = false;
+      }
+    }
+
+    if (deltaExpiredSomewhere) {
+      result.bootstrapReason = "delta-expired";
+      result.isBootstrap = true;
+    }
+
+    result.contactsCreated = contactsCreated;
+    result.leadsCreated = leadsCreated;
+    result.cursorAdvanced = cursorAdvanced;
+    result.durationMs = Date.now() - t0;
+    return result;
+  } finally {
+    await releaseAdvisoryLock();
+  }
+}
