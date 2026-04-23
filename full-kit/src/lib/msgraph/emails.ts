@@ -112,11 +112,11 @@ const EMAIL_SELECT_FIELDS = [
   "internetMessageHeaders",
 ].join(",");
 
-const PREFER_HEADER = {
-  Prefer: 'outlook.body-content-type="text"',
-};
-
 const PAGE_SIZE = 100;
+
+const PREFER_HEADER = {
+  Prefer: `outlook.body-content-type="text", odata.maxpagesize=${PAGE_SIZE}`,
+};
 
 /**
  * Async generator that yields Graph email pages for a single folder.
@@ -136,12 +136,13 @@ export async function* fetchEmailDelta(
     cursor?.deltaLink ??
     `/users/${encodeURIComponent(cfg.targetUpn)}/mailFolders/${folder}/messages/delta` +
       `?$filter=${encodeURIComponent(`receivedDateTime ge ${sinceIso}`)}` +
-      `&$select=${encodeURIComponent(EMAIL_SELECT_FIELDS)}` +
-      `&$top=${PAGE_SIZE}`;
+      `&$select=${encodeURIComponent(EMAIL_SELECT_FIELDS)}`;
 
   let url: string | undefined = initialUrl;
   while (url) {
-    const res: GraphDeltaPage = await graphFetch<GraphDeltaPage>(url, { headers: PREFER_HEADER });
+    const res: GraphDeltaPage = await graphFetch<GraphDeltaPage>(url, {
+      headers: PREFER_HEADER,
+    });
     const isFinal = !res["@odata.nextLink"] && !!res["@odata.deltaLink"];
     yield { page: res, isFinal };
     url = res["@odata.nextLink"];
