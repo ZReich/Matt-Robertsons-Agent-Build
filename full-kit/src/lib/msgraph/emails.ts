@@ -1,5 +1,9 @@
 import { db } from "@/lib/prisma";
-import type { EmailFolder } from "./email-types";
+import { graphFetch } from "./client";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { GraphError } from "./errors";
+import { loadMsgraphConfig } from "./config";
+import type { EmailFolder, GraphEmailMessage } from "./email-types";
 
 const CURSOR_EXTERNAL_ID = "__cursor__";
 
@@ -58,3 +62,73 @@ export async function deleteEmailCursor(folder: EmailFolder): Promise<void> {
     },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Delta fetcher
+// ---------------------------------------------------------------------------
+
+interface GraphDeltaPage {
+  value: Array<GraphEmailMessage & { "@removed"?: { reason: string } }>;
+  "@odata.nextLink"?: string;
+  "@odata.deltaLink"?: string;
+}
+
+const EMAIL_SELECT_FIELDS = [
+  "id",
+  "internetMessageId",
+  "conversationId",
+  "parentFolderId",
+  "subject",
+  "from",
+  "sender",
+  "toRecipients",
+  "ccRecipients",
+  "bccRecipients",
+  "receivedDateTime",
+  "sentDateTime",
+  "hasAttachments",
+  "isRead",
+  "importance",
+  "body",
+  "bodyPreview",
+  "internetMessageHeaders",
+].join(",");
+
+const PREFER_HEADER = {
+  Prefer: 'outlook.body-content-type="text"',
+};
+
+const PAGE_SIZE = 100;
+
+/**
+ * Async generator that yields Graph email pages for a single folder.
+ *
+ * Starts from the stored cursor if one exists, or from the folder root
+ * filtered by receivedDateTime >= sinceIso otherwise. Yields each page plus
+ * the final deltaLink when the sync completes.
+ */
+export async function* fetchEmailDelta(
+  folder: EmailFolder,
+  sinceIso: string,
+): AsyncGenerator<{ page: GraphDeltaPage; isFinal: boolean }, void, void> {
+  const cfg = loadMsgraphConfig();
+  const cursor = await loadEmailCursor(folder);
+
+  const initialUrl =
+    cursor?.deltaLink ??
+    `/users/${encodeURIComponent(cfg.targetUpn)}/mailFolders/${folder}/messages/delta` +
+      `?$filter=${encodeURIComponent(`receivedDateTime ge ${sinceIso}`)}` +
+      `&$select=${encodeURIComponent(EMAIL_SELECT_FIELDS)}` +
+      `&$top=${PAGE_SIZE}`;
+
+  let url: string | undefined = initialUrl;
+  while (url) {
+    const res: GraphDeltaPage = await graphFetch<GraphDeltaPage>(url, { headers: PREFER_HEADER });
+    const isFinal = !res["@odata.nextLink"] && !!res["@odata.deltaLink"];
+    yield { page: res, isFinal };
+    url = res["@odata.nextLink"];
+  }
+}
+
+/** Exported for test re-export and type-only consumers. */
+export type { GraphDeltaPage };
