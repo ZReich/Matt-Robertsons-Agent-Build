@@ -5,6 +5,8 @@ import { GraphError } from "./errors";
 import { loadMsgraphConfig } from "./config";
 import type { EmailFolder, GraphEmailMessage, BehavioralHints } from "./email-types";
 import { domainIsLargeCreBroker } from "./email-filter";
+import type { LeadSource, Prisma } from ".prisma/client";
+import type { InquirerInfo } from "./email-extractors";
 
 const CURSOR_EXTERNAL_ID = "__cursor__";
 
@@ -181,4 +183,81 @@ export async function computeBehavioralHints(
     threadSize: threadSize + 1,
     domainIsLargeCreBroker: domainIsLargeCreBroker(senderDomain),
   };
+}
+
+export interface UpsertLeadContactInput {
+  inquirer: InquirerInfo;
+  leadSource: LeadSource;
+  leadAt: Date;
+}
+
+export interface UpsertLeadContactResult {
+  contactId: string;
+  created: boolean;
+  becameLead: boolean;
+}
+
+/**
+ * Create or update a Contact from an extracted lead inquirer.
+ *
+ * Rules:
+ * - Requires inquirer.email (we key on normalized email).
+ * - New Contact → created with leadSource, leadStatus=new, leadAt.
+ * - Existing Contact with NO deals AND null leadSource → fill in lead fields.
+ * - Existing Contact with deals (i.e. already a Client) → leave lead fields null.
+ * - Existing Contact already a lead (leadSource set) → do not touch leadStatus/leadAt.
+ * - Runs inside a transaction; safe to re-call on duplicate inquirer emails.
+ */
+export async function upsertLeadContact(
+  input: UpsertLeadContactInput,
+  tx?: Prisma.TransactionClient,
+): Promise<UpsertLeadContactResult | null> {
+  if (!input.inquirer.email) return null;
+  const client: Prisma.TransactionClient = tx ?? (db as unknown as Prisma.TransactionClient);
+  const email = input.inquirer.email.toLowerCase();
+
+  const existing = await client.contact.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+    include: { _count: { select: { deals: true } } },
+  });
+
+  if (!existing) {
+    const created = await client.contact.create({
+      data: {
+        name: input.inquirer.name ?? input.inquirer.email,
+        email,
+        phone: input.inquirer.phone ?? null,
+        company: input.inquirer.company ?? null,
+        notes: input.inquirer.message ?? null,
+        category: "business",
+        tags: [],
+        createdBy: `msgraph-email-${input.leadSource}-extract`,
+        leadSource: input.leadSource,
+        leadStatus: "new",
+        leadAt: input.leadAt,
+      },
+      select: { id: true },
+    });
+    return { contactId: created.id, created: true, becameLead: true };
+  }
+
+  const isClient = existing._count.deals > 0;
+  const alreadyLead = existing.leadSource !== null;
+
+  if (isClient || alreadyLead) {
+    return { contactId: existing.id, created: false, becameLead: false };
+  }
+
+  await client.contact.update({
+    where: { id: existing.id },
+    data: {
+      leadSource: input.leadSource,
+      leadStatus: "new",
+      leadAt: input.leadAt,
+      // Only fill missing demographic fields; never overwrite what Matt curated.
+      phone: existing.phone ?? input.inquirer.phone ?? null,
+      company: existing.company ?? input.inquirer.company ?? null,
+    },
+  });
+  return { contactId: existing.id, created: false, becameLead: true };
 }
