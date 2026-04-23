@@ -134,3 +134,76 @@ describe("extractLoopNetLead", () => {
     expect(r).toBeNull();
   });
 });
+
+import { extractBuildoutEvent } from "./email-extractors";
+
+describe("extractBuildoutEvent", () => {
+  it("parses 'A new Lead has been added - PROPERTY'", () => {
+    const r = extractBuildoutEvent({
+      subject: "A new Lead has been added - US Bank Building",
+      bodyText: "Name: Sam Buyer\nEmail: sam@example.com",
+    });
+    expect(r).toEqual({
+      kind: "new-lead",
+      propertyName: "US Bank Building",
+      inquirer: { name: "Sam Buyer", email: "sam@example.com" },
+    });
+  });
+
+  it("parses 'Deal stage updated on PROPERTY'", () => {
+    const r = extractBuildoutEvent({
+      subject: "Deal stage updated on 2621 Overland",
+      bodyText: "",
+    });
+    expect(r).toEqual({
+      kind: "deal-stage-update",
+      propertyName: "2621 Overland",
+    });
+  });
+
+  it("parses 'You've been assigned a task'", () => {
+    const r = extractBuildoutEvent({
+      subject: "You've been assigned a task",
+      bodyText: "",
+    });
+    expect(r?.kind).toBe("task-assigned");
+  });
+
+  it("parses critical date upcoming", () => {
+    const r = extractBuildoutEvent({
+      subject: "You have a critical date upcoming",
+      bodyText: "",
+    });
+    expect(r?.kind).toBe("critical-date");
+  });
+
+  it("parses 'CA executed on PROPERTY'", () => {
+    const r = extractBuildoutEvent({
+      subject: "CA executed on 2110 Overland Avenue",
+      bodyText: "",
+    });
+    expect(r).toEqual({
+      kind: "ca-executed",
+      propertyName: "2110 Overland Avenue",
+    });
+  });
+
+  it("parses 'Documents viewed on PROPERTY'", () => {
+    const r = extractBuildoutEvent({
+      subject: "Documents viewed on US Bank Building",
+      bodyText: "",
+    });
+    expect(r).toEqual({
+      kind: "document-view",
+      propertyName: "US Bank Building",
+    });
+  });
+
+  it("returns null for unrelated Buildout email", () => {
+    const r = extractBuildoutEvent({
+      subject: "Buildout + NAI Business Partners | Meeting Recap",
+      bodyText: "",
+    });
+    expect(r).toBeNull();
+  });
+});
