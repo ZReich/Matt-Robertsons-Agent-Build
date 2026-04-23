@@ -97,6 +97,22 @@ enum SyncStatus {
   removed
 }
 
+enum LeadSource {
+  crexi
+  loopnet
+  buildout
+  email_cold
+  referral
+}
+
+enum LeadStatus {
+  new
+  vetted
+  contacted
+  converted
+  dropped
+}
+
 // =============================================================================
 // AUTH MODELS (existing — do not modify, required by NextAuth/PrismaAdapter)
 // =============================================================================
@@ -194,8 +210,11 @@ model Contact {
   notes            String?   @db.Text
   category         Category  @default(business)
   tags             Json?     @default("[]") // JSON array of tag strings
-  createdBy        String?   @map("created_by") // "user:<id>" or "agent"
-  archivedAt       DateTime? @map("archived_at")
+  createdBy        String?    @map("created_by") // "user:<id>" or "agent"
+  archivedAt       DateTime?  @map("archived_at")
+  leadSource       LeadSource? @map("lead_source")
+  leadStatus       LeadStatus? @map("lead_status")
+  leadAt           DateTime?   @map("lead_at")
 
   // Relations
   deals            Deal[]
@@ -211,6 +230,7 @@ model Contact {
   @@index([email])
   @@index([company])
   @@index([category])
+  @@index([leadSource])
   @@map("contacts")
 }
 
