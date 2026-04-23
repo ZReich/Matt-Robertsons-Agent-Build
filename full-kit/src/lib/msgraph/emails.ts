@@ -7,10 +7,9 @@ import type {
   GraphEmailMessage,
   BehavioralHints,
   ClassificationResult,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   EmailClassification,
 } from "./email-types";
-import { domainIsLargeCreBroker } from "./email-filter";
+import { classifyEmail, domainIsLargeCreBroker } from "./email-filter";
 import type { LeadSource, Prisma } from ".prisma/client";
 import type { InquirerInfo } from "./email-extractors";
 import {
@@ -446,3 +445,141 @@ export async function persistMessage(
 
 // Re-export normalizeSenderAddress so consumers of emails.ts can access it.
 export { normalizeSenderAddress };
+
+interface ProcessMessageSummary {
+  classification: EmailClassification;
+  extractedPlatform: "crexi" | "loopnet" | "buildout" | null;
+  contactCreated: boolean;
+  leadCreated: boolean;
+  inserted: boolean;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/**
+ * Process a single Graph message end-to-end: normalize sender, compute hints,
+ * classify, optionally run extractor + upsert lead Contact, fetch attachment
+ * metadata for signal rows, persist. Three attempts on transient errors.
+ */
+export async function processOneMessage(
+  message: GraphEmailMessage & { "@removed"?: { reason: string } },
+  folder: EmailFolder,
+): Promise<ProcessMessageSummary> {
+  const cfg = loadMsgraphConfig();
+
+  // Graph delta occasionally returns @removed tombstones — skip them.
+  if (message["@removed"]) {
+    return {
+      classification: "noise",
+      extractedPlatform: null,
+      contactCreated: false,
+      leadCreated: false,
+      inserted: false,
+    };
+  }
+
+  const normalizedSender = normalizeSenderAddress(
+    message.from ?? message.sender ?? null,
+    cfg.targetUpn,
+  );
+
+  const hints = await computeBehavioralHints(
+    normalizedSender.address,
+    message.conversationId,
+  );
+
+  const classification = classifyEmail(message, {
+    folder,
+    targetUpn: cfg.targetUpn,
+    normalizedSender,
+    hints,
+  });
+
+  const extracted =
+    classification.classification === "signal"
+      ? runExtractor(classification, message)
+      : null;
+
+  // Lead contact upsert (before Communication insert so contactId can point at it).
+  let leadContactId: string | null = null;
+  let leadCreated = false;
+  let contactId: string | null = null;
+  if (
+    extracted &&
+    "inquirer" in extracted &&
+    extracted.inquirer?.email
+  ) {
+    const sourceMap: Record<"crexi" | "loopnet" | "buildout", LeadSource> = {
+      crexi: "crexi",
+      loopnet: "loopnet",
+      buildout: "buildout",
+    };
+    const res = await upsertLeadContact({
+      inquirer: extracted.inquirer,
+      leadSource: sourceMap[extracted.platform],
+      leadAt: new Date(message.receivedDateTime ?? Date.now()),
+    });
+    if (res) {
+      leadContactId = res.contactId;
+      leadCreated = res.created;
+      contactId = res.contactId;
+    }
+  }
+
+  // If no extractor lead, try to resolve Contact by the normalized sender email.
+  if (!contactId && normalizedSender.address.includes("@")) {
+    const match = await db.contact.findFirst({
+      where: {
+        email: { equals: normalizedSender.address, mode: "insensitive" },
+      },
+      select: { id: true },
+    });
+    contactId = match?.id ?? null;
+  }
+
+  // Attachment metadata — only for signal rows with attachments.
+  let attachments: AttachmentMeta[] | undefined;
+  if (
+    classification.classification === "signal" &&
+    message.hasAttachments &&
+    !!message.id
+  ) {
+    attachments = await fetchAttachmentMeta(cfg.targetUpn, message.id);
+  }
+
+  // Persist with retry.
+  const backoffs = [50, 200, 800];
+  let lastError: unknown;
+  for (let attempt = 0; attempt < backoffs.length; attempt++) {
+    try {
+      const { inserted } = await persistMessage({
+        message,
+        folder,
+        normalizedSender,
+        classification,
+        extracted,
+        attachments,
+        contactId,
+        leadContactId,
+        leadCreated,
+      });
+      return {
+        classification: classification.classification,
+        extractedPlatform: extracted?.platform ?? null,
+        contactCreated: leadCreated,
+        leadCreated,
+        inserted,
+      };
+    } catch (err) {
+      lastError = err;
+      if (attempt < backoffs.length - 1) {
+        await sleep(backoffs[attempt]);
+      }
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(String(lastError));
+}
