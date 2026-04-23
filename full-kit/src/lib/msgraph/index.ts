@@ -20,3 +20,11 @@ export type {
   PlatformSubjectPattern,
   NoteworthyAutomatedSender,
 } from "./recon";
+export { syncEmails } from "./emails";
+export type {
+  SyncEmailOptions,
+  SyncEmailResult,
+  FolderSyncSummary,
+} from "./emails";
+export { normalizeSenderAddress } from "./sender-normalize";
+export type { NormalizedSender } from "./sender-normalize";

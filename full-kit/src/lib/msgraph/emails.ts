@@ -443,9 +443,6 @@ export async function persistMessage(
   return { inserted: true };
 }
 
-// Re-export normalizeSenderAddress so consumers of emails.ts can access it.
-export { normalizeSenderAddress };
-
 interface ProcessMessageSummary {
   classification: EmailClassification;
   extractedPlatform: "crexi" | "loopnet" | "buildout" | null;
