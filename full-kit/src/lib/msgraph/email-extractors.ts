@@ -113,6 +113,67 @@ export function extractLoopNetLead(input: ExtractorInput): LoopNetLeadExtract | 
   return null;
 }
 
+export interface BuildoutEventExtract {
+  kind:
+    | "new-lead"
+    | "deal-stage-update"
+    | "task-assigned"
+    | "critical-date"
+    | "ca-executed"
+    | "document-view";
+  propertyName?: string;
+  inquirer?: InquirerInfo;
+  newStage?: string;
+  previousStage?: string;
+}
+
+const BUILDOUT_NEW_LEAD = /^a new lead has been added\s*-\s*(.+)$/i;
+const BUILDOUT_STAGE = /^deal stage updated on\s+(.+)$/i;
+const BUILDOUT_TASK = /^you've been assigned a task/i;
+const BUILDOUT_CRITICAL = /critical date.*upcoming/i;
+const BUILDOUT_CA_EXECUTED = /^ca executed on\s+(.+)$/i;
+const BUILDOUT_DOCUMENT_VIEW = /^documents viewed on\s+(.+)$/i;
+
+export function extractBuildoutEvent(input: ExtractorInput): BuildoutEventExtract | null {
+  const subject = (input.subject ?? "").trim();
+  if (!subject) return null;
+
+  let m = subject.match(BUILDOUT_NEW_LEAD);
+  if (m) {
+    const inquirer = parseInquirerBody(input.bodyText);
+    return {
+      kind: "new-lead",
+      propertyName: m[1].trim(),
+      ...(inquirer ? { inquirer } : {}),
+    };
+  }
+
+  m = subject.match(BUILDOUT_STAGE);
+  if (m) {
+    return { kind: "deal-stage-update", propertyName: m[1].trim() };
+  }
+
+  if (BUILDOUT_TASK.test(subject)) {
+    return { kind: "task-assigned" };
+  }
+
+  if (BUILDOUT_CRITICAL.test(subject)) {
+    return { kind: "critical-date" };
+  }
+
+  m = subject.match(BUILDOUT_CA_EXECUTED);
+  if (m) {
+    return { kind: "ca-executed", propertyName: m[1].trim() };
+  }
+
+  m = subject.match(BUILDOUT_DOCUMENT_VIEW);
+  if (m) {
+    return { kind: "document-view", propertyName: m[1].trim() };
+  }
+
+  return null;
+}
+
 // Shared by Crexi + LoopNet + Buildout extractors
 export function parseInquirerBody(body: string): InquirerInfo | null {
   if (!body) return null;
