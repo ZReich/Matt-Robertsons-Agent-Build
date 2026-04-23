@@ -89,3 +89,48 @@ describe("extractCrexiLead", () => {
     expect(r).toBeNull();
   });
 });
+
+import { extractLoopNetLead } from "./email-extractors";
+
+describe("extractLoopNetLead", () => {
+  it("parses 'LoopNet Lead for PROPERTY' with body fields", () => {
+    const r = extractLoopNetLead({
+      subject: "LoopNet Lead for 303 N Broadway",
+      bodyText: "Name: Tom Smith\nEmail: tom@buyer.net\nPhone: 406-555-0100",
+    });
+    expect(r).toEqual({
+      kind: "inquiry",
+      propertyName: "303 N Broadway",
+      inquirer: {
+        name: "Tom Smith",
+        email: "tom@buyer.net",
+        phone: "406-555-0100",
+      },
+    });
+  });
+
+  it("parses 'Alex Wright favorited PROPERTY' as favorited kind", () => {
+    const r = extractLoopNetLead({
+      subject: "Alex Wright favorited 303 N Broadway",
+      bodyText: "",
+    });
+    expect(r).toEqual({
+      kind: "favorited",
+      viewerName: "Alex Wright",
+      propertyName: "303 N Broadway",
+    });
+  });
+
+  it("returns null for 'Your LoopNet inquiry was sent' (Matt's own outbound confirmation)", () => {
+    const r = extractLoopNetLead({
+      subject: "Your LoopNet inquiry was sent",
+      bodyText: "",
+    });
+    expect(r).toBeNull();
+  });
+
+  it("returns null on unrecognized subject", () => {
+    const r = extractLoopNetLead({ subject: "Random LoopNet update", bodyText: "" });
+    expect(r).toBeNull();
+  });
+});

@@ -74,6 +74,45 @@ export function extractCrexiLead(input: ExtractorInput): CrexiLeadExtract | null
   return null;
 }
 
+export interface LoopNetLeadExtract {
+  kind: "inquiry" | "favorited";
+  propertyName: string;
+  inquirer?: InquirerInfo;
+  viewerName?: string;
+}
+
+const LOOPNET_INQUIRY = /^loopnet lead for\s+(.+)$/i;
+const LOOPNET_FAVORITED = /^(.+?)\s+favorited\s+(.+)$/i;
+const LOOPNET_SELF_CONFIRM = /^your loopnet inquiry was sent$/i;
+
+export function extractLoopNetLead(input: ExtractorInput): LoopNetLeadExtract | null {
+  const subject = (input.subject ?? "").trim();
+  if (!subject) return null;
+
+  if (LOOPNET_SELF_CONFIRM.test(subject)) return null;
+
+  let m = subject.match(LOOPNET_INQUIRY);
+  if (m) {
+    const inquirer = parseInquirerBody(input.bodyText);
+    return {
+      kind: "inquiry",
+      propertyName: m[1].trim(),
+      ...(inquirer ? { inquirer } : {}),
+    };
+  }
+
+  m = subject.match(LOOPNET_FAVORITED);
+  if (m) {
+    return {
+      kind: "favorited",
+      viewerName: m[1].trim(),
+      propertyName: m[2].trim(),
+    };
+  }
+
+  return null;
+}
+
 // Shared by Crexi + LoopNet + Buildout extractors
 export function parseInquirerBody(body: string): InquirerInfo | null {
   if (!body) return null;
