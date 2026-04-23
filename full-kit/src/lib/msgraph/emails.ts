@@ -1,12 +1,28 @@
 import { db } from "@/lib/prisma";
 import { graphFetch } from "./client";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { GraphError } from "./errors";
 import { loadMsgraphConfig } from "./config";
-import type { EmailFolder, GraphEmailMessage, BehavioralHints } from "./email-types";
+import type {
+  EmailFolder,
+  GraphEmailMessage,
+  BehavioralHints,
+  ClassificationResult,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  EmailClassification,
+} from "./email-types";
 import { domainIsLargeCreBroker } from "./email-filter";
 import type { LeadSource, Prisma } from ".prisma/client";
 import type { InquirerInfo } from "./email-extractors";
+import {
+  extractBuildoutEvent,
+  extractCrexiLead,
+  extractLoopNetLead,
+  type CrexiLeadExtract,
+  type LoopNetLeadExtract,
+  type BuildoutEventExtract,
+} from "./email-extractors";
+import { normalizeSenderAddress } from "./sender-normalize";
+import type { NormalizedSender } from "./sender-normalize";
 
 const CURSOR_EXTERNAL_ID = "__cursor__";
 
@@ -261,3 +277,172 @@ export async function upsertLeadContact(
   });
   return { contactId: existing.id, created: false, becameLead: true };
 }
+
+// ---------------------------------------------------------------------------
+// Attachment metadata
+// ---------------------------------------------------------------------------
+
+export interface AttachmentMeta {
+  id: string;
+  name: string;
+  size: number;
+  contentType: string;
+}
+
+/** Fetches attachment metadata (not binary) for a single message. */
+export async function fetchAttachmentMeta(
+  targetUpn: string,
+  messageId: string,
+): Promise<AttachmentMeta[]> {
+  const path =
+    `/users/${encodeURIComponent(targetUpn)}/messages/${encodeURIComponent(messageId)}/attachments` +
+    `?$select=id,name,size,contentType`;
+  try {
+    const res = await graphFetch<{ value: AttachmentMeta[] }>(path);
+    return res.value ?? [];
+  } catch (err) {
+    if (err instanceof GraphError) return [];
+    throw err;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Extractor dispatch
+// ---------------------------------------------------------------------------
+
+export type ExtractedData =
+  | ({ platform: "crexi" } & CrexiLeadExtract)
+  | ({ platform: "loopnet" } & LoopNetLeadExtract)
+  | ({ platform: "buildout" } & BuildoutEventExtract);
+
+/** Route a signal message to the right extractor (if any) based on its source. */
+export function runExtractor(
+  result: ClassificationResult,
+  message: GraphEmailMessage,
+): ExtractedData | null {
+  const input = {
+    subject: message.subject ?? null,
+    bodyText: message.body?.content ?? "",
+  };
+  switch (result.source) {
+    case "crexi-lead": {
+      const r = extractCrexiLead(input);
+      return r ? { platform: "crexi", ...r } : null;
+    }
+    case "loopnet-lead": {
+      const r = extractLoopNetLead(input);
+      return r ? { platform: "loopnet", ...r } : null;
+    }
+    case "buildout-event": {
+      const r = extractBuildoutEvent(input);
+      return r ? { platform: "buildout", ...r } : null;
+    }
+    default:
+      return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Communication writer
+// ---------------------------------------------------------------------------
+
+export interface ProcessedMessage {
+  message: GraphEmailMessage;
+  folder: EmailFolder;
+  normalizedSender: NormalizedSender;
+  classification: ClassificationResult;
+  extracted: ExtractedData | null;
+  attachments: AttachmentMeta[] | undefined;
+  contactId: string | null;
+  leadContactId: string | null;
+  leadCreated: boolean;
+}
+
+/** Persist one processed message as a Communication + ExternalSync pair, in a txn. */
+export async function persistMessage(
+  p: ProcessedMessage,
+): Promise<{ inserted: boolean }> {
+  const direction = p.folder === "inbox" ? "inbound" : "outbound";
+  const storeBody = p.classification.classification !== "noise";
+  const dateIso =
+    p.folder === "sentitems"
+      ? p.message.sentDateTime ?? p.message.receivedDateTime
+      : p.message.receivedDateTime;
+  if (!dateIso) {
+    throw new Error(`message ${p.message.id} missing date`);
+  }
+
+  // Existence check first — idempotency without relying on unique constraint race.
+  const existing = await db.externalSync.findUnique({
+    where: {
+      source_externalId: { source: "msgraph-email", externalId: p.message.id },
+    },
+    select: { id: true },
+  });
+  if (existing) return { inserted: false };
+
+  const metadata: Record<string, unknown> = {
+    classification: p.classification.classification,
+    source: p.classification.source,
+    tier1Rule: p.classification.tier1Rule,
+    conversationId: p.message.conversationId,
+    internetMessageId: p.message.internetMessageId,
+    parentFolderId: p.message.parentFolderId,
+    from: {
+      address: p.normalizedSender.address,
+      displayName: p.normalizedSender.displayName,
+      isInternal: p.normalizedSender.isInternal,
+    },
+    toRecipients: p.message.toRecipients ?? [],
+    ccRecipients: p.message.ccRecipients ?? [],
+    hasAttachments: !!p.message.hasAttachments,
+    attachments: p.attachments,
+    importance: p.message.importance ?? "normal",
+    isRead: !!p.message.isRead,
+    senderNormalizationFailed: p.normalizedSender.normalizationFailed || undefined,
+    extracted: p.extracted ?? undefined,
+    leadContactId: p.leadContactId ?? undefined,
+    leadCreated: p.leadCreated || undefined,
+  };
+
+  await db.$transaction(async (tx) => {
+    const sync = await tx.externalSync.create({
+      data: {
+        source: "msgraph-email",
+        externalId: p.message.id,
+        entityType: "communication",
+        status: "synced",
+        rawData: {
+          folder: p.folder,
+          graphSnapshot: p.message as unknown as Prisma.InputJsonValue,
+        } as Prisma.InputJsonValue,
+      },
+    });
+    const comm = await tx.communication.create({
+      data: {
+        channel: "email",
+        subject: p.message.subject ?? null,
+        body: storeBody ? p.message.body?.content ?? null : null,
+        date: new Date(dateIso),
+        direction,
+        category: "business",
+        externalMessageId: p.message.id,
+        externalSyncId: sync.id,
+        contactId: p.contactId,
+        createdBy: "msgraph-email",
+        tags: [],
+        metadata: metadata as Prisma.InputJsonValue,
+      },
+      select: { id: true },
+    });
+    await tx.externalSync.update({
+      where: { id: sync.id },
+      data: { entityId: comm.id },
+    });
+  });
+
+  return { inserted: true };
+}
+
+// Re-export normalizeSenderAddress so consumers of emails.ts can access it.
+export { normalizeSenderAddress };
