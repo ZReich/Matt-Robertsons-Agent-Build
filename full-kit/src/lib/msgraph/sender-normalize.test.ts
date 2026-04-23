@@ -73,4 +73,23 @@ describe("normalizeSenderAddress", () => {
     );
     expect(result.displayName).toBe("");
   });
+
+  it("correctly extracts a hyphenated SMTP local part from an X.500 DN", () => {
+    const result = normalizeSenderAddress(
+      {
+        emailAddress: {
+          address:
+            "/o=exchangelabs/ou=exchange administrative group (fydibohf23spdlt)/cn=recipients/cn=e7b84e89cfff441fa23381ede928ca5e-anne-marie",
+          name: "Anne-Marie Smith",
+        },
+      },
+      "mrobertson@naibusinessproperties.com",
+    );
+    expect(result).toEqual({
+      address: "anne-marie@naibusinessproperties.com",
+      displayName: "Anne-Marie Smith",
+      isInternal: true,
+      normalizationFailed: false,
+    });
+  });
 });
