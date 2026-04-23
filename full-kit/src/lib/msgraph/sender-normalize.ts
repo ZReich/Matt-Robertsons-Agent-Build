@@ -22,6 +22,10 @@ export interface NormalizedSender {
  *
  * X.500 DNs are only emitted for senders within Matt's own Exchange org, so the
  * target tenant's domain is the correct guess.
+ * @param targetUpn - The tenant user's UPN (e.g. "matt@contoso.com"). Used to
+ *   extract the authoritative domain for both X.500 DN reconstruction and the
+ *   `isInternal` flag (exact domain match — X.500 senders are always marked
+ *   internal regardless of `targetUpn` since the DN itself implies the tenant).
  */
 export function normalizeSenderAddress(
   from: GraphEmailFrom | null | undefined,
@@ -43,17 +47,16 @@ export function normalizeSenderAddress(
   if (raw.startsWith("/o=") || raw.startsWith("/O=")) {
     const cnSegments = raw.split("/cn=");
     const lastCn = cnSegments[cnSegments.length - 1] ?? "";
-    const lastDash = lastCn.lastIndexOf("-");
-    if (lastDash > 0 && lastDash < lastCn.length - 1) {
-      const localPart = lastCn.slice(lastDash + 1).toLowerCase();
-      if (localPart && targetDomain) {
-        return {
-          address: `${localPart}@${targetDomain}`,
-          displayName,
-          isInternal: true,
-          normalizationFailed: false,
-        };
-      }
+    const hashPrefixRe = /^[0-9a-f]{32}-(.+)$/i;
+    const match = hashPrefixRe.exec(lastCn);
+    if (match && match[1] && targetDomain) {
+      const localPart = match[1].toLowerCase();
+      return {
+        address: `${localPart}@${targetDomain}`,
+        displayName,
+        isInternal: true,
+        normalizationFailed: false,
+      };
     }
     return {
       address: raw,
