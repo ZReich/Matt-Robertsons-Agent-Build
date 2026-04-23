@@ -1,4 +1,9 @@
-import type { GraphEmailHeader } from "./email-types";
+import type {
+  GraphEmailHeader,
+  ClassificationResult,
+  FilterContext,
+  GraphEmailMessage,
+} from "./email-types";
 import { LARGE_CRE_BROKER_DOMAINS } from "./email-types";
 
 // =============================================================================
@@ -130,4 +135,130 @@ export function isJunkOrDeletedFolder(
 export function domainIsLargeCreBroker(domain: string | undefined): boolean {
   if (!domain) return false;
   return (LARGE_CRE_BROKER_DOMAINS as readonly string[]).includes(domain.toLowerCase());
+}
+
+// =============================================================================
+// SUBJECT-LINE REGEXES (used by classifyEmail)
+// =============================================================================
+
+const CREXI_LEAD_SUBJECT =
+  /(new leads? found for|requesting information on|new leads to be contacted|entered a note on)/i;
+const CREXI_NOISE_SUBJECT_ON_NOTIFICATIONS =
+  /^(updates have been made to|action required!|\d+ of your properties|.*search ranking)/i;
+const BUILDOUT_SUPPORT_SIGNAL_SUBJECT =
+  /^(a new lead has been added|deal stage updated on|you've been assigned a task|.*critical date.*upcoming|ca executed on)/i;
+const BUILDOUT_NOTIFICATION_SIGNAL_SUBJECT =
+  /^(documents viewed on|ca executed on)/i;
+const LOOPNET_LEAD_SUBJECT = /^(loopnet lead for|.* favorited)/i;
+
+const MAX_TO_RECIPIENTS_FOR_SIGNAL = 10;
+
+// =============================================================================
+// COMPOSITE CLASSIFIER
+// =============================================================================
+
+/**
+ * Classify a Graph email message into signal/noise/uncertain with a typed
+ * source tag. Pure function — the orchestrator is responsible for providing
+ * the filter context (normalized sender, folder, behavioral hints).
+ */
+export function classifyEmail(
+  message: GraphEmailMessage,
+  context: FilterContext,
+): ClassificationResult {
+  const { folder, normalizedSender, targetUpn, hints } = context;
+  const sender = normalizedSender.address;
+  const senderDomain = sender.includes("@") ? sender.split("@")[1] : "";
+  const subject = message.subject ?? "";
+  const headers = message.internetMessageHeaders;
+
+  // --- Layer B folder check runs FIRST so Junk/Deleted don't masquerade as signal ---
+  if (isJunkOrDeletedFolder(message.parentFolderId)) {
+    return { classification: "noise", source: "layer-b-folder-drop", tier1Rule: "folder" };
+  }
+
+  // --- Layer A: auto-signal allowlist ---
+  if (folder === "sentitems") {
+    return { classification: "signal", source: "matt-outbound", tier1Rule: "sent-items" };
+  }
+
+  // NAI internal: Matt must be a direct recipient, To list must not look like a blast,
+  // and no List-Unsubscribe.
+  if (normalizedSender.isInternal) {
+    const toList = message.toRecipients ?? [];
+    const mattInTo = toList.some(
+      (r) => r.emailAddress.address?.toLowerCase() === targetUpn.toLowerCase(),
+    );
+    const reasonableToSize = toList.length <= MAX_TO_RECIPIENTS_FOR_SIGNAL;
+    if (mattInTo && reasonableToSize && !hasUnsubscribeHeader(headers)) {
+      return { classification: "signal", source: "nai-internal", tier1Rule: "nai-direct" };
+    }
+  }
+
+  if (senderDomain === "docusign.net" || senderDomain.endsWith(".docusign.net")) {
+    return { classification: "signal", source: "docusign-transactional", tier1Rule: "docusign" };
+  }
+
+  if (sender === "hit-reply@dotloop.com") {
+    return { classification: "signal", source: "dotloop-transactional", tier1Rule: "dotloop" };
+  }
+
+  if (sender === "support@buildout.com" && BUILDOUT_SUPPORT_SIGNAL_SUBJECT.test(subject)) {
+    return { classification: "signal", source: "buildout-event", tier1Rule: "buildout-support" };
+  }
+  if (sender === "no-reply-notification@buildout.com" && BUILDOUT_NOTIFICATION_SIGNAL_SUBJECT.test(subject)) {
+    return { classification: "signal", source: "buildout-event", tier1Rule: "buildout-notification" };
+  }
+
+  if (sender === "leads@loopnet.com" && LOOPNET_LEAD_SUBJECT.test(subject)) {
+    return { classification: "signal", source: "loopnet-lead", tier1Rule: "loopnet-leads" };
+  }
+
+  if (senderDomain.endsWith("notifications.crexi.com") && CREXI_LEAD_SUBJECT.test(subject)) {
+    return { classification: "signal", source: "crexi-lead", tier1Rule: "crexi-notifications" };
+  }
+
+  if (hints.senderInContacts && hints.mattRepliedBefore) {
+    return { classification: "signal", source: "known-counterparty", tier1Rule: "contact-replied" };
+  }
+
+  // --- Layer B: hard-drop noise ---
+
+  // Crexi notifications carry both signal subjects (above) and noise subjects (below).
+  // If it's a notifications.crexi.com sender and the subject is a known noise pattern,
+  // explicit sender-level drop.
+  if (
+    senderDomain.endsWith("notifications.crexi.com") &&
+    CREXI_NOISE_SUBJECT_ON_NOTIFICATIONS.test(subject)
+  ) {
+    return {
+      classification: "noise",
+      source: "layer-b-sender-drop",
+      tier1Rule: "crexi-notification-noise",
+    };
+  }
+
+  if (isNoiseDomain(senderDomain)) {
+    return { classification: "noise", source: "layer-b-domain-drop", tier1Rule: "noise-domain" };
+  }
+
+  if (isNoiseSenderAddress(sender)) {
+    return { classification: "noise", source: "layer-b-sender-drop", tier1Rule: "noise-sender" };
+  }
+
+  // No-reply / news / marketing etc. unless from an allowlisted transactional domain
+  if (hasAutomatedLocalPart(sender) && !TRANSACTIONAL_ALLOWLIST_DOMAINS.has(senderDomain)) {
+    return { classification: "noise", source: "layer-b-local-part-drop", tier1Rule: "automated-local-part" };
+  }
+
+  if (hasUnsubscribeHeader(headers)) {
+    return {
+      classification: "noise",
+      source: "layer-b-unsubscribe-header",
+      tier1Rule: "list-unsubscribe",
+    };
+  }
+
+  // --- Layer C: uncertain, store body for later classification ---
+  return { classification: "uncertain", source: "layer-c", tier1Rule: "fallthrough" };
 }
