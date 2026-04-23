@@ -10,10 +10,11 @@ import {
   User,
 } from "lucide-react"
 
-import type { CommunicationMeta, ContactMeta, MeetingMeta } from "@/lib/vault"
+import type { CommunicationMeta, MeetingMeta } from "@/lib/vault"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
+import { db } from "@/lib/prisma"
 import { matchTranscriptsToMeetings } from "@/lib/transcript-matching"
 import { listNotes, normalizeEntityRef } from "@/lib/vault"
 
@@ -32,8 +33,12 @@ export async function generateMetadata({
   params,
 }: ContactDetailPageProps): Promise<Metadata> {
   const { id } = await params
+  const contact = await db.contact.findUnique({
+    where: { id },
+    select: { name: true },
+  })
   return {
-    title: id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+    title: contact?.name ?? "Contact",
   }
 }
 
@@ -45,29 +50,21 @@ const CHANNEL_ICONS: Record<string, ReactNode> = {
   meeting: <Calendar className="size-4 text-amber-500" />,
 }
 
+// Always render from the live DB; never statically pre-render.
+export const dynamic = "force-dynamic"
+
 export default async function ContactDetailPage({
   params,
 }: ContactDetailPageProps) {
   const { id } = await params
 
-  const [contactNotes, meetingNotes, commNotes] = await Promise.all([
-    listNotes<ContactMeta>("contacts"),
+  const [contact, meetingNotes, commNotes] = await Promise.all([
+    db.contact.findUnique({ where: { id } }),
     listNotes<MeetingMeta>("meetings"),
     listNotes<CommunicationMeta>("communications"),
   ])
 
-  const contactNote = contactNotes.find((n) => {
-    const filename = n.path.split("/").pop() ?? n.path
-    const slug = filename
-      .replace(/\.md$/, "")
-      .replace(/\s+/g, "-")
-      .toLowerCase()
-    return slug === id
-  })
-
-  if (!contactNote) notFound()
-
-  const contact = contactNote.meta
+  if (!contact) notFound()
 
   const contactMeetings = meetingNotes
     .filter((m) => normalizeEntityRef(m.meta.contact ?? "") === contact.name)
@@ -241,8 +238,8 @@ export default async function ContactDetailPage({
         <TabsContent value="notes" className="mt-4">
           <Card>
             <CardContent className="p-6">
-              {contactNote.content ? (
-                <MarkdownRenderer content={contactNote.content} />
+              {contact.notes ? (
+                <MarkdownRenderer content={contact.notes} />
               ) : (
                 <p className="text-muted-foreground text-sm">
                   No notes for this contact yet.
