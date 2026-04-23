@@ -3,7 +3,8 @@ import { graphFetch } from "./client";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { GraphError } from "./errors";
 import { loadMsgraphConfig } from "./config";
-import type { EmailFolder, GraphEmailMessage } from "./email-types";
+import type { EmailFolder, GraphEmailMessage, BehavioralHints } from "./email-types";
+import { domainIsLargeCreBroker } from "./email-filter";
 
 const CURSOR_EXTERNAL_ID = "__cursor__";
 
@@ -132,3 +133,52 @@ export async function* fetchEmailDelta(
 
 /** Exported for test re-export and type-only consumers. */
 export type { GraphDeltaPage };
+
+/**
+ * Compute behavioral hints for the filter context. These influence Layer A's
+ * known-counterparty rule and are stored on uncertain rows as hints for the
+ * future classifier spec.
+ *
+ * All queries are scoped to the single sender + conversation under test, so
+ * they are cheap per-message.
+ */
+export async function computeBehavioralHints(
+  senderAddress: string,
+  conversationId: string | undefined,
+): Promise<BehavioralHints> {
+  const senderDomain = senderAddress.includes("@")
+    ? senderAddress.split("@")[1]
+    : undefined;
+
+  const [contactRow, outboundCount, threadSize] = await Promise.all([
+    senderAddress
+      ? db.contact.findFirst({
+          where: { email: { equals: senderAddress, mode: "insensitive" } },
+          select: { id: true },
+        })
+      : Promise.resolve(null),
+    senderAddress
+      ? db.communication.count({
+          where: {
+            direction: "outbound",
+            metadata: {
+              path: ["toRecipients"],
+              array_contains: [{ emailAddress: { address: senderAddress } }],
+            },
+          },
+        })
+      : Promise.resolve(0),
+    conversationId
+      ? db.communication.count({
+          where: { metadata: { path: ["conversationId"], equals: conversationId } },
+        })
+      : Promise.resolve(0),
+  ]);
+
+  return {
+    senderInContacts: !!contactRow,
+    mattRepliedBefore: outboundCount > 0,
+    threadSize: threadSize + 1,
+    domainIsLargeCreBroker: domainIsLargeCreBroker(senderDomain),
+  };
+}
