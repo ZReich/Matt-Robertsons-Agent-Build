@@ -118,6 +118,36 @@ describe("mapGraphToContact", () => {
     expect(createOnly.name).toBe("dave@example.com");
   });
 
+  it("falls back to fileAs when no person/email fields are present", () => {
+    const { partial, createOnly } = mapGraphToContact({
+      id: "AAkALg-opaque-id",
+      fileAs: "Acme Corp (filed as)",
+      companyName: "Acme Corp",
+    });
+    expect(partial.name).toBe("Acme Corp (filed as)");
+    expect(createOnly.name).toBe("Acme Corp (filed as)");
+  });
+
+  it("falls back to companyName when fileAs is absent and no person/email", () => {
+    const { partial, createOnly } = mapGraphToContact({
+      id: "AAkALg-opaque-id",
+      companyName: "Beckers Glass",
+    });
+    expect(partial.name).toBe("Beckers Glass");
+    expect(createOnly.name).toBe("Beckers Glass");
+  });
+
+  it("prefers displayName over fileAs and companyName when all are present", () => {
+    const { partial, createOnly } = mapGraphToContact({
+      id: "AAkALg-opaque-id",
+      displayName: "Preferred Display",
+      fileAs: "Some Filing Name",
+      companyName: "Some Company",
+    });
+    expect(partial.name).toBe("Preferred Display");
+    expect(createOnly.name).toBe("Preferred Display");
+  });
+
   it("uses the Graph ID as a last-resort name when nothing else is available", () => {
     const { createOnly } = mapGraphToContact({ id: "X-GRAPH-ID-123" });
     expect(createOnly.name).toBe("X-GRAPH-ID-123");
