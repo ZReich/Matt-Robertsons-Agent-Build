@@ -1,5 +1,5 @@
 import { db } from "@/lib/prisma";
-import type { Prisma, SyncStatus } from ".prisma/client";
+import type { Prisma, SyncStatus } from "@prisma/client";
 import { graphFetch } from "./client";
 import { GraphError } from "./errors";
 import { loadMsgraphConfig } from "./config";
@@ -31,6 +31,11 @@ export interface GraphContact {
   businessPhones?: string[];
   homePhones?: string[];
   companyName?: string | null;
+  /**
+   * Outlook's user-controlled "file as" / display label. Often set for
+   * company-only contacts with no person name (e.g. "Acme Corp").
+   */
+  fileAs?: string | null;
   businessAddress?: GraphContactAddress;
   categories?: string[];
   personalNotes?: string | null;
@@ -129,6 +134,12 @@ function deriveName(gc: GraphContact): string | undefined {
   const firstEmail = gc.emailAddresses?.[0];
   if (firstEmail?.name) return firstEmail.name;
   if (firstEmail?.address) return firstEmail.address;
+  // Company-only contacts (no person name, no email): prefer Outlook's
+  // user-curated fileAs, then the raw companyName. Falling back all the
+  // way to gc.id (Graph's opaque base64 id) would surface as an ugly
+  // blob in the UI, so we try these business-name fields first.
+  if (gc.fileAs) return gc.fileAs;
+  if (gc.companyName) return gc.companyName;
   return undefined;
 }
 
@@ -172,6 +183,14 @@ function nullish(v: string | null | undefined): string | null {
 
 const SOURCE = "msgraph-contacts";
 const CURSOR_EXTERNAL_ID = "__cursor__";
+
+function graphContactRawData(
+  graphContact: GraphContact,
+): Prisma.InputJsonObject {
+  return {
+    graphContact: graphContact as unknown as Prisma.InputJsonObject,
+  };
+}
 
 export interface Cursor {
   deltaLink: string;
@@ -256,7 +275,7 @@ export async function upsertContact(graphContact: GraphContact): Promise<UpsertO
           entityType: "contact",
           entityId: contact.id,
           status: "synced",
-          rawData: { graphContact },
+          rawData: graphContactRawData(graphContact),
         },
       });
       return "created" as const;
@@ -297,7 +316,7 @@ export async function upsertContact(graphContact: GraphContact): Promise<UpsertO
       data: {
         status: "synced",
         syncedAt: new Date(),
-        rawData: { graphContact },
+        rawData: graphContactRawData(graphContact),
       },
     });
   });
