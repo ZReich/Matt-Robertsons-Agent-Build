@@ -97,6 +97,13 @@ enum SyncStatus {
   removed
 }
 
+enum QueueStatus {
+  pending
+  in_flight
+  done
+  failed
+}
+
 enum LeadSource {
   crexi
   loopnet
@@ -199,19 +206,19 @@ model VerificationToken {
 /// Unified people table — both business clients and personal contacts.
 /// Use `category` to distinguish business vs personal.
 model Contact {
-  id               String    @id @default(uuid())
+  id               String      @id @default(uuid())
   name             String
   company          String?
   email            String?
   phone            String?
-  role             String?   // e.g., "investor", "tenant", "dentist", "family"
-  preferredContact String?   @map("preferred_contact") // email, phone, text, whatsapp
+  role             String? // e.g., "investor", "tenant", "dentist", "family"
+  preferredContact String?     @map("preferred_contact") // email, phone, text, whatsapp
   address          String?
-  notes            String?   @db.Text
-  category         Category  @default(business)
-  tags             Json?     @default("[]") // JSON array of tag strings
-  createdBy        String?    @map("created_by") // "user:<id>" or "agent"
-  archivedAt       DateTime?  @map("archived_at")
+  notes            String?     @db.Text
+  category         Category    @default(business)
+  tags             Json?       @default("[]") // JSON array of tag strings
+  createdBy        String?     @map("created_by") // "user:<id>" or "agent"
+  archivedAt       DateTime?   @map("archived_at")
   leadSource       LeadSource? @map("lead_source")
   leadStatus       LeadStatus? @map("lead_status")
   leadAt           DateTime?   @map("lead_at")
@@ -219,11 +226,11 @@ model Contact {
   estimatedValue   Decimal?    @db.Decimal(14, 2) @map("estimated_value")
 
   // Relations
-  deals            Deal[]
-  communications   Communication[]
-  meetings         MeetingAttendee[]
-  todos            Todo[]
-  agentMemories    AgentMemory[]
+  deals          Deal[]
+  communications Communication[]
+  meetings       MeetingAttendee[]
+  todos          Todo[]
+  agentMemories  AgentMemory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -235,6 +242,7 @@ model Contact {
   @@index([leadSource])
   @@index([leadStatus])
   @@index([leadStatus, updatedAt])
+  @@index([leadSource, leadStatus, leadLastViewedAt])
   @@map("contacts")
 }
 
@@ -282,10 +290,10 @@ model Deal {
 
 /// Documents/files attached to deals
 model DealDocument {
-  id        String  @id @default(uuid())
-  dealId    String  @map("deal_id")
+  id        String   @id @default(uuid())
+  dealId    String   @map("deal_id")
   name      String
-  docType   String  @map("doc_type") // contract, inspection, financial, title, marketing, correspondence, other
+  docType   String   @map("doc_type") // contract, inspection, financial, title, marketing, correspondence, other
   url       String? // cloud storage URL (Google Drive, S3, etc.)
   notes     String?
   dateAdded DateTime @default(now()) @map("date_added")
@@ -335,7 +343,8 @@ model Communication {
   externalSync   ExternalSync? @relation(fields: [externalSyncId], references: [id])
 
   // Todos that were created from this communication
-  todos Todo[]
+  todos      Todo[]
+  scrubQueue ScrubQueue?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -365,14 +374,14 @@ model Meeting {
   createdBy       String?   @map("created_by")
   archivedAt      DateTime? @map("archived_at")
 
-  dealId    String? @map("deal_id")
+  dealId String? @map("deal_id")
 
   // Which agent action created this (if auto-generated)
   agentActionId String? @unique @map("agent_action_id")
 
   // Relations
-  deal        Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
-  agentAction AgentAction?     @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+  deal        Deal?             @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  agentAction AgentAction?      @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
   attendees   MeetingAttendee[]
 
   createdAt DateTime @default(now())
@@ -400,16 +409,16 @@ model MeetingAttendee {
 
 /// Tasks / to-do items
 model Todo {
-  id       String      @id @default(uuid())
-  title    String
-  body     String?     @db.Text
-  status   TodoStatus  @default(pending)
-  priority Priority    @default(medium)
-  dueDate  DateTime?   @map("due_date")
-  category Category    @default(business)
-  tags     Json?       @default("[]")
-  createdBy String?    @map("created_by")
-  archivedAt DateTime? @map("archived_at")
+  id         String     @id @default(uuid())
+  title      String
+  body       String?    @db.Text
+  status     TodoStatus @default(pending)
+  priority   Priority   @default(medium)
+  dueDate    DateTime?  @map("due_date")
+  category   Category   @default(business)
+  tags       Json?      @default("[]")
+  createdBy  String?    @map("created_by")
+  archivedAt DateTime?  @map("archived_at")
 
   // What this todo relates to
   contactId       String? @map("contact_id")
@@ -466,7 +475,7 @@ model AgentAction {
   actionType   String            @map("action_type") // create-todo, update-deal, send-email, etc.
   tier         AgentTier
   status       AgentActionStatus @default(pending)
-  summary      String            // human-readable description
+  summary      String // human-readable description
   targetEntity String?           @map("target_entity") // e.g., "deal:<uuid>" or "contact:<uuid>"
   payload      Json?             @default("{}") // structured action data
   feedback     String?           @db.Text
@@ -477,6 +486,7 @@ model AgentAction {
   todo          Todo?
   communication Communication?
   meeting       Meeting?
+  memory        AgentMemory?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -498,11 +508,13 @@ model AgentMemory {
   tags       Json?      @default("[]")
 
   // Optional: link memory to a specific client or deal
-  contactId String? @map("contact_id")
-  dealId    String? @map("deal_id")
+  contactId     String? @map("contact_id")
+  dealId        String? @map("deal_id")
+  agentActionId String? @unique @map("agent_action_id")
 
-  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  deal    Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal        Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  agentAction AgentAction? @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
 
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -515,6 +527,57 @@ model AgentMemory {
   @@map("agent_memory")
 }
 
+model ScrubQueue {
+  id              String      @id @default(uuid())
+  communicationId String      @unique @map("communication_id")
+  enqueuedAt      DateTime    @default(now()) @map("enqueued_at")
+  status          QueueStatus @default(pending)
+  attempts        Int         @default(0)
+  lockedUntil     DateTime?   @map("locked_until")
+  leaseToken      String?     @map("lease_token")
+  lastError       String?     @map("last_error") @db.Text
+  promptVersion   String?     @map("prompt_version")
+
+  communication Communication  @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  apiCalls      ScrubApiCall[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, enqueuedAt])
+  @@index([lockedUntil])
+  @@map("scrub_queue")
+}
+
+model ScrubApiCall {
+  id               String   @id @default(uuid())
+  scrubQueueId     String?  @map("scrub_queue_id")
+  communicationId  String?  @map("communication_id")
+  promptVersion    String   @map("prompt_version")
+  modelUsed        String   @map("model_used")
+  tokensIn         Int      @map("tokens_in")
+  tokensOut        Int      @map("tokens_out")
+  cacheReadTokens  Int      @default(0) @map("cache_read_tokens")
+  cacheWriteTokens Int      @default(0) @map("cache_write_tokens")
+  outcome          String
+  estimatedUsd     Decimal  @map("estimated_usd") @db.Decimal(10, 6)
+  at               DateTime @default(now())
+
+  scrubQueue ScrubQueue? @relation(fields: [scrubQueueId], references: [id], onDelete: SetNull)
+
+  @@index([at])
+  @@index([communicationId])
+  @@map("scrub_api_calls")
+}
+
+model SystemState {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_state")
+}
+
 // =============================================================================
 // EXTERNAL INTEGRATIONS / SYNC TRACKING
 // =============================================================================
@@ -523,7 +586,7 @@ model AgentMemory {
 /// Prevents duplicate imports and enables incremental sync.
 model ExternalSync {
   id         String     @id @default(uuid())
-  source     String     // plaud, gmail, google-calendar, twilio, etc.
+  source     String // plaud, gmail, google-calendar, twilio, etc.
   externalId String     @map("external_id") // ID from the external system
   entityType String?    @map("entity_type") // communication, meeting, todo, deal
   entityId   String?    @map("entity_id") // UUID of the created entity
@@ -552,7 +615,7 @@ model ExternalSync {
 model IntegrationCredential {
   id            String    @id @default(uuid())
   service       String    @unique // plaud, gmail, google-calendar, etc.
-  credentials   Json      // { accessToken, refreshToken, expiresAt, ... } — ENCRYPTED
+  credentials   Json // { accessToken, refreshToken, expiresAt, ... } — ENCRYPTED
   scopes        String[]  @default([]) // permissions this credential grants
   encryptedAt   DateTime? @map("encrypted_at") // when credentials were last encrypted
   lastRefreshed DateTime? @map("last_refreshed")

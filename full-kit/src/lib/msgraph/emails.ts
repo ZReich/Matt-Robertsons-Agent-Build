@@ -12,8 +12,9 @@ import type {
   GraphEmailMessage,
 } from "./email-types"
 import type { NormalizedSender } from "./sender-normalize"
-import type { LeadSource, Prisma } from ".prisma/client"
+import type { LeadSource, Prisma } from "@prisma/client"
 
+import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
 import { db } from "@/lib/prisma"
 
 import { graphFetch } from "./client"
@@ -447,6 +448,14 @@ export async function persistMessage(
       where: { id: sync.id },
       data: { entityId: comm.id },
     })
+    // Enqueue for AI scrub — same transaction as the Communication
+    // insert so either both land or neither does. enqueueScrubForCommunication
+    // is a no-op for "noise" classification.
+    await enqueueScrubForCommunication(
+      tx,
+      comm.id,
+      p.classification.classification
+    )
   })
 
   return { inserted: true }
