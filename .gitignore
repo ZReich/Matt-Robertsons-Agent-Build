@@ -53,3 +53,5 @@ market survey and flyers/
 
 # Prisma SQLite (using Postgres now)
 prisma/dev.db
+
+.superpowers/
