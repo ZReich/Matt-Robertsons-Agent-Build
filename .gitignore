@@ -55,3 +55,11 @@ market survey and flyers/
 prisma/dev.db
 
 .superpowers/
+
+# Agent tooling (machine-local, not source)
+.claude/
+.omx/
+.jcodemunch.jsonc
+
+# Recon dataset — sensitive sender data, regenerate via /api/integrations/msgraph/recon/senders
+full-kit/recon-output/recon-senders.json
