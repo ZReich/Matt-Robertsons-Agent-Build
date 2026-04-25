@@ -215,6 +215,8 @@ model Contact {
   leadSource       LeadSource? @map("lead_source")
   leadStatus       LeadStatus? @map("lead_status")
   leadAt           DateTime?   @map("lead_at")
+  leadLastViewedAt DateTime?   @map("lead_last_viewed_at")
+  estimatedValue   Decimal?    @db.Decimal(14, 2) @map("estimated_value")
 
   // Relations
   deals            Deal[]
@@ -231,6 +233,8 @@ model Contact {
   @@index([company])
   @@index([category])
   @@index([leadSource])
+  @@index([leadStatus])
+  @@index([leadStatus, updatedAt])
   @@map("contacts")
 }
 
@@ -251,6 +255,9 @@ model Deal {
   notes           String?      @db.Text
   createdBy       String?      @map("created_by")
   archivedAt      DateTime?    @map("archived_at")
+  commissionRate  Decimal?     @default(0.03) @db.Decimal(5, 4) @map("commission_rate")
+  probability     Int?
+  stageChangedAt  DateTime?    @map("stage_changed_at")
 
   // Relations
   contact        Contact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
@@ -269,6 +276,7 @@ model Deal {
   @@index([propertyAddress])
   @@index([listedDate])
   @@index([closingDate])
+  @@index([stageChangedAt])
   @@map("deals")
 }
 

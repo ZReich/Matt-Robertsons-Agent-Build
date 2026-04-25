@@ -213,7 +213,7 @@ export default async function HomePage() {
           </CardContent>
           <div className="px-6 pb-4">
             <Link
-              href="../apps/kanban"
+              href="../pages/deals?view=kanban"
               className="text-xs text-primary flex items-center gap-1 hover:underline"
             >
               Open Pipeline <ArrowRight className="size-3" />
