@@ -146,11 +146,20 @@ export interface MeetingMeta extends VaultNoteMeta {
 export interface TodoMeta extends VaultNoteMeta {
   type: "todo"
   title: string
-  status: "pending" | "in-progress" | "done"
+  /** Omitted status defaults to "pending". Keep legacy "in-progress" readable. */
+  status?:
+    | "proposed"
+    | "pending"
+    | "in_progress"
+    | "in-progress"
+    | "done"
+    | "dismissed"
   priority?: "low" | "medium" | "high" | "urgent"
   due_date?: string
   deal?: string
   contact?: string
+  source?: "manual" | "ai_email_scrub" | "buildout_event"
+  proposedByRunId?: string
   /** Vault path of the communication that generated this todo */
   source_communication?: string
 }

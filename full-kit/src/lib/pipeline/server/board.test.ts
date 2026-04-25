@@ -1,10 +1,49 @@
 import { describe, expect, it } from "vitest"
 
-import { serializeDealBoard, serializeLeadBoard } from "./board"
+import {
+  parsePipelineFilters,
+  serializeDealBoard,
+  serializeLeadBoard,
+} from "./board"
 
 const now = new Date("2026-04-25T00:00:00Z")
 
 describe("pipeline board serializers", () => {
+  it("parses needsFollowup without changing existing filters", () => {
+    const filters = parsePipelineFilters(
+      new URLSearchParams({
+        search: "dana",
+        source: "crexi",
+        propertyType: "office",
+        age: "7_30",
+        showAll: "1",
+        needsFollowup: "true",
+      })
+    )
+
+    expect(filters).toMatchObject({
+      search: "dana",
+      source: "crexi",
+      propertyType: "office",
+      age: "7_30",
+      showAll: true,
+      needsFollowup: true,
+    })
+  })
+
+  it("parses needsFollowup=1 and rejects other values", () => {
+    expect(
+      parsePipelineFilters(new URLSearchParams({ needsFollowup: "1" }))
+        .needsFollowup
+    ).toBe(true)
+    expect(
+      parsePipelineFilters(new URLSearchParams({ needsFollowup: "false" }))
+        .needsFollowup
+    ).toBe(false)
+    expect(parsePipelineFilters(new URLSearchParams()).needsFollowup).toBe(
+      false
+    )
+  })
   it("groups every deal stage and skips null values from money sums", () => {
     const board = serializeDealBoard(
       [

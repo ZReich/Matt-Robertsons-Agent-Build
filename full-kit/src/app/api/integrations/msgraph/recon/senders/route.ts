@@ -1,15 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
+
+import type { ReconFolder } from "@/lib/msgraph"
 
 import {
-  constantTimeCompare,
   GraphError,
+  constantTimeCompare,
   loadMsgraphConfig,
   runSenderRecon,
-  type ReconFolder,
-} from "@/lib/msgraph";
+} from "@/lib/msgraph"
 
-export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const dynamic = "force-dynamic"
+export const maxDuration = 300
 
 // GET /api/integrations/msgraph/recon/senders?daysBack=365&folder=all&platforms=crexi.com,loopnet.com
 //
@@ -17,43 +18,43 @@ export const maxDuration = 300;
 // and surfaces subject-line patterns for a list of platforms-of-interest.
 // Read-only; does not touch the DB.
 export async function GET(request: Request): Promise<Response> {
-  let config;
+  let config
   try {
-    config = loadMsgraphConfig();
+    config = loadMsgraphConfig()
   } catch {
-    return new NextResponse(null, { status: 404 });
+    return new NextResponse(null, { status: 404 })
   }
   if (!config.testRouteEnabled) {
-    return new NextResponse(null, { status: 404 });
+    return new NextResponse(null, { status: 404 })
   }
 
-  const provided = request.headers.get("x-admin-token");
+  const provided = request.headers.get("x-admin-token")
   if (!provided || !constantTimeCompare(provided, config.testAdminToken)) {
     return NextResponse.json(
       { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+      { status: 401 }
+    )
   }
 
-  const url = new URL(request.url);
-  const daysBack = parsePositiveInt(url.searchParams.get("daysBack"), 365);
-  const folderParam = url.searchParams.get("folder");
-  const folder = normalizeFolder(folderParam);
-  const platformsParam = url.searchParams.get("platforms");
+  const url = new URL(request.url)
+  const daysBack = parsePositiveInt(url.searchParams.get("daysBack"), 365)
+  const folderParam = url.searchParams.get("folder")
+  const folder = normalizeFolder(folderParam)
+  const platformsParam = url.searchParams.get("platforms")
   const platforms = platformsParam
     ? platformsParam
         .split(",")
         .map((s) => s.trim().toLowerCase())
         .filter(Boolean)
-    : undefined;
+    : undefined
   const topSendersLimit = parsePositiveInt(
     url.searchParams.get("topSendersLimit"),
-    200,
-  );
+    200
+  )
   const topDomainsLimit = parsePositiveInt(
     url.searchParams.get("topDomainsLimit"),
-    100,
-  );
+    100
+  )
 
   try {
     const report = await runSenderRecon({
@@ -62,8 +63,8 @@ export async function GET(request: Request): Promise<Response> {
       platforms,
       topSendersLimit,
       topDomainsLimit,
-    });
-    return NextResponse.json({ ok: true, ...report });
+    })
+    return NextResponse.json({ ok: true, ...report })
   } catch (err) {
     if (err instanceof GraphError) {
       return NextResponse.json(
@@ -74,27 +75,27 @@ export async function GET(request: Request): Promise<Response> {
           path: err.path,
           message: err.message,
         },
-        { status: err.status >= 400 && err.status < 600 ? err.status : 500 },
-      );
+        { status: err.status >= 400 && err.status < 600 ? err.status : 500 }
+      )
     }
     return NextResponse.json(
       { ok: false, error: "unexpected", message: String(err) },
-      { status: 500 },
-    );
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(): Promise<Response> {
-  return new NextResponse(null, { status: 405 });
+  return new NextResponse(null, { status: 405 })
 }
 
 function parsePositiveInt(v: string | null, def: number): number {
-  if (!v) return def;
-  const n = Number.parseInt(v, 10);
-  return Number.isFinite(n) && n > 0 ? n : def;
+  if (!v) return def
+  const n = Number.parseInt(v, 10)
+  return Number.isFinite(n) && n > 0 ? n : def
 }
 
 function normalizeFolder(v: string | null): ReconFolder {
-  if (v === "inbox" || v === "sentitems" || v === "all") return v;
-  return "all";
+  if (v === "inbox" || v === "sentitems" || v === "all") return v
+  return "all"
 }

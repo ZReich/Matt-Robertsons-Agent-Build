@@ -1,44 +1,44 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
 import {
-  constantTimeCompare,
   GraphError,
+  constantTimeCompare,
   loadMsgraphConfig,
   syncEmails,
-} from "@/lib/msgraph";
+} from "@/lib/msgraph"
 
-export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const dynamic = "force-dynamic"
+export const maxDuration = 300
 
 export async function POST(request: Request): Promise<Response> {
-  let config;
+  let config
   try {
-    config = loadMsgraphConfig();
+    config = loadMsgraphConfig()
   } catch {
-    return new NextResponse(null, { status: 404 });
+    return new NextResponse(null, { status: 404 })
   }
   if (!config.testRouteEnabled) {
-    return new NextResponse(null, { status: 404 });
+    return new NextResponse(null, { status: 404 })
   }
 
-  const provided = request.headers.get("x-admin-token");
+  const provided = request.headers.get("x-admin-token")
   if (!provided || !constantTimeCompare(provided, config.testAdminToken)) {
     return NextResponse.json(
       { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+      { status: 401 }
+    )
   }
 
-  const url = new URL(request.url);
-  const daysBackRaw = url.searchParams.get("daysBack");
+  const url = new URL(request.url)
+  const daysBackRaw = url.searchParams.get("daysBack")
   const daysBack = daysBackRaw
     ? Math.max(1, Number.parseInt(daysBackRaw, 10) || 90)
-    : undefined;
-  const forceBootstrap = url.searchParams.get("forceBootstrap") === "true";
+    : undefined
+  const forceBootstrap = url.searchParams.get("forceBootstrap") === "true"
 
   try {
-    const result = await syncEmails({ daysBack, forceBootstrap });
-    return NextResponse.json({ ok: true, ...result });
+    const result = await syncEmails({ daysBack, forceBootstrap })
+    return NextResponse.json({ ok: true, ...result })
   } catch (err) {
     if (err instanceof GraphError) {
       return NextResponse.json(
@@ -49,16 +49,16 @@ export async function POST(request: Request): Promise<Response> {
           path: err.path,
           message: err.message,
         },
-        { status: err.status >= 400 && err.status < 600 ? err.status : 500 },
-      );
+        { status: err.status >= 400 && err.status < 600 ? err.status : 500 }
+      )
     }
     return NextResponse.json(
       { ok: false, error: "unexpected", message: String(err) },
-      { status: 500 },
-    );
+      { status: 500 }
+    )
   }
 }
 
 export async function GET(): Promise<Response> {
-  return new NextResponse(null, { status: 405 });
+  return new NextResponse(null, { status: 405 })
 }
