@@ -9,9 +9,9 @@ export class GraphError extends Error {
     public readonly status: number,
     public readonly code: string | undefined,
     public readonly path: string,
-    message: string,
+    message: string
   ) {
-    super(message);
-    this.name = "GraphError";
+    super(message)
+    this.name = "GraphError"
   }
 }

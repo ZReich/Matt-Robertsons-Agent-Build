@@ -9,8 +9,8 @@ import {
   parsePipelineFilters,
   serializeLeadBoard,
 } from "@/lib/pipeline/server/board"
+import { getLeadContactsForPipeline } from "@/lib/pipeline/server/leads-query"
 import { toURLSearchParams } from "@/lib/pipeline/server/search-params"
-import { db } from "@/lib/prisma"
 
 import { LeadsKanban } from "./_components/leads-kanban"
 import { LeadRow } from "@/components/leads/lead-row"
@@ -35,64 +35,7 @@ export default async function LeadsListPage({
   const view = resolvedSearchParams.get("view") === "kanban" ? "kanban" : "list"
   const filters = parsePipelineFilters(resolvedSearchParams)
 
-  const contacts = await db.contact.findMany({
-    where: {
-      leadSource: { not: null },
-      archivedAt: null,
-      ...(filters.source ? { leadSource: filters.source } : {}),
-      ...(filters.search
-        ? {
-            OR: [
-              { name: { contains: filters.search, mode: "insensitive" } },
-              { company: { contains: filters.search, mode: "insensitive" } },
-              { email: { contains: filters.search, mode: "insensitive" } },
-              {
-                communications: {
-                  some: {
-                    subject: { contains: filters.search, mode: "insensitive" },
-                  },
-                },
-              },
-              {
-                communications: {
-                  some: {
-                    body: { contains: filters.search, mode: "insensitive" },
-                  },
-                },
-              },
-            ],
-          }
-        : {}),
-      ...(filters.showAll
-        ? {}
-        : {
-            OR: [
-              { leadStatus: { notIn: ["converted", "dropped"] } },
-              { leadStatus: null },
-              { leadAt: { gte: new Date(Date.now() - 30 * 86_400_000) } },
-              {
-                leadAt: null,
-                updatedAt: { gte: new Date(Date.now() - 30 * 86_400_000) },
-              },
-            ],
-          }),
-    },
-    orderBy: [{ leadAt: "desc" }, { updatedAt: "desc" }],
-    include: {
-      communications: {
-        orderBy: { date: "desc" },
-        take: 20,
-        select: {
-          id: true,
-          subject: true,
-          body: true,
-          date: true,
-          direction: true,
-          metadata: true,
-        },
-      },
-    },
-  })
+  const contacts = await getLeadContactsForPipeline(filters)
 
   const board = serializeLeadBoard(contacts, filters)
   const rows: LeadRowData[] = contacts.map((contact) => {

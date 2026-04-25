@@ -1,15 +1,15 @@
 export interface GraphEmailFrom {
   emailAddress: {
-    address: string;
-    name?: string;
-  };
+    address: string
+    name?: string
+  }
 }
 
 export interface NormalizedSender {
-  address: string;
-  displayName: string;
-  isInternal: boolean;
-  normalizationFailed: boolean;
+  address: string
+  displayName: string
+  isInternal: boolean
+  normalizationFailed: boolean
 }
 
 /**
@@ -29,7 +29,7 @@ export interface NormalizedSender {
  */
 export function normalizeSenderAddress(
   from: GraphEmailFrom | null | undefined,
-  targetUpn: string,
+  targetUpn: string
 ): NormalizedSender {
   if (!from?.emailAddress?.address) {
     return {
@@ -37,50 +37,50 @@ export function normalizeSenderAddress(
       displayName: "",
       isInternal: false,
       normalizationFailed: true,
-    };
+    }
   }
 
-  const raw = from.emailAddress.address;
-  const displayName = from.emailAddress.name ?? "";
-  const targetDomain = targetUpn.split("@")[1]?.toLowerCase() ?? "";
+  const raw = from.emailAddress.address
+  const displayName = from.emailAddress.name ?? ""
+  const targetDomain = targetUpn.split("@")[1]?.toLowerCase() ?? ""
 
   if (raw.startsWith("/o=") || raw.startsWith("/O=")) {
-    const cnSegments = raw.split("/cn=");
-    const lastCn = cnSegments[cnSegments.length - 1] ?? "";
-    const hashPrefixRe = /^[0-9a-f]{32}-(.+)$/i;
-    const match = hashPrefixRe.exec(lastCn);
+    const cnSegments = raw.split("/cn=")
+    const lastCn = cnSegments[cnSegments.length - 1] ?? ""
+    const hashPrefixRe = /^[0-9a-f]{32}-(.+)$/i
+    const match = hashPrefixRe.exec(lastCn)
     if (match && match[1] && targetDomain) {
-      const localPart = match[1].toLowerCase();
+      const localPart = match[1].toLowerCase()
       return {
         address: `${localPart}@${targetDomain}`,
         displayName,
         isInternal: true,
         normalizationFailed: false,
-      };
+      }
     }
     return {
       address: raw,
       displayName,
       isInternal: false,
       normalizationFailed: true,
-    };
+    }
   }
 
-  const lower = raw.toLowerCase();
-  const atIdx = lower.indexOf("@");
+  const lower = raw.toLowerCase()
+  const atIdx = lower.indexOf("@")
   if (atIdx <= 0 || atIdx === lower.length - 1) {
     return {
       address: lower,
       displayName,
       isInternal: false,
       normalizationFailed: true,
-    };
+    }
   }
-  const domain = lower.slice(atIdx + 1);
+  const domain = lower.slice(atIdx + 1)
   return {
     address: lower,
     displayName,
     isInternal: domain === targetDomain,
     normalizationFailed: false,
-  };
+  }
 }

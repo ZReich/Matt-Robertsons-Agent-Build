@@ -34,6 +34,7 @@ export function PipelineFiltersBar({
     propertyType: filters.propertyType ?? undefined,
     age: filters.age ?? undefined,
     showAll: filters.showAll ? "1" : undefined,
+    needsFollowup: filters.needsFollowup ? "1" : undefined,
   }
 
   return (
@@ -77,6 +78,9 @@ export function PipelineFiltersBar({
         <input type="hidden" name="view" value={view} />
         {filters.showAll ? (
           <input type="hidden" name="showAll" value="1" />
+        ) : null}
+        {filters.needsFollowup ? (
+          <input type="hidden" name="needsFollowup" value="1" />
         ) : null}
         <Input
           name="search"

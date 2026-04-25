@@ -42,6 +42,7 @@ export type PipelineFilters = {
   propertyType: PropertyType | null
   age: PipelineAgeBucket | null
   showAll: boolean
+  needsFollowup: boolean
 }
 
 const LEAD_SOURCE_VALUES = new Set([
@@ -84,6 +85,9 @@ export function parsePipelineFilters(
     showAll:
       searchParams.get("showAll") === "1" ||
       searchParams.get("showAll") === "true",
+    needsFollowup:
+      searchParams.get("needsFollowup") === "1" ||
+      searchParams.get("needsFollowup") === "true",
   }
 }
 

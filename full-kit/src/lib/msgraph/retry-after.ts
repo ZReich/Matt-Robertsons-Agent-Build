@@ -12,34 +12,34 @@
 export function parseRetryAfter(
   headerValue: string | null | undefined,
   fallbackMs: number,
-  maxMs: number,
+  maxMs: number
 ): number {
-  if (!headerValue) return fallbackMs;
+  if (!headerValue) return fallbackMs
 
-  const trimmed = headerValue.trim();
-  if (trimmed === "") return fallbackMs;
+  const trimmed = headerValue.trim()
+  if (trimmed === "") return fallbackMs
 
   // Try delta-seconds first (integer or decimal)
   if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
-    const seconds = Number(trimmed);
+    const seconds = Number(trimmed)
     if (Number.isFinite(seconds)) {
-      const ms = seconds * 1000;
-      return clamp(ms, 0, maxMs);
+      const ms = seconds * 1000
+      return clamp(ms, 0, maxMs)
     }
   }
 
   // Fall back to HTTP-date
-  const dateMs = Date.parse(trimmed);
+  const dateMs = Date.parse(trimmed)
   if (!Number.isNaN(dateMs)) {
-    const deltaMs = dateMs - Date.now();
-    return clamp(deltaMs, 0, maxMs);
+    const deltaMs = dateMs - Date.now()
+    return clamp(deltaMs, 0, maxMs)
   }
 
-  return fallbackMs;
+  return fallbackMs
 }
 
 function clamp(value: number, min: number, max: number): number {
-  if (value < min) return min;
-  if (value > max) return max;
-  return value;
+  if (value < min) return min
+  if (value > max) return max
+  return value
 }
