@@ -1,82 +1,90 @@
 import Link from "next/link"
-import { differenceInDays } from "date-fns"
 import { Building2, Clock } from "lucide-react"
 
-import type { DealMeta, DealStage } from "@/lib/vault"
 import type { Metadata } from "next"
 
-import { DEAL_STAGE_LABELS, listNotes } from "@/lib/vault"
+import {
+  parsePipelineFilters,
+  serializeDealBoard,
+} from "@/lib/pipeline/server/board"
+import { toURLSearchParams } from "@/lib/pipeline/server/search-params"
+import { DEAL_STAGE_LABELS } from "@/lib/pipeline/stage-probability"
+import { db } from "@/lib/prisma"
+import { formatCurrency } from "@/lib/utils"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { DealsKanban } from "./_components/deals-kanban"
+import { PipelineFiltersBar } from "@/components/pipeline/pipeline-filters-bar"
 
 export const metadata: Metadata = {
   title: "Deals",
 }
 
-const CRE_STAGES: DealStage[] = [
-  "prospecting",
-  "listing",
-  "marketing",
-  "showings",
-  "offer",
-  "under-contract",
-  "due-diligence",
-  "closing",
-  "closed",
-]
-
-const STAGE_COLORS: Record<string, string> = {
-  prospecting: "bg-slate-100 text-slate-700",
-  listing: "bg-blue-100 text-blue-700",
-  marketing: "bg-indigo-100 text-indigo-700",
-  showings: "bg-violet-100 text-violet-700",
-  offer: "bg-amber-100 text-amber-700",
-  "under-contract": "bg-orange-100 text-orange-700",
-  "due-diligence": "bg-yellow-100 text-yellow-800",
-  closing: "bg-emerald-100 text-emerald-700",
-  closed: "bg-green-100 text-green-700",
-}
-
-const PROPERTY_TYPE_COLORS: Record<string, string> = {
-  office: "bg-blue-100 text-blue-800",
-  retail: "bg-green-100 text-green-800",
-  industrial: "bg-orange-100 text-orange-800",
-  multifamily: "bg-purple-100 text-purple-800",
-  land: "bg-amber-100 text-amber-800",
-  "mixed-use": "bg-indigo-100 text-indigo-800",
-  hospitality: "bg-pink-100 text-pink-800",
-  medical: "bg-red-100 text-red-800",
-  other: "bg-gray-100 text-gray-800",
-}
-
-function makeTaskId(path: string): string {
-  return path
-    .replace(/[/\\]/g, "-")
-    .replace(/\.md$/, "")
-    .replace(/\s+/g, "-")
-    .toLowerCase()
-}
-
-function formatValue(value?: number): string {
-  if (!value) return ""
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `$${Math.round(value / 1_000)}k`
-  return `$${value.toLocaleString()}`
-}
+export const dynamic = "force-dynamic"
 
 interface DealsPageProps {
   params: Promise<{ lang: string }>
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
 }
-
-export default async function DealsPage({ params }: DealsPageProps) {
+export default async function DealsPage({
+  params,
+  searchParams,
+}: DealsPageProps) {
   const { lang } = await params
+  const resolvedSearchParams = toURLSearchParams(await searchParams)
+  const view = resolvedSearchParams.get("view") === "kanban" ? "kanban" : "list"
+  const filters = parsePipelineFilters(resolvedSearchParams)
+  const closedCutoff = new Date(Date.now() - 90 * 86_400_000)
 
-  const notes = await listNotes<DealMeta>("clients")
-  const deals = notes.filter((n) => n.meta.type === "deal")
+  const deals = await db.deal.findMany({
+    where: {
+      archivedAt: null,
+      ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
+      ...(filters.source ? { contact: { leadSource: filters.source } } : {}),
+      ...(filters.search
+        ? {
+            OR: [
+              {
+                propertyAddress: {
+                  contains: filters.search,
+                  mode: "insensitive",
+                },
+              },
+              {
+                contact: {
+                  name: { contains: filters.search, mode: "insensitive" },
+                },
+              },
+              {
+                contact: {
+                  company: { contains: filters.search, mode: "insensitive" },
+                },
+              },
+            ],
+          }
+        : {}),
+      ...(filters.showAll
+        ? {}
+        : {
+            OR: [
+              { stage: { not: "closed" } },
+              { stageChangedAt: { gte: closedCutoff } },
+              { stageChangedAt: null, updatedAt: { gte: closedCutoff } },
+            ],
+          }),
+    },
+    include: {
+      contact: {
+        select: { id: true, name: true, company: true, leadSource: true },
+      },
+    },
+    orderBy: [{ stageChangedAt: "desc" }, { updatedAt: "desc" }],
+  })
 
-  const activeDeals = deals.filter((d) => d.meta.stage !== "closed")
-  const totalValue = deals.reduce((sum, d) => sum + (d.meta.value ?? 0), 0)
+  const board = serializeDealBoard(deals, filters)
+  const listCards = board.columns.flatMap((column) => column.cards)
+  const activeDeals = listCards.filter((deal) => deal.stage !== "closed")
 
   return (
     <section className="container grid gap-6 p-6">
@@ -87,93 +95,81 @@ export default async function DealsPage({ params }: DealsPageProps) {
         <div>
           <h1 className="text-xl font-semibold">All Deals</h1>
           <p className="text-sm text-muted-foreground">
-            {activeDeals.length} active · {deals.length} total ·{" "}
-            {formatValue(totalValue)} pipeline value
+            {activeDeals.length} active · {listCards.length} total ·{" "}
+            {formatCurrency(board.aggregates.grossValue)} pipeline value
           </p>
         </div>
       </div>
 
-      <div className="space-y-6">
-        {CRE_STAGES.filter((stage) =>
-          deals.some((d) => d.meta.stage === stage)
-        ).map((stage) => {
-          const stageDeals = deals.filter((d) => d.meta.stage === stage)
-          return (
-            <div key={stage}>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge
-                  className={`${STAGE_COLORS[stage] ?? "bg-gray-100 text-gray-700"} border-0`}
-                >
-                  {DEAL_STAGE_LABELS[stage]}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {stageDeals.length} deal{stageDeals.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {stageDeals.map((deal) => {
-                  const dealId = makeTaskId(deal.path)
-                  const clientName = deal.meta.client?.replace(/\[\[|\]\]/g, "")
-                  const daysInStage = deal.meta.listed_date
-                    ? differenceInDays(
-                        new Date(),
-                        new Date(deal.meta.listed_date)
-                      )
-                    : null
+      <PipelineFiltersBar
+        basePath={`/${lang}/pages/deals`}
+        view={view}
+        filters={filters}
+        showPropertyType
+      />
 
-                  return (
+      {view === "kanban" ? (
+        <DealsKanban columns={board.columns} />
+      ) : listCards.length === 0 ? (
+        <p className="rounded-md border px-4 py-10 text-center text-sm text-muted-foreground">
+          No deals match these filters.
+        </p>
+      ) : (
+        <div className="space-y-6">
+          {board.columns
+            .filter((column) => column.cards.length > 0)
+            .map((column) => (
+              <div key={column.id}>
+                <div className="mb-2 flex items-center gap-2">
+                  <Badge className="border-0 bg-muted text-foreground">
+                    {DEAL_STAGE_LABELS[column.id]}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {column.aggregate.count} deal
+                    {column.aggregate.count !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {column.cards.map((deal) => (
                     <Link
-                      key={deal.path}
-                      href={`/${lang}/pages/deals/${dealId}`}
+                      key={deal.id}
+                      href={`/${lang}/pages/deals/${deal.id}`}
                     >
-                      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                        <CardContent className="p-4 space-y-2">
+                      <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
+                        <CardContent className="space-y-2 p-4">
                           <div className="flex items-start justify-between gap-2">
-                            <p className="font-medium text-sm leading-snug">
-                              {deal.meta.property_address}
+                            <p className="text-sm font-medium leading-snug">
+                              {deal.propertyAddress}
                             </p>
-                            {deal.meta.value && (
-                              <span className="text-xs font-semibold shrink-0">
-                                {formatValue(deal.meta.value)}
-                              </span>
-                            )}
+                            <span className="shrink-0 text-xs font-semibold">
+                              {deal.value !== null
+                                ? formatCurrency(deal.value)
+                                : "-"}
+                            </span>
                           </div>
-                          {clientName && (
-                            <p className="text-xs text-muted-foreground">
-                              {clientName}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {deal.meta.property_type && (
-                              <Badge
-                                className={`text-xs capitalize border-0 ${PROPERTY_TYPE_COLORS[deal.meta.property_type] ?? "bg-gray-100 text-gray-800"}`}
-                              >
-                                {deal.meta.property_type.replace("-", " ")}
-                              </Badge>
-                            )}
-                            {daysInStage !== null && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="size-3" />
-                                {daysInStage}d
+                          <p className="text-xs text-muted-foreground">
+                            {deal.clientName ?? "No contact"}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge className="border-0 bg-muted text-xs capitalize text-foreground">
+                              {deal.propertyType.replace(/_/g, " ")}
+                            </Badge>
+                            {deal.ageInStageDays !== null ? (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Clock className="size-3" />{" "}
+                                {deal.ageInStageDays}d
                               </span>
-                            )}
+                            ) : null}
                           </div>
                         </CardContent>
                       </Card>
                     </Link>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
-            </div>
-          )
-        })}
-
-        {deals.length === 0 && (
-          <p className="text-muted-foreground text-sm py-4">
-            No deals in the vault yet.
-          </p>
-        )}
-      </div>
+            ))}
+        </div>
+      )}
     </section>
   )
 }

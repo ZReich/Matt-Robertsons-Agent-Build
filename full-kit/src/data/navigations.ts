@@ -9,11 +9,6 @@ export const navigationsData: NavigationType[] = [
         href: "/dashboards/home",
         iconName: "LayoutDashboard",
       },
-      {
-        title: "Pipeline",
-        href: "/apps/kanban",
-        iconName: "Columns3",
-      },
     ],
   },
   {
@@ -23,6 +18,16 @@ export const navigationsData: NavigationType[] = [
         title: "Clients",
         href: "/pages/clients",
         iconName: "Building2",
+      },
+      {
+        title: "Leads",
+        href: "/pages/leads",
+        iconName: "Target",
+      },
+      {
+        title: "Deals",
+        href: "/pages/deals",
+        iconName: "Handshake",
       },
       {
         title: "Contacts",

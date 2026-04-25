@@ -44,6 +44,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { UnreadBadge } from "@/components/leads/unread-badge"
 import { CommandMenu } from "./command-menu"
 import { ViewModeToggle } from "./view-mode-toggle"
 
@@ -114,12 +115,13 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
           onClick={() => setOpenMobile(!openMobile)}
           asChild
         >
-          <Link href={localizedPathname}>
+          <Link href={localizedPathname} className="flex w-full items-center">
             {"iconName" in item && (
-              <DynamicIcon name={item.iconName} className="h-4 w-4" />
+              <DynamicIcon name={item.iconName} className="me-2 h-4 w-4" />
             )}
             <span>{title}</span>
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
+            {item.href === "/pages/leads" ? <UnreadBadge /> : null}
           </Link>
         </SidebarMenuButton>
       )
