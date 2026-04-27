@@ -1,13 +1,10 @@
 import { getSession } from "@/lib/auth"
+import {
+  ReviewerAuthError,
+  assertSameOriginRequest as assertAgentSameOriginRequest,
+} from "@/lib/reviewer-auth"
 
-export class CandidateReviewAuthError extends Error {
-  constructor(
-    message: string,
-    public readonly status = 401
-  ) {
-    super(message)
-  }
-}
+export class CandidateReviewAuthError extends ReviewerAuthError {}
 
 export type CandidateReviewer = {
   id: string
@@ -20,7 +17,7 @@ export async function requireContactCandidateReviewer(): Promise<CandidateReview
     throw new CandidateReviewAuthError("unauthorized", 401)
   }
 
-  if (!isConfiguredReviewer(session.user.id, session.user.email)) {
+  if (!isContactCandidateReviewer(session.user.id, session.user.email)) {
     throw new CandidateReviewAuthError("forbidden", 403)
   }
 
@@ -31,30 +28,20 @@ export async function requireContactCandidateReviewer(): Promise<CandidateReview
 }
 
 export function assertSameOriginRequest(request: Request): void {
-  const origin = request.headers.get("origin")
-  if (!origin) {
-    throw new CandidateReviewAuthError("invalid origin", 403)
-  }
-
-  const allowedOrigins = new Set<string>([new URL(request.url).origin])
-  addConfiguredOrigin(allowedOrigins, process.env.NEXTAUTH_URL)
-  addConfiguredOrigin(allowedOrigins, process.env.APP_URL)
-
-  if (!allowedOrigins.has(origin)) {
-    throw new CandidateReviewAuthError("invalid origin", 403)
-  }
-}
-
-function addConfiguredOrigin(origins: Set<string>, value: string | undefined) {
-  if (!value) return
   try {
-    origins.add(new URL(value).origin)
-  } catch {
-    // Ignore malformed local config; request origin remains the fallback.
+    assertAgentSameOriginRequest(request)
+  } catch (error) {
+    if (error instanceof ReviewerAuthError) {
+      throw new CandidateReviewAuthError(error.message, error.status)
+    }
+    throw error
   }
 }
 
-function isConfiguredReviewer(id: string, email: string | null | undefined) {
+function isContactCandidateReviewer(
+  id: string,
+  email: string | null | undefined
+) {
   const reviewerIds = csvSet(process.env.CONTACT_CANDIDATE_REVIEWER_IDS)
   const reviewerEmails = csvSet(
     process.env.CONTACT_CANDIDATE_REVIEWER_EMAILS,

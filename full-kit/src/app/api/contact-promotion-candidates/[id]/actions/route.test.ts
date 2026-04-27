@@ -85,6 +85,28 @@ describe("contact promotion candidate action route", () => {
     expect(reviewContactPromotionCandidate).not.toHaveBeenCalled()
   })
 
+  it("does not accept agent-action reviewer aliases for contact candidate review", async () => {
+    process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
+    vi.mocked(getSession).mockResolvedValue({
+      user: {
+        id: "user-1",
+        name: "Zach Reviewer",
+        email: "zach@example.com",
+        avatar: null,
+        status: "ONLINE",
+      },
+      expires: "2026-05-27T00:00:00Z",
+    })
+
+    const response = await POST(request({ action: "reject" }), {
+      params: Promise.resolve({ id: "candidate-1" }),
+    })
+
+    expect(response.status).toBe(403)
+    expect(await response.json()).toMatchObject({ error: "forbidden" })
+    expect(reviewContactPromotionCandidate).not.toHaveBeenCalled()
+  })
+
   it("derives reviewer from the authenticated session", async () => {
     process.env.CONTACT_CANDIDATE_REVIEWER_IDS = "user-1"
     vi.mocked(getSession).mockResolvedValue({

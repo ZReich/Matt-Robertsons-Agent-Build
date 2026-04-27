@@ -1,4 +1,5 @@
 export const PROMPT_VERSION = "v1"
+export const PROMPT_RELEASED_AT = "2026-04-24T00:00:00.000Z"
 
 export const TOPIC_TAGS = [
   "showing-scheduling",

@@ -120,7 +120,9 @@ describe("applyScrubResult", () => {
         tier: "approve",
         status: "pending",
         summary: "Schedule tour",
-        targetEntity: "communication:comm-1",
+        sourceCommunicationId: "comm-1",
+        promptVersion: "v1",
+        targetEntity: null,
         payload: { title: "Schedule tour", priority: "medium" },
       },
     })

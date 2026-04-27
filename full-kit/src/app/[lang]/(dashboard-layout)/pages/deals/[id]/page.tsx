@@ -15,6 +15,7 @@ import {
 
 import type { Metadata } from "next"
 
+import { getAiSuggestionState } from "@/lib/ai/suggestions"
 import { DEAL_STAGE_LABELS } from "@/lib/pipeline/stage-probability"
 import { computeWeightedCommission } from "@/lib/pipeline/weighted-commission"
 import { db } from "@/lib/prisma"
@@ -27,6 +28,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DealStageEditor } from "./_components/deal-stage-editor"
 import { DocLink } from "./_components/doc-link"
+import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 
 interface DealDetailPageProps {
   params: Promise<{ id: string; lang: string }>
@@ -53,18 +55,21 @@ export async function generateMetadata({
 export const dynamic = "force-dynamic"
 
 export default async function DealDetailPage({ params }: DealDetailPageProps) {
-  const { id } = await params
+  const { id, lang } = await params
 
-  const deal = await db.deal.findUnique({
-    where: { id },
-    include: {
-      contact: true,
-      communications: { orderBy: { date: "desc" } },
-      meetings: { orderBy: { date: "desc" } },
-      documents: { orderBy: { dateAdded: "desc" } },
-      todos: { orderBy: { createdAt: "desc" } },
-    },
-  })
+  const [deal, aiSuggestions] = await Promise.all([
+    db.deal.findUnique({
+      where: { id },
+      include: {
+        contact: true,
+        communications: { orderBy: { date: "desc" } },
+        meetings: { orderBy: { date: "desc" } },
+        documents: { orderBy: { dateAdded: "desc" } },
+        todos: { orderBy: { createdAt: "desc" } },
+      },
+    }),
+    getAiSuggestionState({ entityType: "deal", entityId: id }),
+  ])
 
   if (!deal) notFound()
 
@@ -222,6 +227,9 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
               ) : null}
             </CardContent>
           </Card>
+          <div className="sm:col-span-2">
+            <LeadAISuggestions state={aiSuggestions} lang={lang} />
+          </div>
         </TabsContent>
 
         <TabsContent value="comms" className="mt-4 space-y-3">

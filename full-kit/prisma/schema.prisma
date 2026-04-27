@@ -463,9 +463,10 @@ model Communication {
   agentActionId String? @unique @map("agent_action_id")
 
   // Relations
-  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  deal        Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
-  agentAction AgentAction? @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+  contact            Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal               Deal?         @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  agentAction        AgentAction?  @relation("CreatedCommunicationAction", fields: [agentActionId], references: [id], onDelete: SetNull)
+  sourceAgentActions AgentAction[] @relation("SourceCommunicationAction")
 
   // Link to external sync record (for Plaud, Gmail, etc.)
   externalSyncId String?       @unique @map("external_sync_id")
@@ -671,6 +672,8 @@ model TodoReminderPolicy {
   @@index([communicationId])
   @@index([state])
   @@index([nextReminderAt])
+  // Raw SQL migration 20260427193000 adds a partial unique index on agent_action_id
+  // where state = 'snoozed'. Prisma cannot model partial indexes directly.
   @@map("todo_reminder_policies")
 }
 
@@ -768,13 +771,16 @@ model Todo {
   agentActionId String? @unique @map("agent_action_id")
 
   // Relations
-  contact       Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  deal          Deal?          @relation(fields: [dealId], references: [id], onDelete: SetNull)
-  communication Communication? @relation(fields: [communicationId], references: [id], onDelete: SetNull)
-  agentAction   AgentAction?   @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+  contact             Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal                Deal?          @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  communication       Communication? @relation(fields: [communicationId], references: [id], onDelete: SetNull)
+  agentAction         AgentAction?   @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+  dedupedAgentActions AgentAction[]  @relation("DedupedTodoAction")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  dedupeKey String? @map("dedupe_key")
 
   @@index([status])
   @@index([priority])
@@ -783,6 +789,7 @@ model Todo {
   @@index([dealId])
   @@index([communicationId])
   @@index([category])
+  @@index([dedupeKey])
   @@map("todos")
 }
 
@@ -819,13 +826,21 @@ model AgentAction {
   payload      Json?             @default("{}") // structured action data
   feedback     String?           @db.Text
 
-  executedAt DateTime? @map("executed_at")
+  executedAt            DateTime? @map("executed_at")
+  sourceCommunicationId String?   @map("source_communication_id")
+  promptVersion         String    @default("unknown") @map("prompt_version")
+  duplicateOfActionId   String?   @map("duplicate_of_action_id")
+  dedupedToTodoId       String?   @map("deduped_to_todo_id")
 
   // Relations: which entity did this action create?
-  todo          Todo?
-  communication Communication?
-  meeting       Meeting?
-  memory        AgentMemory?
+  todo                Todo?
+  communication       Communication? @relation("CreatedCommunicationAction")
+  meeting             Meeting?
+  memory              AgentMemory?
+  sourceCommunication Communication? @relation("SourceCommunicationAction", fields: [sourceCommunicationId], references: [id], onDelete: SetNull)
+  duplicateOfAction   AgentAction?   @relation("AgentActionDuplicate", fields: [duplicateOfActionId], references: [id], onDelete: SetNull)
+  duplicateActions    AgentAction[]  @relation("AgentActionDuplicate")
+  dedupedToTodo       Todo?          @relation("DedupedTodoAction", fields: [dedupedToTodoId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -834,6 +849,9 @@ model AgentAction {
   @@index([tier])
   @@index([actionType])
   @@index([createdAt])
+  @@index([sourceCommunicationId])
+  @@index([duplicateOfActionId])
+  @@index([dedupedToTodoId])
   @@map("agent_actions")
 }
 

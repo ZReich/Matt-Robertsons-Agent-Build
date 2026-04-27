@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react"
 import { format } from "date-fns"
-import { Check, Clock, Filter, Play, X } from "lucide-react"
+import { Check, Clock, Filter, Pause, Play, X } from "lucide-react"
 
-import type { AgentActionMeta, VaultNote } from "@/lib/vault/shared"
+import type { AgentActionView } from "./agent-control-center"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -23,60 +23,38 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 interface Props {
-  actions: VaultNote<AgentActionMeta>[]
+  actions: AgentActionView[]
 }
 
 const STATUS_CONFIG: Record<
   string,
   { icon: typeof Check; color: string; label: string }
 > = {
-  approved: {
-    icon: Check,
-    color: "text-emerald-600",
-    label: "Approved",
-  },
-  executed: {
-    icon: Play,
-    color: "text-blue-600",
-    label: "Executed",
-  },
-  rejected: {
-    icon: X,
-    color: "text-red-600",
-    label: "Rejected",
-  },
-  pending: {
-    icon: Clock,
-    color: "text-orange-600",
-    label: "Pending",
-  },
+  approved: { icon: Check, color: "text-emerald-600", label: "Approved" },
+  executed: { icon: Play, color: "text-blue-600", label: "Executed" },
+  rejected: { icon: X, color: "text-red-600", label: "Rejected" },
+  snoozed: { icon: Pause, color: "text-amber-600", label: "Snoozed" },
+  pending: { icon: Clock, color: "text-orange-600", label: "Pending" },
 }
 
 export function AgentActivityLog({ actions }: Props) {
   const [filterStatus, setFilterStatus] = useState<string>("all")
 
   const filtered = useMemo(() => {
-    let items = [...actions]
-
-    if (filterStatus !== "all") {
-      items = items.filter((a) => a.meta.status === filterStatus)
-    }
-
-    // Sort by date descending
-    items.sort(
+    const items =
+      filterStatus === "all"
+        ? [...actions]
+        : actions.filter((action) => action.status === filterStatus)
+    return items.sort(
       (a, b) =>
-        new Date(b.meta.created_at).getTime() -
-        new Date(a.meta.created_at).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
-
-    return items
   }, [actions, filterStatus])
 
-  // Group by date
   const grouped = useMemo(() => {
-    const groups: Record<string, VaultNote<AgentActionMeta>[]> = {}
+    const groups: Record<string, AgentActionView[]> = {}
     for (const action of filtered) {
-      const dateKey = format(new Date(action.meta.created_at), "yyyy-MM-dd")
+      const dateKey = format(new Date(action.createdAt), "yyyy-MM-dd")
       if (!groups[dateKey]) groups[dateKey] = []
       groups[dateKey].push(action)
     }
@@ -89,7 +67,6 @@ export function AgentActivityLog({ actions }: Props) {
         <p className="text-sm text-muted-foreground">
           {filtered.length} action{filtered.length !== 1 ? "s" : ""} recorded
         </p>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
@@ -98,18 +75,21 @@ export function AgentActivityLog({ actions }: Props) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setFilterStatus("all")}>
-              All Statuses
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilterStatus("executed")}>
-              Executed
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilterStatus("approved")}>
-              Approved
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilterStatus("rejected")}>
-              Rejected
-            </DropdownMenuItem>
+            {[
+              "all",
+              "executed",
+              "approved",
+              "rejected",
+              "snoozed",
+              "pending",
+            ].map((status) => (
+              <DropdownMenuItem
+                key={status}
+                onClick={() => setFilterStatus(status)}
+              >
+                {status === "all" ? "All Statuses" : status}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -119,9 +99,6 @@ export function AgentActivityLog({ actions }: Props) {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Clock className="mb-3 h-12 w-12 text-muted-foreground/50" />
             <p className="text-lg font-medium">No activity yet</p>
-            <p className="text-sm text-muted-foreground">
-              Agent actions will appear here once the agent starts working.
-            </p>
           </CardContent>
         </Card>
       ) : (
@@ -133,11 +110,10 @@ export function AgentActivityLog({ actions }: Props) {
             <div className="grid gap-2">
               {items.map((action) => {
                 const config =
-                  STATUS_CONFIG[action.meta.status] ?? STATUS_CONFIG.pending
+                  STATUS_CONFIG[action.status] ?? STATUS_CONFIG.pending
                 const Icon = config.icon
-
                 return (
-                  <Card key={action.path}>
+                  <Card key={action.id}>
                     <CardHeader className="pb-2 pt-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">
@@ -148,30 +124,28 @@ export function AgentActivityLog({ actions }: Props) {
                           </div>
                           <div>
                             <CardTitle className="text-sm">
-                              {action.meta.summary}
+                              {action.summary}
                             </CardTitle>
                             <CardDescription className="mt-0.5 text-xs">
-                              {action.meta.action_type} &middot;{" "}
-                              {format(
-                                new Date(action.meta.created_at),
-                                "h:mm a"
-                              )}
-                              {action.meta.target_entity && (
-                                <> &middot; {action.meta.target_entity}</>
+                              {action.actionType} -{" "}
+                              {format(new Date(action.createdAt), "h:mm a")}
+                              {action.targetEntity && (
+                                <> - {action.targetEntity}</>
                               )}
                             </CardDescription>
                           </div>
                         </div>
                         <Badge variant="secondary" className="text-xs">
-                          {config.label}
+                          {action.feedback === "duplicate"
+                            ? "Rejected duplicate"
+                            : config.label}
                         </Badge>
                       </div>
                     </CardHeader>
-
-                    {action.meta.feedback && (
+                    {action.feedback && (
                       <CardContent className="pb-3 pt-0">
                         <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-                          Feedback: {action.meta.feedback}
+                          Feedback: {action.feedback}
                         </p>
                       </CardContent>
                     )}

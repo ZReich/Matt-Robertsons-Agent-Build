@@ -1,0 +1,124 @@
+import { NextResponse } from "next/server"
+
+import {
+  ScrubBudgetError,
+  assertWithinScrubBudget,
+} from "@/lib/ai/budget-tracker"
+import { PROMPT_VERSION } from "@/lib/ai/scrub-types"
+import { db } from "@/lib/prisma"
+import {
+  ReviewerAuthError,
+  assertJsonRequest,
+  assertSameOriginRequest,
+  requireAgentReviewer,
+} from "@/lib/reviewer-auth"
+
+export async function POST(request: Request): Promise<Response> {
+  try {
+    assertSameOriginRequest(request)
+    assertJsonRequest(request)
+    await requireAgentReviewer()
+  } catch (error) {
+    if (error instanceof ReviewerAuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status }
+      )
+    }
+    throw error
+  }
+
+  const body = (await request.json()) as {
+    entityType?: unknown
+    entityId?: unknown
+    confirmReprocess?: unknown
+  }
+  if (body.entityType !== "contact" || typeof body.entityId !== "string") {
+    return NextResponse.json({ error: "invalid entity" }, { status: 400 })
+  }
+
+  const communications = await db.communication.findMany({
+    where: { contactId: body.entityId },
+    orderBy: { date: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      metadata: true,
+      scrubQueue: { select: { status: true } },
+    },
+  })
+  let enqueued = 0
+  let alreadyCurrent = 0
+  let pending = 0
+  const toEnqueue: string[] = []
+
+  for (const communication of communications) {
+    const scrub = getScrub(communication.metadata)
+    if (scrub?.promptVersion === PROMPT_VERSION) {
+      alreadyCurrent += 1
+      continue
+    }
+    if (
+      communication.scrubQueue?.status === "pending" ||
+      communication.scrubQueue?.status === "in_flight"
+    ) {
+      pending += 1
+      continue
+    }
+    if (scrub && body.confirmReprocess !== true) {
+      return NextResponse.json(
+        {
+          code: "reprocess_requires_confirmation",
+          currentPromptVersion: scrub.promptVersion ?? "unknown",
+          requestedPromptVersion: PROMPT_VERSION,
+        },
+        { status: 400 }
+      )
+    }
+    toEnqueue.push(communication.id)
+  }
+
+  if (toEnqueue.length > 0) {
+    try {
+      await assertWithinScrubBudget()
+    } catch (error) {
+      if (error instanceof ScrubBudgetError) {
+        return NextResponse.json(
+          {
+            error: "scrub budget exceeded",
+            code: "scrub_budget_exceeded",
+            resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          },
+          { status: 429 }
+        )
+      }
+      throw error
+    }
+  }
+
+  for (const communicationId of toEnqueue) {
+    await db.scrubQueue.upsert({
+      where: { communicationId },
+      create: { communicationId, status: "pending" },
+      update: {
+        status: "pending",
+        attempts: 0,
+        lockedUntil: null,
+        leaseToken: null,
+        lastError: null,
+      },
+    })
+    enqueued += 1
+  }
+
+  return NextResponse.json({ ok: true, enqueued, pending, alreadyCurrent })
+}
+
+function getScrub(metadata: unknown): Record<string, unknown> | null {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return null
+  }
+  const scrub = (metadata as Record<string, unknown>).scrub
+  if (!scrub || typeof scrub !== "object" || Array.isArray(scrub)) return null
+  return scrub as Record<string, unknown>
+}

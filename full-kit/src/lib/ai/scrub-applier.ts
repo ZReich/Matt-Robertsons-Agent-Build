@@ -90,10 +90,33 @@ export async function applyScrubResult({
           tier: "approve",
           status: "pending",
           summary: action.summary,
-          targetEntity: `communication:${communicationId}`,
+          sourceCommunicationId: communicationId,
+          promptVersion: scrubOutput.promptVersion || PROMPT_VERSION,
+          targetEntity: getActionTargetEntity(action),
           payload: action.payload as Prisma.InputJsonValue,
         },
       })
     }
   })
+}
+
+function getActionTargetEntity(action: SuggestedAction): string | null {
+  const payload = action.payload
+  const dealId = typeof payload.dealId === "string" ? payload.dealId : null
+  const contactId =
+    typeof payload.contactId === "string" ? payload.contactId : null
+  const meetingId =
+    typeof payload.meetingId === "string" ? payload.meetingId : null
+
+  if (action.actionType === "move-deal-stage" && dealId) return `deal:${dealId}`
+  if (action.actionType === "update-deal" && dealId) return `deal:${dealId}`
+  if (action.actionType === "create-meeting" && dealId) return `deal:${dealId}`
+  if (action.actionType === "update-meeting" && meetingId) {
+    return `meeting:${meetingId}`
+  }
+  if (action.actionType === "create-agent-memory") {
+    if (dealId) return `deal:${dealId}`
+    if (contactId) return `contact:${contactId}`
+  }
+  return null
 }

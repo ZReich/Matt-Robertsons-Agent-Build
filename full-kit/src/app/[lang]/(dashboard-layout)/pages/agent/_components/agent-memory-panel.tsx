@@ -3,8 +3,6 @@
 import { useMemo, useState } from "react"
 import { BookOpen, Brain, FileText, Sparkles, Users } from "lucide-react"
 
-import type { AgentMemoryMeta, VaultNote } from "@/lib/vault/shared"
-
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -17,8 +15,17 @@ import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 
+export interface AgentMemoryView {
+  id: string
+  title: string
+  content: string
+  memoryType: string
+  priority: string | null
+  updatedAt: string
+}
+
 interface Props {
-  memory: VaultNote<AgentMemoryMeta>[]
+  memory: AgentMemoryView[]
 }
 
 const MEMORY_TYPE_CONFIG: Record<
@@ -40,12 +47,12 @@ const MEMORY_TYPE_CONFIG: Record<
     label: "Playbooks",
     color: "text-emerald-600",
   },
-  "client-note": {
+  client_note: {
     icon: Users,
     label: "Client Notes",
     color: "text-violet-600",
   },
-  "style-guide": {
+  style_guide: {
     icon: Brain,
     label: "Style Guide",
     color: "text-amber-600",
@@ -54,19 +61,19 @@ const MEMORY_TYPE_CONFIG: Record<
 
 export function AgentMemoryPanel({ memory }: Props) {
   const [selectedPath, setSelectedPath] = useState<string | null>(
-    memory[0]?.path ?? null
+    memory[0]?.id ?? null
   )
 
   const selectedNote = useMemo(
-    () => memory.find((m) => m.path === selectedPath) ?? null,
+    () => memory.find((m) => m.id === selectedPath) ?? null,
     [memory, selectedPath]
   )
 
   // Group by memory_type
   const grouped = useMemo(() => {
-    const groups: Record<string, VaultNote<AgentMemoryMeta>[]> = {}
+    const groups: Record<string, AgentMemoryView[]> = {}
     for (const note of memory) {
-      const type = note.meta.memory_type
+      const type = note.memoryType
       if (!groups[type]) groups[type] = []
       groups[type].push(note)
     }
@@ -100,15 +107,13 @@ export function AgentMemoryPanel({ memory }: Props) {
                   </div>
                   {notes.map((note) => (
                     <button
-                      key={note.path}
-                      onClick={() => setSelectedPath(note.path)}
+                      key={note.id}
+                      onClick={() => setSelectedPath(note.id)}
                       className={`w-full rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent ${
-                        selectedPath === note.path
-                          ? "bg-accent font-medium"
-                          : ""
+                        selectedPath === note.id ? "bg-accent font-medium" : ""
                       }`}
                     >
-                      {note.meta.title}
+                      {note.title}
                     </button>
                   ))}
                 </div>
@@ -125,15 +130,16 @@ export function AgentMemoryPanel({ memory }: Props) {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle>{selectedNote.meta.title}</CardTitle>
+                  <CardTitle>{selectedNote.title}</CardTitle>
                   <CardDescription className="mt-1 text-xs">
-                    Last updated: {selectedNote.meta.last_updated ?? "Unknown"}{" "}
-                    &middot; Priority: {selectedNote.meta.priority ?? "medium"}
+                    Last updated:{" "}
+                    {new Date(selectedNote.updatedAt).toLocaleString()} &middot;
+                    Priority: {selectedNote.priority ?? "medium"}
                   </CardDescription>
                 </div>
                 <Badge variant="secondary">
-                  {MEMORY_TYPE_CONFIG[selectedNote.meta.memory_type]?.label ??
-                    selectedNote.meta.memory_type}
+                  {MEMORY_TYPE_CONFIG[selectedNote.memoryType]?.label ??
+                    selectedNote.memoryType}
                 </Badge>
               </div>
             </CardHeader>

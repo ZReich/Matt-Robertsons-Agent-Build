@@ -1,7 +1,6 @@
-import type { AgentActionMeta, AgentMemoryMeta } from "@/lib/vault"
 import type { Metadata } from "next"
 
-import { listNotes } from "@/lib/vault"
+import { db } from "@/lib/prisma"
 
 import { AgentControlCenter } from "./_components/agent-control-center"
 
@@ -11,21 +10,90 @@ export const metadata: Metadata = {
 
 export default async function AgentPage() {
   const [actions, memory] = await Promise.all([
-    listNotes<AgentActionMeta>("agent-actions"),
-    listNotes<AgentMemoryMeta>("agent-memory"),
+    db.agentAction.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: {
+        id: true,
+        actionType: true,
+        tier: true,
+        status: true,
+        summary: true,
+        targetEntity: true,
+        feedback: true,
+        sourceCommunicationId: true,
+        promptVersion: true,
+        duplicateOfActionId: true,
+        dedupedToTodoId: true,
+        createdAt: true,
+        executedAt: true,
+        sourceCommunication: {
+          select: { id: true, subject: true, date: true, archivedAt: true },
+        },
+        todo: { select: { id: true, title: true, status: true } },
+        dedupedToTodo: { select: { id: true, title: true, status: true } },
+      },
+    }),
+    db.agentMemory.findMany({
+      orderBy: [{ priority: "desc" }, { updatedAt: "desc" }],
+      take: 100,
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        memoryType: true,
+        priority: true,
+        updatedAt: true,
+      },
+    }),
   ])
-
-  // Sort actions: pending first, then by date desc
-  const statusOrder = { pending: 0, approved: 1, executed: 2, rejected: 3 }
-  actions.sort((a, b) => {
-    const sa = statusOrder[a.meta.status] ?? 4
-    const sb = statusOrder[b.meta.status] ?? 4
-    if (sa !== sb) return sa - sb
-    return (
-      new Date(b.meta.created_at).getTime() -
-      new Date(a.meta.created_at).getTime()
-    )
+  const snoozes = await db.todoReminderPolicy.findMany({
+    where: {
+      state: "snoozed",
+      agentActionId: { in: actions.map((action) => action.id) },
+    },
+    select: { agentActionId: true },
   })
+  const snoozedActionIds = new Set(
+    snoozes.map((snooze) => snooze.agentActionId).filter(Boolean)
+  )
+  const initialActions = actions.map((action) => ({
+    id: action.id,
+    actionType: action.actionType,
+    tier: action.tier,
+    status:
+      action.status === "pending" && snoozedActionIds.has(action.id)
+        ? ("snoozed" as const)
+        : action.status,
+    summary: action.summary,
+    targetEntity: action.targetEntity,
+    feedback: action.feedback,
+    sourceCommunicationId: action.sourceCommunicationId,
+    promptVersion: action.promptVersion,
+    duplicateOfActionId: action.duplicateOfActionId,
+    dedupedToTodoId: action.dedupedToTodoId,
+    createdAt: action.createdAt.toISOString(),
+    executedAt: action.executedAt?.toISOString() ?? null,
+    sourceCommunication: action.sourceCommunication
+      ? {
+          id: action.sourceCommunication.id,
+          subject: action.sourceCommunication.subject,
+          date: action.sourceCommunication.date.toISOString(),
+          archivedAt:
+            action.sourceCommunication.archivedAt?.toISOString() ?? null,
+        }
+      : null,
+    todo: action.todo,
+    dedupedToTodo: action.dedupedToTodo,
+  }))
+  const initialMemory = memory.map((item) => ({
+    id: item.id,
+    title: item.title,
+    content: item.content,
+    memoryType: item.memoryType,
+    priority: item.priority,
+    updatedAt: item.updatedAt.toISOString(),
+  }))
 
   return (
     <section className="container grid gap-4 p-4">
@@ -37,8 +105,8 @@ export default async function AgentPage() {
       </div>
 
       <AgentControlCenter
-        initialActions={JSON.parse(JSON.stringify(actions))}
-        initialMemory={JSON.parse(JSON.stringify(memory))}
+        initialActions={initialActions}
+        initialMemory={initialMemory}
       />
     </section>
   )

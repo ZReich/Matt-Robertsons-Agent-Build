@@ -2,9 +2,12 @@
 
 import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { AlertTriangle, Check, Clock, X } from "lucide-react"
+import { toast } from "sonner"
+import { AlertTriangle, Check, Clock, Pause, X } from "lucide-react"
 
-import type { AgentActionMeta, VaultNote } from "@/lib/vault/shared"
+import type { AgentActionView } from "./agent-control-center"
+
+import { DEFAULT_AGENT_ACTION_SNOOZE_MS } from "@/lib/ai/review-constants"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,32 +22,22 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 
 interface Props {
-  actions: VaultNote<AgentActionMeta>[]
-  onActionUpdate: (path: string, status: AgentActionMeta["status"]) => void
+  actions: AgentActionView[]
+  onActionUpdate: (id: string, status: AgentActionView["status"]) => void
 }
 
 const ACTION_TYPE_LABELS: Record<string, string> = {
   "create-todo": "Create Todo",
-  "update-todo": "Update Todo",
-  "create-deal": "Create Deal",
   "update-deal": "Update Deal",
   "move-deal-stage": "Move Deal Stage",
-  "create-communication": "Log Communication",
   "create-meeting": "Schedule Meeting",
   "update-meeting": "Update Meeting",
-  "send-email": "Send Email",
-  "send-text": "Send Text",
-  "create-client": "Create Client",
-  "update-client": "Update Client",
-  "create-contact": "Create Contact",
-  "update-contact": "Update Contact",
-  "archive-deal": "Archive Deal",
-  general: "General Action",
+  "create-agent-memory": "Save Agent Memory",
 }
 
 const TIER_COLORS: Record<string, string> = {
   auto: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-  "log-only": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  log_only: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   approve:
     "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   blocked: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
@@ -54,25 +47,51 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({})
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({})
 
-  async function handleAction(path: string, status: "approved" | "rejected") {
-    setLoadingMap((prev) => ({ ...prev, [path]: true }))
-
+  async function handleAction(
+    action: AgentActionView,
+    intent: "approve" | "reject" | "snooze"
+  ) {
+    setLoadingMap((prev) => ({ ...prev, [action.id]: true }))
     try {
-      await fetch("/api/vault/agent-actions", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path,
-          status,
-          ...(feedbackMap[path] && { feedback: feedbackMap[path] }),
-        }),
-      })
-
-      onActionUpdate(path, status)
-    } catch (err) {
-      console.error("Failed to update action:", err)
+      const body =
+        intent === "reject"
+          ? { feedback: feedbackMap[action.id] ?? "" }
+          : intent === "snooze"
+            ? {
+                snoozedUntil: new Date(
+                  Date.now() + DEFAULT_AGENT_ACTION_SNOOZE_MS
+                ).toISOString(),
+              }
+            : {}
+      const response = await fetch(
+        `/api/agent/actions/${action.id}/${intent}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      )
+      const result = (await response.json()) as {
+        error?: string
+        code?: string
+        status?: string
+      }
+      if (!response.ok) {
+        toast.error(result.error ?? "Agent action failed", {
+          description: result.code,
+        })
+        return
+      }
+      if (result.status === "executed") onActionUpdate(action.id, "executed")
+      if (result.status === "snoozed") onActionUpdate(action.id, "snoozed")
+      if (
+        result.status === "rejected" ||
+        result.status === "rejected_duplicate"
+      ) {
+        onActionUpdate(action.id, "rejected")
+      }
     } finally {
-      setLoadingMap((prev) => ({ ...prev, [path]: false }))
+      setLoadingMap((prev) => ({ ...prev, [action.id]: false }))
     }
   }
 
@@ -83,7 +102,7 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
           <Clock className="mb-3 h-12 w-12 text-muted-foreground/50" />
           <p className="text-lg font-medium">No pending actions</p>
           <p className="text-sm text-muted-foreground">
-            The agent will submit actions here for your approval.
+            AI suggestions that need approval will appear here.
           </p>
         </CardContent>
       </Card>
@@ -101,70 +120,62 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
       </div>
 
       {actions.map((action) => (
-        <Card key={action.path}>
+        <Card key={action.id}>
           <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <CardTitle className="text-base">
-                  {action.meta.summary}
-                </CardTitle>
-                <CardDescription className="mt-1 flex items-center gap-2">
+                <CardTitle className="text-base">{action.summary}</CardTitle>
+                <CardDescription className="mt-1 flex flex-wrap items-center gap-2">
                   <span>
-                    {ACTION_TYPE_LABELS[action.meta.action_type] ??
-                      action.meta.action_type}
+                    {ACTION_TYPE_LABELS[action.actionType] ?? action.actionType}
                   </span>
-                  {action.meta.target_entity && (
+                  {action.targetEntity && (
                     <>
                       <span className="text-muted-foreground/50">|</span>
-                      <span>{action.meta.target_entity}</span>
+                      <span>{action.targetEntity}</span>
                     </>
                   )}
                   <span className="text-muted-foreground/50">|</span>
                   <span>
-                    {formatDistanceToNow(new Date(action.meta.created_at), {
+                    {formatDistanceToNow(new Date(action.createdAt), {
                       addSuffix: true,
                     })}
                   </span>
                 </CardDescription>
               </div>
               <Badge
-                className={TIER_COLORS[action.meta.tier] ?? ""}
+                className={TIER_COLORS[action.tier] ?? ""}
                 variant="secondary"
               >
-                {action.meta.tier}
+                {action.tier}
               </Badge>
             </div>
           </CardHeader>
 
-          {action.content && (
-            <>
-              <Separator />
-              <CardContent className="pt-3">
-                <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">
-                  {action.content}
-                </pre>
-              </CardContent>
-            </>
-          )}
-
           <Separator />
           <CardContent className="pt-3">
+            {action.sourceCommunication && (
+              <p className="mb-3 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                Evidence: {action.sourceCommunication.subject ?? "Email"} -{" "}
+                {new Date(action.sourceCommunication.date).toLocaleString()}
+              </p>
+            )}
             <Textarea
               placeholder="Optional feedback for the agent..."
               className="mb-3 h-16 resize-none text-sm"
-              value={feedbackMap[action.path] ?? ""}
+              value={feedbackMap[action.id] ?? ""}
               onChange={(e) =>
                 setFeedbackMap((prev) => ({
                   ...prev,
-                  [action.path]: e.target.value,
+                  [action.id]: e.target.value,
                 }))
               }
             />
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
-                onClick={() => handleAction(action.path, "approved")}
-                disabled={loadingMap[action.path]}
+                onClick={() => handleAction(action, "approve")}
+                disabled={loadingMap[action.id]}
               >
                 <Check className="mr-1 h-4 w-4" />
                 Approve
@@ -172,8 +183,17 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => handleAction(action.path, "rejected")}
-                disabled={loadingMap[action.path]}
+                onClick={() => handleAction(action, "snooze")}
+                disabled={loadingMap[action.id]}
+              >
+                <Pause className="mr-1 h-4 w-4" />
+                Snooze
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleAction(action, "reject")}
+                disabled={loadingMap[action.id]}
               >
                 <X className="mr-1 h-4 w-4" />
                 Reject

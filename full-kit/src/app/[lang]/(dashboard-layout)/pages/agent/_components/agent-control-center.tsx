@@ -2,11 +2,7 @@
 
 import { useState } from "react"
 
-import type {
-  AgentActionMeta,
-  AgentMemoryMeta,
-  VaultNote,
-} from "@/lib/vault/shared"
+import type { AgentMemoryView } from "./agent-memory-panel"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AgentActivityLog } from "./agent-activity-log"
@@ -14,26 +10,50 @@ import { AgentConfig } from "./agent-config"
 import { AgentMemoryPanel } from "./agent-memory-panel"
 import { AgentQueue } from "./agent-queue"
 
+export interface AgentActionView {
+  id: string
+  actionType: string
+  tier: string
+  status: "pending" | "approved" | "rejected" | "executed" | "snoozed"
+  summary: string
+  targetEntity: string | null
+  feedback: string | null
+  sourceCommunicationId: string | null
+  promptVersion: string
+  duplicateOfActionId: string | null
+  dedupedToTodoId: string | null
+  createdAt: string
+  executedAt: string | null
+  sourceCommunication?: {
+    id: string
+    subject: string | null
+    date: string
+    archivedAt: string | null
+  } | null
+  todo?: { id: string; title: string; status: string } | null
+  dedupedToTodo?: { id: string; title: string; status: string } | null
+}
+
 interface Props {
-  initialActions: VaultNote<AgentActionMeta>[]
-  initialMemory: VaultNote<AgentMemoryMeta>[]
+  initialActions: AgentActionView[]
+  initialMemory: AgentMemoryView[]
 }
 
 export function AgentControlCenter({ initialActions, initialMemory }: Props) {
   const [actions, setActions] = useState(initialActions)
   const [memory] = useState(initialMemory)
 
-  const pendingActions = actions.filter((a) => a.meta.status === "pending")
-  const completedActions = actions.filter((a) => a.meta.status !== "pending")
+  const pendingActions = actions.filter(
+    (a) => a.status === "pending" && a.tier === "approve"
+  )
+  const completedActions = actions.filter((a) => a.status !== "pending")
 
   const handleActionUpdate = (
-    path: string,
-    newStatus: AgentActionMeta["status"]
+    id: string,
+    newStatus: AgentActionView["status"]
   ) => {
     setActions((prev) =>
-      prev.map((a) =>
-        a.path === path ? { ...a, meta: { ...a.meta, status: newStatus } } : a
-      )
+      prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a))
     )
   }
 

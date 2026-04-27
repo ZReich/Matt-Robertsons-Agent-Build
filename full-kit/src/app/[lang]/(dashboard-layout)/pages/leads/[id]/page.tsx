@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import type { LeadActivityItem } from "@/components/leads/lead-activity-timeline"
 import type { Metadata } from "next"
 
+import { getAiSuggestionState } from "@/lib/ai/suggestions"
 import { extractLeadInquiryFacts } from "@/lib/leads/inquiry-facts"
 import { cleanLeadMessageText } from "@/lib/leads/message-text"
 import { db } from "@/lib/prisma"
@@ -63,9 +64,9 @@ function formatLeadAt(date: Date | null): string {
 }
 
 export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
-  const { id } = await params
+  const { id, lang } = await params
 
-  const [contact, communications] = await Promise.all([
+  const [contact, communications, aiSuggestions] = await Promise.all([
     db.contact.findUnique({ where: { id } }),
     db.communication.findMany({
       where: { contactId: id },
@@ -80,6 +81,11 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         metadata: true,
         externalMessageId: true,
       },
+    }),
+    getAiSuggestionState({
+      entityType: "contact",
+      entityId: id,
+      surface: "lead",
     }),
   ])
 
@@ -160,7 +166,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             displayEmail={inquiryFacts.contactEmail}
             displayPhone={inquiryFacts.contactPhone}
           />
-          <LeadAISuggestions contactId={contact.id} />
+          <LeadAISuggestions state={aiSuggestions} lang={lang} />
           <NotesCard notes={contact.notes} />
         </aside>
       </div>

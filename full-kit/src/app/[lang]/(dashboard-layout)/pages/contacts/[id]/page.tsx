@@ -14,6 +14,7 @@ import type { CommunicationMeta, MeetingMeta } from "@/lib/vault"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
+import { getAiSuggestionState } from "@/lib/ai/suggestions"
 import { db } from "@/lib/prisma"
 import { matchTranscriptsToMeetings } from "@/lib/transcript-matching"
 import { listNotes, normalizeEntityRef } from "@/lib/vault"
@@ -24,6 +25,7 @@ import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ActivityTimeline } from "@/components/activity/activity-timeline"
+import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 
 interface ContactDetailPageProps {
   params: Promise<{ id: string; lang: string }>
@@ -56,12 +58,13 @@ export const dynamic = "force-dynamic"
 export default async function ContactDetailPage({
   params,
 }: ContactDetailPageProps) {
-  const { id } = await params
+  const { id, lang } = await params
 
-  const [contact, meetingNotes, commNotes] = await Promise.all([
+  const [contact, meetingNotes, commNotes, aiSuggestions] = await Promise.all([
     db.contact.findUnique({ where: { id } }),
     listNotes<MeetingMeta>("meetings"),
     listNotes<CommunicationMeta>("communications"),
+    getAiSuggestionState({ entityType: "contact", entityId: id }),
   ])
 
   if (!contact) notFound()
@@ -169,6 +172,8 @@ export default async function ContactDetailPage({
               )}
             </CardContent>
           </Card>
+
+          <LeadAISuggestions state={aiSuggestions} lang={lang} />
 
           {upcomingMeetings.length > 0 && (
             <Card>
