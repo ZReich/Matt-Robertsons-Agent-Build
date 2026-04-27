@@ -1,0 +1,661 @@
+import type { InquirerInfo } from "@/lib/msgraph/email-extractors"
+import type { LeadSource, Prisma, PrismaClient } from "@prisma/client"
+import type { LeadDiagnosticPlatform } from "./lead-extractor-diagnostics"
+
+import {
+  extractBuildoutEvent,
+  extractCrexiLead,
+  extractLoopNetLead,
+} from "@/lib/msgraph/email-extractors"
+import { db } from "@/lib/prisma"
+
+import { detectLeadPlatform } from "./lead-extractor-diagnostics"
+
+type DbLike = PrismaClient
+
+export type LeadApplyBackfillRequest = {
+  dryRun?: boolean
+  limit?: number
+  cursor?: string | null
+  runId?: string
+}
+
+export type LeadApplyOutcome =
+  | "would_create_contact_candidate"
+  | "created_contact_candidate"
+  | "updated_contact_candidate"
+  | "would_link_existing_contact"
+  | "linked_existing_contact"
+  | "already_lead"
+  | "already_client_no_lead_status"
+  | "skipped_noise"
+  | "skipped_uncertain"
+  | "skipped_non_signal"
+  | "skipped_non_platform"
+  | "skipped_extractor_null"
+  | "skipped_no_inquirer_email"
+  | "skipped_existing_contact"
+  | "skipped_ambiguous_contact"
+  | "skipped_race_lost"
+
+export type LeadApplySample = {
+  communicationId: string
+  platform?: LeadDiagnosticPlatform
+  outcome: LeadApplyOutcome
+  extractedKind?: string
+  inquirerEmail?: string
+  previousContactId?: string | null
+  contactId?: string | null
+}
+
+export type LeadApplyBackfillResult = {
+  runId: string
+  dryRun: boolean
+  scanned: number
+  nextCursor: string | null
+  createdLeadContacts: number
+  createdContactCandidates: number
+  markedExistingContacts: number
+  communicationLinked: number
+  byOutcome: Partial<Record<LeadApplyOutcome, number>>
+  samples: LeadApplySample[]
+}
+
+type CommunicationRow = {
+  id: string
+  subject: string | null
+  body: string | null
+  metadata: Prisma.JsonValue | null
+  date: Date
+  contactId: string | null
+}
+
+type ContactLookup = {
+  id: string
+  email: string | null
+  leadSource: LeadSource | null
+  leadStatus: string | null
+  _count: { deals: number }
+}
+
+type ExtractedLead = {
+  platform: LeadDiagnosticPlatform
+  leadSource: LeadSource
+  kind: string
+  inquirer: InquirerInfo & { email: string }
+}
+
+const DEFAULT_LIMIT = 25
+const MAX_WRITE_LIMIT = 100
+const ADVISORY_LOCK_KEY = "historical-lead-apply-backfill"
+
+export async function runLeadApplyBackfill({
+  request = {},
+  client = db,
+}: {
+  request?: LeadApplyBackfillRequest
+  client?: DbLike
+} = {}): Promise<LeadApplyBackfillResult> {
+  const dryRun = request.dryRun ?? true
+  const limit = readLimit(request.limit)
+  const runId = request.runId ?? `lead-apply-${new Date().toISOString()}`
+
+  if (!dryRun) {
+    if (!request.runId) throw new Error("runId is required when dryRun=false")
+    if (request.limit === undefined)
+      throw new Error("limit is required when dryRun=false")
+    if (request.limit > MAX_WRITE_LIMIT)
+      throw new Error(`limit must be <= ${MAX_WRITE_LIMIT} when dryRun=false`)
+  }
+
+  const rows = await client.communication.findMany({
+    where: {
+      id: request.cursor ? { gt: request.cursor } : undefined,
+      channel: "email",
+      archivedAt: null,
+      metadata: { path: ["classification"], equals: "signal" },
+    },
+    orderBy: { id: "asc" },
+    take: limit,
+    select: {
+      id: true,
+      subject: true,
+      body: true,
+      metadata: true,
+      date: true,
+      contactId: true,
+    },
+  })
+
+  const result = emptyResult(runId, dryRun)
+  result.scanned = rows.length
+  result.nextCursor = rows.length === limit ? (rows.at(-1)?.id ?? null) : null
+
+  const extractedById = new Map<string, ExtractedLead>()
+  for (const row of rows) {
+    const extracted = extractLead(row)
+    if (extracted) extractedById.set(row.id, extracted)
+  }
+  const contactsByEmail = await loadContactsByEmail(
+    client,
+    [...extractedById.values()].map((item) => item.inquirer.email)
+  )
+
+  if (dryRun) {
+    for (const row of rows) {
+      planRow(row, extractedById.get(row.id), contactsByEmail, result)
+    }
+    return result
+  }
+
+  const locked = await tryAdvisoryLock(client)
+  if (!locked)
+    throw new Error("historical lead apply backfill is already running")
+  try {
+    for (const row of rows) {
+      await applyRow(
+        row,
+        extractedById.get(row.id),
+        contactsByEmail,
+        result,
+        client
+      )
+    }
+    return result
+  } finally {
+    await releaseAdvisoryLock(client)
+  }
+}
+
+function readLimit(limit: number | undefined): number {
+  if (!Number.isFinite(limit)) return DEFAULT_LIMIT
+  return Math.min(
+    Math.max(Math.trunc(limit ?? DEFAULT_LIMIT), 1),
+    MAX_WRITE_LIMIT
+  )
+}
+
+function emptyResult(runId: string, dryRun: boolean): LeadApplyBackfillResult {
+  return {
+    runId,
+    dryRun,
+    scanned: 0,
+    nextCursor: null,
+    createdLeadContacts: 0,
+    createdContactCandidates: 0,
+    markedExistingContacts: 0,
+    communicationLinked: 0,
+    byOutcome: {},
+    samples: [],
+  }
+}
+
+function planRow(
+  row: CommunicationRow,
+  extracted: ExtractedLead | undefined,
+  contactsByEmail: Map<string, ContactLookup[]>,
+  result: LeadApplyBackfillResult
+): LeadApplyOutcome {
+  const classification = metadataString(row.metadata, "classification")
+  if (classification === "noise") return record(result, row, "skipped_noise")
+  if (classification === "uncertain")
+    return record(result, row, "skipped_uncertain")
+  if (classification !== "signal")
+    return record(result, row, "skipped_non_signal")
+
+  const platform = detectLeadPlatform(row)
+  if (!platform) return record(result, row, "skipped_non_platform")
+  if (!extractPlatform(row, platform)) {
+    return record(result, row, "skipped_extractor_null", { platform })
+  }
+  if (!extracted) {
+    return record(result, row, "skipped_no_inquirer_email", { platform })
+  }
+
+  const contacts = contactsByEmail.get(extracted.inquirer.email) ?? []
+  if (contacts.length > 1) {
+    return record(result, row, "skipped_ambiguous_contact", {
+      platform,
+      extracted,
+    })
+  }
+  const contact = contacts[0] ?? null
+  if (row.contactId && row.contactId !== contact?.id) {
+    return record(result, row, "skipped_existing_contact", {
+      platform,
+      extracted,
+      contactId: contact?.id ?? null,
+    })
+  }
+  if (!contact) {
+    return record(result, row, "would_create_contact_candidate", {
+      platform,
+      extracted,
+    })
+  }
+  if (contact.leadSource) {
+    if (!row.contactId) {
+      return record(result, row, "would_link_existing_contact", {
+        platform,
+        extracted,
+        contactId: contact.id,
+      })
+    }
+    return record(result, row, "already_lead", {
+      platform,
+      extracted,
+      contactId: contact.id,
+    })
+  }
+  if (contact._count.deals > 0) {
+    if (!row.contactId) {
+      return record(result, row, "would_link_existing_contact", {
+        platform,
+        extracted,
+        contactId: contact.id,
+      })
+    }
+    return record(result, row, "already_client_no_lead_status", {
+      platform,
+      extracted,
+      contactId: contact.id,
+    })
+  }
+  return record(result, row, "would_link_existing_contact", {
+    platform,
+    extracted,
+    contactId: contact.id,
+  })
+}
+
+async function applyRow(
+  row: CommunicationRow,
+  extracted: ExtractedLead | undefined,
+  contactsByEmail: Map<string, ContactLookup[]>,
+  result: LeadApplyBackfillResult,
+  client: DbLike
+): Promise<void> {
+  const planned = planRow(
+    row,
+    extracted,
+    contactsByEmail,
+    emptyResult(result.runId, true)
+  )
+  if (
+    planned !== "would_create_contact_candidate" &&
+    planned !== "would_link_existing_contact"
+  ) {
+    record(
+      result,
+      row,
+      planned,
+      extracted ? { platform: extracted.platform, extracted } : {}
+    )
+    return
+  }
+  if (!extracted) return
+
+  if (planned === "would_link_existing_contact") {
+    const contacts = contactsByEmail.get(extracted.inquirer.email) ?? []
+    const contact = contacts.length === 1 ? contacts[0] : null
+    if (!contact) {
+      record(result, row, "skipped_race_lost", {
+        platform: extracted.platform,
+        extracted,
+      })
+      return
+    }
+    await linkExistingContact(
+      row,
+      extracted,
+      contact.id,
+      planned,
+      result,
+      client
+    )
+    return
+  }
+
+  await client.$transaction(async (tx) => {
+    const candidate = await upsertContactPromotionCandidate(
+      tx,
+      row,
+      extracted,
+      result.runId
+    )
+    result.createdContactCandidates += candidate.created ? 1 : 0
+    record(
+      result,
+      row,
+      candidate.created
+        ? "created_contact_candidate"
+        : "updated_contact_candidate",
+      {
+        platform: extracted.platform,
+        extracted,
+      }
+    )
+  })
+}
+
+async function linkExistingContact(
+  row: CommunicationRow,
+  extracted: ExtractedLead,
+  contactId: string,
+  planned: "would_link_existing_contact",
+  result: LeadApplyBackfillResult,
+  client: DbLike
+): Promise<void> {
+  await client.$transaction(async (tx) => {
+    const update = await tx.communication.updateMany({
+      where: {
+        id: row.id,
+        OR: [{ contactId: null }, { contactId }],
+      },
+      data: {
+        contactId,
+        metadata: mergeLeadApplyMetadata(row.metadata, {
+          runId: result.runId,
+          appliedAt: new Date().toISOString(),
+          strategy: "historical-platform-lead-apply",
+          platform: extracted.platform,
+          source: metadataString(row.metadata, "source"),
+          extractedKind: extracted.kind,
+          inquirerEmail: extracted.inquirer.email,
+          previousContactId: row.contactId,
+          newContactId: contactId,
+          outcome: "linked_existing_contact",
+          dryRun: false,
+        }),
+      },
+    })
+    if (update.count !== 1) {
+      record(result, row, "skipped_race_lost", {
+        platform: extracted.platform,
+        extracted,
+        contactId,
+      })
+      return
+    }
+    result.communicationLinked += 1
+    record(result, row, "linked_existing_contact", {
+      platform: extracted.platform,
+      extracted,
+      contactId,
+    })
+  })
+}
+
+async function upsertContactPromotionCandidate(
+  tx: Prisma.TransactionClient,
+  row: CommunicationRow,
+  extracted: ExtractedLead,
+  runId: string
+): Promise<{ created: boolean }> {
+  const dedupeKey = [
+    "platform-lead",
+    extracted.platform,
+    extracted.inquirer.email.trim().toLowerCase(),
+  ].join(":")
+  const existing = await tx.contactPromotionCandidate.findUnique({
+    where: { dedupeKey },
+    select: { id: true, metadata: true, status: true },
+  })
+  const existingMetadata = jsonObject(existing?.metadata)
+  const communicationIds = new Set([
+    ...metadataStringArray(existingMetadata, "communicationIds"),
+    ...[
+      metadataString(existingMetadata, "firstCommunicationId"),
+      metadataString(existingMetadata, "lastCommunicationId"),
+    ].filter((id): id is string => !!id),
+  ])
+  const alreadyCounted = communicationIds.has(row.id)
+  communicationIds.add(row.id)
+  const shouldReopenSuppressed =
+    !alreadyCounted &&
+    (existing?.status === "rejected" || existing?.status === "not_a_contact")
+  const reopenedAt = shouldReopenSuppressed ? new Date().toISOString() : null
+  const reopenDecision =
+    shouldReopenSuppressed && existing
+      ? {
+          reopenedFromStatus: existing.status,
+          reopenedAt,
+          reopenReason: "new-material-communication-evidence",
+          reopenEvidenceIds: [row.id],
+          priorTerminalDecision: terminalDecisionSnapshot(
+            existing.status,
+            existingMetadata
+          ),
+        }
+      : null
+
+  if (!existing) {
+    await tx.contactPromotionCandidate.create({
+      data: {
+        dedupeKey,
+        normalizedEmail: extracted.inquirer.email.trim().toLowerCase(),
+        displayName: extracted.inquirer.name ?? null,
+        company: extracted.inquirer.company ?? null,
+        phone: extracted.inquirer.phone ?? null,
+        message: extracted.inquirer.message ?? null,
+        source: "historical-platform-lead-apply",
+        sourcePlatform: extracted.platform,
+        sourceKind: extracted.kind,
+        status: "pending",
+        communicationId: row.id,
+        metadata: {
+          runId,
+          firstCommunicationId: row.id,
+          lastCommunicationId: row.id,
+          communicationIds: [...communicationIds],
+          leadSource: extracted.leadSource,
+        } as Prisma.InputJsonValue,
+      },
+    })
+    return { created: true }
+  }
+
+  await tx.contactPromotionCandidate.update({
+    where: { id: existing.id },
+    data: {
+      displayName: extracted.inquirer.name ?? undefined,
+      company: extracted.inquirer.company ?? undefined,
+      phone: extracted.inquirer.phone ?? undefined,
+      message: extracted.inquirer.message ?? undefined,
+      sourceKind: extracted.kind,
+      ...(alreadyCounted ? {} : { communicationId: row.id }),
+      lastSeenAt: new Date(),
+      ...(shouldReopenSuppressed
+        ? { status: "needs_more_evidence" as const, snoozedUntil: null }
+        : {}),
+      ...(alreadyCounted ? {} : { evidenceCount: { increment: 1 } }),
+      metadata: {
+        ...existingMetadata,
+        runId,
+        lastCommunicationId: row.id,
+        communicationIds: [...communicationIds],
+        leadSource: extracted.leadSource,
+        ...(reopenDecision
+          ? {
+              ...reopenDecision,
+              reopenHistory: [
+                ...metadataObjectArray(existingMetadata, "reopenHistory"),
+                reopenDecision,
+              ],
+            }
+          : {}),
+      } as Prisma.InputJsonValue,
+    },
+  })
+  return { created: false }
+}
+
+function extractLead(row: CommunicationRow): ExtractedLead | null {
+  const platform = detectLeadPlatform(row)
+  if (!platform) return null
+  const extracted = extractPlatform(row, platform)
+  if (!extracted || !("inquirer" in extracted) || !extracted.inquirer?.email) {
+    return null
+  }
+  return {
+    platform,
+    leadSource: platformToLeadSource(platform),
+    kind: String(extracted.kind),
+    inquirer: {
+      ...extracted.inquirer,
+      email: extracted.inquirer.email.trim().toLowerCase(),
+    },
+  }
+}
+
+function extractPlatform(
+  row: CommunicationRow,
+  platform: LeadDiagnosticPlatform
+) {
+  const input = { subject: row.subject, bodyText: row.body ?? "" }
+  switch (platform) {
+    case "crexi":
+      return extractCrexiLead(input)
+    case "loopnet":
+      return extractLoopNetLead(input)
+    case "buildout":
+      return extractBuildoutEvent(input)
+  }
+}
+
+function platformToLeadSource(platform: LeadDiagnosticPlatform): LeadSource {
+  return platform as LeadSource
+}
+
+async function loadContactsByEmail(
+  client: DbLike,
+  emails: string[]
+): Promise<Map<string, ContactLookup[]>> {
+  const uniqueEmails = [...new Set(emails.map((email) => email.toLowerCase()))]
+  if (uniqueEmails.length === 0) return new Map()
+  const contacts = await client.contact.findMany({
+    where: {
+      OR: uniqueEmails.map((email) => ({
+        email: { equals: email, mode: "insensitive" as const },
+      })),
+    },
+    select: {
+      id: true,
+      email: true,
+      leadSource: true,
+      leadStatus: true,
+      _count: { select: { deals: true } },
+    },
+  })
+  const map = new Map<string, ContactLookup[]>()
+  for (const contact of contacts) {
+    if (!contact.email) continue
+    const key = contact.email.trim().toLowerCase()
+    const matches = map.get(key) ?? []
+    matches.push(contact)
+    map.set(key, matches)
+  }
+  return map
+}
+
+function record(
+  result: LeadApplyBackfillResult,
+  row: CommunicationRow,
+  outcome: LeadApplyOutcome,
+  options: {
+    platform?: LeadDiagnosticPlatform
+    extracted?: ExtractedLead
+    contactId?: string | null
+  } = {}
+): LeadApplyOutcome {
+  result.byOutcome[outcome] = (result.byOutcome[outcome] ?? 0) + 1
+  if (result.samples.length < 20) {
+    result.samples.push({
+      communicationId: row.id,
+      outcome,
+      platform: options.platform,
+      extractedKind: options.extracted?.kind,
+      inquirerEmail: options.extracted?.inquirer.email,
+      previousContactId: row.contactId,
+      contactId: options.contactId,
+    })
+  }
+  return outcome
+}
+
+function metadataString(metadata: unknown, key: string): string | null {
+  const record =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? (metadata as Record<string, unknown>)
+      : {}
+  const value = record[key]
+  return typeof value === "string" ? value : null
+}
+
+function metadataStringArray(metadata: unknown, key: string): string[] {
+  const value = jsonObject(metadata)[key]
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : []
+}
+
+function metadataObjectArray(
+  metadata: unknown,
+  key: string
+): Array<Record<string, unknown>> {
+  const value = jsonObject(metadata)[key]
+  return Array.isArray(value)
+    ? value.filter(
+        (item): item is Record<string, unknown> =>
+          !!item && typeof item === "object" && !Array.isArray(item)
+      )
+    : []
+}
+
+function jsonObject(metadata: unknown): Record<string, unknown> {
+  return metadata && typeof metadata === "object" && !Array.isArray(metadata)
+    ? (metadata as Record<string, unknown>)
+    : {}
+}
+
+function terminalDecisionSnapshot(
+  status: string,
+  metadata: Record<string, unknown>
+): Record<string, unknown> {
+  const promotionReview = jsonObject(metadata.promotionReview)
+  return Object.keys(promotionReview).length > 0 ? promotionReview : { status }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+function mergeLeadApplyMetadata(
+  metadata: Prisma.JsonValue | null,
+  leadApply: Record<string, unknown>
+): Prisma.InputJsonValue {
+  const existing = asRecord(metadata)
+  const backfill = asRecord(existing.backfill)
+  return {
+    ...existing,
+    backfill: {
+      ...backfill,
+      leadApply,
+    },
+  } as Prisma.InputJsonValue
+}
+
+async function tryAdvisoryLock(client: DbLike): Promise<boolean> {
+  const rows = await client.$queryRaw<Array<{ got: boolean }>>`
+    SELECT pg_try_advisory_lock(hashtext(${ADVISORY_LOCK_KEY})) AS got
+  `
+  return !!rows[0]?.got
+}
+
+async function releaseAdvisoryLock(client: DbLike): Promise<void> {
+  await client.$queryRaw`
+    SELECT pg_advisory_unlock(hashtext(${ADVISORY_LOCK_KEY}))
+  `
+}

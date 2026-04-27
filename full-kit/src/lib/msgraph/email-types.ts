@@ -4,6 +4,78 @@ export type EmailFolder = "inbox" | "sentitems"
 
 export type EmailClassification = "signal" | "noise" | "uncertain"
 
+export type EmailBodyDecision =
+  | "fetch_body"
+  | "metadata_only_quarantine"
+  | "safe_body_skip"
+
+export type EmailFilterRuleMode =
+  | "draft"
+  | "classification_only"
+  | "observe_only"
+  | "quarantine_candidate"
+  | "promoted_exact"
+  | "limited_rollout"
+  | "active"
+  | "disabled"
+  | "retired"
+
+export type EmailFilterRunMode =
+  | "dry_run"
+  | "observe"
+  | "quarantine_only"
+  | "promoted_rules_limited"
+  | "active"
+
+export type EmailFilterAuditDisposition =
+  | "observed"
+  | "quarantined"
+  | "fetched_body"
+  | "body_fetch_failed"
+  | "safe_skip_proposed"
+  | "safe_skip_applied"
+  | "restored"
+  | "false_negative"
+  | "true_noise"
+  | "uncertain"
+
+export type EmailRescueFlag =
+  | "known_contact"
+  | "matt_replied_before"
+  | "existing_thread"
+  | "large_cre_broker"
+  | "has_attachments"
+  | "nai_internal"
+  | "direct_to_matt"
+  | "small_recipient_list"
+  | "platform_lead_subject"
+  | "deal_or_document_terms"
+
+export type EmailRiskFlag =
+  | "junk_or_deleted"
+  | "list_unsubscribe"
+  | "mixed_cre_broker_domain"
+  | "noise_domain"
+  | "noise_sender"
+  | "automated_local_part"
+  | "missing_identity"
+  | "body_preview_present"
+
+export interface EmailAcquisitionDecision {
+  classification: EmailClassification
+  source: EmailSource
+  tier1Rule: string
+  ruleId: string
+  ruleVersion: number
+  runMode: EmailFilterRunMode
+  bodyDecision: EmailBodyDecision
+  disposition: EmailFilterAuditDisposition
+  riskFlags: EmailRiskFlag[]
+  rescueFlags: EmailRescueFlag[]
+  evidenceSnapshot: Record<string, unknown>
+  rationale: string
+}
+
 export type EmailSource =
   | "matt-outbound"
   | "nai-internal"
@@ -73,6 +145,10 @@ export interface ClassificationResult {
   classification: EmailClassification
   source: EmailSource
   tier1Rule: string
+  /** Stable rule identifier used by the acquisition/audit layer. */
+  ruleId?: string
+  /** Version of the classifier/rule that produced this classification. */
+  ruleVersion?: number
 }
 
 /** Large CRE broker firms whose domains carry a mix of signal + blasts.

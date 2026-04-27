@@ -16,7 +16,13 @@ export type {
   PlatformSubjectPattern,
   NoteworthyAutomatedSender,
 } from "./recon"
-export { syncEmails } from "./emails"
+export {
+  EMAIL_METADATA_SELECT_FIELDS,
+  fetchEmailBodyById,
+  fetchEmailDelta,
+  fetchEmailMetadataDelta,
+  syncEmails,
+} from "./emails"
 export type {
   SyncEmailOptions,
   SyncEmailResult,
@@ -24,3 +30,55 @@ export type {
 } from "./emails"
 export { normalizeSenderAddress } from "./sender-normalize"
 export type { NormalizedSender } from "./sender-normalize"
+
+export {
+  EMAIL_FILTER_RULE_SET_VERSION,
+  SEEDED_EMAIL_FILTER_RULES,
+  assertUniqueEmailFilterRules,
+  createRuleVersionSnapshot,
+  findSeededEmailFilterRule,
+} from "./email-filter-rules"
+export type { EmailFilterRuleDefinition } from "./email-filter-rules"
+export {
+  collectEmailRescueFlags,
+  collectEmailRiskFlags,
+  evaluateBodyFetchFailure,
+  evaluateEmailAcquisition,
+  evaluateStopGates,
+} from "./email-filter-evaluator"
+export type {
+  EvaluateEmailAcquisitionOptions,
+  StopGateInput,
+} from "./email-filter-evaluator"
+export {
+  EMAIL_REDACTION_VERSION,
+  assertRawBodyRetentionPolicy,
+  hashBody,
+  pruneGraphSnapshot,
+  redactEmailBody,
+} from "./email-filter-redaction"
+export type { RedactedBodyArtifact } from "./email-filter-redaction"
+export {
+  buildEmailFilterRunReport,
+  createEmailFilterChunk,
+  createEmailFilterRun,
+  createEmailFilterRunId,
+  recordEmailFilterAudit,
+} from "./email-filter-audit"
+export type { EmailFilterRunSummary } from "./email-filter-audit"
+export { runStoredEmailFilterAudit } from "./email-filter-audit-runner"
+export type {
+  RunStoredEmailFilterAuditOptions,
+  RunStoredEmailFilterAuditResult,
+} from "./email-filter-audit-runner"
+export {
+  buildEmailFilterAuditSampleCsv,
+  buildEmailFilterAuditSampleReport,
+  listEmailFilterAuditSamples,
+} from "./email-filter-audit-samples"
+export type {
+  EmailFilterAuditSample,
+  EmailFilterAuditSampleBucket,
+  EmailFilterAuditSampleReport,
+  ListEmailFilterAuditSamplesOptions,
+} from "./email-filter-audit-samples"

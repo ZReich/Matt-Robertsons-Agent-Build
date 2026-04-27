@@ -20,9 +20,7 @@ export const NOISE_DOMAINS: ReadonlySet<string> = new Set([
   "bhhs-ecards.com",
   "email-whitepages.com",
   "propertyblast.com",
-  "srsrealestatepartners.com",
   "encorereis.com",
-  "comms.cushwakedigital.com",
   "atlanticretail.reverecre.com",
   "mail.beehiiv.com",
   "publications.bisnow.com",
@@ -147,7 +145,7 @@ const CREXI_LEAD_SUBJECT =
 const CREXI_NOISE_SUBJECT_ON_NOTIFICATIONS =
   /^(updates have been made to|action required!|\d+ of your properties|.*search ranking)/i
 const BUILDOUT_SUPPORT_SIGNAL_SUBJECT =
-  /^(a new lead has been added|deal stage updated on|you've been assigned a task|.*critical date.*upcoming|ca executed on)/i
+  /^(a new lead has been added|.*information requested by|deal stage updated on|you've been assigned a task|tasks? (?:were )?assigned to you on|.*critical date|ca executed on|voucher approved|new voucher deposit|new commission payment|buildout:\s*\d+\s+day expiration notice)/i
 const BUILDOUT_NOTIFICATION_SIGNAL_SUBJECT =
   /^(documents viewed on|ca executed on)/i
 const LOOPNET_LEAD_SUBJECT = /^(loopnet lead for|.* favorited)/i
@@ -173,21 +171,33 @@ export function classifyEmail(
   const subject = message.subject ?? ""
   const headers = message.internetMessageHeaders
 
-  // --- Layer B folder check runs FIRST so Junk/Deleted don't masquerade as signal ---
-  if (isJunkOrDeletedFolder(message.parentFolderId)) {
-    return {
-      classification: "noise",
-      source: "layer-b-folder-drop",
-      tier1Rule: "folder",
-    }
-  }
-
   // --- Layer A: auto-signal allowlist ---
   if (folder === "sentitems") {
     return {
       classification: "signal",
       source: "matt-outbound",
       tier1Rule: "sent-items",
+    }
+  }
+
+  // If Matt has replied to or forwarded within a conversation, keep the whole
+  // thread for second-brain context even when individual inbound messages look
+  // like list/noise traffic.
+  if (hints.mattRepliedBefore) {
+    return {
+      classification: "signal",
+      source: "known-counterparty",
+      tier1Rule: "matt-engaged-thread",
+    }
+  }
+
+  // --- Layer B folder check runs before non-engaged signal checks so
+  // Junk/Deleted don't masquerade as signal unless Matt already engaged.
+  if (isJunkOrDeletedFolder(message.parentFolderId)) {
+    return {
+      classification: "noise",
+      source: "layer-b-folder-drop",
+      tier1Rule: "folder",
     }
   }
 
@@ -264,14 +274,6 @@ export function classifyEmail(
       classification: "signal",
       source: "crexi-lead",
       tier1Rule: "crexi-notifications",
-    }
-  }
-
-  if (hints.senderInContacts && hints.mattRepliedBefore) {
-    return {
-      classification: "signal",
-      source: "known-counterparty",
-      tier1Rule: "contact-replied",
     }
   }
 

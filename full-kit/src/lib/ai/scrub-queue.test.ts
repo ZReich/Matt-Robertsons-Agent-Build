@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { db } from "@/lib/prisma"
 
 import {
+  backfillScrubQueue,
   claimScrubQueueRows,
   enqueueScrubForCommunication,
 } from "./scrub-queue"
@@ -10,9 +11,13 @@ import {
 vi.mock("@/lib/prisma", () => ({
   db: {
     scrubQueue: {
+      createMany: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
+    },
+    systemState: {
+      upsert: vi.fn(),
     },
     $queryRaw: vi.fn(),
     $transaction: vi.fn(),
@@ -87,6 +92,95 @@ describe("scrub-queue", () => {
           data: expect.objectContaining({ leaseToken: claimed[i]!.leaseToken }),
         })
       )
+    }
+  })
+
+  it("dry-runs scrub backfill without creating queue rows", async () => {
+    ;(db.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "comm-1" },
+      { id: "comm-2" },
+    ])
+
+    const result = await backfillScrubQueue({
+      dryRun: true,
+      limit: 2,
+      runId: "run-1",
+    })
+
+    expect(result).toMatchObject({
+      dryRun: true,
+      runId: "run-1",
+      eligible: 2,
+      enqueued: 0,
+      nextCursor: "comm-2",
+      sampledIds: ["comm-1", "comm-2"],
+    })
+    expect(db.scrubQueue.createMany).not.toHaveBeenCalled()
+  })
+
+  it("requires an explicit limit for write-mode scrub backfill", async () => {
+    await expect(
+      backfillScrubQueue({ dryRun: false, runId: "run-1" })
+    ).rejects.toThrow("limit is required")
+    expect(db.$queryRaw).not.toHaveBeenCalled()
+  })
+
+  it("enqueues at most the requested scrub backfill chunk in write mode", async () => {
+    ;(db.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "comm-1" },
+    ])
+    ;(db.scrubQueue.createMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    const result = await backfillScrubQueue({
+      dryRun: false,
+      limit: 1,
+      runId: "run-1",
+    })
+
+    expect(result.enqueued).toBe(1)
+    expect(db.scrubQueue.createMany).toHaveBeenCalledWith({
+      data: [{ communicationId: "comm-1", status: "pending" }],
+      skipDuplicates: true,
+    })
+    expect(db.systemState.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { key: "scrub_backfill_run:run-1" },
+        create: expect.objectContaining({
+          value: expect.objectContaining({
+            runId: "run-1",
+            enqueued: 1,
+            eligible: 1,
+            limit: 1,
+          }),
+        }),
+      })
+    )
+  })
+
+  it("honors cursor clauses and caps dry-run limits from env", async () => {
+    const previous = process.env.SCRUB_BACKFILL_MAX_ENQUEUE_LIMIT
+    process.env.SCRUB_BACKFILL_MAX_ENQUEUE_LIMIT = "2"
+    try {
+      ;(db.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+        { id: "comm-2" },
+        { id: "comm-3" },
+      ])
+
+      const result = await backfillScrubQueue({
+        dryRun: true,
+        limit: 999,
+        cursor: "comm-1",
+        runId: "run-1",
+      })
+
+      expect(result.nextCursor).toBe("comm-3")
+      expect(
+        JSON.stringify((db.$queryRaw as ReturnType<typeof vi.fn>).mock.calls[0])
+      ).toContain("c.id >")
+    } finally {
+      process.env.SCRUB_BACKFILL_MAX_ENQUEUE_LIMIT = previous
     }
   })
 })

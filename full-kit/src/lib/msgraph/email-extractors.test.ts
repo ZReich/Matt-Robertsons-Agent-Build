@@ -88,6 +88,32 @@ describe("extractCrexiLead", () => {
     })
   })
 
+  it("parses real Crexi raw name/phone/email body snippets", () => {
+    const r = extractCrexiLead({
+      subject:
+        "JACKY BRADLEY requesting Information on 13 Colorado Ave in Laurel",
+      bodyText:
+        "Hi, I would like to know more about this listing. Thank you!\nJACKY BRADLEY\n406-555-0100<tel:406-555-0100>\njacky@example.com\nReply",
+    })
+
+    expect(r?.inquirer).toEqual({
+      name: "JACKY BRADLEY",
+      phone: "406-555-0100",
+      email: "jacky@example.com",
+    })
+  })
+
+  it("does not treat Crexi footer support contact as the inquirer email", () => {
+    const r = extractCrexiLead({
+      subject:
+        "Brock Ketcher requesting Information on 13 Colorado Ave in Laurel",
+      bodyText:
+        "Name: Brock Ketcher\n[Email] support@crexi.com <mailto:support@crexi.com>\n[Phone] + 888.273.0423",
+    })
+
+    expect(r?.inquirer?.email).toBeUndefined()
+  })
+
   it("returns null on unrecognized subject", () => {
     const r = extractCrexiLead({ subject: "Some random subject", bodyText: "" })
     expect(r).toBeNull()
@@ -112,6 +138,38 @@ describe("extractLoopNetLead", () => {
         name: "Tom Smith",
         email: "tom@buyer.net",
         phone: "406-555-0100",
+      },
+    })
+  })
+
+  it("parses real LoopNet pipe-delimited lead body snippets", () => {
+    const r = extractLoopNetLead({
+      subject: "LoopNet Lead for 303 N Broadway",
+      bodyText:
+        "New Lead From: Alex Wright | +1 406-555-0100 | alex@example.net | (Listing ID : 37148685)",
+    })
+
+    expect(r?.inquirer).toEqual({
+      name: "Alex Wright",
+      phone: "+1 406-555-0100",
+      email: "alex@example.net",
+    })
+  })
+
+  it("parses LoopNet bracket-label favorite contact snippets", () => {
+    const r = extractLoopNetLead({
+      subject: "Alex Wright favorited 303 N Broadway",
+      bodyText:
+        "Your listing has been favorited by Alex Wright.\n[email] alex@example.net<mailto:alex@example.net>\n[phone] +1 406-555-0100<tel:+1 406-555-0100>",
+    })
+
+    expect(r).toEqual({
+      kind: "favorited",
+      viewerName: "Alex Wright",
+      propertyName: "303 N Broadway",
+      inquirer: {
+        email: "alex@example.net",
+        phone: "+1 406-555-0100",
       },
     })
   })
@@ -149,32 +207,74 @@ describe("extractBuildoutEvent", () => {
   it("parses 'A new Lead has been added - PROPERTY'", () => {
     const r = extractBuildoutEvent({
       subject: "A new Lead has been added - US Bank Building",
-      bodyText: "Name: Sam Buyer\nEmail: sam@example.com",
+      bodyText:
+        "Hello, Sam Buyer has viewed your Property Page.\nProfile information on file for Sam Buyer:\nEmail sam@example.com\nPhone 406.555.0100",
     })
     expect(r).toEqual({
       kind: "new-lead",
       propertyName: "US Bank Building",
-      inquirer: { name: "Sam Buyer", email: "sam@example.com" },
+      inquirer: {
+        name: "Sam Buyer",
+        email: "sam@example.com",
+        phone: "406.555.0100",
+      },
+    })
+  })
+
+  it("parses Buildout information-requested lead pair subjects", () => {
+    const r = extractBuildoutEvent({
+      subject:
+        "Rockets | Gourmet Wraps & Sodas - Information Requested by Shae Nielsen",
+      bodyText:
+        "Profile information on file for Shae Nielsen: Email shae@example.com",
+    })
+    expect(r).toMatchObject({
+      kind: "information-requested",
+      propertyName: "Rockets | Gourmet Wraps & Sodas",
+      inquirer: { name: "Shae Nielsen", email: "shae@example.com" },
     })
   })
 
   it("parses 'Deal stage updated on PROPERTY'", () => {
     const r = extractBuildoutEvent({
       subject: "Deal stage updated on 2621 Overland",
-      bodyText: "",
+      bodyText:
+        "Deal Stage Updated Hello Matt Robertson, 2621 Overland was updated from Sourcing to Transacting",
     })
     expect(r).toEqual({
       kind: "deal-stage-update",
       propertyName: "2621 Overland",
+      previousStage: "Sourcing",
+      newStage: "Transacting",
+    })
+  })
+
+  it("keeps multi-word Buildout stage names intact", () => {
+    const r = extractBuildoutEvent({
+      subject: "Deal stage updated on 303 North Broadway",
+      bodyText:
+        "Deal Stage Updated Hello Matt Robertson, 303 North Broadway was updated from LOI Offer to Under Contract. View Deal",
+    })
+    expect(r).toMatchObject({
+      kind: "deal-stage-update",
+      propertyName: "303 North Broadway",
+      previousStage: "LOI Offer",
+      newStage: "Under Contract",
     })
   })
 
   it("parses 'You've been assigned a task'", () => {
     const r = extractBuildoutEvent({
-      subject: "You've been assigned a task",
-      bodyText: "",
+      subject: "Tasks were assigned to you on 7100 Commercial Ave Suite 1",
+      bodyText:
+        "New Task Assigned Hello Matt Robertson, SIOR, You've been assigned multiple tasks on 7100 Commercial Ave Suite 1 25 APR, 2026 Draft listing Documents [https://example.com]",
     })
-    expect(r?.kind).toBe("task-assigned")
+    expect(r).toMatchObject({
+      kind: "task-assigned",
+      propertyName: "7100 Commercial Ave Suite 1",
+      taskDueDate: "25 APR, 2026",
+      taskTitle: "Draft listing Documents",
+    })
   })
 
   it("parses critical date upcoming", () => {
@@ -199,11 +299,58 @@ describe("extractBuildoutEvent", () => {
   it("parses 'Documents viewed on PROPERTY'", () => {
     const r = extractBuildoutEvent({
       subject: "Documents viewed on US Bank Building",
-      bodyText: "",
+      bodyText:
+        "Samuel Blum viewed NAI_US_Bank.pdf for 303 North Broadway at 2:09 pm CDT on 4/21/26. Profile information on file for Samuel Blum: Name Samuel Blum Company CIG Properties Role Owner Email samuel@example.com Phone 845.659.6659",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "document-view",
       propertyName: "US Bank Building",
+      documentName: "NAI_US_Bank.pdf",
+      propertyAddress: "303 North Broadway",
+      viewer: {
+        name: "Samuel Blum",
+        email: "samuel@example.com",
+        phone: "845.659.6659",
+      },
+    })
+  })
+
+  it("parses Buildout voucher and commission events as revenue evidence", () => {
+    expect(
+      extractBuildoutEvent({
+        subject: "New voucher deposit",
+        bodyText:
+          "Hello, A deposit was applied. Payer Rove Management Voucher 1601 Lewis | Suite 110 VIEW VOUCHER",
+      })
+    ).toMatchObject({
+      kind: "voucher-deposit",
+      payerName: "Rove Management",
+      voucherName: "1601 Lewis | Suite 110",
+    })
+
+    expect(
+      extractBuildoutEvent({
+        subject: "New commission payment",
+        bodyText:
+          "Hello, A payment for your commission was created. Voucher Pure Barre VIEW VOUCHER",
+      })
+    ).toMatchObject({
+      kind: "commission-payment",
+      voucherName: "Pure Barre",
+    })
+  })
+
+  it("parses Buildout listing expiration notices", () => {
+    expect(
+      extractBuildoutEvent({
+        subject:
+          "Buildout: 30 day expiration notice for '3218-3226 S. Frontage Road'",
+        bodyText: "",
+      })
+    ).toEqual({
+      kind: "listing-expiration",
+      daysUntilExpiration: 30,
+      propertyName: "3218-3226 S. Frontage Road",
     })
   })
 

@@ -1,18 +1,19 @@
+import type { Prisma } from "@prisma/client"
 import type {
   BuildoutEventExtract,
   CrexiLeadExtract,
-  InquirerInfo,
   LoopNetLeadExtract,
 } from "./email-extractors"
 import type {
   BehavioralHints,
   ClassificationResult,
+  EmailAcquisitionDecision,
   EmailClassification,
+  EmailFilterRunMode,
   EmailFolder,
   GraphEmailMessage,
 } from "./email-types"
 import type { NormalizedSender } from "./sender-normalize"
-import type { LeadSource, Prisma } from "@prisma/client"
 
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
 import { db } from "@/lib/prisma"
@@ -25,6 +26,11 @@ import {
   extractLoopNetLead,
 } from "./email-extractors"
 import { classifyEmail, domainIsLargeCreBroker } from "./email-filter"
+import {
+  evaluateBodyFetchFailure,
+  evaluateEmailAcquisition,
+} from "./email-filter-evaluator"
+import { pruneGraphSnapshot } from "./email-filter-redaction"
 import { GraphError } from "./errors"
 import { normalizeSenderAddress } from "./sender-normalize"
 
@@ -112,15 +118,18 @@ const EMAIL_SELECT_FIELDS = [
   "hasAttachments",
   "isRead",
   "importance",
-  "body",
   "bodyPreview",
   "internetMessageHeaders",
 ].join(",")
 
 const PAGE_SIZE = 100
 
-const PREFER_HEADER = {
-  Prefer: `outlook.body-content-type="text", odata.maxpagesize=${PAGE_SIZE}`,
+const METADATA_PREFER_HEADER = {
+  Prefer: `IdType="ImmutableId", odata.maxpagesize=${PAGE_SIZE}`,
+}
+
+const BODY_FETCH_PREFER_HEADER = {
+  Prefer: `IdType="ImmutableId", outlook.body-content-type="text"`,
 }
 
 /**
@@ -146,7 +155,7 @@ export async function* fetchEmailDelta(
   let url: string | undefined = initialUrl
   while (url) {
     const res: GraphDeltaPage = await graphFetch<GraphDeltaPage>(url, {
-      headers: PREFER_HEADER,
+      headers: METADATA_PREFER_HEADER,
     })
     const isFinal = !res["@odata.nextLink"] && !!res["@odata.deltaLink"]
     yield { page: res, isFinal }
@@ -156,6 +165,29 @@ export async function* fetchEmailDelta(
 
 /** Exported for test re-export and type-only consumers. */
 export type { GraphDeltaPage }
+
+export const EMAIL_METADATA_SELECT_FIELDS = EMAIL_SELECT_FIELDS
+
+export async function fetchEmailBodyById(
+  targetUpn: string,
+  messageId: string
+): Promise<
+  Pick<GraphEmailMessage, "id" | "body" | "bodyPreview" | "internetMessageId">
+> {
+  const path =
+    `/users/${encodeURIComponent(targetUpn)}/messages/${encodeURIComponent(messageId)}` +
+    `?$select=${encodeURIComponent("id,body,bodyPreview,internetMessageId,changeKey")}`
+  return graphFetch<
+    Pick<GraphEmailMessage, "id" | "body" | "bodyPreview" | "internetMessageId">
+  >(path, { headers: BODY_FETCH_PREFER_HEADER })
+}
+
+export async function* fetchEmailMetadataDelta(
+  folder: EmailFolder,
+  sinceIso: string
+): AsyncGenerator<{ page: GraphDeltaPage; isFinal: boolean }, void, void> {
+  yield* fetchEmailDelta(folder, sinceIso)
+}
 
 /**
  * Compute behavioral hints for the filter context. These influence Layer A's
@@ -173,117 +205,64 @@ export async function computeBehavioralHints(
     ? senderAddress.split("@")[1]
     : undefined
 
-  const [contactRow, outboundCount, threadSize] = await Promise.all([
-    senderAddress
-      ? db.contact.findFirst({
-          where: { email: { equals: senderAddress, mode: "insensitive" } },
-          select: { id: true },
-        })
-      : Promise.resolve(null),
-    senderAddress
-      ? db.communication.count({
-          where: {
-            direction: "outbound",
-            metadata: {
-              path: ["toRecipients"],
-              array_contains: [{ emailAddress: { address: senderAddress } }],
+  const [contactRow, directOutboundCount, threadOutboundCount, threadSize] =
+    await Promise.all([
+      senderAddress
+        ? db.contact.findFirst({
+            where: { email: { equals: senderAddress, mode: "insensitive" } },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+      senderAddress
+        ? db.communication.count({
+            where: {
+              direction: "outbound",
+              metadata: {
+                path: ["toRecipients"],
+                array_contains: [{ emailAddress: { address: senderAddress } }],
+              },
             },
-          },
-        })
-      : Promise.resolve(0),
-    conversationId
-      ? db.communication.count({
-          where: {
-            metadata: { path: ["conversationId"], equals: conversationId },
-          },
-        })
-      : Promise.resolve(0),
-  ])
+          })
+        : Promise.resolve(0),
+      conversationId
+        ? db.communication.count({
+            where: {
+              direction: "outbound",
+              OR: [
+                { conversationId },
+                {
+                  metadata: {
+                    path: ["conversationId"],
+                    equals: conversationId,
+                  },
+                },
+              ],
+            },
+          })
+        : Promise.resolve(0),
+      conversationId
+        ? db.communication.count({
+            where: {
+              OR: [
+                { conversationId },
+                {
+                  metadata: {
+                    path: ["conversationId"],
+                    equals: conversationId,
+                  },
+                },
+              ],
+            },
+          })
+        : Promise.resolve(0),
+    ])
 
   return {
     senderInContacts: !!contactRow,
-    mattRepliedBefore: outboundCount > 0,
+    mattRepliedBefore: directOutboundCount > 0 || threadOutboundCount > 0,
     threadSize: threadSize + 1,
     domainIsLargeCreBroker: domainIsLargeCreBroker(senderDomain),
   }
-}
-
-export interface UpsertLeadContactInput {
-  inquirer: InquirerInfo
-  leadSource: LeadSource
-  leadAt: Date
-}
-
-export interface UpsertLeadContactResult {
-  contactId: string
-  created: boolean
-  becameLead: boolean
-}
-
-/**
- * Create or update a Contact from an extracted lead inquirer.
- *
- * Rules:
- * - Requires inquirer.email (we key on normalized email).
- * - New Contact → created with leadSource, leadStatus=new, leadAt.
- * - Existing Contact with NO deals AND null leadSource → fill in lead fields.
- * - Existing Contact with deals (i.e. already a Client) → leave lead fields null.
- * - Existing Contact already a lead (leadSource set) → do not touch leadStatus/leadAt.
- * - Runs inside a transaction; safe to re-call on duplicate inquirer emails.
- */
-export async function upsertLeadContact(
-  input: UpsertLeadContactInput,
-  tx?: Prisma.TransactionClient
-): Promise<UpsertLeadContactResult | null> {
-  if (!input.inquirer.email) return null
-  const client: Prisma.TransactionClient =
-    tx ?? (db as unknown as Prisma.TransactionClient)
-  const email = input.inquirer.email.toLowerCase()
-
-  const existing = await client.contact.findFirst({
-    where: { email: { equals: email, mode: "insensitive" } },
-    include: { _count: { select: { deals: true } } },
-  })
-
-  if (!existing) {
-    const created = await client.contact.create({
-      data: {
-        name: input.inquirer.name ?? input.inquirer.email,
-        email,
-        phone: input.inquirer.phone ?? null,
-        company: input.inquirer.company ?? null,
-        notes: input.inquirer.message ?? null,
-        category: "business",
-        tags: [],
-        createdBy: `msgraph-email-${input.leadSource}-extract`,
-        leadSource: input.leadSource,
-        leadStatus: "new",
-        leadAt: input.leadAt,
-      },
-      select: { id: true },
-    })
-    return { contactId: created.id, created: true, becameLead: true }
-  }
-
-  const isClient = existing._count.deals > 0
-  const alreadyLead = existing.leadSource !== null
-
-  if (isClient || alreadyLead) {
-    return { contactId: existing.id, created: false, becameLead: false }
-  }
-
-  await client.contact.update({
-    where: { id: existing.id },
-    data: {
-      leadSource: input.leadSource,
-      leadStatus: "new",
-      leadAt: input.leadAt,
-      // Only fill missing demographic fields; never overwrite what Matt curated.
-      phone: existing.phone ?? input.inquirer.phone ?? null,
-      company: existing.company ?? input.inquirer.company ?? null,
-    },
-  })
-  return { contactId: existing.id, created: false, becameLead: true }
 }
 
 // ---------------------------------------------------------------------------
@@ -313,10 +292,6 @@ export async function fetchAttachmentMeta(
     throw err
   }
 }
-
-// ---------------------------------------------------------------------------
-// Extractor dispatch
-// ---------------------------------------------------------------------------
 
 export type ExtractedData =
   | ({ platform: "crexi" } & CrexiLeadExtract)
@@ -359,6 +334,8 @@ export interface ProcessedMessage {
   folder: EmailFolder
   normalizedSender: NormalizedSender
   classification: ClassificationResult
+  acquisition: EmailAcquisitionDecision
+  hints: BehavioralHints
   extracted: ExtractedData | null
   attachments: AttachmentMeta[] | undefined
   contactId: string | null
@@ -371,7 +348,7 @@ export async function persistMessage(
   p: ProcessedMessage
 ): Promise<{ inserted: boolean }> {
   const direction = p.folder === "inbox" ? "inbound" : "outbound"
-  const storeBody = p.classification.classification !== "noise"
+  const storeBody = p.acquisition.bodyDecision === "fetch_body"
   const dateIso =
     p.folder === "sentitems"
       ? (p.message.sentDateTime ?? p.message.receivedDateTime)
@@ -393,6 +370,16 @@ export async function persistMessage(
     classification: p.classification.classification,
     source: p.classification.source,
     tier1Rule: p.classification.tier1Rule,
+    acquisition: {
+      bodyDecision: p.acquisition.bodyDecision,
+      disposition: p.acquisition.disposition,
+      ruleId: p.acquisition.ruleId,
+      ruleVersion: p.acquisition.ruleVersion,
+      riskFlags: p.acquisition.riskFlags,
+      rescueFlags: p.acquisition.rescueFlags,
+      rationale: p.acquisition.rationale,
+    },
+    behavioralHints: p.hints,
     conversationId: p.message.conversationId,
     internetMessageId: p.message.internetMessageId,
     parentFolderId: p.message.parentFolderId,
@@ -423,7 +410,9 @@ export async function persistMessage(
         status: "synced",
         rawData: {
           folder: p.folder,
-          graphSnapshot: p.message as unknown as Prisma.InputJsonValue,
+          graphSnapshot: pruneGraphSnapshot(
+            p.message
+          ) as unknown as Prisma.InputJsonValue,
         } as Prisma.InputJsonValue,
       },
     })
@@ -436,6 +425,7 @@ export async function persistMessage(
         direction,
         category: "business",
         externalMessageId: p.message.id,
+        conversationId: p.message.conversationId ?? null,
         externalSyncId: sync.id,
         contactId: p.contactId,
         createdBy: "msgraph-email",
@@ -448,6 +438,39 @@ export async function persistMessage(
       where: { id: sync.id },
       data: { entityId: comm.id },
     })
+    const auditTx = tx as Prisma.TransactionClient & {
+      emailFilterAudit?: Pick<
+        Prisma.TransactionClient["emailFilterAudit"],
+        "create"
+      >
+    }
+    if (auditTx.emailFilterAudit?.create) {
+      await auditTx.emailFilterAudit.create({
+        data: {
+          runId: "inline-msgraph-sync",
+          chunkId: `${p.folder}-inline`,
+          externalMessageId: p.message.id,
+          internetMessageId: p.message.internetMessageId ?? null,
+          communicationId: comm.id,
+          externalSyncId: sync.id,
+          ruleId: p.acquisition.ruleId,
+          ruleVersion: p.acquisition.ruleVersion,
+          classification: p.classification.classification,
+          bodyDecision: p.acquisition.bodyDecision,
+          disposition: p.acquisition.disposition,
+          riskFlags: p.acquisition.riskFlags as Prisma.InputJsonValue,
+          rescueFlags: p.acquisition.rescueFlags as Prisma.InputJsonValue,
+          evidenceSnapshot: p.acquisition
+            .evidenceSnapshot as Prisma.InputJsonValue,
+          sampled: false,
+          reviewOutcome: "not_reviewed",
+          bodyAvailable: !!p.message.body?.content,
+          bodyLength: p.message.body?.content?.length ?? 0,
+          bodyContentType: p.message.body?.contentType ?? null,
+          redactionStatus: "not_required",
+        },
+      })
+    }
     // Enqueue for AI scrub — same transaction as the Communication
     // insert so either both land or neither does. enqueueScrubForCommunication
     // is a no-op for "noise" classification.
@@ -480,7 +503,8 @@ function sleep(ms: number): Promise<void> {
  */
 export async function processOneMessage(
   message: GraphEmailMessage & { "@removed"?: { reason: string } },
-  folder: EmailFolder
+  folder: EmailFolder,
+  filterRunMode: EmailFilterRunMode = "observe"
 ): Promise<ProcessMessageSummary> {
   const cfg = loadMsgraphConfig()
 
@@ -512,35 +536,62 @@ export async function processOneMessage(
     hints,
   })
 
-  const extracted =
-    classification.classification === "signal"
-      ? runExtractor(classification, message)
-      : null
+  let workingMessage: GraphEmailMessage = message
+  let acquisition = evaluateEmailAcquisition(
+    workingMessage,
+    {
+      folder,
+      targetUpn: cfg.targetUpn,
+      normalizedSender,
+      hints,
+    },
+    classification,
+    { runMode: filterRunMode }
+  )
 
-  // Lead contact upsert (before Communication insert so contactId can point at it).
-  let leadContactId: string | null = null
-  let leadCreated = false
-  let contactId: string | null = null
-  if (extracted && "inquirer" in extracted && extracted.inquirer?.email) {
-    const sourceMap: Record<"crexi" | "loopnet" | "buildout", LeadSource> = {
-      crexi: "crexi",
-      loopnet: "loopnet",
-      buildout: "buildout",
-    }
-    const res = await upsertLeadContact({
-      inquirer: extracted.inquirer,
-      leadSource: sourceMap[extracted.platform],
-      leadAt: new Date(message.receivedDateTime ?? Date.now()),
-    })
-    if (res) {
-      leadContactId = res.contactId
-      leadCreated = res.created
-      contactId = res.contactId
+  if (
+    acquisition.bodyDecision === "fetch_body" &&
+    !workingMessage.body?.content
+  ) {
+    try {
+      const bodyResult = await fetchEmailBodyById(
+        cfg.targetUpn,
+        workingMessage.id
+      )
+      workingMessage = { ...workingMessage, ...bodyResult }
+    } catch (err) {
+      acquisition = evaluateBodyFetchFailure(
+        acquisition,
+        err instanceof GraphError ? (err.code ?? String(err.status)) : undefined
+      )
     }
   }
 
-  // If no extractor lead, try to resolve Contact by the normalized sender email.
-  if (!contactId && normalizedSender.address.includes("@")) {
+  const extracted =
+    classification.classification === "signal"
+      ? runExtractor(classification, workingMessage)
+      : null
+
+  // Candidate-first safety: platform inquirers must not create Contacts during
+  // email ingestion. The extracted inquirer is persisted in Communication
+  // metadata and later promoted through ContactPromotionCandidate approval.
+  const leadContactId: string | null = null
+  const leadCreated = false
+  let contactId: string | null = null
+  const isPlatformSource =
+    classification.source === "crexi-lead" ||
+    classification.source === "loopnet-lead" ||
+    classification.source === "buildout-event"
+
+  // If no platform source fired, try to resolve Contact by the normalized
+  // sender email. Platform leads/events come from vendor senders (Buildout,
+  // LoopNet, Crexi), so linking them to the sender Contact would poison the
+  // historical record and suppress candidate review even when parsing fails.
+  if (
+    !isPlatformSource &&
+    !contactId &&
+    normalizedSender.address.includes("@")
+  ) {
     const match = await db.contact.findFirst({
       where: {
         email: { equals: normalizedSender.address, mode: "insensitive" },
@@ -554,10 +605,10 @@ export async function processOneMessage(
   let attachments: AttachmentMeta[] | undefined
   if (
     classification.classification === "signal" &&
-    message.hasAttachments &&
-    !!message.id
+    workingMessage.hasAttachments &&
+    !!workingMessage.id
   ) {
-    attachments = await fetchAttachmentMeta(cfg.targetUpn, message.id)
+    attachments = await fetchAttachmentMeta(cfg.targetUpn, workingMessage.id)
   }
 
   // Persist with retry.
@@ -566,10 +617,12 @@ export async function processOneMessage(
   for (let attempt = 0; attempt < backoffs.length; attempt++) {
     try {
       const { inserted } = await persistMessage({
-        message,
+        message: workingMessage,
         folder,
         normalizedSender,
         classification,
+        acquisition,
+        hints,
         extracted,
         attachments,
         contactId,
@@ -600,6 +653,7 @@ export async function processOneMessage(
 export interface SyncEmailOptions {
   daysBack?: number
   forceBootstrap?: boolean
+  filterRunMode?: EmailFilterRunMode
 }
 
 export interface FolderSyncSummary {
@@ -720,7 +774,11 @@ export async function syncEmails(
         for await (const { page } of fetchEmailDelta(folder, sinceIso)) {
           for (const rawMsg of page.value) {
             try {
-              const res = await processOneMessage(rawMsg, folder)
+              const res = await processOneMessage(
+                rawMsg,
+                folder,
+                options.filterRunMode ?? "observe"
+              )
               summary.classification[res.classification]++
               if (res.inserted) summary.created++
               if (res.extractedPlatform === "crexi")

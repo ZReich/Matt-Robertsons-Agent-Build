@@ -30,6 +30,95 @@ enum DealStage {
   closed
 }
 
+enum CanonicalDealStage {
+  unknown
+  prospect
+  sourcing
+  evaluating
+  touring
+  listing
+  marketing
+  loi_offer
+  transacting
+  under_contract
+  due_diligence
+  contingent
+  closing
+  closed
+  dead
+  nurture
+  commission_realized
+}
+
+enum ContactPromotionCandidateStatus {
+  pending
+  needs_more_evidence
+  snoozed
+  approved
+  merged
+  rejected
+  not_a_contact
+  superseded
+}
+
+enum BuildoutEventKind {
+  new_lead
+  information_requested
+  deal_stage_update
+  task_assigned
+  critical_date
+  ca_executed
+  document_view
+  voucher_approved
+  voucher_deposit
+  commission_payment
+  listing_expiration
+  payment_event
+  unknown_signal
+}
+
+enum BuildoutEventStatus {
+  parsed
+  matched
+  needs_review
+  proposed
+  applied
+  ignored
+  superseded
+  dead_letter
+}
+
+enum IntakeDispositionStatus {
+  received
+  normalized
+  suppressed_noise
+  filed_activity
+  needs_human_gate
+  queued_attention
+  review_backlog
+  dead_letter
+  superseded
+}
+
+enum TodoReminderState {
+  proposed
+  active
+  waiting_on_other
+  snoozed
+  due
+  overdue
+  done
+  rejected
+  superseded
+}
+
+enum AiFeedbackStatus {
+  captured
+  proposed_rule
+  approved_rule
+  rejected_rule
+}
+
 enum PropertyType {
   office
   retail
@@ -118,6 +207,45 @@ enum LeadStatus {
   contacted
   converted
   dropped
+}
+
+enum EmailFilterRuleMode {
+  draft
+  classification_only
+  observe_only
+  quarantine_candidate
+  promoted_exact
+  limited_rollout
+  active
+  disabled
+  retired
+}
+
+enum EmailBodyDecision {
+  fetch_body
+  metadata_only_quarantine
+  safe_body_skip
+}
+
+enum EmailFilterRunMode {
+  dry_run
+  observe
+  quarantine_only
+  promoted_rules_limited
+  active
+}
+
+enum EmailFilterAuditDisposition {
+  observed
+  quarantined
+  fetched_body
+  body_fetch_failed
+  safe_skip_proposed
+  safe_skip_applied
+  restored
+  false_negative
+  true_noise
+  uncertain
 }
 
 // =============================================================================
@@ -223,7 +351,7 @@ model Contact {
   leadStatus       LeadStatus? @map("lead_status")
   leadAt           DateTime?   @map("lead_at")
   leadLastViewedAt DateTime?   @map("lead_last_viewed_at")
-  estimatedValue   Decimal?    @db.Decimal(14, 2) @map("estimated_value")
+  estimatedValue   Decimal?    @map("estimated_value") @db.Decimal(14, 2)
 
   // Relations
   deals          Deal[]
@@ -263,7 +391,7 @@ model Deal {
   notes           String?      @db.Text
   createdBy       String?      @map("created_by")
   archivedAt      DateTime?    @map("archived_at")
-  commissionRate  Decimal?     @default(0.03) @db.Decimal(5, 4) @map("commission_rate")
+  commissionRate  Decimal?     @default(0.03) @map("commission_rate") @db.Decimal(5, 4)
   probability     Int?
   stageChangedAt  DateTime?    @map("stage_changed_at")
 
@@ -323,6 +451,7 @@ model Communication {
   metadata          Json?                @default("{}") // flexible: extra channel-specific data
   durationSeconds   Int?                 @map("duration_seconds") // for calls
   externalMessageId String?              @map("external_message_id") // gmail msg id, etc.
+  conversationId    String?              @map("conversation_id")
   createdBy         String?              @map("created_by")
   archivedAt        DateTime?            @map("archived_at")
 
@@ -356,7 +485,217 @@ model Communication {
   @@index([direction])
   @@index([category])
   @@index([externalMessageId])
+  @@index([conversationId])
   @@map("communications")
+}
+
+model IntakeDisposition {
+  id               String                  @id @default(uuid())
+  sourceSystem     String                  @map("source_system")
+  sourceExternalId String                  @map("source_external_id")
+  communicationId  String?                 @map("communication_id")
+  status           IntakeDispositionStatus
+  reasonCode       String                  @map("reason_code")
+  confidence       Decimal?                @db.Decimal(5, 4)
+  processor        String
+  processorVersion String                  @map("processor_version")
+  childRefs        Json?                   @default("[]") @map("child_refs")
+  retryCount       Int                     @default(0) @map("retry_count")
+  lastError        String?                 @map("last_error") @db.Text
+  metadata         Json?                   @default("{}")
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @updatedAt @map("updated_at")
+
+  @@unique([sourceSystem, sourceExternalId])
+  @@index([communicationId])
+  @@index([status])
+  @@map("intake_dispositions")
+}
+
+model IdentityCandidateGroup {
+  id                String                          @id @default(uuid())
+  status            ContactPromotionCandidateStatus @default(pending)
+  displayName       String?                         @map("display_name")
+  normalizedEmails  Json?                           @default("[]") @map("normalized_emails")
+  normalizedPhones  Json?                           @default("[]") @map("normalized_phones")
+  aliases           Json?                           @default("[]")
+  companies         Json?                           @default("[]")
+  evidence          Json?                           @default("[]")
+  possibleContactId String?                         @map("possible_contact_id")
+  approvedContactId String?                         @map("approved_contact_id")
+  confidenceScore   Decimal?                        @map("confidence_score") @db.Decimal(5, 4)
+  snoozedUntil      DateTime?                       @map("snoozed_until")
+  metadata          Json?                           @default("{}")
+  createdAt         DateTime                        @default(now()) @map("created_at")
+  updatedAt         DateTime                        @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([possibleContactId])
+  @@index([approvedContactId])
+  @@map("identity_candidate_groups")
+}
+
+model ContactPromotionCandidate {
+  id                       String                          @id @default(uuid())
+  identityCandidateGroupId String?                         @map("identity_candidate_group_id")
+  normalizedEmail          String?                         @map("normalized_email")
+  displayName              String?                         @map("display_name")
+  company                  String?
+  phone                    String?
+  message                  String?                         @db.Text
+  source                   String
+  sourcePlatform           String?                         @map("source_platform")
+  sourceKind               String?                         @map("source_kind")
+  status                   ContactPromotionCandidateStatus @default(pending)
+  confidenceScore          Decimal?                        @map("confidence_score") @db.Decimal(5, 4)
+  evidenceCount            Int                             @default(1) @map("evidence_count")
+  firstSeenAt              DateTime                        @default(now()) @map("first_seen_at")
+  lastSeenAt               DateTime                        @default(now()) @map("last_seen_at")
+  suggestedContactId       String?                         @map("suggested_contact_id")
+  approvedContactId        String?                         @map("approved_contact_id")
+  communicationId          String?                         @map("communication_id")
+  agentActionId            String?                         @map("agent_action_id")
+  dedupeKey                String                          @unique @map("dedupe_key")
+  snoozedUntil             DateTime?                       @map("snoozed_until")
+  metadata                 Json?                           @default("{}")
+  createdAt                DateTime                        @default(now()) @map("created_at")
+  updatedAt                DateTime                        @updatedAt @map("updated_at")
+
+  @@index([identityCandidateGroupId])
+  @@index([normalizedEmail])
+  @@index([status])
+  @@index([snoozedUntil])
+  @@index([communicationId])
+  @@map("contact_promotion_candidates")
+}
+
+model BuildoutProperty {
+  id                    String              @id @default(uuid())
+  buildoutPropertyId    String?             @unique @map("buildout_property_id")
+  buildoutDealId        String?             @unique @map("buildout_deal_id")
+  propertyNameRaw       String?             @map("property_name_raw")
+  propertyAddressRaw    String?             @map("property_address_raw")
+  normalizedPropertyKey String              @map("normalized_property_key")
+  aliases               Json?               @default("[]")
+  unitOrSuite           String              @default("") @map("unit_or_suite")
+  currentStage          CanonicalDealStage? @map("current_stage")
+  status                String              @default("unknown")
+  source                String              @default("email_event")
+  assignedToMatt        Boolean             @default(false) @map("assigned_to_matt")
+  teamMembers           Json?               @default("[]") @map("team_members")
+  sourceRecipients      Json?               @default("[]") @map("source_recipients")
+  lastBuildoutEventAt   DateTime?           @map("last_buildout_event_at")
+  matchedDealId         String?             @map("matched_deal_id")
+  matchConfidence       Decimal?            @map("match_confidence") @db.Decimal(5, 4)
+  metadata              Json?               @default("{}")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  @@unique([normalizedPropertyKey, unitOrSuite])
+  @@index([matchedDealId])
+  @@map("buildout_properties")
+}
+
+model BuildoutEvent {
+  id                    String              @id @default(uuid())
+  communicationId       String?             @map("communication_id")
+  sourceExternalId      String?             @map("source_external_id")
+  eventKind             BuildoutEventKind   @map("event_kind")
+  status                BuildoutEventStatus @default(parsed)
+  propertyNameRaw       String?             @map("property_name_raw")
+  propertyAddressRaw    String?             @map("property_address_raw")
+  normalizedPropertyKey String?             @map("normalized_property_key")
+  buildoutPropertyId    String?             @map("buildout_property_id")
+  buildoutDealId        String?             @map("buildout_deal_id")
+  inquirerName          String?             @map("inquirer_name")
+  inquirerEmail         String?             @map("inquirer_email")
+  inquirerPhone         String?             @map("inquirer_phone")
+  inquirerMessage       String?             @map("inquirer_message") @db.Text
+  viewerName            String?             @map("viewer_name")
+  viewerEmail           String?             @map("viewer_email")
+  viewerCompany         String?             @map("viewer_company")
+  taskTitle             String?             @map("task_title")
+  taskDueDate           DateTime?           @map("task_due_date")
+  taskAssignee          String?             @map("task_assignee")
+  criticalDate          DateTime?           @map("critical_date")
+  deadlineType          String?             @map("deadline_type")
+  sourceStageRaw        String?             @map("source_stage_raw")
+  previousStageRaw      String?             @map("previous_stage_raw")
+  newStageRaw           String?             @map("new_stage_raw")
+  canonicalStage        CanonicalDealStage? @map("canonical_stage")
+  documentName          String?             @map("document_name")
+  documentUrl           String?             @map("document_url") @db.Text
+  amount                Decimal?            @db.Decimal(14, 2)
+  paymentStatus         String?             @map("payment_status")
+  voucherId             String?             @map("voucher_id")
+  voucherName           String?             @map("voucher_name")
+  invoiceId             String?             @map("invoice_id")
+  payerName             String?             @map("payer_name")
+  matchedDealId         String?             @map("matched_deal_id")
+  matchedContactId      String?             @map("matched_contact_id")
+  matchConfidence       Decimal?            @map("match_confidence") @db.Decimal(5, 4)
+  dedupeKey             String?             @unique @map("dedupe_key")
+  metadata              Json?               @default("{}")
+  eventAt               DateTime?           @map("event_at")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  @@index([communicationId])
+  @@index([eventKind])
+  @@index([status])
+  @@index([normalizedPropertyKey])
+  @@index([matchedDealId])
+  @@map("buildout_events")
+}
+
+model TodoReminderPolicy {
+  id              String            @id @default(uuid())
+  todoId          String?           @map("todo_id")
+  agentActionId   String?           @map("agent_action_id")
+  communicationId String?           @map("communication_id")
+  dedupeKey       String?           @map("dedupe_key")
+  state           TodoReminderState @default(proposed)
+  cadence         String            @default("once")
+  nextReminderAt  DateTime?         @map("next_reminder_at")
+  lastReminderAt  DateTime?         @map("last_reminder_at")
+  snoozedUntil    DateTime?         @map("snoozed_until")
+  lastEvidenceAt  DateTime?         @map("last_evidence_at")
+  sourcePolicy    String?           @map("source_policy")
+  policyReason    String?           @map("policy_reason") @db.Text
+  metadata        Json?             @default("{}")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@index([todoId])
+  @@index([agentActionId])
+  @@index([communicationId])
+  @@index([state])
+  @@index([nextReminderAt])
+  @@map("todo_reminder_policies")
+}
+
+model AiFeedback {
+  id               String           @id @default(uuid())
+  sourceType       String           @map("source_type")
+  sourceId         String           @map("source_id")
+  modelUsed        String?          @map("model_used")
+  promptVersion    String?          @map("prompt_version")
+  predictedLabel   String?          @map("predicted_label")
+  predictedAction  String?          @map("predicted_action")
+  correctedLabel   String?          @map("corrected_label")
+  correctedAction  String?          @map("corrected_action")
+  reason           String?          @db.Text
+  status           AiFeedbackStatus @default(captured)
+  createdBy        String?          @map("created_by")
+  promotedToRuleAt DateTime?        @map("promoted_to_rule_at")
+  regressionTestId String?          @map("regression_test_id")
+  metadata         Json?            @default("{}")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@index([sourceType, sourceId])
+  @@index([status])
+  @@map("ai_feedback")
 }
 
 /// Calendar events and meetings
@@ -568,6 +907,198 @@ model ScrubApiCall {
   @@index([at])
   @@index([communicationId])
   @@map("scrub_api_calls")
+}
+
+model EmailFilterRule {
+  id                  String              @id @default(uuid())
+  ruleId              String              @map("rule_id")
+  version             Int
+  name                String
+  mode                EmailFilterRuleMode @default(draft)
+  enabled             Boolean             @default(false)
+  rolloutPercent      Int                 @default(0) @map("rollout_percent")
+  owner               String
+  rationale           String              @db.Text
+  matchDefinition     Json                @default("{}") @map("match_definition")
+  evidenceRequired    Json                @default("{}") @map("evidence_required")
+  rescueConditions    Json                @default("[]") @map("rescue_conditions")
+  samplePolicy        Json                @default("{}") @map("sample_policy")
+  promotionCriteria   Json                @default("{}") @map("promotion_criteria")
+  demotionPolicy      Json                @default("{}") @map("demotion_policy")
+  falsePositiveCount  Int                 @default(0) @map("false_positive_count")
+  falseNegativeCount  Int                 @default(0) @map("false_negative_count")
+  reviewedSampleCount Int                 @default(0) @map("reviewed_sample_count")
+  createdBy           String?             @map("created_by")
+  approvedBy          String?             @map("approved_by")
+  approvedAt          DateTime?           @map("approved_at")
+  lastReviewedAt      DateTime?           @map("last_reviewed_at")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  @@unique([ruleId, version])
+  @@index([mode])
+  @@index([enabled])
+  @@index([ruleId])
+  @@map("email_filter_rules")
+}
+
+model EmailFilterRun {
+  id                         String             @id @default(uuid())
+  runId                      String             @unique @map("run_id")
+  mode                       EmailFilterRunMode
+  ruleSetVersion             String             @map("rule_set_version")
+  mailboxId                  String             @map("mailbox_id")
+  folderScope                String?            @map("folder_scope")
+  dateFrom                   DateTime?          @map("date_from")
+  dateTo                     DateTime?          @map("date_to")
+  dryRun                     Boolean            @default(true) @map("dry_run")
+  status                     String             @default("pending")
+  startedAt                  DateTime           @default(now()) @map("started_at")
+  completedAt                DateTime?          @map("completed_at")
+  cancelledAt                DateTime?          @map("cancelled_at")
+  requestedBy                String?            @map("requested_by")
+  stopReason                 String?            @map("stop_reason") @db.Text
+  messagesSeen               Int                @default(0) @map("messages_seen")
+  metadataFetched            Int                @default(0) @map("metadata_fetched")
+  bodyFetchAttempted         Int                @default(0) @map("body_fetch_attempted")
+  bodyFetchSucceeded         Int                @default(0) @map("body_fetch_succeeded")
+  bodyFetchFailed            Int                @default(0) @map("body_fetch_failed")
+  quarantineCount            Int                @default(0) @map("quarantine_count")
+  safeSkipProposedCount      Int                @default(0) @map("safe_skip_proposed_count")
+  safeSkipAppliedCount       Int                @default(0) @map("safe_skip_applied_count")
+  criticalFalseNegativeCount Int                @default(0) @map("critical_false_negative_count")
+  gateResults                Json               @default("{}") @map("gate_results")
+  ruleVersionSnapshot        Json               @default("{}") @map("rule_version_snapshot")
+  createdAt                  DateTime           @default(now()) @map("created_at")
+  updatedAt                  DateTime           @updatedAt @map("updated_at")
+
+  @@index([mode])
+  @@index([status])
+  @@index([startedAt])
+  @@map("email_filter_runs")
+}
+
+model EmailFilterChunk {
+  id                    String    @id @default(uuid())
+  runId                 String    @map("run_id")
+  chunkId               String    @map("chunk_id")
+  cursorBefore          String?   @map("cursor_before") @db.Text
+  cursorAfter           String?   @map("cursor_after") @db.Text
+  cursorCommitted       Boolean   @default(false) @map("cursor_committed")
+  dateFrom              DateTime? @map("date_from")
+  dateTo                DateTime? @map("date_to")
+  folder                String?
+  status                String    @default("pending")
+  startedAt             DateTime  @default(now()) @map("started_at")
+  completedAt           DateTime? @map("completed_at")
+  messagesSeen          Int       @default(0) @map("messages_seen")
+  metadataFetched       Int       @default(0) @map("metadata_fetched")
+  bodyFetchAttempted    Int       @default(0) @map("body_fetch_attempted")
+  bodyFetchSucceeded    Int       @default(0) @map("body_fetch_succeeded")
+  bodyFetchFailed       Int       @default(0) @map("body_fetch_failed")
+  quarantineCount       Int       @default(0) @map("quarantine_count")
+  safeSkipProposedCount Int       @default(0) @map("safe_skip_proposed_count")
+  safeSkipAppliedCount  Int       @default(0) @map("safe_skip_applied_count")
+  graph429Count         Int       @default(0) @map("graph_429_count")
+  graph5xxCount         Int       @default(0) @map("graph_5xx_count")
+  retryCount            Int       @default(0) @map("retry_count")
+  stopGateTriggered     Boolean   @default(false) @map("stop_gate_triggered")
+  stopGateReason        String?   @map("stop_gate_reason") @db.Text
+
+  @@unique([runId, chunkId])
+  @@index([runId])
+  @@index([status])
+  @@map("email_filter_chunks")
+}
+
+model EmailFilterAudit {
+  id                String                      @id @default(uuid())
+  runId             String                      @map("run_id")
+  chunkId           String                      @map("chunk_id")
+  externalMessageId String                      @map("external_message_id")
+  internetMessageId String?                     @map("internet_message_id")
+  communicationId   String?                     @map("communication_id")
+  externalSyncId    String?                     @map("external_sync_id")
+  ruleId            String                      @map("rule_id")
+  ruleVersion       Int                         @map("rule_version")
+  classification    String
+  bodyDecision      EmailBodyDecision           @map("body_decision")
+  disposition       EmailFilterAuditDisposition
+  riskFlags         Json                        @default("[]") @map("risk_flags")
+  rescueFlags       Json                        @default("[]") @map("rescue_flags")
+  evidenceSnapshot  Json                        @default("{}") @map("evidence_snapshot")
+  sampleBucket      String?                     @map("sample_bucket")
+  sampled           Boolean                     @default(false)
+  sampleReviewedBy  String?                     @map("sample_reviewed_by")
+  sampleReviewedAt  DateTime?                   @map("sample_reviewed_at")
+  reviewOutcome     String                      @default("not_reviewed") @map("review_outcome")
+  bodyAvailable     Boolean                     @default(false) @map("body_available")
+  bodyHash          String?                     @map("body_hash")
+  bodyLength        Int                         @default(0) @map("body_length")
+  bodyContentType   String?                     @map("body_content_type")
+  redactionVersion  String?                     @map("redaction_version")
+  redactionStatus   String                      @default("not_required") @map("redaction_status")
+  graphFetchStatus  String?                     @map("graph_fetch_status")
+  graphErrorCode    String?                     @map("graph_error_code")
+  createdAt         DateTime                    @default(now()) @map("created_at")
+
+  @@index([runId])
+  @@index([chunkId])
+  @@index([ruleId, ruleVersion])
+  @@index([classification])
+  @@index([bodyDecision])
+  @@index([reviewOutcome])
+  @@map("email_filter_audits")
+}
+
+model EmailRawBodyRetention {
+  id                          String    @id @default(uuid())
+  externalSyncId              String    @map("external_sync_id")
+  communicationId             String?   @map("communication_id")
+  runId                       String    @map("run_id")
+  chunkId                     String    @map("chunk_id")
+  rawBodyRetained             Boolean   @default(false) @map("raw_body_retained")
+  rawBodyStorageLocation      String?   @map("raw_body_storage_location")
+  rawBodyRetentionExpiresAt   DateTime? @map("raw_body_retention_expires_at")
+  redactedBodyRetained        Boolean   @default(false) @map("redacted_body_retained")
+  redactedBodyStorageLocation String?   @map("redacted_body_storage_location")
+  redactedBody                String?   @map("redacted_body") @db.Text
+  bodyHash                    String?   @map("body_hash")
+  bodyLength                  Int       @default(0) @map("body_length")
+  bodyContentType             String?   @map("body_content_type")
+  redactionVersion            String?   @map("redaction_version")
+  redactionStatus             String    @default("not_required") @map("redaction_status")
+  redactionError              String?   @map("redaction_error") @db.Text
+  accessPolicy                String?   @map("access_policy")
+  createdAt                   DateTime  @default(now()) @map("created_at")
+  updatedAt                   DateTime  @updatedAt @map("updated_at")
+
+  @@index([externalSyncId])
+  @@index([communicationId])
+  @@index([runId, chunkId])
+  @@map("email_raw_body_retention")
+}
+
+model EmailGraphCursorState {
+  id                   String    @id @default(uuid())
+  mailboxId            String    @map("mailbox_id")
+  folder               String
+  mode                 String
+  deltaLink            String?   @map("delta_link") @db.Text
+  nextLink             String?   @map("next_link") @db.Text
+  cursorVersion        Int       @default(1) @map("cursor_version")
+  lastCommittedRunId   String?   @map("last_committed_run_id")
+  lastCommittedChunkId String?   @map("last_committed_chunk_id")
+  cursorStatus         String    @default("active") @map("cursor_status")
+  lastSuccessfulSyncAt DateTime? @map("last_successful_sync_at")
+  lastErrorAt          DateTime? @map("last_error_at")
+  lastError            String?   @map("last_error") @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@unique([mailboxId, folder, mode])
+  @@index([cursorStatus])
+  @@map("email_graph_cursor_state")
 }
 
 model SystemState {

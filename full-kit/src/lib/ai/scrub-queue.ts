@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto"
 
+import { Prisma } from "@prisma/client"
+
 import type { PrismaClient } from "@prisma/client"
 import type { ClaimedScrubQueueRow } from "./scrub-types"
 
@@ -87,25 +89,117 @@ export async function markScrubQueueFailed(
   })
 }
 
-export async function backfillScrubQueue(): Promise<{ enqueued: number }> {
+export type BackfillScrubQueueOptions = {
+  dryRun?: boolean
+  limit?: number
+  cursor?: string | null
+  runId?: string
+}
+
+export type BackfillScrubQueueResult = {
+  dryRun: boolean
+  runId: string
+  eligible: number
+  enqueued: number
+  nextCursor: string | null
+  sampledIds: string[]
+}
+
+const DEFAULT_BACKFILL_LIMIT = 500
+const MAX_BACKFILL_LIMIT = 1000
+
+export async function backfillScrubQueue({
+  dryRun = true,
+  limit,
+  cursor = null,
+  runId = `scrub-enqueue-${new Date().toISOString()}`,
+}: BackfillScrubQueueOptions = {}): Promise<BackfillScrubQueueResult> {
+  if (!dryRun && limit === undefined) {
+    throw new Error("limit is required when dryRun=false")
+  }
+  const configuredMaxLimit = readScrubBackfillMaxLimit()
+  const requestedLimit = limit ?? DEFAULT_BACKFILL_LIMIT
+  const safeLimit = Math.min(
+    Math.max(
+      Math.trunc(
+        Number.isFinite(requestedLimit)
+          ? requestedLimit
+          : DEFAULT_BACKFILL_LIMIT
+      ),
+      1
+    ),
+    configuredMaxLimit
+  )
+  if (!dryRun && !runId) {
+    throw new Error("runId is required when dryRun=false")
+  }
+
+  const cursorClause = cursor ? Prisma.sql`AND c.id > ${cursor}` : Prisma.empty
   const rows = await db.$queryRaw<Array<{ id: string }>>`
     SELECT c.id
       FROM communications c
      WHERE c.metadata->>'classification' IN ('signal', 'uncertain')
        AND c.metadata->'scrub' IS NULL
+       ${cursorClause}
        AND NOT EXISTS (
          SELECT 1 FROM scrub_queue sq WHERE sq.communication_id = c.id
        )
+     ORDER BY c.id ASC
+     LIMIT ${safeLimit}
   `
-  if (rows.length === 0) return { enqueued: 0 }
-  await db.scrubQueue.createMany({
+  const result: BackfillScrubQueueResult = {
+    dryRun,
+    runId,
+    eligible: rows.length,
+    enqueued: 0,
+    nextCursor: rows.length === safeLimit ? (rows.at(-1)?.id ?? null) : null,
+    sampledIds: rows.slice(0, 20).map((row) => row.id),
+  }
+  if (rows.length === 0 || dryRun) return result
+  const created = await db.scrubQueue.createMany({
     data: rows.map((row) => ({
       communicationId: row.id,
       status: "pending" as const,
     })),
     skipDuplicates: true,
   })
-  return { enqueued: rows.length }
+  await db.systemState.upsert({
+    where: { key: `scrub_backfill_run:${runId}` },
+    create: {
+      key: `scrub_backfill_run:${runId}`,
+      value: {
+        runId,
+        enqueued: created.count,
+        eligible: rows.length,
+        limit: safeLimit,
+        cursor,
+        nextCursor: result.nextCursor,
+        at: new Date().toISOString(),
+      },
+    },
+    update: {
+      value: {
+        runId,
+        enqueued: created.count,
+        eligible: rows.length,
+        limit: safeLimit,
+        cursor,
+        nextCursor: result.nextCursor,
+        at: new Date().toISOString(),
+      },
+    },
+  })
+  return { ...result, enqueued: created.count }
+}
+
+function readScrubBackfillMaxLimit(
+  env: Record<string, string | undefined> = process.env
+): number {
+  const parsed = Number.parseInt(env.SCRUB_BACKFILL_MAX_ENQUEUE_LIMIT ?? "", 10)
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return Math.min(parsed, MAX_BACKFILL_LIMIT)
+  }
+  return DEFAULT_BACKFILL_LIMIT
 }
 
 export async function requeueFailedScrubs(

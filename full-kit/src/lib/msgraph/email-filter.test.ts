@@ -56,6 +56,8 @@ describe("isNoiseDomain", () => {
   it("returns false for domains NOT in the noise list", () => {
     expect(isNoiseDomain("naibusinessproperties.com")).toBe(false)
     expect(isNoiseDomain("cbre.com")).toBe(false)
+    expect(isNoiseDomain("srsrealestatepartners.com")).toBe(false)
+    expect(isNoiseDomain("comms.cushwakedigital.com")).toBe(false)
     expect(isNoiseDomain("docusign.net")).toBe(false)
   })
   it("is case-insensitive", () => {
@@ -250,6 +252,36 @@ describe("classifyEmail — Layer A (auto-signal)", () => {
     })
   })
 
+  it.each([
+    "Rockets | Gourmet Wraps & Sodas - Information Requested by Shae Nielsen",
+    "Tasks were assigned to you on 7100 Commercial Ave Suite 1",
+    "New voucher deposit",
+    "New commission payment",
+    "Buildout: 30 day expiration notice for '3218-3226 S. Frontage Road'",
+  ])(
+    "marks Buildout high-value subject as buildout-event signal: %s",
+    (subject) => {
+      const r = classifyEmail(
+        msg({
+          from: { emailAddress: { address: "support@buildout.com" } },
+          subject,
+        }),
+        ctx({
+          normalizedSender: {
+            address: "support@buildout.com",
+            displayName: "Buildout Support",
+            isInternal: false,
+            normalizationFailed: false,
+          },
+        })
+      )
+      expect(r).toMatchObject({
+        classification: "signal",
+        source: "buildout-event",
+      })
+    }
+  )
+
   it("marks LoopNet leads@ + LoopNet-Lead subject as loopnet-lead signal", () => {
     const r = classifyEmail(
       msg({
@@ -322,6 +354,40 @@ describe("classifyEmail — Layer A (auto-signal)", () => {
     expect(r).toMatchObject({
       classification: "signal",
       source: "known-counterparty",
+      tier1Rule: "matt-engaged-thread",
+    })
+  })
+
+  it("keeps any thread Matt has replied to or forwarded even when the sender is not a contact", () => {
+    const r = classifyEmail(
+      msg({
+        from: { emailAddress: { address: "marketing@propertyblast.com" } },
+        subject: "Newsletter with unsubscribe",
+        parentFolderId: "junkemail",
+        internetMessageHeaders: [
+          { name: "List-Unsubscribe", value: "<mailto:u@example.com>" },
+        ],
+      }),
+      ctx({
+        normalizedSender: {
+          address: "marketing@propertyblast.com",
+          displayName: "Marketing",
+          isInternal: false,
+          normalizationFailed: false,
+        },
+        hints: {
+          senderInContacts: false,
+          mattRepliedBefore: true,
+          threadSize: 4,
+          domainIsLargeCreBroker: false,
+        },
+      })
+    )
+
+    expect(r).toMatchObject({
+      classification: "signal",
+      source: "known-counterparty",
+      tier1Rule: "matt-engaged-thread",
     })
   })
 })

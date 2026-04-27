@@ -1,3 +1,4 @@
+> **Filter-audit supersession notice (2026-04-26):** Before any new 90-day or 365-day pull, hard-drop/pre-download skip rules from this spec must satisfy the audit requirements in `docs/superpowers/specs/2026-04-26-transcript-email-communication-handling-design.md`. Broad CRE-domain drops are not safe by default; questionable rows must be quarantined/uncertain, not skipped.
 # Email Ingestion — Design
 
 **Date:** 2026-04-23

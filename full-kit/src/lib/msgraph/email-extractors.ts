@@ -105,10 +105,12 @@ export function extractLoopNetLead(
 
   m = subject.match(LOOPNET_FAVORITED)
   if (m) {
+    const inquirer = parseInquirerBody(input.bodyText)
     return {
       kind: "favorited",
       viewerName: m[1].trim(),
       propertyName: m[2].trim(),
+      ...(inquirer ? { inquirer } : {}),
     }
   }
 
@@ -118,23 +120,47 @@ export function extractLoopNetLead(
 export interface BuildoutEventExtract {
   kind:
     | "new-lead"
+    | "information-requested"
     | "deal-stage-update"
     | "task-assigned"
     | "critical-date"
     | "ca-executed"
     | "document-view"
+    | "voucher-approved"
+    | "voucher-deposit"
+    | "commission-payment"
+    | "listing-expiration"
   propertyName?: string
+  propertyAddress?: string
   inquirer?: InquirerInfo
+  viewer?: InquirerInfo
   newStage?: string
   previousStage?: string
+  taskTitle?: string
+  taskDueDate?: string
+  taskAssignee?: string
+  criticalDate?: string
+  deadlineType?: string
+  documentName?: string
+  voucherName?: string
+  payerName?: string
+  daysUntilExpiration?: number
 }
 
 const BUILDOUT_NEW_LEAD = /^a new lead has been added\s*-\s*(.+)$/i
+const BUILDOUT_INFORMATION_REQUESTED =
+  /^(.+?)\s*-\s*information requested by\s+(.+)$/i
 const BUILDOUT_STAGE = /^deal stage updated on\s+(.+)$/i
-const BUILDOUT_TASK = /^you've been assigned a task/i
+const BUILDOUT_TASK =
+  /^(?:you've been assigned a task|tasks? (?:were )?assigned to you on\s+(.+))$/i
 const BUILDOUT_CRITICAL = /critical date.*upcoming/i
 const BUILDOUT_CA_EXECUTED = /^ca executed on\s+(.+)$/i
 const BUILDOUT_DOCUMENT_VIEW = /^documents viewed on\s+(.+)$/i
+const BUILDOUT_VOUCHER_APPROVED = /^voucher approved$/i
+const BUILDOUT_VOUCHER_DEPOSIT = /^new voucher deposit$/i
+const BUILDOUT_COMMISSION_PAYMENT = /^new commission payment$/i
+const BUILDOUT_LISTING_EXPIRATION =
+  /^buildout:\s*(\d+)\s+day expiration notice for ['"]?(.+?)['"]?$/i
 
 export function extractBuildoutEvent(
   input: ExtractorInput
@@ -144,7 +170,7 @@ export function extractBuildoutEvent(
 
   let m = subject.match(BUILDOUT_NEW_LEAD)
   if (m) {
-    const inquirer = parseInquirerBody(input.bodyText)
+    const inquirer = parseBuildoutLeadBody(input.bodyText)
     return {
       kind: "new-lead",
       propertyName: m[1].trim(),
@@ -152,17 +178,49 @@ export function extractBuildoutEvent(
     }
   }
 
-  m = subject.match(BUILDOUT_STAGE)
+  m = subject.match(BUILDOUT_INFORMATION_REQUESTED)
   if (m) {
-    return { kind: "deal-stage-update", propertyName: m[1].trim() }
+    const inquirer = parseBuildoutLeadBody(input.bodyText) ?? {
+      name: m[2].trim(),
+    }
+    return {
+      kind: "information-requested",
+      propertyName: m[1].trim(),
+      inquirer: {
+        ...inquirer,
+        name: inquirer.name ?? m[2].trim(),
+      },
+    }
   }
 
-  if (BUILDOUT_TASK.test(subject)) {
-    return { kind: "task-assigned" }
+  m = subject.match(BUILDOUT_STAGE)
+  if (m) {
+    const stage = parseBuildoutStageBody(input.bodyText)
+    return {
+      kind: "deal-stage-update",
+      propertyName: m[1].trim(),
+      previousStage: stage.previousStage,
+      newStage: stage.newStage,
+    }
+  }
+
+  m = subject.match(BUILDOUT_TASK)
+  if (m) {
+    const task = parseBuildoutTaskBody(input.bodyText)
+    return {
+      kind: "task-assigned",
+      propertyName: task.propertyName ?? m[1]?.trim(),
+      taskTitle: task.taskTitle,
+      taskDueDate: task.taskDueDate,
+      taskAssignee: task.taskAssignee,
+    }
   }
 
   if (BUILDOUT_CRITICAL.test(subject)) {
-    return { kind: "critical-date" }
+    return {
+      kind: "critical-date",
+      ...parseBuildoutCriticalDateBody(input.bodyText),
+    }
   }
 
   m = subject.match(BUILDOUT_CA_EXECUTED)
@@ -172,10 +230,155 @@ export function extractBuildoutEvent(
 
   m = subject.match(BUILDOUT_DOCUMENT_VIEW)
   if (m) {
-    return { kind: "document-view", propertyName: m[1].trim() }
+    return {
+      kind: "document-view",
+      propertyName: m[1].trim(),
+      ...parseBuildoutDocumentViewBody(input.bodyText),
+    }
+  }
+
+  if (BUILDOUT_VOUCHER_APPROVED.test(subject)) {
+    return {
+      kind: "voucher-approved",
+      ...parseBuildoutVoucherBody(input.bodyText),
+    }
+  }
+
+  if (BUILDOUT_VOUCHER_DEPOSIT.test(subject)) {
+    return {
+      kind: "voucher-deposit",
+      ...parseBuildoutVoucherBody(input.bodyText),
+    }
+  }
+
+  if (BUILDOUT_COMMISSION_PAYMENT.test(subject)) {
+    return {
+      kind: "commission-payment",
+      ...parseBuildoutVoucherBody(input.bodyText),
+    }
+  }
+
+  m = subject.match(BUILDOUT_LISTING_EXPIRATION)
+  if (m) {
+    return {
+      kind: "listing-expiration",
+      daysUntilExpiration: Number.parseInt(m[1], 10),
+      propertyName: m[2].trim(),
+    }
   }
 
   return null
+}
+
+function parseBuildoutLeadBody(body: string): InquirerInfo | null {
+  const parsed = parseInquirerBody(body) ?? {}
+  const text = compactText(body)
+  const viewedM = text.match(/Hello,\s+(.+?)\s+has viewed your Property Page/i)
+  if (viewedM) parsed.name ??= viewedM[1].trim()
+  const infoM = text.match(/Profile information on file for\s+(.+?):/i)
+  if (infoM) parsed.name ??= infoM[1].trim()
+  const emailM = text.match(/\bEmail\s+([^\s<>]+@[^\s<>]+)/i)
+  if (emailM) parsed.email ??= cleanEmail(emailM[1])
+  const phoneM = text.match(/\bPhone\s+([+\d][+\d\s().-]{6,})/i)
+  if (phoneM) parsed.phone ??= cleanPhone(phoneM[1])
+  const companyM = text.match(
+    /\bCompany\s+(.+?)\s+(?:Role|Job Title|Email|Phone)\b/i
+  )
+  if (companyM) parsed.company ??= companyM[1].trim()
+  return Object.keys(parsed).length > 0 ? parsed : null
+}
+
+function parseBuildoutStageBody(body: string): {
+  previousStage?: string
+  newStage?: string
+} {
+  const text = compactText(body)
+  const m = text.match(
+    /\bwas updated from\s+(.+?)\s+to\s+(.+?)(?:\.|\s+\[https?:|\s+View\b|$)/i
+  )
+  return m
+    ? {
+        previousStage: m[1].trim(),
+        newStage: m[2].trim(),
+      }
+    : {}
+}
+
+function parseBuildoutTaskBody(body: string): {
+  propertyName?: string
+  taskTitle?: string
+  taskDueDate?: string
+  taskAssignee?: string
+} {
+  const text = compactText(body)
+  const m = text.match(
+    /assigned multiple tasks on\s+(.+?)\s+(\d{1,2}\s+[A-Z]{3},\s+\d{4})\s+(.+?)(?:\s+\[https?:|\s+View\b|$)/i
+  )
+  return m
+    ? {
+        propertyName: m[1].trim(),
+        taskDueDate: m[2].trim(),
+        taskTitle: m[3].trim(),
+        taskAssignee: "Matt Robertson",
+      }
+    : {}
+}
+
+function parseBuildoutCriticalDateBody(body: string): {
+  propertyName?: string
+  criticalDate?: string
+  deadlineType?: string
+} {
+  const text = compactText(body)
+  const dateM = text.match(
+    /(\d{1,2}\s+[A-Z]{3},\s+\d{4})\s+(.+?)(?:\s+\[https?:|\s+View\b|$)/i
+  )
+  const propertyM = text.match(
+    /(?:on|for)\s+(.+?)\s+\d{1,2}\s+[A-Z]{3},\s+\d{4}/i
+  )
+  return {
+    propertyName: propertyM?.[1]?.trim(),
+    criticalDate: dateM?.[1]?.trim(),
+    deadlineType: dateM?.[2]?.trim(),
+  }
+}
+
+function parseBuildoutDocumentViewBody(body: string): {
+  propertyAddress?: string
+  documentName?: string
+  viewer?: InquirerInfo
+} {
+  const text = compactText(body)
+  const viewM = text.match(/(.+?)\s+viewed\s+(.+?)\s+for\s+(.+?)\s+at\s+/i)
+  const viewer = parseBuildoutLeadBody(body)
+  return {
+    viewer: viewer ?? (viewM?.[1] ? { name: viewM[1].trim() } : undefined),
+    documentName: viewM?.[2]?.trim(),
+    propertyAddress: viewM?.[3]?.trim(),
+  }
+}
+
+function parseBuildoutVoucherBody(body: string): {
+  voucherName?: string
+  payerName?: string
+} {
+  const text = compactText(body)
+  const payerM = text.match(/Payer\s+(.+?)\s+Voucher\s+/i)
+  const voucherM =
+    text.match(/Voucher\s+(.+?)\s+VIEW VOUCHER/i) ??
+    text.match(/Voucher\s+(.+?)\s+View Voucher/i)
+  let voucherName = voucherM?.[1]?.trim()
+  if (voucherName?.includes("Voucher ")) {
+    voucherName = voucherName.split("Voucher ").at(-1)?.trim()
+  }
+  return {
+    voucherName,
+    payerName: payerM?.[1]?.trim(),
+  }
+}
+
+function compactText(value: string): string {
+  return value.replace(/\s+/g, " ").trim()
 }
 
 // Shared by Crexi + LoopNet + Buildout extractors
@@ -193,5 +396,61 @@ export function parseInquirerBody(body: string): InquirerInfo | null {
   const messageM = body.match(/^\s*message\s*[:\-]\s*([\s\S]+?)(?:\n\s*\n|$)/im)
   if (messageM) info.message = messageM[1].trim()
 
+  const loopNetLeadM = body.match(
+    /new\s+lead\s+from:\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^\s|<>]+@[^\s|<>]+)/i
+  )
+  if (loopNetLeadM) {
+    info.name ??= loopNetLeadM[1].trim()
+    info.phone ??= cleanPhone(loopNetLeadM[2])
+    info.email ??= cleanEmail(loopNetLeadM[3])
+  }
+
+  const bracketEmailM = body.match(/\[\s*email\s*\]\s*([^\s<>]+@[^\s<>]+)/i)
+  if (bracketEmailM) info.email ??= cleanEmail(bracketEmailM[1])
+  const bracketPhoneM = body.match(/\[\s*phone\s*\]\s*([+\d][+\d\s().\-]+)/i)
+  if (bracketPhoneM) info.phone ??= cleanPhone(bracketPhoneM[1])
+
+  const crexiSignatureM = body.match(
+    /thank\s+you!\s+([^\n\r]+?)\s+([+\d][+\d\s().\-]{6,})(?:<[^>]+>)?\s+([^\s<>]+@[^\s<>]+)/i
+  )
+  if (crexiSignatureM) {
+    info.name ??= crexiSignatureM[1].trim()
+    info.phone ??= cleanPhone(crexiSignatureM[2])
+    info.email ??= cleanEmail(crexiSignatureM[3])
+  }
+
   return Object.keys(info).length > 0 ? info : null
+}
+
+function cleanEmail(value: string | undefined): string | undefined {
+  const match = value?.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+  const email = match?.[0].toLowerCase()
+  if (!email || isPlatformSystemEmail(email)) return undefined
+  return email
+}
+
+function cleanPhone(value: string | undefined): string | undefined {
+  const cleaned = value
+    ?.replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  return cleaned || undefined
+}
+
+function isPlatformSystemEmail(email: string): boolean {
+  const [local = "", domain = ""] = email.split("@")
+  if (
+    [
+      "support",
+      "help",
+      "info",
+      "noreply",
+      "no-reply",
+      "notifications",
+      "emails",
+    ].includes(local)
+  ) {
+    return true
+  }
+  return ["crexi.com", "loopnet.com", "buildout.com"].includes(domain)
 }
