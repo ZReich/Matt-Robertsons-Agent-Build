@@ -25,6 +25,11 @@ export const navigationsData: NavigationType[] = [
         iconName: "Target",
       },
       {
+        title: "Contact Candidates",
+        href: "/pages/contact-candidates",
+        iconName: "ShieldCheck",
+      },
+      {
         title: "Deals",
         href: "/pages/deals",
         iconName: "Handshake",

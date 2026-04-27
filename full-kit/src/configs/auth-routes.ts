@@ -10,5 +10,5 @@ export const routeMap = new Map<string, RouteType>([
   ["/docs", { type: "public" }],
   ["/dashboards", { type: "public" }],
   ["/apps", { type: "public" }],
-  ["/pages", { type: "public" }],
+  ["/pages", { type: "public", exceptions: ["/pages/contact-candidates"] }],
 ])

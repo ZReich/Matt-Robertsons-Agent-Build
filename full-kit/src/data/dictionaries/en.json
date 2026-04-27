@@ -130,6 +130,8 @@
     "pipeline": "Pipeline",
     "clients": "Clients",
     "leads": "Leads",
+    "deals": "Deals",
+    "contactCandidates": "Contact Candidates",
     "contacts": "Contacts",
     "communications": "Communications",
     "todos": "Todos",
