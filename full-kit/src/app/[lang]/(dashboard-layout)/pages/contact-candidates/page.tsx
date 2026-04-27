@@ -1,21 +1,22 @@
 import Link from "next/link"
-import { redirect } from "next/navigation"
-import { ShieldCheck } from "lucide-react"
+import { ShieldAlert, ShieldCheck } from "lucide-react"
 
 import type { CandidateReviewRow } from "@/lib/contact-promotion-candidates"
 import type { ContactPromotionCandidateStatus } from "@prisma/client"
 import type { Metadata } from "next"
 
-import {
-  CandidateReviewAuthError,
-  requireContactCandidateReviewer,
-} from "@/lib/contact-candidate-review-auth"
+import { getSession } from "@/lib/auth"
 import { listContactPromotionCandidates } from "@/lib/contact-promotion-candidates"
 import { db } from "@/lib/prisma"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CandidateActions } from "./_components/candidate-actions"
+import { ContactCandidateSignOutButton } from "./_components/sign-out-button"
+import {
+  contactCandidateSignInUrl,
+  resolveContactCandidatePageAccess,
+} from "./access"
 
 export const metadata: Metadata = {
   title: "Contact Candidates",
@@ -47,11 +48,12 @@ export default async function ContactCandidatesPage({
   searchParams,
 }: ContactCandidatesPageProps) {
   const { lang } = await params
-  try {
-    await requireContactCandidateReviewer()
-  } catch (error) {
-    if (!(error instanceof CandidateReviewAuthError)) throw error
-    redirect(`/${lang}/sign-in`)
+  const access = await resolveContactCandidatePageAccess(lang)
+  if (!access.allowed) {
+    const session = await getSession()
+    return (
+      <ContactCandidateAccessDenied lang={lang} email={session?.user?.email} />
+    )
   }
 
   const resolvedSearchParams = await searchParams
@@ -122,6 +124,49 @@ export default async function ContactCandidatesPage({
           ))}
         </div>
       )}
+    </section>
+  )
+}
+
+function ContactCandidateAccessDenied({
+  lang,
+  email,
+}: {
+  lang: string
+  email: string | null | undefined
+}) {
+  const callbackUrl = contactCandidateSignInUrl(lang)
+
+  return (
+    <section className="container grid min-h-[60vh] place-items-center p-6">
+      <div className="grid max-w-xl gap-5 rounded-md border bg-background p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-destructive/10">
+            <ShieldAlert className="size-5 text-destructive" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold">
+              Contact candidate access is restricted
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Signed in as {email || "an account that is not allowed"}.
+            </p>
+          </div>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          This review queue only opens for emails listed in
+          CONTACT_CANDIDATE_REVIEWER_EMAILS. Sign out, then sign in with
+          zreichert@rovevaluations.com or another configured reviewer email.
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          <ContactCandidateSignOutButton callbackUrl={callbackUrl} />
+          <Button variant="outline" asChild>
+            <Link href={`/${lang}/dashboards/home`}>Back to Home</Link>
+          </Button>
+        </div>
+      </div>
     </section>
   )
 }
