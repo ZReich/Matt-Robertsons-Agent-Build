@@ -43,6 +43,11 @@ const nextConfig = {
         ],
       },
       {
+        source: "/:lang",
+        destination: "/:lang/sign-in",
+        permanent: true,
+      },
+      {
         source: "/:lang/apps/email",
         destination: "/:lang/apps/email/inbox",
         permanent: true,

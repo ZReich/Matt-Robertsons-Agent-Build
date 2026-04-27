@@ -1,11 +1,9 @@
 import Link from "next/link"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { LogOut, User, UserCog } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
-
-import { userData } from "@/data/user"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { getInitials } from "@/lib/utils"
@@ -29,6 +27,20 @@ export function UserDropdown({
   dictionary: DictionaryType
   locale: LocaleType
 }) {
+  const { data: session } = useSession()
+  const user = session?.user
+  const name = user?.name || user?.email || "Guest"
+  const email = user?.email || "Not signed in"
+  const signInPath = ensureLocalizedPathname("/sign-in", locale)
+
+  if (!user?.id) {
+    return (
+      <Button variant="outline" asChild>
+        <Link href={signInPath}>Sign in</Link>
+      </Button>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,9 +51,9 @@ export function UserDropdown({
           aria-label="User"
         >
           <Avatar className="size-9">
-            <AvatarImage src={userData?.avatar} alt="" />
+            <AvatarImage src={user.avatar ?? undefined} alt="" />
             <AvatarFallback className="bg-transparent">
-              {userData?.name && getInitials(userData.name)}
+              {getInitials(name)}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -49,15 +61,15 @@ export function UserDropdown({
       <DropdownMenuContent forceMount>
         <DropdownMenuLabel className="flex gap-2">
           <Avatar>
-            <AvatarImage src={userData?.avatar} alt="Avatar" />
+            <AvatarImage src={user.avatar ?? undefined} alt="Avatar" />
             <AvatarFallback className="bg-transparent">
-              {userData?.name && getInitials(userData.name)}
+              {getInitials(name)}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col overflow-hidden">
-            <p className="text-sm font-medium truncate">John Doe</p>
+            <p className="text-sm font-medium truncate">{name}</p>
             <p className="text-xs text-muted-foreground font-semibold truncate">
-              {userData?.email}
+              {email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -81,7 +93,7 @@ export function UserDropdown({
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={() => signOut({ callbackUrl: signInPath })}>
           <LogOut className="me-2 size-4" />
           {dictionary.navigation.userNav.signOut}
         </DropdownMenuItem>
