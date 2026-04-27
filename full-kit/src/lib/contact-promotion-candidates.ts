@@ -181,11 +181,7 @@ export async function listContactPromotionCandidates({
   return Promise.all(
     candidates.map(async (candidate) => {
       const matchingContacts = await findMatchingContacts(client, candidate)
-      const evidenceCommunications = [
-        candidate.communicationId,
-        ...metadataStringArray(candidate.metadata, "communicationIds"),
-      ]
-        .filter((id): id is string => !!id)
+      const evidenceCommunications = evidenceCommunicationIds(candidate)
         .map((id) => communicationsById.get(id))
         .filter(
           (communication): communication is CommunicationSummary =>

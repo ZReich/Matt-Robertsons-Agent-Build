@@ -1,8 +1,44 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { reviewContactPromotionCandidate } from "./contact-promotion-candidates"
+import {
+  listContactPromotionCandidates,
+  reviewContactPromotionCandidate,
+} from "./contact-promotion-candidates"
 
 describe("contact promotion candidate review", () => {
+  it("dedupes repeated evidence communication IDs for the review UI", async () => {
+    const row = candidate({
+      communicationId: "comm-1",
+      metadata: {
+        communicationIds: ["comm-1", "comm-2", "comm-1"],
+        leadSource: "buildout",
+      },
+    })
+    const client = {
+      contactPromotionCandidate: {
+        findMany: vi.fn(async () => [row]),
+      },
+      communication: {
+        findMany: vi.fn(async () => [
+          communication("comm-1", "2026-04-25T12:00:00Z"),
+          communication("comm-2", "2026-04-26T12:00:00Z"),
+        ]),
+      },
+      contact: {
+        findMany: vi.fn(async () => []),
+      },
+    }
+
+    const [reviewRow] = await listContactPromotionCandidates({
+      client: client as never,
+    })
+
+    expect(reviewRow.evidenceCommunications.map(({ id }) => id)).toEqual([
+      "comm-2",
+      "comm-1",
+    ])
+  })
+
   it("approves a candidate by creating one Contact and preserving evidence", async () => {
     const client = makeClient({ candidate: candidate() })
 
@@ -262,6 +298,20 @@ function existingContact(overrides: Record<string, unknown> = {}) {
     leadSource: null,
     leadStatus: null,
     ...overrides,
+  }
+}
+
+function communication(id: string, date: string) {
+  return {
+    id,
+    subject: `Subject ${id}`,
+    body: `Body ${id}`,
+    date: new Date(date),
+    direction: "inbound",
+    contactId: null,
+    externalMessageId: null,
+    conversationId: null,
+    metadata: {},
   }
 }
 
