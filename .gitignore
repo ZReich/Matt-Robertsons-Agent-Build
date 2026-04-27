@@ -63,3 +63,7 @@ prisma/dev.db
 
 # Recon dataset — sensitive sender data, regenerate via /api/integrations/msgraph/recon/senders
 full-kit/recon-output/recon-senders.json
+
+# Local runtime and audit export artifacts
+full-kit/.next-*.log
+full-kit/exports/
