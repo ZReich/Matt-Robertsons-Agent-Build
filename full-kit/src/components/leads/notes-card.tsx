@@ -4,7 +4,7 @@ interface NotesCardProps {
 
 export function NotesCard({ notes }: NotesCardProps) {
   return (
-    <div>
+    <section className="rounded-md border bg-card p-4">
       <div className="mb-2 text-[11px] font-semibold uppercase text-muted-foreground">
         Notes
       </div>
@@ -13,6 +13,6 @@ export function NotesCard({ notes }: NotesCardProps) {
       ) : (
         <p className="text-xs italic text-muted-foreground">No notes yet.</p>
       )}
-    </div>
+    </section>
   )
 }

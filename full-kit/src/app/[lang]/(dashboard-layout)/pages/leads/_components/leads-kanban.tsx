@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 import type {
   BoardColumn,
@@ -30,6 +31,7 @@ export function LeadsKanban({
 }: {
   columns: BoardColumn<LeadCardData, LeadStatus>[]
 }) {
+  const router = useRouter()
   const [conversionDraft, setConversionDraft] = useState<ConversionDraft>(null)
   const [address, setAddress] = useState("")
   const [propertyType, setPropertyType] = useState("other")
@@ -56,12 +58,13 @@ export function LeadsKanban({
         renderCard={(card) => <LeadCard card={card} />}
         renderColumnHeader={(column) => <LeadColumnHeader column={column} />}
         onMove={async (move) => {
-          const response = await fetch(`/api/leads/${move.cardId}`, {
+          const response = await fetch(`/api/vault/leads/${move.cardId}`, {
             method: "PATCH",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ leadStatus: move.toColumnId }),
           })
           if (!response.ok) throw new Error("Lead status update failed")
+          router.refresh()
           if (move.toColumnId === "converted") {
             const moved = columns
               .flatMap((column) => column.cards)

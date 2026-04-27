@@ -63,6 +63,32 @@ Reply<https://email.notifications.crexi.com/c/eJwszMFOx...CC5Vtg> [Phone]
     )
   })
 
+  it("removes LoopNet tracking footers and tel artifacts", () => {
+    const input = [
+      "[LoopNet] <https://link.mail.loopnet.com/x>",
+      "Your Listing Is Getting Noticed!",
+      "Your listing has been favorited by Alex Wright.",
+      "[phone] +1 239-851-1000<tel:+1%20239-851-1000>",
+      "303 N Broadway",
+      "Billings, MT 59101",
+      "View Listing Report __________________",
+      "Is this email helpful?",
+      "[LoopNet LinkedIn] <https://example.com>",
+      "© 2026 CoStar Group, Inc.",
+    ].join("\n")
+
+    const cleaned = cleanLeadMessageText(input)
+
+    expect(cleaned).toContain("Your listing has been favorited by Alex Wright.")
+    expect(cleaned).toContain("+1 239-851-1000")
+    expect(cleaned).toContain("303 N Broadway")
+    expect(cleaned).not.toContain("%20")
+    expect(cleaned).not.toContain("tel:")
+    expect(cleaned).not.toContain("Is this email helpful")
+    expect(cleaned).not.toContain("LoopNet LinkedIn")
+    expect(cleaned).not.toContain("CoStar Group")
+  })
+
   it("returns null for messages that become empty after cleanup", () => {
     expect(
       cleanLeadMessageText(

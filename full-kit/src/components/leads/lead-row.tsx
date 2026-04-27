@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, MessagesSquare } from "lucide-react"
 
 import type { LeadSource, LeadStatus } from "@prisma/client"
 
@@ -18,6 +18,11 @@ export interface LeadRowData {
   leadStatus: LeadStatus
   leadAt: string | null
   snippet: string | null
+  propertyName: string | null
+  market: string | null
+  signal: string | null
+  activityCount: number
+  latestTouchAt: string | null
   isUnread: boolean
 }
 
@@ -43,7 +48,7 @@ export function LeadRow({ lead }: LeadRowProps) {
       href={`/${lang}/pages/leads/${lead.id}`}
       className="block border-b border-border px-4 py-3 transition-colors hover:bg-muted/30"
     >
-      <div className="grid grid-cols-[16px_minmax(0,1.6fr)_minmax(0,1fr)_auto_auto_auto_16px] items-center gap-3">
+      <div className="grid grid-cols-[16px_minmax(0,1.1fr)_minmax(220px,1fr)_minmax(150px,auto)_16px] items-start gap-3">
         <span>
           {lead.isUnread ? (
             <span
@@ -59,20 +64,47 @@ export function LeadRow({ lead }: LeadRowProps) {
               <span className="text-muted-foreground"> - {lead.company}</span>
             ) : null}
           </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className="truncate">{lead.email}</span>
+            {lead.activityCount > 0 ? (
+              <span className="flex items-center gap-1">
+                <MessagesSquare className="size-3" />
+                {lead.activityCount}
+              </span>
+            ) : null}
+          </div>
         </div>
-        <div className="truncate text-xs text-muted-foreground">
-          {lead.email}
+        <div className="min-w-0">
+          <div className="truncate text-sm font-medium text-foreground">
+            {lead.propertyName ?? "No property identified"}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {lead.market ? <span>{lead.market}</span> : null}
+            {lead.signal ? (
+              <span className="capitalize">
+                {lead.signal.replace(/_/g, " ")}
+              </span>
+            ) : null}
+          </div>
         </div>
-        <SourceBadge source={lead.leadSource} />
-        <StatusChip status={lead.leadStatus} />
-        <span className="whitespace-nowrap text-xs text-muted-foreground">
-          {lead.leadAt ? formatDate(lead.leadAt) : ""}
-        </span>
+        <div className="flex min-w-[150px] flex-col items-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
+            <SourceBadge source={lead.leadSource} />
+            <StatusChip status={lead.leadStatus} />
+          </div>
+          <span className="whitespace-nowrap text-right text-xs text-muted-foreground">
+            {lead.latestTouchAt
+              ? formatDate(lead.latestTouchAt)
+              : lead.leadAt
+                ? formatDate(lead.leadAt)
+                : ""}
+          </span>
+        </div>
         <ChevronRight className="size-4 text-muted-foreground" />
       </div>
       {lead.snippet ? (
-        <p className="ms-7 mt-1 line-clamp-1 text-xs text-muted-foreground">
-          &quot;{lead.snippet}&quot;
+        <p className="ms-7 mt-2 line-clamp-2 max-w-4xl text-xs leading-relaxed text-muted-foreground">
+          {lead.snippet}
         </p>
       ) : null}
     </Link>

@@ -27,9 +27,19 @@ export function LeadCard({ card }: { card: LeadCardData }) {
               {card.company ?? card.email ?? "No company"}
             </p>
           </div>
+          <div className="rounded-md bg-muted/30 px-2 py-1.5">
+            <p className="line-clamp-1 text-xs font-medium">
+              {card.propertyName ?? "No property identified"}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {[card.market, card.signal?.replace(/_/g, " ")]
+                .filter(Boolean)
+                .join(" - ")}
+            </p>
+          </div>
           {card.snippet ? (
             <p className="line-clamp-2 text-xs text-muted-foreground">
-              “{card.snippet}”
+              {card.snippet}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-1.5">

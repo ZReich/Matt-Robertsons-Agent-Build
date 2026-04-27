@@ -7,6 +7,7 @@ import type {
 import type { PipelineAgeBucket } from "../age-buckets"
 import type { Decimalish } from "../weighted-commission"
 
+import { extractLeadInquiryFacts } from "@/lib/leads/inquiry-facts"
 import { cleanLeadMessageText } from "@/lib/leads/message-text"
 
 import { daysSince, getAgeBucketForDate } from "../age-buckets"
@@ -162,6 +163,9 @@ export type LeadCard = {
   leadAt: string | null
   estimatedValue: number | null
   snippet: string | null
+  propertyName: string | null
+  market: string | null
+  signal: string | null
   lastTouchAt: string | null
   ageDays: number | null
   href: string
@@ -325,21 +329,30 @@ export function serializeLeadBoard(
       const lastTouch = [...(lead.communications ?? [])].sort(
         (a, b) => b.date.getTime() - a.date.getTime()
       )[0]
+      const facts = extractLeadInquiryFacts(
+        inbound?.metadata ?? null,
+        inbound?.body ?? null,
+        inbound?.subject ?? null
+      )
+      const displayName =
+        lead.name.includes("@") && facts.inquirerName
+          ? facts.inquirerName
+          : lead.name
 
       return {
         id: lead.id,
         status: lead.leadStatus ?? "new",
-        name: lead.name,
+        name: displayName,
         company: lead.company,
         email: lead.email,
         role: lead.role ?? null,
         leadSource: lead.leadSource!,
         leadAt: lead.leadAt?.toISOString() ?? null,
         estimatedValue: decimalishToNumber(lead.estimatedValue),
-        snippet: extractLeadInquiryMessage(
-          inbound?.metadata ?? null,
-          inbound?.subject ?? inbound?.body ?? null
-        ),
+        snippet: facts.request ?? facts.message,
+        propertyName: facts.propertyName ?? facts.address ?? facts.listingLine,
+        market: facts.market,
+        signal: facts.kind,
         lastTouchAt: lastTouch?.date.toISOString() ?? null,
         ageDays: daysSince(lead.leadAt ?? lead.updatedAt, now),
         href: `/pages/leads/${lead.id}`,

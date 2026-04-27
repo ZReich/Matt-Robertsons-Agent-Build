@@ -1,6 +1,7 @@
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  ExternalLink,
   Mail,
   MessageSquare,
   Phone,
@@ -24,6 +25,7 @@ export interface LeadActivityItem {
   body: string | null
   date: Date
   direction: Direction | null
+  outlookUrl?: string | null
 }
 
 interface LeadActivityTimelineProps {
@@ -81,39 +83,64 @@ export function LeadActivityTimeline({
   )
 
   return (
-    <div className="divide-y divide-border">
+    <div className="grid gap-3">
       {sorted.map((communication) => {
         const isInbound = communication.direction === "inbound"
-        const bodySnippet = snippet(communication.body)
+        const bodySnippet = snippet(communication.body, 460)
         return (
-          <div key={communication.id} className="py-3">
-            <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span
-                className={
-                  isInbound
-                    ? "flex items-center gap-1 text-emerald-600"
-                    : "flex items-center gap-1 text-blue-600"
-                }
-              >
-                {isInbound ? (
-                  <ArrowDownLeft className="size-3" />
-                ) : (
-                  <ArrowUpRight className="size-3" />
-                )}
-                {isInbound ? "inbound" : "outbound"}
-              </span>
-              <span>{CHANNEL_ICONS[communication.channel] ?? null}</span>
-              {communication.subject ? (
-                <span className="text-foreground">{communication.subject}</span>
-              ) : null}
-              <span className="ms-auto">{formatDate(communication.date)}</span>
+          <article
+            key={communication.id}
+            className="rounded-md border bg-background p-3"
+          >
+            <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span
+                    className={
+                      isInbound
+                        ? "flex items-center gap-1 font-medium text-emerald-600"
+                        : "flex items-center gap-1 font-medium text-blue-600"
+                    }
+                  >
+                    {isInbound ? (
+                      <ArrowDownLeft className="size-3" />
+                    ) : (
+                      <ArrowUpRight className="size-3" />
+                    )}
+                    {isInbound ? "Inbound" : "Outbound"}
+                  </span>
+                  <span>{CHANNEL_ICONS[communication.channel] ?? null}</span>
+                  <span className="capitalize">{communication.channel}</span>
+                </div>
+                {communication.subject ? (
+                  <h3 className="line-clamp-2 text-sm font-medium text-foreground">
+                    {communication.subject}
+                  </h3>
+                ) : null}
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {communication.outlookUrl ? (
+                  <a
+                    href={communication.outlookUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    <ExternalLink className="size-3" />
+                    Outlook
+                  </a>
+                ) : null}
+                <time className="text-xs text-muted-foreground">
+                  {formatDate(communication.date)}
+                </time>
+              </div>
             </div>
             {bodySnippet ? (
-              <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+              <p className="whitespace-pre-line rounded-md bg-muted/20 px-3 py-2 text-sm leading-relaxed text-foreground/90">
                 {bodySnippet}
               </p>
             ) : null}
-          </div>
+          </article>
         )
       })}
     </div>

@@ -20,6 +20,12 @@ const SECTION_STARTS = [
   "Sincerely,",
   "Email:",
   "Phone:",
+  "Regarding listing",
+  "Is this",
+  "Can you",
+  "Could you",
+  "I would",
+  "I am interested",
 ]
 
 function decodeEntities(value: string): string {
@@ -43,11 +49,14 @@ function decodeEntities(value: string): string {
 
 function removeFooterContent(value: string): string {
   return value
+    .replace(/\bWant to receive this message as a text\s*\??[\s\S]*$/i, "")
+    .replace(/\bIs this email helpful\?[\s\S]*$/i, "")
     .replace(
-      /\bWant to receive this message as a text\? Click here\.[\s\S]*$/i,
+      /\bMake sure your listing information is up to date\.[\s\S]*$/i,
       ""
     )
     .replace(/\bsupport@crexi\.com[\s\S]*$/i, "")
+    .replace(/\b©\s*\d{4}\s+CoStar Group[\s\S]*$/i, "")
     .replace(/\b©\s*\d{4}\s+Commercial Real Estate Exchange[\s\S]*$/i, "")
 }
 
@@ -109,12 +118,18 @@ export function cleanLeadMessageText(
   if (!value) return null
 
   const withoutLinks = removeFooterContent(decodeEntities(value))
+    .replace(/<tel:([^>]+)>/gi, " ")
     .replace(/<https?:\/\/[\s\S]*?>/gi, " ")
     .replace(/<mailto:[^>]*>/gi, " ")
     .replace(/!?\[(?:https?|mailto):[^\]]*\]/gi, " ")
+    .replace(/\[(?:https?|data):[^\]]*\]/gi, " ")
     .replace(/\bhttps?:\/\/\S+/gi, " ")
+    .replace(/\btel:\S+/gi, " ")
     .replace(/\bmailto:\S+/gi, " ")
     .replace(/\[(Email|Phone|Contact|Website)\]/gi, " ")
+    .replace(/\[(LoopNet|Crexi)\]/gi, "$1")
+    .replace(/\bView Listing Report\b\s*_+/gi, "")
+    .replace(/\bView My Leads\b/gi, "")
     .replace(/\bReply\b/gi, " ")
     .replace(/[<>]/g, " ")
 

@@ -3,9 +3,9 @@ import { Target } from "lucide-react"
 import type { LeadRowData } from "@/components/leads/lead-row"
 import type { Metadata } from "next"
 
+import { extractLeadInquiryFacts } from "@/lib/leads/inquiry-facts"
 import { isUnread } from "@/lib/leads/unread"
 import {
-  extractLeadInquiryMessage,
   parsePipelineFilters,
   serializeLeadBoard,
 } from "@/lib/pipeline/server/board"
@@ -42,20 +42,31 @@ export default async function LeadsListPage({
     const firstInbound = contact.communications.find(
       (communication) => communication.direction === "inbound"
     )
-    const snippet = extractLeadInquiryMessage(
+    const facts = extractLeadInquiryFacts(
       firstInbound?.metadata ?? null,
-      firstInbound?.subject ?? firstInbound?.body ?? null
+      firstInbound?.body ?? null,
+      firstInbound?.subject ?? null
     )
+    const latestCommunication = contact.communications[0]
+    const displayName =
+      contact.name.includes("@") && facts.inquirerName
+        ? facts.inquirerName
+        : contact.name
 
     return {
       id: contact.id,
-      name: contact.name,
+      name: displayName,
       company: contact.company,
       email: contact.email,
       leadSource: contact.leadSource!,
       leadStatus: contact.leadStatus ?? "new",
       leadAt: contact.leadAt?.toISOString() ?? null,
-      snippet,
+      snippet: facts.request ?? facts.message,
+      propertyName: facts.propertyName ?? facts.address ?? facts.listingLine,
+      market: facts.market,
+      signal: facts.kind,
+      activityCount: contact.communications.length,
+      latestTouchAt: latestCommunication?.date.toISOString() ?? null,
       isUnread: isUnread({
         leadStatus: contact.leadStatus,
         leadAt: contact.leadAt,

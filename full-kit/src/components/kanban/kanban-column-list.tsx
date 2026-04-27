@@ -26,10 +26,15 @@ export function KanbanColumnList<
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`grid gap-2 rounded-lg transition-colors ${snapshot.isDraggingOver ? "bg-primary/5" : ""}`}
+            className={`grid min-h-[18rem] content-start gap-2 rounded-lg transition-colors ${snapshot.isDraggingOver ? "bg-primary/5" : ""}`}
           >
             {column.cards.map((card, index) => (
-              <Draggable key={card.id} draggableId={card.id} index={index}>
+              <Draggable
+                key={card.id}
+                draggableId={card.id}
+                index={index}
+                disableInteractiveElementBlocking
+              >
                 {(dragProvided, dragSnapshot) => (
                   <div
                     ref={dragProvided.innerRef}

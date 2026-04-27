@@ -3,14 +3,15 @@ import { notFound } from "next/navigation"
 import type { LeadActivityItem } from "@/components/leads/lead-activity-timeline"
 import type { Metadata } from "next"
 
+import { extractLeadInquiryFacts } from "@/lib/leads/inquiry-facts"
 import { cleanLeadMessageText } from "@/lib/leads/message-text"
 import { db } from "@/lib/prisma"
 
 import { ContactCard } from "@/components/leads/contact-card"
-import { InquiryQuote } from "@/components/leads/inquiry-quote"
 import { LeadActivityTimeline } from "@/components/leads/lead-activity-timeline"
 import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 import { LeadDetailHeader } from "@/components/leads/lead-detail-header"
+import { LeadInquiryBrief } from "@/components/leads/lead-inquiry-brief"
 import { MarkViewedOnMount } from "@/components/leads/mark-viewed-on-mount"
 import { NotesCard } from "@/components/leads/notes-card"
 
@@ -24,40 +25,31 @@ export async function generateMetadata({
   const { id } = await params
   const contact = await db.contact.findUnique({
     where: { id },
-    select: { name: true },
+    select: {
+      name: true,
+      communications: {
+        where: { direction: "inbound" },
+        orderBy: { date: "desc" },
+        take: 1,
+        select: { body: true, subject: true, metadata: true },
+      },
+    },
   })
+  const firstInbound = contact?.communications[0]
+  const facts = extractLeadInquiryFacts(
+    firstInbound?.metadata ?? null,
+    firstInbound?.body ?? null,
+    firstInbound?.subject ?? null
+  )
+  const displayName =
+    contact?.name.includes("@") && facts.inquirerName
+      ? facts.inquirerName
+      : contact?.name
 
-  return { title: contact?.name ?? "Lead" }
+  return { title: displayName ?? "Lead" }
 }
 
 export const dynamic = "force-dynamic"
-
-function extractInquiryMessage(
-  metadata: unknown,
-  fallback: string | null
-): string | null {
-  if (
-    metadata &&
-    typeof metadata === "object" &&
-    "extracted" in metadata &&
-    (metadata as { extracted?: unknown }).extracted &&
-    typeof (metadata as { extracted: unknown }).extracted === "object"
-  ) {
-    const extracted = (metadata as { extracted: Record<string, unknown> })
-      .extracted
-    const inquirer = extracted.inquirer
-    if (
-      inquirer &&
-      typeof inquirer === "object" &&
-      "message" in inquirer &&
-      typeof (inquirer as { message?: unknown }).message === "string"
-    ) {
-      return cleanLeadMessageText((inquirer as { message: string }).message)
-    }
-  }
-
-  return cleanLeadMessageText(fallback)
-}
 
 function formatLeadAt(date: Date | null): string {
   if (!date) return "new lead"
@@ -86,6 +78,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         date: true,
         direction: true,
         metadata: true,
+        externalMessageId: true,
       },
     }),
   ])
@@ -95,10 +88,26 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   const firstInbound = communications.find(
     (communication) => communication.direction === "inbound"
   )
-  const inquiryMessage = extractInquiryMessage(
+  const inquiryFacts = extractLeadInquiryFacts(
     firstInbound?.metadata ?? null,
-    firstInbound?.body ?? firstInbound?.subject ?? null
+    firstInbound?.body ?? null,
+    firstInbound?.subject ?? null
   )
+  const displayName =
+    contact.name.includes("@") && inquiryFacts.inquirerName
+      ? inquiryFacts.inquirerName
+      : contact.name
+  const communicationDates = communications.map(
+    (communication) => communication.date
+  )
+  const firstSeenAt =
+    communicationDates.length > 0
+      ? new Date(Math.min(...communicationDates.map((date) => date.getTime())))
+      : contact.leadAt
+  const lastSeenAt =
+    communicationDates.length > 0
+      ? new Date(Math.max(...communicationDates.map((date) => date.getTime())))
+      : contact.leadAt
   const activityItems: LeadActivityItem[] = communications.map(
     (communication) => ({
       id: communication.id,
@@ -107,6 +116,11 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       body: cleanLeadMessageText(communication.body),
       date: communication.date,
       direction: communication.direction,
+      outlookUrl: communication.externalMessageId
+        ? `https://outlook.office.com/mail/deeplink/read/${encodeURIComponent(
+            communication.externalMessageId
+          )}`
+        : null,
     })
   )
 
@@ -115,25 +129,37 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       <MarkViewedOnMount leadId={contact.id} />
       <LeadDetailHeader
         leadId={contact.id}
-        name={contact.name}
+        name={displayName}
         company={contact.company}
         metaLine={formatLeadAt(contact.leadAt)}
         leadSource={contact.leadSource}
         leadStatus={contact.leadStatus ?? "new"}
       />
-      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="border-r border-border px-6 py-4">
-          <div className="mb-3 text-[11px] font-semibold uppercase text-muted-foreground">
-            Inquiry
-          </div>
-          <InquiryQuote source={contact.leadSource} message={inquiryMessage} />
-          <div className="mb-3 mt-6 text-[11px] font-semibold uppercase text-muted-foreground">
-            Activity
-          </div>
-          <LeadActivityTimeline communications={activityItems} />
+      <div className="grid grid-cols-1 gap-0 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-5 border-r border-border px-6 py-5">
+          <LeadInquiryBrief
+            source={contact.leadSource}
+            facts={inquiryFacts}
+            communicationCount={communications.length}
+            firstSeenAt={firstSeenAt}
+            lastSeenAt={lastSeenAt}
+          />
+          <section className="rounded-md border bg-card p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold">Activity</h2>
+              </div>
+            </div>
+            <LeadActivityTimeline communications={activityItems} />
+          </section>
         </div>
-        <aside className="flex flex-col gap-4 bg-muted/10 px-6 py-4">
-          <ContactCard contact={contact} />
+        <aside className="flex flex-col gap-4 bg-muted/10 px-6 py-5">
+          <ContactCard
+            contact={contact}
+            displayName={displayName}
+            displayEmail={inquiryFacts.contactEmail}
+            displayPhone={inquiryFacts.contactPhone}
+          />
           <LeadAISuggestions contactId={contact.id} />
           <NotesCard notes={contact.notes} />
         </aside>
