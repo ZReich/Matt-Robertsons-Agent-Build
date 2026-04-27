@@ -51,7 +51,7 @@ describe("lead-apply-backfill", () => {
     expect(client.communication.updateMany).not.toHaveBeenCalled()
   })
 
-  it("creates Buildout contact candidates when the event has inquirer email evidence", async () => {
+  it("creates Buildout lead Contacts when the event has inquirer email evidence", async () => {
     const client = makeClient({
       rows: [
         leadRow({
@@ -73,19 +73,28 @@ describe("lead-apply-backfill", () => {
       client: client as never,
     })
 
-    expect(result.byOutcome).toMatchObject({ created_contact_candidate: 1 })
-    expect(client.contactPromotionCandidate.create).toHaveBeenCalledWith(
+    expect(result.byOutcome).toMatchObject({ created_lead_contact: 1 })
+    expect(result.createdLeadContacts).toBe(1)
+    expect(result.communicationLinked).toBe(1)
+    expect(client.contact.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          normalizedEmail: "shae@example.com",
-          displayName: "Shae Nielsen",
+          email: "shae@example.com",
+          name: "Shae Nielsen",
           phone: "406.555.0100",
-          sourcePlatform: "buildout",
-          sourceKind: "information-requested",
+          leadSource: "buildout",
+          leadStatus: "new",
         }),
       })
     )
-    expect(client.communication.updateMany).not.toHaveBeenCalled()
+    expect(client.contactPromotionCandidate.create).not.toHaveBeenCalled()
+    expect(client.communication.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          contactId: "contact-created",
+        }),
+      })
+    )
   })
 
   it("does not double-count the same communication as candidate evidence", async () => {
@@ -430,8 +439,14 @@ function makeClient({
   updateCount?: number
 }) {
   const tx = {
+    $queryRaw: vi.fn(async () => [{ locked: true }]),
+    $executeRaw: vi.fn(async () => 1),
     communication: {
       updateMany: vi.fn(async () => ({ count: updateCount })),
+    },
+    contact: {
+      findFirst: vi.fn(async () => null),
+      create: vi.fn(async () => ({ id: "contact-created" })),
     },
     contactPromotionCandidate: {
       findUnique: vi.fn(async () => existingCandidate),
@@ -446,6 +461,8 @@ function makeClient({
     },
     contact: {
       findMany: vi.fn(async () => contacts),
+      findFirst: tx.contact.findFirst,
+      create: tx.contact.create,
     },
     contactPromotionCandidate: tx.contactPromotionCandidate,
     $queryRaw: vi

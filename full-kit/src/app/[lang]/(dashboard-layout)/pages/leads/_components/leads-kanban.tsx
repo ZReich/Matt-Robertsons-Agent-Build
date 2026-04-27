@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import type {
   BoardColumn,
@@ -32,23 +33,52 @@ export function LeadsKanban({
   columns: BoardColumn<LeadCardData, LeadStatus>[]
 }) {
   const router = useRouter()
+  const params = useParams()
+  const lang = typeof params.lang === "string" ? params.lang : "en"
   const [conversionDraft, setConversionDraft] = useState<ConversionDraft>(null)
   const [address, setAddress] = useState("")
   const [propertyType, setPropertyType] = useState("other")
+  const [dealError, setDealError] = useState<string | null>(null)
+  const [isCreatingDeal, setIsCreatingDeal] = useState(false)
 
   async function submitDeal() {
-    if (!conversionDraft || !address.trim()) return
-    const response = await fetch("/api/deals", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        contactId: conversionDraft.id,
-        propertyAddress: address,
-        propertyType,
-        value: conversionDraft.estimatedValue,
-      }),
-    })
-    if (response.ok) setConversionDraft(null)
+    if (!conversionDraft) return
+    if (!address.trim()) {
+      setDealError("Property address is required before creating a deal.")
+      return
+    }
+    setIsCreatingDeal(true)
+    setDealError(null)
+    try {
+      const response = await fetch("/api/deals", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          contactId: conversionDraft.id,
+          propertyAddress: address,
+          propertyType,
+          value: conversionDraft.estimatedValue,
+        }),
+      })
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string
+        deal?: { id?: string }
+      } | null
+      if (!response.ok) {
+        setDealError(payload?.error ?? "Deal creation failed.")
+        return
+      }
+      toast.success("Deal created")
+      setConversionDraft(null)
+      router.refresh()
+      router.push(
+        payload?.deal?.id
+          ? `/${lang}/pages/deals/${payload.deal.id}`
+          : `/${lang}/pages/deals`
+      )
+    } finally {
+      setIsCreatingDeal(false)
+    }
   }
 
   return (
@@ -70,8 +100,9 @@ export function LeadsKanban({
               .flatMap((column) => column.cards)
               .find((card) => card.id === move.cardId)
             if (moved) {
-              setAddress("")
+              setAddress(moved.propertyName ?? "")
               setPropertyType("other")
+              setDealError(null)
               setConversionDraft(moved)
             }
           }
@@ -79,7 +110,11 @@ export function LeadsKanban({
       />
       <Dialog
         open={conversionDraft !== null}
-        onOpenChange={(open) => !open && setConversionDraft(null)}
+        onOpenChange={(open) => {
+          if (open) return
+          setConversionDraft(null)
+          setDealError(null)
+        }}
       >
         <DialogContent>
           <DialogHeader>
@@ -118,13 +153,26 @@ export function LeadsKanban({
                 <option value="other">Other</option>
               </select>
             </div>
+            {dealError ? (
+              <p className="text-sm text-destructive">{dealError}</p>
+            ) : null}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConversionDraft(null)}>
+            <Button
+              variant="outline"
+              disabled={isCreatingDeal}
+              onClick={() => {
+                setConversionDraft(null)
+                setDealError(null)
+              }}
+            >
               Dismiss
             </Button>
-            <Button onClick={submitDeal} disabled={!address.trim()}>
-              Create deal
+            <Button
+              onClick={submitDeal}
+              disabled={isCreatingDeal || !address.trim()}
+            >
+              {isCreatingDeal ? "Creating..." : "Create deal"}
             </Button>
           </DialogFooter>
         </DialogContent>

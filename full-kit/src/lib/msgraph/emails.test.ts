@@ -32,6 +32,7 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
     },
     $queryRaw: vi.fn(),
+    $executeRaw: vi.fn(),
     $transaction: vi.fn(),
   },
 }))
@@ -338,7 +339,15 @@ describe("processOneMessage contact safety", () => {
     ;(db.externalSync.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
   })
 
-  it("does not link extracted platform leads to the vendor sender Contact", async () => {
+  it("creates Buildout lead contacts instead of linking to the vendor sender Contact", async () => {
+    ;(db.contact.findFirst as ReturnType<typeof vi.fn>)
+      .mockReset()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+    ;(db.contact.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "contact-buildout",
+    })
+
     await processOneMessage(
       {
         id: "buildout-1",
@@ -364,13 +373,25 @@ describe("processOneMessage contact safety", () => {
     expect(db.communication.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          contactId: null,
+          contactId: "contact-buildout",
           metadata: expect.objectContaining({
             extracted: expect.objectContaining({
               platform: "buildout",
               kind: "new-lead",
             }),
+            leadContactId: "contact-buildout",
+            leadCreated: true,
           }),
+        }),
+      })
+    )
+    expect(db.contact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: "dana@example.com",
+          leadSource: "buildout",
+          leadStatus: "new",
+          createdBy: "msgraph-email",
         }),
       })
     )

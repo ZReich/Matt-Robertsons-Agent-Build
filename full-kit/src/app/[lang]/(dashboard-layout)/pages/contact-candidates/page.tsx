@@ -81,13 +81,21 @@ export default async function ContactCandidatesPage({
           <div>
             <h1 className="text-xl font-semibold">Contact Candidates</h1>
             <p className="text-sm text-muted-foreground">
-              {candidates.length} candidate{candidates.length !== 1 ? "s" : ""}
+              {candidates.length} candidate{candidates.length !== 1 ? "s" : ""}{" "}
+              awaiting Contact approval
             </p>
           </div>
         </div>
         <Button variant="outline" size="sm" asChild>
           <Link href={`/${lang}/pages/leads`}>Leads</Link>
         </Button>
+      </div>
+
+      <div className="rounded-md border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+        This is the approval gate for uncertain people before they become
+        Contacts. Buildout lead emails with inquirer email evidence now go
+        straight to Leads like Crexi and LoopNet; this queue is for extracted
+        people that still need a human safety check.
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -292,15 +300,7 @@ function CandidateCard({
           ) : null}
         </div>
 
-        <aside className="grid gap-3">
-          <div className="rounded-md border bg-muted/20 p-3">
-            <p className="text-xs font-medium uppercase text-muted-foreground">
-              Metadata
-            </p>
-            <pre className="mt-2 max-h-52 overflow-auto whitespace-pre-wrap break-words text-xs">
-              {metadataToString(candidate.metadata)}
-            </pre>
-          </div>
+        <aside className="grid content-start gap-3">
           {candidate.status === "approved" || candidate.status === "merged" ? (
             <p className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
               Approved Contact: {candidate.approvedContactId}
@@ -312,6 +312,14 @@ function CandidateCard({
               preferredContactId={preferredContactId}
             />
           )}
+          <div className="rounded-md border bg-muted/20 p-3">
+            <p className="text-xs font-medium uppercase text-muted-foreground">
+              Raw evidence metadata
+            </p>
+            <pre className="mt-2 max-h-52 overflow-auto whitespace-pre-wrap break-words text-xs">
+              {metadataToString(candidate.metadata)}
+            </pre>
+          </div>
         </aside>
       </div>
     </article>

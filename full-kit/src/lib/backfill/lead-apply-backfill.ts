@@ -21,6 +21,8 @@ export type LeadApplyBackfillRequest = {
 }
 
 export type LeadApplyOutcome =
+  | "would_create_lead_contact"
+  | "created_lead_contact"
   | "would_create_contact_candidate"
   | "created_contact_candidate"
   | "updated_contact_candidate"
@@ -228,6 +230,12 @@ function planRow(
     })
   }
   if (!contact) {
+    if (shouldAutoCreateLeadContact(extracted)) {
+      return record(result, row, "would_create_lead_contact", {
+        platform,
+        extracted,
+      })
+    }
     return record(result, row, "would_create_contact_candidate", {
       platform,
       extracted,
@@ -283,6 +291,7 @@ async function applyRow(
   )
   if (
     planned !== "would_create_contact_candidate" &&
+    planned !== "would_create_lead_contact" &&
     planned !== "would_link_existing_contact"
   ) {
     record(
@@ -294,6 +303,11 @@ async function applyRow(
     return
   }
   if (!extracted) return
+
+  if (planned === "would_create_lead_contact") {
+    await createLeadContact(row, extracted, result, client)
+    return
+  }
 
   if (planned === "would_link_existing_contact") {
     const contacts = contactsByEmail.get(extracted.inquirer.email) ?? []
@@ -335,6 +349,139 @@ async function applyRow(
         extracted,
       }
     )
+  })
+}
+
+async function createLeadContact(
+  row: CommunicationRow,
+  extracted: ExtractedLead,
+  result: LeadApplyBackfillResult,
+  client: DbLike
+): Promise<void> {
+  await client.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      SELECT pg_advisory_xact_lock(hashtext(${"platform-lead-email:" + extracted.inquirer.email}))
+    `
+    const duplicate = await tx.contact.findFirst({
+      where: {
+        email: { equals: extracted.inquirer.email, mode: "insensitive" },
+      },
+      select: { id: true },
+    })
+    if (duplicate) {
+      const update = await tx.communication.updateMany({
+        where: {
+          id: row.id,
+          OR: [{ contactId: null }, { contactId: duplicate.id }],
+        },
+        data: {
+          contactId: duplicate.id,
+          metadata: mergeLeadApplyMetadata(row.metadata, {
+            runId: result.runId,
+            appliedAt: new Date().toISOString(),
+            strategy: "historical-platform-lead-apply",
+            platform: extracted.platform,
+            source: metadataString(row.metadata, "source"),
+            extractedKind: extracted.kind,
+            inquirerEmail: extracted.inquirer.email,
+            previousContactId: row.contactId,
+            newContactId: duplicate.id,
+            outcome: "linked_existing_contact",
+            dryRun: false,
+          }),
+        },
+      })
+      if (update.count !== 1) {
+        record(result, row, "skipped_race_lost", {
+          platform: extracted.platform,
+          extracted,
+          contactId: duplicate.id,
+        })
+        return
+      }
+      result.communicationLinked += 1
+      record(result, row, "linked_existing_contact", {
+        platform: extracted.platform,
+        extracted,
+        contactId: duplicate.id,
+      })
+      return
+    }
+
+    const [currentCommunication] = await tx.$queryRaw<
+      Array<{ contactId: string | null }>
+    >`
+      SELECT contact_id AS "contactId"
+      FROM communications
+      WHERE id = ${row.id}
+      FOR UPDATE
+    `
+    if (!currentCommunication || currentCommunication.contactId) {
+      record(result, row, "skipped_race_lost", {
+        platform: extracted.platform,
+        extracted,
+        contactId: currentCommunication?.contactId ?? null,
+      })
+      return
+    }
+
+    const contact = await tx.contact.create({
+      data: {
+        name:
+          extracted.inquirer.name?.trim() ||
+          extracted.inquirer.email ||
+          "Unknown lead",
+        company: extracted.inquirer.company ?? null,
+        email: extracted.inquirer.email,
+        phone: extracted.inquirer.phone ?? null,
+        notes: buildAutoLeadNotes(row, extracted),
+        category: "business",
+        tags: ["platform-lead", extracted.platform],
+        createdBy: "historical-platform-lead-apply",
+        leadSource: extracted.leadSource,
+        leadStatus: "new",
+        leadAt: row.date,
+      },
+      select: { id: true },
+    })
+
+    const update = await tx.communication.updateMany({
+      where: {
+        id: row.id,
+        OR: [{ contactId: null }, { contactId: contact.id }],
+      },
+      data: {
+        contactId: contact.id,
+        metadata: mergeLeadApplyMetadata(row.metadata, {
+          runId: result.runId,
+          appliedAt: new Date().toISOString(),
+          strategy: "historical-platform-lead-apply",
+          platform: extracted.platform,
+          source: metadataString(row.metadata, "source"),
+          extractedKind: extracted.kind,
+          inquirerEmail: extracted.inquirer.email,
+          previousContactId: row.contactId,
+          newContactId: contact.id,
+          outcome: "created_lead_contact",
+          dryRun: false,
+        }),
+      },
+    })
+    if (update.count !== 1) {
+      record(result, row, "skipped_race_lost", {
+        platform: extracted.platform,
+        extracted,
+        contactId: contact.id,
+      })
+      return
+    }
+    result.createdLeadContacts += 1
+    result.communicationLinked += 1
+    record(result, row, "created_lead_contact", {
+      platform: extracted.platform,
+      extracted,
+      contactId: contact.id,
+    })
   })
 }
 
@@ -525,6 +672,29 @@ function extractPlatform(
 
 function platformToLeadSource(platform: LeadDiagnosticPlatform): LeadSource {
   return platform as LeadSource
+}
+
+function shouldAutoCreateLeadContact(extracted: ExtractedLead): boolean {
+  return (
+    extracted.platform === "buildout" &&
+    (extracted.kind === "new-lead" ||
+      extracted.kind === "information-requested")
+  )
+}
+
+function buildAutoLeadNotes(
+  row: CommunicationRow,
+  extracted: ExtractedLead
+): string {
+  return [
+    "Created automatically from a reviewed platform lead email.",
+    `Communication ID: ${row.id}`,
+    `Source: ${extracted.platform} / ${extracted.kind}`,
+    `First seen: ${row.date.toISOString()}`,
+    extracted.inquirer.message ? `Message: ${extracted.inquirer.message}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n")
 }
 
 async function loadContactsByEmail(

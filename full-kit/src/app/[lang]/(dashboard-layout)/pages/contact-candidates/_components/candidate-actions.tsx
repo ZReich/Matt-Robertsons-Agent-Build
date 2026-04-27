@@ -76,12 +76,20 @@ export function CandidateActions({
         setError(payload?.error ?? "Action failed")
         return
       }
+      window.dispatchEvent(new Event("contact-candidates-changed"))
       router.refresh()
     })
   }
 
   return (
-    <div className="grid gap-3 border-t pt-4">
+    <div className="grid gap-3 rounded-md border bg-muted/20 p-3">
+      <div>
+        <p className="text-sm font-medium">Review decision</p>
+        <p className="text-xs text-muted-foreground">
+          Approving creates or links the Contact, then it can be worked from
+          Leads.
+        </p>
+      </div>
       <div className="flex flex-wrap gap-2">
         <Button
           size="sm"
@@ -89,7 +97,7 @@ export function CandidateActions({
           onClick={() => runAction("approve_create_contact")}
         >
           <Check className="me-2 size-4" />
-          Create Contact
+          Approve Contact
         </Button>
         <Button
           size="sm"

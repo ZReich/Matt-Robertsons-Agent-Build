@@ -141,20 +141,8 @@ export async function listContactPromotionCandidates({
   client = db,
   now = new Date(),
 }: CandidateListFilters = {}): Promise<CandidateReviewRow[]> {
-  const where: Prisma.ContactPromotionCandidateWhereInput = status
-    ? { status }
-    : includeTerminal
-      ? {}
-      : {
-          OR: [
-            { status: { in: ACTIVE_STATUSES } },
-            { status: "snoozed", snoozedUntil: { lte: now } },
-            { status: "snoozed", snoozedUntil: null },
-          ],
-        }
-
   const candidates = await client.contactPromotionCandidate.findMany({
-    where,
+    where: candidateListWhere({ status, includeTerminal, now }),
     orderBy: [{ lastSeenAt: "desc" }, { createdAt: "desc" }],
     select: CANDIDATE_SELECT,
   })
@@ -198,6 +186,17 @@ export async function listContactPromotionCandidates({
       }
     })
   )
+}
+
+export async function countContactPromotionCandidates({
+  status,
+  includeTerminal = false,
+  client = db,
+  now = new Date(),
+}: CandidateListFilters = {}): Promise<number> {
+  return client.contactPromotionCandidate.count({
+    where: candidateListWhere({ status, includeTerminal, now }),
+  })
 }
 
 export async function reviewContactPromotionCandidate({
@@ -279,7 +278,7 @@ async function lockCandidateIdentity(
   candidate: CandidateRow
 ): Promise<void> {
   if (!candidate.normalizedEmail) return
-  await tx.$queryRaw`
+  await tx.$executeRaw`
     SELECT pg_advisory_xact_lock(hashtext(${"contact-promotion-email:" + candidate.normalizedEmail}))
   `
 }
@@ -414,6 +413,25 @@ function ensureCanApprove(candidate: CandidateRow) {
       `candidate is already ${candidate.status}`,
       409
     )
+  }
+}
+
+function candidateListWhere({
+  status,
+  includeTerminal = false,
+  now = new Date(),
+}: Omit<
+  CandidateListFilters,
+  "client"
+>): Prisma.ContactPromotionCandidateWhereInput {
+  if (status) return { status }
+  if (includeTerminal) return {}
+  return {
+    OR: [
+      { status: { in: ACTIVE_STATUSES } },
+      { status: "snoozed", snoozedUntil: { lte: now } },
+      { status: "snoozed", snoozedUntil: null },
+    ],
   }
 }
 

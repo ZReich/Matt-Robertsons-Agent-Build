@@ -43,6 +43,7 @@ import {
   Sidebar as SidebarWrapper,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { ContactCandidateReviewBadge } from "@/components/contact-candidates/review-badge"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { UnreadBadge } from "@/components/leads/unread-badge"
 import { CommandMenu } from "./command-menu"
@@ -122,6 +123,9 @@ export function Sidebar({ dictionary }: { dictionary: DictionaryType }) {
             <span>{title}</span>
             {"label" in item && <Badge variant="secondary">{label}</Badge>}
             {item.href === "/pages/leads" ? <UnreadBadge /> : null}
+            {item.href === "/pages/contact-candidates" ? (
+              <ContactCandidateReviewBadge />
+            ) : null}
           </Link>
         </SidebarMenuButton>
       )

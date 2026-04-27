@@ -333,6 +333,7 @@ function makeClient({
       })),
     },
     $queryRaw: vi.fn(async () => [{ id: "candidate-1" }]),
+    $executeRaw: vi.fn(async () => 1),
     contact: {
       create: vi.fn(async () => existingContact({ id: "contact-created" })),
       findUnique: vi.fn(async () => contact),

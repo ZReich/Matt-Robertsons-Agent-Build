@@ -344,9 +344,11 @@ export interface ProcessedMessage {
 }
 
 /** Persist one processed message as a Communication + ExternalSync pair, in a txn. */
-export async function persistMessage(
-  p: ProcessedMessage
-): Promise<{ inserted: boolean }> {
+export async function persistMessage(p: ProcessedMessage): Promise<{
+  inserted: boolean
+  leadContactId: string | null
+  leadCreated: boolean
+}> {
   const direction = p.folder === "inbox" ? "inbound" : "outbound"
   const storeBody = p.acquisition.bodyDecision === "fetch_body"
   const dateIso =
@@ -364,7 +366,13 @@ export async function persistMessage(
     },
     select: { id: true },
   })
-  if (existing) return { inserted: false }
+  if (existing) {
+    return {
+      inserted: false,
+      leadContactId: p.leadContactId,
+      leadCreated: false,
+    }
+  }
 
   const metadata: Record<string, unknown> = {
     classification: p.classification.classification,
@@ -400,6 +408,9 @@ export async function persistMessage(
     leadContactId: p.leadContactId ?? undefined,
     leadCreated: p.leadCreated || undefined,
   }
+  let resolvedContactId = p.contactId
+  let resolvedLeadContactId = p.leadContactId
+  let resolvedLeadCreated = p.leadCreated
 
   await db.$transaction(async (tx) => {
     const sync = await tx.externalSync.create({
@@ -416,6 +427,19 @@ export async function persistMessage(
         } as Prisma.InputJsonValue,
       },
     })
+    const autoLead = await resolveAutoPlatformLeadContact(
+      tx,
+      p.extracted,
+      p.message,
+      dateIso
+    )
+    if (autoLead) {
+      resolvedContactId = autoLead.contactId
+      resolvedLeadContactId = autoLead.contactId
+      resolvedLeadCreated = autoLead.created
+      metadata.leadContactId = autoLead.contactId
+      metadata.leadCreated = autoLead.created || undefined
+    }
     const comm = await tx.communication.create({
       data: {
         channel: "email",
@@ -427,7 +451,7 @@ export async function persistMessage(
         externalMessageId: p.message.id,
         conversationId: p.message.conversationId ?? null,
         externalSyncId: sync.id,
-        contactId: p.contactId,
+        contactId: resolvedContactId,
         createdBy: "msgraph-email",
         tags: [],
         metadata: metadata as Prisma.InputJsonValue,
@@ -481,7 +505,11 @@ export async function persistMessage(
     )
   })
 
-  return { inserted: true }
+  return {
+    inserted: true,
+    leadContactId: resolvedLeadContactId,
+    leadCreated: resolvedLeadCreated,
+  }
 }
 
 interface ProcessMessageSummary {
@@ -571,13 +599,33 @@ export async function processOneMessage(
     classification.classification === "signal"
       ? runExtractor(classification, workingMessage)
       : null
+  const messageDateIso =
+    folder === "sentitems"
+      ? (workingMessage.sentDateTime ?? workingMessage.receivedDateTime)
+      : workingMessage.receivedDateTime
+  if (!messageDateIso) {
+    throw new Error(`message ${message.id} missing date`)
+  }
 
-  // Candidate-first safety: platform inquirers must not create Contacts during
-  // email ingestion. The extracted inquirer is persisted in Communication
-  // metadata and later promoted through ContactPromotionCandidate approval.
+  const existingSync = await db.externalSync.findUnique({
+    where: {
+      source_externalId: { source: "msgraph-email", externalId: message.id },
+    },
+    select: { id: true },
+  })
+  if (existingSync) {
+    return {
+      classification: classification.classification,
+      extractedPlatform: extracted?.platform ?? null,
+      contactCreated: false,
+      leadCreated: false,
+      inserted: false,
+    }
+  }
+
+  let contactId: string | null = null
   const leadContactId: string | null = null
   const leadCreated = false
-  let contactId: string | null = null
   const isPlatformSource =
     classification.source === "crexi-lead" ||
     classification.source === "loopnet-lead" ||
@@ -616,7 +664,7 @@ export async function processOneMessage(
   let lastError: unknown
   for (let attempt = 0; attempt < backoffs.length; attempt++) {
     try {
-      const { inserted } = await persistMessage({
+      const persisted = await persistMessage({
         message: workingMessage,
         folder,
         normalizedSender,
@@ -632,9 +680,9 @@ export async function processOneMessage(
       return {
         classification: classification.classification,
         extractedPlatform: extracted?.platform ?? null,
-        contactCreated: leadCreated,
-        leadCreated,
-        inserted,
+        contactCreated: persisted.leadCreated,
+        leadCreated: persisted.leadCreated,
+        inserted: persisted.inserted,
       }
     } catch (err) {
       lastError = err
@@ -644,6 +692,83 @@ export async function processOneMessage(
     }
   }
   throw lastError instanceof Error ? lastError : new Error(String(lastError))
+}
+
+async function resolveAutoPlatformLeadContact(
+  tx: Prisma.TransactionClient,
+  extracted: ExtractedData | null,
+  message: GraphEmailMessage,
+  dateIso: string
+): Promise<{ contactId: string; created: boolean } | null> {
+  if (!shouldAutoCreatePlatformLead(extracted)) return null
+
+  const email = extracted.inquirer.email?.trim().toLowerCase()
+  if (!email) return null
+
+  await tx.$executeRaw`
+    SELECT pg_advisory_xact_lock(hashtext(${"platform-lead-email:" + email}))
+  `
+  const existing = await tx.contact.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+    select: { id: true },
+  })
+  if (existing) return { contactId: existing.id, created: false }
+
+  const contact = await tx.contact.create({
+    data: {
+      name: extracted.inquirer.name?.trim() || email || "Unknown Buildout lead",
+      company: extracted.inquirer.company ?? null,
+      email,
+      phone: extracted.inquirer.phone ?? null,
+      notes: buildAutoPlatformLeadNotes(message, extracted, dateIso),
+      category: "business",
+      tags: ["platform-lead", extracted.platform],
+      createdBy: "msgraph-email",
+      leadSource: extracted.platform,
+      leadStatus: "new",
+      leadAt: new Date(dateIso),
+      leadLastViewedAt: new Date(dateIso),
+    },
+    select: { id: true },
+  })
+
+  return { contactId: contact.id, created: true }
+}
+
+function shouldAutoCreatePlatformLead(
+  extracted: ExtractedData | null
+): extracted is ExtractedData & {
+  platform: "buildout"
+  kind: "new-lead" | "information-requested"
+  inquirer: NonNullable<BuildoutEventExtract["inquirer"]>
+} {
+  return (
+    extracted?.platform === "buildout" &&
+    (extracted.kind === "new-lead" ||
+      extracted.kind === "information-requested") &&
+    !!extracted.inquirer?.email
+  )
+}
+
+function buildAutoPlatformLeadNotes(
+  message: GraphEmailMessage,
+  extracted: ExtractedData & {
+    platform: "buildout"
+    kind: "new-lead" | "information-requested"
+    inquirer: NonNullable<BuildoutEventExtract["inquirer"]>
+  },
+  dateIso: string
+): string {
+  return [
+    "Created automatically from a Buildout lead email.",
+    `Graph message ID: ${message.id}`,
+    `Source: ${extracted.platform} / ${extracted.kind}`,
+    extracted.propertyName ? `Property: ${extracted.propertyName}` : "",
+    `First seen: ${new Date(dateIso).toISOString()}`,
+    extracted.inquirer.message ? `Message: ${extracted.inquirer.message}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n")
 }
 
 // ---------------------------------------------------------------------------
