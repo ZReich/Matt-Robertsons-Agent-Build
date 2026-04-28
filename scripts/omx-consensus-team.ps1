@@ -3,7 +3,7 @@
 Runs an OMX implementation team followed by Codex+Claude adversarial audit loops.
 
 .DESCRIPTION
-This driver launches a 5-worker implementation team with 3 Codex workers and
+This driver launches a 4-worker implementation team with 2 Codex workers and
 2 Claude workers, waits for completion, shuts the team down so OMX can integrate
 worker commits, then launches a 2-worker adversarial audit team with one Codex
 reviewer and one Claude reviewer.
@@ -27,7 +27,7 @@ param(
 
   [int]$PollSeconds = 30,
 
-  [string]$ImplementationCliMap = "codex,codex,codex,claude,claude",
+  [string]$ImplementationCliMap = "codex,codex,claude,claude",
 
   [string]$AuditCliMap = "codex,claude",
 
@@ -102,6 +102,17 @@ function ConvertTo-OmxTeamTaskText {
   return (($Text -split "`r?`n") |
     ForEach-Object { $_.Trim() } |
     Where-Object { $_ }) -join " "
+}
+
+function Get-CliMapWorkerCount {
+  param([Parameter(Mandatory = $true)][string]$CliMap)
+
+  $workers = @($CliMap -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+  if ($workers.Count -eq 0) {
+    throw "CLI map must include at least one worker CLI."
+  }
+
+  return $workers.Count
 }
 
 function Invoke-OmxTeam {
@@ -218,11 +229,10 @@ function New-ImplementationPrompt {
 1. Coverage ledger data API lane: implement corpus-level communication coverage stats, scrub queue coverage, missed eligible counts, noise counts, contact linkage counts, and candidate status counts for this approved task: $TaskText
 2. Scrub context prompt schema lane: implement bounded open-todo/thread context, scrub prompt/schema/validator updates, and no-duplicate/no-already-handled behavior for this approved task: $TaskText
 3. Agent action todo resolution lane: implement the human-approved mark-todo-done action contract, applier target mapping, approval/reject/snooze API behavior, stale/idempotent handling, and tests for this approved task: $TaskText
-4. Agent UI coverage review lane: implement Agent Control Center coverage display, mark-todo-done review rendering, evidence labels, and candidate/todo deep links for this approved task: $TaskText
-5. Contact candidate coverage lane: verify or implement conservative non-platform contact candidate generation/coverage, evidence aggregation, false-negative sampling hooks, and related tests for this approved task: $TaskText
+4. Agent UI and candidate coverage lane: implement Agent Control Center coverage display, mark-todo-done review rendering, evidence labels, candidate/todo deep links, conservative non-platform contact candidate coverage, evidence aggregation, false-negative sampling hooks, and related tests for this approved task: $TaskText
 
 Global execution contract:
-- workers 1-3 are Codex and workers 4-5 are Claude by launch environment; every worker must keep its assigned numbered lane unless blocked.
+- workers 1-2 are Codex and workers 3-4 are Claude by launch environment; every worker must keep its assigned numbered lane unless blocked.
 - Split the work by independently verifiable slices.
 - Keep diffs scoped and reversible.
 - Run relevant lint/typecheck/tests before reporting completion.
@@ -392,11 +402,14 @@ Fix contract:
 }
 
 function Write-Plan {
-  param([Parameter(Mandatory = $true)][string]$BaselineRef)
+  param(
+    [Parameter(Mandatory = $true)][string]$BaselineRef,
+    [Parameter(Mandatory = $true)][int]$ImplementationWorkerCount
+  )
 
   Write-Host "Consensus team plan"
   Write-Host "  baseline: $BaselineRef"
-  Write-Host "  implementation team: 5:executor, CLI map $ImplementationCliMap"
+  Write-Host "  implementation team: ${ImplementationWorkerCount}:executor, CLI map $ImplementationCliMap"
   Write-Host "  audit team per round: 2:code-reviewer, CLI map $AuditCliMap"
   Write-Host "  fix mode after rejected audit: $FixMode"
   if ($FixMode -eq "ralph") {
@@ -423,8 +436,9 @@ Set-Location -LiteralPath $repoRoot
 $baselineRef = (Invoke-Checked -Command "git" -Arguments @("rev-parse", "HEAD")).Trim()
 $runId = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
 $artifactBase = Join-Path (Join-Path $repoRoot $ArtifactRoot) $runId
+$implementationWorkerCount = Get-CliMapWorkerCount -CliMap $ImplementationCliMap
 
-Write-Plan -BaselineRef $baselineRef
+Write-Plan -BaselineRef $baselineRef -ImplementationWorkerCount $implementationWorkerCount
 
 if ($ShowPlan) {
   return
@@ -435,7 +449,7 @@ Assert-CleanLeaderWorkspace
 New-Item -ItemType Directory -Force -Path $artifactBase | Out-Null
 
 $implementationPrompt = New-ImplementationPrompt -TaskText $Task -BaselineRef $baselineRef
-$implementationTeam = Invoke-OmxTeam -WorkerCount 5 -AgentType "executor" -TaskText $implementationPrompt -CliMap $ImplementationCliMap
+$implementationTeam = Invoke-OmxTeam -WorkerCount $implementationWorkerCount -AgentType "executor" -TaskText $implementationPrompt -CliMap $ImplementationCliMap
 Wait-OmxTeamTerminal -TeamName $implementationTeam | Out-Null
 Stop-OmxTeam -TeamName $implementationTeam
 
@@ -469,7 +483,7 @@ for ($round = 1; $round -le $MaxAuditRounds; $round++) {
 
   $fixPrompt = New-FixPrompt -TaskText $Task -AuditDir $roundDir -Round $round
   if ($FixMode -eq "team") {
-    $fixTeam = Invoke-OmxTeam -WorkerCount 5 -AgentType "executor" -TaskText $fixPrompt -CliMap $ImplementationCliMap
+    $fixTeam = Invoke-OmxTeam -WorkerCount $implementationWorkerCount -AgentType "executor" -TaskText $fixPrompt -CliMap $ImplementationCliMap
     Wait-OmxTeamTerminal -TeamName $fixTeam | Out-Null
     Stop-OmxTeam -TeamName $fixTeam
   }

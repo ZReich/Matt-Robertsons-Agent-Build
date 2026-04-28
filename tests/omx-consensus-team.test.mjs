@@ -9,12 +9,20 @@ test('implementation prompt preserves the requested task and team execution cont
   assert.match(script, /1\. Coverage ledger data API lane:/);
   assert.match(script, /2\. Scrub context prompt schema lane:/);
   assert.match(script, /3\. Agent action todo resolution lane:/);
-  assert.match(script, /4\. Agent UI coverage review lane:/);
-  assert.match(script, /5\. Contact candidate coverage lane:/);
-  assert.match(script, /workers 1-3 are Codex and workers 4-5 are Claude/);
+  assert.match(script, /4\. Agent UI and candidate coverage lane:/);
+  assert.doesNotMatch(script, /5\. Contact candidate coverage lane:/);
+  assert.match(script, /workers 1-2 are Codex and workers 3-4 are Claude/);
   assert.match(script, /Run relevant lint\/typecheck\/tests before reporting completion/);
   assert.match(script, /Commit worker changes before marking tasks complete/);
   assert.match(script, /Audit baseline for later review: \$BaselineRef/);
+});
+
+test('implementation team size follows the configured CLI map', () => {
+  assert.match(script, /\$ImplementationCliMap\s*=\s*"codex,codex,claude,claude"/);
+  assert.match(script, /function\s+Get-CliMapWorkerCount\b/);
+  assert.match(script, /\$implementationWorkerCount\s*=\s*Get-CliMapWorkerCount -CliMap \$ImplementationCliMap/);
+  assert.match(script, /Invoke-OmxTeam -WorkerCount \$implementationWorkerCount -AgentType "executor"/);
+  assert.doesNotMatch(script, /Invoke-OmxTeam -WorkerCount 5 -AgentType "executor"/);
 });
 
 test('team invocation compacts multiline prompts before calling omx team', () => {
