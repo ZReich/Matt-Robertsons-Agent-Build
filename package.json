@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "omx:consensus-team": "powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File ./scripts/omx-consensus-team.ps1"
+  },
   "author": {
     "name": "Layth Alqadhi",
     "url": "https://github.com/LaythAlqadhi"
