@@ -4,6 +4,7 @@ import type { TodoMeta, VaultNote } from "@/lib/vault"
 
 import {
   isTodoActiveStatus,
+  isTodoDoneOrDismissed,
   selectMissedFollowupsFromContacts,
   selectProposedTodos,
   selectTodayTodos,
@@ -46,6 +47,15 @@ describe("dashboard todo selectors", () => {
     expect(isTodoActiveStatus("done")).toBe(false)
   })
 
+  it("treats both done and dismissed as the Done bucket so dismissed isn't hidden from every filter", () => {
+    expect(isTodoDoneOrDismissed("done")).toBe(true)
+    expect(isTodoDoneOrDismissed("dismissed")).toBe(true)
+    expect(isTodoDoneOrDismissed("pending")).toBe(false)
+    expect(isTodoDoneOrDismissed("in_progress")).toBe(false)
+    expect(isTodoDoneOrDismissed("proposed")).toBe(false)
+    expect(isTodoDoneOrDismissed(undefined)).toBe(false)
+  })
+
   it("separates proposed todos and sorts newest first", () => {
     const selected = selectProposedTodos([
       todo("todos/a.md", {
@@ -66,6 +76,35 @@ describe("dashboard todo selectors", () => {
     ])
 
     expect(selected.map((item) => item.meta.title)).toEqual(["new", "old"])
+  })
+
+  it("excludes Prisma-backed synthetic notes from selectProposedTodos (vault-only invariant)", () => {
+    // Prisma todos use synthetic paths and can never carry status "proposed",
+    // because Prisma TodoStatus has no such variant and Prisma todos only
+    // exist after an AgentAction is approved. If a future change ever lets a
+    // Prisma todo carry status "proposed", review the dashboard "Needs review"
+    // widget and `/apps/todos?status=proposed` semantics.
+    const selected = selectProposedTodos([
+      todo("prisma-todos/abc", {
+        title: "prisma todo (must not match)",
+        status: "pending",
+        created: "2026-04-24",
+      }),
+      todo("prisma-todos/def", {
+        title: "prisma todo done (must not match)",
+        status: "done",
+        created: "2026-04-24",
+      }),
+      todo("todos/proposed.md", {
+        title: "vault proposed (must match)",
+        status: "proposed",
+        created: "2026-04-24",
+      }),
+    ])
+
+    expect(selected.map((item) => item.meta.title)).toEqual([
+      "vault proposed (must match)",
+    ])
   })
 
   it("excludes proposed and dismissed todos from today's agenda", () => {

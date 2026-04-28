@@ -10,6 +10,7 @@ import {
 } from "@/lib/reviewer-auth"
 import {
   archivePrismaTodoFromVaultPath,
+  getPrismaTodoId,
   isPrismaTodoPath,
   listPrismaTodoNotes,
   updatePrismaTodoFromVaultPath,
@@ -143,11 +144,13 @@ export async function POST(req: Request) {
 
 /** Validate that a vault path stays within the todos directory */
 function isValidTodoPath(p: string): boolean {
-  return (
-    (p.startsWith("todos/") || isPrismaTodoPath(p)) &&
-    !p.includes("..") &&
-    !/[\\]/.test(p)
-  )
+  if (p.includes("..") || /[\\]/.test(p)) return false
+  if (isPrismaTodoPath(p)) {
+    // Reject "prisma-todos/" with no id; otherwise downstream Prisma calls
+    // run with an empty id and surface as P2025 → 404.
+    return (getPrismaTodoId(p) ?? "").length > 0
+  }
+  return p.startsWith("todos/")
 }
 
 const VALID_PRIORITIES: ReadonlySet<string> = new Set([

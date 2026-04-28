@@ -6,7 +6,11 @@ import { resolvePrismaTodoContexts } from "@/lib/vault/resolve-context"
 
 import { getPrismaTodoId, prismaTodoPath } from "./paths"
 
-export { PRISMA_TODO_PATH_PREFIX, isPrismaTodoPath } from "./paths"
+export {
+  PRISMA_TODO_PATH_PREFIX,
+  getPrismaTodoId,
+  isPrismaTodoPath,
+} from "./paths"
 
 const TODO_CONTEXT_INCLUDE = {
   contact: {
@@ -181,7 +185,12 @@ async function listPrismaTodoNotesWithContextsWhere(
 ): Promise<PrismaTodoNotesWithContexts> {
   const todos = await db.todo.findMany({
     where,
-    orderBy: [{ priority: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+    // No DB-side priority sort: Postgres enum sort follows declared order
+    // (low → medium → high → urgent), opposite of what callers want.
+    // Every consumer (TodoList, dashboard widgets, GET /api/vault/todos)
+    // re-sorts in JS using PRIORITY_ORDER, so the DB-side ordering only
+    // controls tie-breaking on dueDate.
+    orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
     include: TODO_CONTEXT_INCLUDE,
   })
 

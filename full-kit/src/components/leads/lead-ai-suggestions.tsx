@@ -247,7 +247,7 @@ export function LeadAISuggestions({
                   <a
                     href={action.evidence.outlookUrl}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
                     Outlook

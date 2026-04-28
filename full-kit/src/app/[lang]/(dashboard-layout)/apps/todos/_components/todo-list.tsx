@@ -7,6 +7,7 @@ import { CheckCircle2, Circle, FileText, User } from "lucide-react"
 import type { TodoResolvedContext } from "@/lib/vault/resolve-context"
 import type { TodoMeta, VaultNote } from "@/lib/vault/shared"
 
+import { isTodoActiveStatus, isTodoDoneOrDismissed } from "@/lib/todos/status"
 import { normalizeEntityRef } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
@@ -43,15 +44,14 @@ const PRIORITY_STYLE: Record<string, string> = {
   low: "text-muted-foreground",
 }
 
-type TodoStatusFilter = "active" | "proposed" | "done" | "all"
+export type TodoStatusFilter = "active" | "proposed" | "done" | "all"
 
 function isActiveTodo(note: TodoNote) {
-  return (
-    note.meta.status == null ||
-    note.meta.status === "pending" ||
-    note.meta.status === "in_progress" ||
-    note.meta.status === "in-progress"
-  )
+  return isTodoActiveStatus(note.meta.status)
+}
+
+function isDoneOrDismissed(note: TodoNote) {
+  return isTodoDoneOrDismissed(note.meta.status)
 }
 
 function sortTodos(todos: TodoNote[]): TodoNote[] {
@@ -187,8 +187,10 @@ export function TodoList({
     if (statusFilter === "active") return list.filter(isActiveTodo)
     if (statusFilter === "proposed")
       return list.filter((t) => t.meta.status === "proposed")
-    if (statusFilter === "done")
-      return list.filter((t) => t.meta.status === "done")
+    // "done" intentionally includes user-dismissed AI suggestions: both are
+    // end states the user no longer needs to act on. Without this, dismissed
+    // todos would only be visible under "All".
+    if (statusFilter === "done") return list.filter(isDoneOrDismissed)
     return list
   }
 
@@ -200,7 +202,7 @@ export function TodoList({
   function renderList(list: TodoNote[]) {
     const active = sortTodos(list.filter(isActiveTodo))
     const proposed = sortTodos(list.filter((t) => t.meta.status === "proposed"))
-    const done = sortTodos(list.filter((t) => t.meta.status === "done"))
+    const done = sortTodos(list.filter(isDoneOrDismissed))
 
     const toShow =
       statusFilter === "active"

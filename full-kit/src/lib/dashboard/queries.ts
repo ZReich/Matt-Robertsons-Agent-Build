@@ -23,6 +23,7 @@ import {
 } from "@/lib/pipeline/server/followups"
 import { db } from "@/lib/prisma"
 import { listDashboardPrismaTodoNotesWithContexts } from "@/lib/todos/prisma-todo-notes"
+import { isTodoActiveStatus } from "@/lib/todos/status"
 import { listNotes } from "@/lib/vault"
 import { resolveAllTodoContexts } from "@/lib/vault/resolve-context"
 
@@ -107,18 +108,20 @@ export interface DashboardData {
   missedFollowups: MissedFollowupsSummary
 }
 
-export function isTodoPendingLike(status: TodoMeta["status"] | undefined) {
-  return status == null || status === "pending"
-}
+export {
+  isTodoActiveStatus,
+  isTodoDoneOrDismissed,
+  isTodoInProgressLike,
+  isTodoPendingLike,
+} from "@/lib/todos/status"
 
-export function isTodoInProgressLike(status: TodoMeta["status"] | undefined) {
-  return status === "in_progress" || status === "in-progress"
-}
-
-export function isTodoActiveStatus(status: TodoMeta["status"] | undefined) {
-  return isTodoPendingLike(status) || isTodoInProgressLike(status)
-}
-
+/**
+ * Vault-only by design: Prisma's TodoStatus enum has no "proposed" value, and
+ * mapPrismaStatusToVault collapses Prisma todos to pending/in_progress/done
+ * before they reach this selector. Prisma todos exist only after a reviewer
+ * approves an AgentAction, so they can never be "proposed". This invariant is
+ * relied on by the home dashboard "Needs review" widget and `/apps/todos?status=proposed`.
+ */
 export function selectProposedTodos(todoNotes: TodoNote[]) {
   return todoNotes
     .filter((todo) => todo.meta.status === "proposed")

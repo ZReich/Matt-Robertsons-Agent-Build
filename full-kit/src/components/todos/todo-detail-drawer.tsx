@@ -369,7 +369,7 @@ export function TodoDetailDrawer({
                             <a
                               href={sourceComm.outlookUrl}
                               target="_blank"
-                              rel="noreferrer"
+                              rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                             >
                               Open in Outlook

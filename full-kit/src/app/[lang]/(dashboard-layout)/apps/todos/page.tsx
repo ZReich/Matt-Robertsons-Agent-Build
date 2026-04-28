@@ -8,6 +8,7 @@ import type {
   TodoMeta,
 } from "@/lib/vault"
 import type { Metadata } from "next"
+import type { TodoStatusFilter } from "./_components/todo-list"
 
 import { listPrismaTodoNotesWithContexts } from "@/lib/todos/prisma-todo-notes"
 import { listNotes } from "@/lib/vault"
@@ -23,8 +24,6 @@ interface TodosPageProps {
   params: Promise<{ lang: string }>
   searchParams?: Promise<{ status?: string }>
 }
-
-type TodoStatusFilter = "active" | "proposed" | "done" | "all"
 
 export default async function TodosPage({
   params,
