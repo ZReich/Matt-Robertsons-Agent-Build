@@ -9,9 +9,10 @@ worker commits, then launches a 2-worker adversarial audit team with one Codex
 reviewer and one Claude reviewer.
 
 If either reviewer rejects the result or reports blocking findings, the driver
-launches another 5-worker mixed fix team and repeats the audit. The loop stops
-only when both reviewers approve with zero blocking findings, or MaxAuditRounds
-is reached.
+runs a single-owner Ralph fix pass by default and repeats the audit. Use
+-FixMode team only when audit findings are broad and independently fixable. The
+loop stops only when both reviewers approve with zero blocking findings, or
+MaxAuditRounds is reached.
 
 This script requires an interactive tmux-backed OMX session. It does not start
 unless you invoke it directly.
@@ -31,6 +32,11 @@ param(
   [string]$AuditCliMap = "codex,claude",
 
   [string]$ArtifactRoot = ".omx/audits/consensus-team",
+
+  [ValidateSet("ralph", "team")]
+  [string]$FixMode = "ralph",
+
+  [switch]$RalphNoDeslop,
 
   [switch]$NoShutdown,
 
@@ -175,6 +181,22 @@ function Stop-OmxTeam {
 
   $output = Invoke-Checked -Command "omx" -Arguments @("team", "shutdown", $TeamName)
   Write-Host $output
+}
+
+function Invoke-OmxRalphFix {
+  param([Parameter(Mandatory = $true)][string]$TaskText)
+
+  $args = @("ralph")
+  if ($RalphNoDeslop) {
+    $args += "--no-deslop"
+  }
+  $args += $TaskText
+
+  Write-Host "Starting Ralph fix pass"
+  $output = Invoke-Checked -Command "omx" -Arguments $args
+  if ($output) {
+    Write-Host $output
+  }
 }
 
 function New-ImplementationPrompt {
@@ -350,10 +372,13 @@ $claudeVerdictText
 
 Fix contract:
 - Fix every blocking finding from both reviewers.
+- Treat this as a single-owner fix pass: one coherent owner should resolve,
+  verify, and commit the complete fix set.
 - Do not broaden scope beyond the original task and audit findings.
 - Add or update tests where the finding needs regression coverage.
 - Run relevant verification before completing.
-- Commit worker changes before marking tasks complete; use the repository's Lore commit protocol for final semantic commits.
+- Commit changes before marking the fix pass complete; use the repository's
+  Lore commit protocol for final semantic commits.
 - Report exactly which finding IDs were fixed and the verification evidence.
 "@
 }
@@ -365,6 +390,10 @@ function Write-Plan {
   Write-Host "  baseline: $BaselineRef"
   Write-Host "  implementation team: 5:executor, CLI map $ImplementationCliMap"
   Write-Host "  audit team per round: 2:code-reviewer, CLI map $AuditCliMap"
+  Write-Host "  fix mode after rejected audit: $FixMode"
+  if ($FixMode -eq "ralph") {
+    Write-Host "  ralph deslop pass: $(-not $RalphNoDeslop)"
+  }
   Write-Host "  max audit rounds: $MaxAuditRounds"
   Write-Host "  artifacts: $ArtifactRoot/<run-id>/round-<n>/{codex-verdict.json,claude-verdict.json}"
   Write-Host "  shutdown after each team: $(-not $NoShutdown)"
@@ -382,7 +411,6 @@ if (-not $env:TMUX) {
 
 $repoRoot = Get-RepoRoot
 Set-Location -LiteralPath $repoRoot
-Assert-CleanLeaderWorkspace
 
 $baselineRef = (Invoke-Checked -Command "git" -Arguments @("rev-parse", "HEAD")).Trim()
 $runId = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
@@ -393,6 +421,8 @@ Write-Plan -BaselineRef $baselineRef
 if ($ShowPlan) {
   return
 }
+
+Assert-CleanLeaderWorkspace
 
 New-Item -ItemType Directory -Force -Path $artifactBase | Out-Null
 
@@ -430,7 +460,12 @@ for ($round = 1; $round -le $MaxAuditRounds; $round++) {
   }
 
   $fixPrompt = New-FixPrompt -TaskText $Task -AuditDir $roundDir -Round $round
-  $fixTeam = Invoke-OmxTeam -WorkerCount 5 -AgentType "executor" -TaskText $fixPrompt -CliMap $ImplementationCliMap
-  Wait-OmxTeamTerminal -TeamName $fixTeam | Out-Null
-  Stop-OmxTeam -TeamName $fixTeam
+  if ($FixMode -eq "team") {
+    $fixTeam = Invoke-OmxTeam -WorkerCount 5 -AgentType "executor" -TaskText $fixPrompt -CliMap $ImplementationCliMap
+    Wait-OmxTeamTerminal -TeamName $fixTeam | Out-Null
+    Stop-OmxTeam -TeamName $fixTeam
+  }
+  else {
+    Invoke-OmxRalphFix -TaskText $fixPrompt
+  }
 }
