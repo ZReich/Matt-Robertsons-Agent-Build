@@ -53,7 +53,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects cross-origin authenticated Prisma todo updates", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await PATCH(
       new Request("http://localhost/api/vault/todos", {
@@ -72,7 +72,7 @@ describe("vault todos API auth", () => {
   })
 
   it("returns 404 todo_missing when PATCH targets a Prisma todo that no longer exists", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(updatePrismaTodoFromVaultPath).mockResolvedValue(null)
 
     const response = await PATCH(
@@ -97,7 +97,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects PATCH bodies with invalid priority values", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await PATCH(
       new Request("http://localhost/api/vault/todos", {
@@ -121,7 +121,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects PATCH bodies with invalid status values that would silently coerce to pending", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await PATCH(
       new Request("http://localhost/api/vault/todos", {
@@ -145,7 +145,7 @@ describe("vault todos API auth", () => {
   })
 
   it("returns 404 todo_missing when DELETE targets a Prisma todo that no longer exists", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(archivePrismaTodoFromVaultPath).mockResolvedValue(null)
 
     const response = await DELETE(
@@ -185,7 +185,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects cross-origin POSTs", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await POST(
       new Request("http://localhost/api/vault/todos", {
@@ -222,7 +222,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects cross-origin DELETEs", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await DELETE(
       new Request("http://localhost/api/vault/todos", {
@@ -241,7 +241,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects PATCHes with a non-JSON content type with 415", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await PATCH(
       new Request("http://localhost/api/vault/todos", {
@@ -256,7 +256,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects empty Prisma ids in PATCH paths", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await PATCH(
       new Request("http://localhost/api/vault/todos", {
@@ -277,7 +277,7 @@ describe("vault todos API auth", () => {
   })
 
   it("rejects path-traversal attempts under the prisma-todos prefix", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
 
     const response = await PATCH(
       new Request("http://localhost/api/vault/todos", {
@@ -299,7 +299,7 @@ describe("vault todos API auth", () => {
   })
 
   it("returns the updated note from a same-origin authenticated Prisma PATCH", async () => {
-    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" })
+    vi.mocked(authenticateUser).mockResolvedValue({ id: "user-1" } as never)
     vi.mocked(updatePrismaTodoFromVaultPath).mockResolvedValue({
       path: "prisma-todos/todo-1",
       meta: {

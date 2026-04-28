@@ -107,7 +107,7 @@ describe("AI suggestions process route", () => {
         id: "comm-1",
         metadata: { scrub: { promptVersion: "old" } },
         scrubQueue: null,
-      },
+      } as never,
     ])
 
     const response = await POST(
@@ -124,12 +124,12 @@ describe("AI suggestions process route", () => {
 
   it("validates all communications before enqueueing any work", async () => {
     vi.mocked(db.communication.findMany).mockResolvedValue([
-      { id: "comm-new", metadata: {}, scrubQueue: null },
+      { id: "comm-new", metadata: {}, scrubQueue: null } as never,
       {
         id: "comm-old",
         metadata: { scrub: { promptVersion: "old" } },
         scrubQueue: null,
-      },
+      } as never,
     ])
 
     const response = await POST(
@@ -147,7 +147,7 @@ describe("AI suggestions process route", () => {
   it("returns 429 when the scrub budget is exhausted", async () => {
     const budget = await import("@/lib/ai/budget-tracker")
     vi.mocked(db.communication.findMany).mockResolvedValue([
-      { id: "comm-1", metadata: {}, scrubQueue: null },
+      { id: "comm-1", metadata: {}, scrubQueue: null } as never,
     ])
     vi.mocked(assertWithinScrubBudget).mockRejectedValue(
       new budget.ScrubBudgetError(5, 5)
@@ -166,10 +166,16 @@ describe("AI suggestions process route", () => {
 
   it("enqueues unprocessed communications after auth and budget checks", async () => {
     vi.mocked(db.communication.findMany).mockResolvedValue([
-      { id: "comm-1", metadata: {}, scrubQueue: null },
-      { id: "comm-2", metadata: {}, scrubQueue: { status: "pending" } },
+      { id: "comm-1", metadata: {}, scrubQueue: null } as never,
+      {
+        id: "comm-2",
+        metadata: {},
+        scrubQueue: { status: "pending" },
+      } as never,
     ])
-    vi.mocked(db.scrubQueue.upsert).mockResolvedValue({ id: "queue-1" })
+    vi.mocked(db.scrubQueue.upsert).mockResolvedValue({
+      id: "queue-1",
+    } as never)
 
     const response = await POST(
       request({ entityType: "contact", entityId: "c1" })

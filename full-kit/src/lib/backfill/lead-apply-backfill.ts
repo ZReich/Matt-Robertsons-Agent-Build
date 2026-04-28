@@ -87,6 +87,12 @@ type ExtractedLead = {
   inquirer: InquirerInfo & { email: string }
 }
 
+type SenderCandidate = {
+  email: string
+  displayName: string | null
+  sourceKind: string | null
+}
+
 const DEFAULT_LIMIT = 25
 const MAX_WRITE_LIMIT = 100
 const ADVISORY_LOCK_KEY = "historical-lead-apply-backfill"
@@ -134,18 +140,27 @@ export async function runLeadApplyBackfill({
   result.nextCursor = rows.length === limit ? (rows.at(-1)?.id ?? null) : null
 
   const extractedById = new Map<string, ExtractedLead>()
+  const senderCandidateById = new Map<string, SenderCandidate>()
   for (const row of rows) {
     const extracted = extractLead(row)
     if (extracted) extractedById.set(row.id, extracted)
+    const senderCandidate = extractSenderCandidate(row)
+    if (senderCandidate) senderCandidateById.set(row.id, senderCandidate)
   }
-  const contactsByEmail = await loadContactsByEmail(
-    client,
-    [...extractedById.values()].map((item) => item.inquirer.email)
-  )
+  const contactsByEmail = await loadContactsByEmail(client, [
+    ...[...extractedById.values()].map((item) => item.inquirer.email),
+    ...[...senderCandidateById.values()].map((item) => item.email),
+  ])
 
   if (dryRun) {
     for (const row of rows) {
-      planRow(row, extractedById.get(row.id), contactsByEmail, result)
+      planRow(
+        row,
+        extractedById.get(row.id),
+        senderCandidateById.get(row.id),
+        contactsByEmail,
+        result
+      )
     }
     return result
   }
@@ -158,6 +173,7 @@ export async function runLeadApplyBackfill({
       await applyRow(
         row,
         extractedById.get(row.id),
+        senderCandidateById.get(row.id),
         contactsByEmail,
         result,
         client
@@ -195,6 +211,7 @@ function emptyResult(runId: string, dryRun: boolean): LeadApplyBackfillResult {
 function planRow(
   row: CommunicationRow,
   extracted: ExtractedLead | undefined,
+  senderCandidate: SenderCandidate | undefined,
   contactsByEmail: Map<string, ContactLookup[]>,
   result: LeadApplyBackfillResult
 ): LeadApplyOutcome {
@@ -206,7 +223,9 @@ function planRow(
     return record(result, row, "skipped_non_signal")
 
   const platform = detectLeadPlatform(row)
-  if (!platform) return record(result, row, "skipped_non_platform")
+  if (!platform) {
+    return planSenderCandidate(row, senderCandidate, contactsByEmail, result)
+  }
   if (!extractPlatform(row, platform)) {
     return record(result, row, "skipped_extractor_null", { platform })
   }
@@ -279,6 +298,7 @@ function planRow(
 async function applyRow(
   row: CommunicationRow,
   extracted: ExtractedLead | undefined,
+  senderCandidate: SenderCandidate | undefined,
   contactsByEmail: Map<string, ContactLookup[]>,
   result: LeadApplyBackfillResult,
   client: DbLike
@@ -286,6 +306,7 @@ async function applyRow(
   const planned = planRow(
     row,
     extracted,
+    senderCandidate,
     contactsByEmail,
     emptyResult(result.runId, true)
   )
@@ -302,7 +323,49 @@ async function applyRow(
     )
     return
   }
-  if (!extracted) return
+  if (!extracted) {
+    if (!senderCandidate) return
+    if (planned === "would_link_existing_contact") {
+      const contacts = contactsByEmail.get(senderCandidate.email) ?? []
+      const contact = contacts.length === 1 ? contacts[0] : null
+      if (!contact) {
+        record(result, row, "skipped_race_lost", {
+          inquirerEmail: senderCandidate.email,
+          extractedKind: senderCandidate.sourceKind ?? "email-sender",
+        })
+        return
+      }
+      await linkExistingSenderContact(
+        row,
+        senderCandidate,
+        contact.id,
+        result,
+        client
+      )
+      return
+    }
+    await client.$transaction(async (tx) => {
+      const candidate = await upsertSenderContactPromotionCandidate(
+        tx,
+        row,
+        senderCandidate,
+        result.runId
+      )
+      result.createdContactCandidates += candidate.created ? 1 : 0
+      record(
+        result,
+        row,
+        candidate.created
+          ? "created_contact_candidate"
+          : "updated_contact_candidate",
+        {
+          inquirerEmail: senderCandidate.email,
+          extractedKind: senderCandidate.sourceKind ?? "email-sender",
+        }
+      )
+    })
+    return
+  }
 
   if (planned === "would_create_lead_contact") {
     await createLeadContact(row, extracted, result, client)
@@ -349,6 +412,55 @@ async function applyRow(
         extracted,
       }
     )
+  })
+}
+
+function planSenderCandidate(
+  row: CommunicationRow,
+  candidate: SenderCandidate | undefined,
+  contactsByEmail: Map<string, ContactLookup[]>,
+  result: LeadApplyBackfillResult
+): LeadApplyOutcome {
+  if (!candidate) return record(result, row, "skipped_non_platform")
+
+  const contacts = contactsByEmail.get(candidate.email) ?? []
+  const options = {
+    inquirerEmail: candidate.email,
+    extractedKind: candidate.sourceKind ?? "email-sender",
+  }
+  if (contacts.length > 1) {
+    return record(result, row, "skipped_ambiguous_contact", options)
+  }
+  const contact = contacts[0] ?? null
+  if (row.contactId && row.contactId !== contact?.id) {
+    return record(result, row, "skipped_existing_contact", {
+      ...options,
+      contactId: contact?.id ?? null,
+    })
+  }
+  if (!contact)
+    return record(result, row, "would_create_contact_candidate", options)
+  if (!row.contactId) {
+    return record(result, row, "would_link_existing_contact", {
+      ...options,
+      contactId: contact.id,
+    })
+  }
+  if (contact.leadSource) {
+    return record(result, row, "already_lead", {
+      ...options,
+      contactId: contact.id,
+    })
+  }
+  if (contact._count.deals > 0) {
+    return record(result, row, "already_client_no_lead_status", {
+      ...options,
+      contactId: contact.id,
+    })
+  }
+  return record(result, row, "would_link_existing_contact", {
+    ...options,
+    contactId: contact.id,
   })
 }
 
@@ -533,6 +645,52 @@ async function linkExistingContact(
   })
 }
 
+async function linkExistingSenderContact(
+  row: CommunicationRow,
+  candidate: SenderCandidate,
+  contactId: string,
+  result: LeadApplyBackfillResult,
+  client: DbLike
+): Promise<void> {
+  await client.$transaction(async (tx) => {
+    const update = await tx.communication.updateMany({
+      where: {
+        id: row.id,
+        OR: [{ contactId: null }, { contactId }],
+      },
+      data: {
+        contactId,
+        metadata: mergeLeadApplyMetadata(row.metadata, {
+          runId: result.runId,
+          appliedAt: new Date().toISOString(),
+          strategy: "historical-email-sender-backfill",
+          source: metadataString(row.metadata, "source"),
+          extractedKind: candidate.sourceKind ?? "email-sender",
+          inquirerEmail: candidate.email,
+          previousContactId: row.contactId,
+          newContactId: contactId,
+          outcome: "linked_existing_contact",
+          dryRun: false,
+        }),
+      },
+    })
+    if (update.count !== 1) {
+      record(result, row, "skipped_race_lost", {
+        inquirerEmail: candidate.email,
+        extractedKind: candidate.sourceKind ?? "email-sender",
+        contactId,
+      })
+      return
+    }
+    result.communicationLinked += 1
+    record(result, row, "linked_existing_contact", {
+      inquirerEmail: candidate.email,
+      extractedKind: candidate.sourceKind ?? "email-sender",
+      contactId,
+    })
+  })
+}
+
 async function upsertContactPromotionCandidate(
   tx: Prisma.TransactionClient,
   row: CommunicationRow,
@@ -637,6 +795,89 @@ async function upsertContactPromotionCandidate(
   return { created: false }
 }
 
+async function upsertSenderContactPromotionCandidate(
+  tx: Prisma.TransactionClient,
+  row: CommunicationRow,
+  candidate: SenderCandidate,
+  runId: string
+): Promise<{ created: boolean }> {
+  const dedupeKey = `email-sender:${candidate.email}`
+  const existing = await tx.contactPromotionCandidate.findUnique({
+    where: { dedupeKey },
+    select: { id: true, metadata: true, status: true },
+  })
+  const existingMetadata = jsonObject(existing?.metadata)
+  const communicationIds = new Set([
+    ...metadataStringArray(existingMetadata, "communicationIds"),
+    ...[
+      metadataString(existingMetadata, "firstCommunicationId"),
+      metadataString(existingMetadata, "lastCommunicationId"),
+    ].filter((id): id is string => !!id),
+  ])
+  const alreadyCounted = communicationIds.has(row.id)
+  communicationIds.add(row.id)
+  const shouldReopenSuppressed =
+    !alreadyCounted &&
+    (existing?.status === "rejected" || existing?.status === "not_a_contact")
+  const reopenedAt = shouldReopenSuppressed ? new Date().toISOString() : null
+
+  if (!existing) {
+    await tx.contactPromotionCandidate.create({
+      data: {
+        dedupeKey,
+        normalizedEmail: candidate.email,
+        displayName: candidate.displayName,
+        message: row.subject,
+        source: "historical-email-sender-backfill",
+        sourceKind: candidate.sourceKind ?? "email-sender",
+        status: "pending",
+        communicationId: row.id,
+        metadata: {
+          runId,
+          firstCommunicationId: row.id,
+          lastCommunicationId: row.id,
+          communicationIds: [...communicationIds],
+          classification: metadataString(row.metadata, "classification"),
+          classificationSource: metadataString(row.metadata, "source"),
+        } as Prisma.InputJsonValue,
+      },
+    })
+    return { created: true }
+  }
+
+  await tx.contactPromotionCandidate.update({
+    where: { id: existing.id },
+    data: {
+      displayName: candidate.displayName ?? undefined,
+      message: row.subject ?? undefined,
+      sourceKind: candidate.sourceKind ?? undefined,
+      ...(alreadyCounted ? {} : { communicationId: row.id }),
+      lastSeenAt: new Date(),
+      ...(shouldReopenSuppressed
+        ? { status: "needs_more_evidence" as const, snoozedUntil: null }
+        : {}),
+      ...(alreadyCounted ? {} : { evidenceCount: { increment: 1 } }),
+      metadata: {
+        ...existingMetadata,
+        runId,
+        lastCommunicationId: row.id,
+        communicationIds: [...communicationIds],
+        classification: metadataString(row.metadata, "classification"),
+        classificationSource: metadataString(row.metadata, "source"),
+        ...(shouldReopenSuppressed
+          ? {
+              reopenedFromStatus: existing.status,
+              reopenedAt,
+              reopenReason: "new-material-communication-evidence",
+              reopenEvidenceIds: [row.id],
+            }
+          : {}),
+      } as Prisma.InputJsonValue,
+    },
+  })
+  return { created: false }
+}
+
 function extractLead(row: CommunicationRow): ExtractedLead | null {
   const platform = detectLeadPlatform(row)
   if (!platform) return null
@@ -652,6 +893,23 @@ function extractLead(row: CommunicationRow): ExtractedLead | null {
       ...extracted.inquirer,
       email: extracted.inquirer.email.trim().toLowerCase(),
     },
+  }
+}
+
+function extractSenderCandidate(row: CommunicationRow): SenderCandidate | null {
+  if (row.contactId) return null
+  if (detectLeadPlatform(row)) return null
+  const classification = metadataString(row.metadata, "classification")
+  if (classification !== "signal") return null
+  const from = metadataObject(row.metadata, "from")
+  const email = metadataString(from, "address")?.trim().toLowerCase()
+  if (!email || !email.includes("@")) return null
+  if (metadataBoolean(from, "isInternal")) return null
+  const sourceKind = metadataString(row.metadata, "source")
+  return {
+    email,
+    displayName: metadataString(from, "displayName"),
+    sourceKind,
   }
 }
 
@@ -735,6 +993,8 @@ function record(
   options: {
     platform?: LeadDiagnosticPlatform
     extracted?: ExtractedLead
+    extractedKind?: string
+    inquirerEmail?: string
     contactId?: string | null
   } = {}
 ): LeadApplyOutcome {
@@ -744,8 +1004,8 @@ function record(
       communicationId: row.id,
       outcome,
       platform: options.platform,
-      extractedKind: options.extracted?.kind,
-      inquirerEmail: options.extracted?.inquirer.email,
+      extractedKind: options.extracted?.kind ?? options.extractedKind,
+      inquirerEmail: options.extracted?.inquirer.email ?? options.inquirerEmail,
       previousContactId: row.contactId,
       contactId: options.contactId,
     })
@@ -760,6 +1020,17 @@ function metadataString(metadata: unknown, key: string): string | null {
       : {}
   const value = record[key]
   return typeof value === "string" ? value : null
+}
+
+function metadataBoolean(metadata: unknown, key: string): boolean {
+  return jsonObject(metadata)[key] === true
+}
+
+function metadataObject(
+  metadata: unknown,
+  key: string
+): Record<string, unknown> {
+  return jsonObject(jsonObject(metadata)[key])
 }
 
 function metadataStringArray(metadata: unknown, key: string): string[] {

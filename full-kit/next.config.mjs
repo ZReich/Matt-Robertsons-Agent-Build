@@ -1,7 +1,14 @@
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
 import createMDX from "@next/mdx"
+
+const appRoot = path.dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: appRoot,
+
   // Configure `pageExtensions` to include markdown and MDX files
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
 

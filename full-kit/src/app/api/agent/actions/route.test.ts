@@ -34,7 +34,9 @@ describe("agent actions list route", () => {
   it("returns the most recent bounded Prisma actions for reviewers", async () => {
     process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
     vi.mocked(getSession).mockResolvedValue(session())
-    vi.mocked(db.agentAction.findMany).mockResolvedValue([{ id: "action-1" }])
+    vi.mocked(db.agentAction.findMany).mockResolvedValue([
+      { id: "action-1" } as never,
+    ])
 
     const response = await GET()
 

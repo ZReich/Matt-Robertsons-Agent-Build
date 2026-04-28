@@ -51,6 +51,90 @@ describe("lead-apply-backfill", () => {
     expect(client.communication.updateMany).not.toHaveBeenCalled()
   })
 
+  it("dry-runs unknown non-platform signal senders as contact candidates", async () => {
+    const client = makeClient({
+      rows: [senderRow()],
+      contacts: [],
+    })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: true, limit: 25, runId: "run-1" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({
+      would_create_contact_candidate: 1,
+    })
+    expect(result.samples[0]).toMatchObject({
+      communicationId: "comm-sender-1",
+      inquirerEmail: "tenant@example.com",
+      extractedKind: "known-counterparty",
+    })
+    expect(client.contactPromotionCandidate.create).not.toHaveBeenCalled()
+  })
+
+  it("applies contact candidates for unknown non-platform signal senders", async () => {
+    const client = makeClient({ rows: [senderRow()], contacts: [] })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-apply" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({ created_contact_candidate: 1 })
+    expect(result.createdContactCandidates).toBe(1)
+    expect(client.contactPromotionCandidate.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          dedupeKey: "email-sender:tenant@example.com",
+          normalizedEmail: "tenant@example.com",
+          displayName: "Tenant Prospect",
+          source: "historical-email-sender-backfill",
+          sourceKind: "known-counterparty",
+          communicationId: "comm-sender-1",
+        }),
+      })
+    )
+    expect(client.communication.updateMany).not.toHaveBeenCalled()
+  })
+
+  it("links existing contacts for historical non-platform signal senders", async () => {
+    const client = makeClient({
+      rows: [senderRow()],
+      contacts: [
+        contact({
+          id: "contact-tenant",
+          email: "tenant@example.com",
+          deals: 0,
+        }),
+      ],
+    })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-apply" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({ linked_existing_contact: 1 })
+    expect(result.communicationLinked).toBe(1)
+    expect(client.contactPromotionCandidate.create).not.toHaveBeenCalled()
+    expect(client.communication.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          contactId: "contact-tenant",
+          metadata: expect.objectContaining({
+            backfill: expect.objectContaining({
+              leadApply: expect.objectContaining({
+                strategy: "historical-email-sender-backfill",
+                inquirerEmail: "tenant@example.com",
+              }),
+            }),
+          }),
+        }),
+      })
+    )
+  })
+
   it("creates Buildout lead Contacts when the event has inquirer email evidence", async () => {
     const client = makeClient({
       rows: [
@@ -398,6 +482,26 @@ function leadRow(overrides: Record<string, unknown> = {}) {
       from: { address: "leads@loopnet.com" },
     },
     date: new Date("2026-04-25T12:00:00Z"),
+    contactId: null,
+    ...overrides,
+  }
+}
+
+function senderRow(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "comm-sender-1",
+    subject: "Lease question",
+    body: "Can we talk about suite 200?",
+    metadata: {
+      classification: "signal",
+      source: "known-counterparty",
+      from: {
+        address: "tenant@example.com",
+        displayName: "Tenant Prospect",
+        isInternal: false,
+      },
+    },
+    date: new Date("2026-04-25T13:00:00Z"),
     contactId: null,
     ...overrides,
   }

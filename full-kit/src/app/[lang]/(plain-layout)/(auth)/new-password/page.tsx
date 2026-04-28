@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 }
 
 export default async function NewPasswordPage(props: {
-  params: Promise<{ lang: LocaleType }>
+  params: Promise<{ lang: string }>
 }) {
   const params = await props.params
-  const dictionary = await getDictionary(params.lang)
+  const dictionary = await getDictionary(params.lang as LocaleType)
 
   return <NewPassword dictionary={dictionary} />
 }

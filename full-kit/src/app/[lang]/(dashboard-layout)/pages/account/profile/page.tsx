@@ -11,12 +11,12 @@ export const metadata: Metadata = {
 }
 
 export default async function ProfilePage(props: {
-  params: Promise<{ lang: LocaleType }>
+  params: Promise<{ lang: string }>
 }) {
   const params = await props.params
   return (
     <div className="container px-0">
-      <ProfileHeader locale={params.lang} />
+      <ProfileHeader locale={params.lang as LocaleType} />
       <ProfileContent />
     </div>
   )

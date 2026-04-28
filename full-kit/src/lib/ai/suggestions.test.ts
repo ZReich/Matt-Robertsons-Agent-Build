@@ -63,7 +63,7 @@ describe("getAiSuggestionState", () => {
           },
         },
         scrubQueue: { status: "done" },
-      },
+      } as never,
     ])
     vi.mocked(db.agentAction.findMany).mockResolvedValue([
       {
@@ -98,13 +98,13 @@ describe("getAiSuggestionState", () => {
             },
           },
         },
-      },
+      } as never,
     ])
     vi.mocked(db.todoReminderPolicy.findMany).mockResolvedValue([
       {
         agentActionId: "action-1",
         snoozedUntil: new Date("2026-04-28T12:00:00.000Z"),
-      },
+      } as never,
     ])
 
     const state = await getAiSuggestionState({
