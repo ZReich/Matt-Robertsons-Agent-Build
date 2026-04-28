@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { format, isBefore, startOfDay } from "date-fns"
+import { toast } from "sonner"
 import {
   AlertTriangle,
   Building2,
@@ -119,7 +120,7 @@ export function TodoDetailDrawer({
     if (toggling || !todo) return
     setToggling(true)
     try {
-      await fetch("/api/vault/todos", {
+      const res = await fetch("/api/vault/todos", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -127,10 +128,22 @@ export function TodoDetailDrawer({
           status: isDone ? "pending" : "done",
         }),
       })
-      // Close drawer and let parent re-render
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          code?: string
+          error?: string
+        } | null
+        if (res.status === 404 && body?.code === "todo_missing") {
+          toast.error("This todo no longer exists. Closing.")
+          onOpenChange(false)
+          return
+        }
+        toast.error(body?.error ?? "Couldn't update this todo. Try again.")
+        return
+      }
       onOpenChange(false)
     } catch {
-      // Silently fail — user can retry
+      toast.error("Couldn't update this todo. Try again.")
     } finally {
       setToggling(false)
     }
@@ -348,6 +361,22 @@ export function TodoDetailDrawer({
                           {format(new Date(sourceComm.date), "MMM d, yyyy")}
                           {sourceComm.contact && ` · ${sourceComm.contact}`}
                         </p>
+                        {sourceComm.outlookUrl && (
+                          <div className="mt-2 border-t pt-2">
+                            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Source
+                            </p>
+                            <a
+                              href={sourceComm.outlookUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                            >
+                              Open in Outlook
+                              <ExternalLink className="size-3" />
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )

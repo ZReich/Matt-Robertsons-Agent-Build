@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { AlertTriangle, CheckCircle2, Clock, Sparkles } from "lucide-react"
 
@@ -43,7 +44,9 @@ export function LeadAISuggestions({
   state,
   lang = "en",
 }: LeadAISuggestionsProps) {
+  const router = useRouter()
   const [actions, setActions] = useState(state.actions)
+  const [isProcessing, setIsProcessing] = useState(false)
   const reviewableActions = useMemo(
     () => actions.filter((action) => !action.isSnoozed && !action.isStale),
     [actions]
@@ -60,6 +63,55 @@ export function LeadAISuggestions({
     state.queue.failed
   const snoozedCount = actions.filter((action) => action.isSnoozed).length
   const staleCount = actions.filter((action) => action.isStale).length
+  const canProcess =
+    state.entityType === "contact" &&
+    state.queue.pending === 0 &&
+    state.queue.inFlight === 0 &&
+    state.queue.notQueued > 0
+
+  async function processSuggestions() {
+    setIsProcessing(true)
+    try {
+      const response = await fetch("/api/ai-suggestions/process", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entityType: state.entityType,
+          entityId: state.entityId,
+        }),
+      })
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string
+        code?: string
+        enqueued?: number
+        succeeded?: number
+      }
+      if (!response.ok) {
+        toast.error(result.error ?? "AI processing failed", {
+          description: result.code,
+        })
+        return
+      }
+      const enqueued = result.enqueued ?? 0
+      const succeeded = result.succeeded ?? 0
+      if (enqueued === 0) {
+        toast.success("Already up to date", {
+          description: "No new emails to process for this contact.",
+        })
+      } else {
+        toast.success("AI processing started", {
+          description: `${enqueued} email${enqueued === 1 ? "" : "s"} queued · ${succeeded} processed so far`,
+        })
+      }
+      router.refresh()
+    } catch (err) {
+      toast.error("AI processing failed", {
+        description: err instanceof Error ? err.message : undefined,
+      })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   async function handleAction(
     actionId: string,
@@ -127,6 +179,17 @@ export function LeadAISuggestions({
           {formatProcessedCopy(state)}
         </span>
       </div>
+      {canProcess ? (
+        <Button
+          className="mb-3 w-full"
+          size="sm"
+          type="button"
+          onClick={processSuggestions}
+          disabled={isProcessing}
+        >
+          {isProcessing ? "Processing..." : "Process with AI"}
+        </Button>
+      ) : null}
 
       {visibleActions.length === 0 ? (
         <div className="rounded-md border border-dashed border-border bg-background/50 p-3">

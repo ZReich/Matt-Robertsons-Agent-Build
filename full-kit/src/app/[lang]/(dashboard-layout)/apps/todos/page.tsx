@@ -9,6 +9,7 @@ import type {
 } from "@/lib/vault"
 import type { Metadata } from "next"
 
+import { listPrismaTodoNotesWithContexts } from "@/lib/todos/prisma-todo-notes"
 import { listNotes } from "@/lib/vault"
 import { resolveAllTodoContexts } from "@/lib/vault/resolve-context"
 
@@ -20,34 +21,51 @@ export const metadata: Metadata = {
 
 interface TodosPageProps {
   params: Promise<{ lang: string }>
+  searchParams?: Promise<{ status?: string }>
 }
 
-export default async function TodosPage({ params }: TodosPageProps) {
+type TodoStatusFilter = "active" | "proposed" | "done" | "all"
+
+export default async function TodosPage({
+  params,
+  searchParams,
+}: TodosPageProps) {
   const { lang } = await params
+  const status = (await searchParams)?.status
+  const initialStatusFilter = toStatusFilter(status)
 
   // Fetch todos + context data in parallel
-  const [todoNotes, clientNotes, contactNotes, dealNotes, commNotes] =
-    await Promise.all([
-      listNotes<TodoMeta>("todos"),
-      listNotes<ClientMeta>("clients"),
-      listNotes<ContactMeta>("contacts"),
-      listNotes<DealMeta>("clients"), // deals live under clients/
-      listNotes<CommunicationMeta>("communications"),
-    ])
+  const [
+    todoNotes,
+    prismaTodoData,
+    clientNotes,
+    contactNotes,
+    dealNotes,
+    commNotes,
+  ] = await Promise.all([
+    listNotes<TodoMeta>("todos"),
+    listPrismaTodoNotesWithContexts(),
+    listNotes<ClientMeta>("clients"),
+    listNotes<ContactMeta>("contacts"),
+    listNotes<DealMeta>("clients"), // deals live under clients/
+    listNotes<CommunicationMeta>("communications"),
+  ])
+  const allTodoNotes = [...todoNotes, ...prismaTodoData.notes]
 
   // Resolve context for every todo on the server
-  const contexts = resolveAllTodoContexts(
+  const vaultContexts = resolveAllTodoContexts(
     todoNotes,
     clientNotes,
     contactNotes,
     dealNotes,
     commNotes
   )
+  const contexts = { ...vaultContexts, ...prismaTodoData.contexts }
 
-  const activeBusiness = todoNotes.filter(
+  const activeBusiness = allTodoNotes.filter(
     (n) => n.meta.category === "business" && n.meta.status !== "done"
   ).length
-  const activePersonal = todoNotes.filter(
+  const activePersonal = allTodoNotes.filter(
     (n) => n.meta.category === "personal" && n.meta.status !== "done"
   ).length
   const activeTotal = activeBusiness + activePersonal
@@ -67,7 +85,19 @@ export default async function TodosPage({ params }: TodosPageProps) {
         </div>
       </div>
 
-      <TodoList notes={todoNotes} contexts={contexts} lang={lang} />
+      <TodoList
+        notes={allTodoNotes}
+        contexts={contexts}
+        lang={lang}
+        initialStatusFilter={initialStatusFilter}
+      />
     </section>
   )
+}
+
+function toStatusFilter(status: string | undefined): TodoStatusFilter {
+  if (status === "proposed") return "proposed"
+  if (status === "done") return "done"
+  if (status === "all") return "all"
+  return "active"
 }

@@ -2,15 +2,58 @@ import { NextResponse } from "next/server"
 
 import type { TodoMeta } from "@/lib/vault"
 
+import { authenticateUser } from "@/lib/auth"
+import {
+  ReviewerAuthError,
+  assertJsonRequest,
+  assertSameOriginRequest,
+} from "@/lib/reviewer-auth"
+import {
+  archivePrismaTodoFromVaultPath,
+  isPrismaTodoPath,
+  listPrismaTodoNotes,
+  updatePrismaTodoFromVaultPath,
+} from "@/lib/todos/prisma-todo-notes"
 import { createNote, deleteNote, listNotes, updateNote } from "@/lib/vault"
+
+async function requireTodoApiUser() {
+  try {
+    await authenticateUser()
+    return null
+  } catch {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+  }
+}
+
+function validateMutationRequest(req: Request) {
+  try {
+    assertSameOriginRequest(req)
+    assertJsonRequest(req)
+    return null
+  } catch (error) {
+    if (error instanceof ReviewerAuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status }
+      )
+    }
+    throw error
+  }
+}
 
 export async function GET(req: Request) {
   try {
+    const unauthorized = await requireTodoApiUser()
+    if (unauthorized) return unauthorized
+
     const { searchParams } = new URL(req.url)
     const category = searchParams.get("category")
     const status = searchParams.get("status")
 
-    let notes = await listNotes<TodoMeta>("todos")
+    let notes = [
+      ...(await listNotes<TodoMeta>("todos")),
+      ...(await listPrismaTodoNotes()),
+    ]
 
     if (category) {
       notes = notes.filter((n) => n.meta.category === category)
@@ -45,6 +88,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const unauthorized = await requireTodoApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const body = await req.json()
     const {
       title,
@@ -95,11 +143,85 @@ export async function POST(req: Request) {
 
 /** Validate that a vault path stays within the todos directory */
 function isValidTodoPath(p: string): boolean {
-  return p.startsWith("todos/") && !p.includes("..") && !/[\\]/.test(p)
+  return (
+    (p.startsWith("todos/") || isPrismaTodoPath(p)) &&
+    !p.includes("..") &&
+    !/[\\]/.test(p)
+  )
+}
+
+const VALID_PRIORITIES: ReadonlySet<string> = new Set([
+  "low",
+  "medium",
+  "high",
+  "urgent",
+])
+
+const VALID_VAULT_STATUSES: ReadonlySet<string> = new Set([
+  "proposed",
+  "pending",
+  "in_progress",
+  "in-progress",
+  "done",
+  "dismissed",
+])
+
+const PRISMA_REPRESENTABLE_STATUSES: ReadonlySet<string> = new Set([
+  "pending",
+  "in_progress",
+  "in-progress",
+  "done",
+])
+
+/**
+ * Validate a PATCH body's free-form fields. Returns a NextResponse on error,
+ * or null when the body is acceptable. Prevents the silent-coerce bug where
+ * an unknown priority or status (e.g. {priority: "extreme"} or, for a Prisma
+ * todo, {status: "dismissed"}) would round-trip to a default and discard the
+ * caller's intent.
+ */
+function validateTodoUpdates(
+  path: string,
+  updates: Partial<TodoMeta>
+): NextResponse | null {
+  if (
+    updates.priority !== undefined &&
+    !VALID_PRIORITIES.has(updates.priority)
+  ) {
+    return NextResponse.json(
+      { error: `Invalid priority "${updates.priority}"` },
+      { status: 400 }
+    )
+  }
+  if (updates.status !== undefined) {
+    if (!VALID_VAULT_STATUSES.has(updates.status)) {
+      return NextResponse.json(
+        { error: `Invalid status "${updates.status}"` },
+        { status: 400 }
+      )
+    }
+    if (
+      isPrismaTodoPath(path) &&
+      !PRISMA_REPRESENTABLE_STATUSES.has(updates.status)
+    ) {
+      return NextResponse.json(
+        {
+          error: `Invalid status "${updates.status}" for a Prisma-backed todo`,
+        },
+        { status: 400 }
+      )
+    }
+  }
+  return null
 }
 
 export async function PATCH(req: Request) {
   try {
+    const unauthorized = await requireTodoApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const body = await req.json()
     const { path, ...updates } = body as { path: string } & Partial<TodoMeta>
 
@@ -108,6 +230,20 @@ export async function PATCH(req: Request) {
         { error: "Invalid or missing path" },
         { status: 400 }
       )
+    }
+
+    const invalidUpdates = validateTodoUpdates(path, updates)
+    if (invalidUpdates) return invalidUpdates
+
+    if (isPrismaTodoPath(path)) {
+      const updated = await updatePrismaTodoFromVaultPath(path, updates)
+      if (!updated) {
+        return NextResponse.json(
+          { error: "todo not found", code: "todo_missing" },
+          { status: 404 }
+        )
+      }
+      return NextResponse.json(updated)
     }
 
     const updated = await updateNote<TodoMeta>(path, updates)
@@ -123,6 +259,11 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const unauthorized = await requireTodoApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const { path } = (await req.json()) as { path: string }
 
     if (!path || !isValidTodoPath(path)) {
@@ -130,6 +271,17 @@ export async function DELETE(req: Request) {
         { error: "Invalid or missing path" },
         { status: 400 }
       )
+    }
+
+    if (isPrismaTodoPath(path)) {
+      const deleted = await archivePrismaTodoFromVaultPath(path)
+      if (!deleted) {
+        return NextResponse.json(
+          { error: "todo not found", code: "todo_missing" },
+          { status: 404 }
+        )
+      }
+      return NextResponse.json(deleted)
     }
 
     await deleteNote(path)

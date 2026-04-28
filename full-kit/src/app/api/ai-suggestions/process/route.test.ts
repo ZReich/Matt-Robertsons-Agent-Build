@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { assertWithinScrubBudget } from "@/lib/ai/budget-tracker"
+import { scrubEmailBatch } from "@/lib/ai/scrub"
 import { getSession } from "@/lib/auth"
 import { db } from "@/lib/prisma"
 
@@ -28,6 +29,10 @@ vi.mock("@/lib/ai/budget-tracker", () => ({
   assertWithinScrubBudget: vi.fn(),
 }))
 
+vi.mock("@/lib/ai/scrub", () => ({
+  scrubEmailBatch: vi.fn(),
+}))
+
 describe("AI suggestions process route", () => {
   beforeEach(() => {
     process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
@@ -35,8 +40,22 @@ describe("AI suggestions process route", () => {
     vi.mocked(db.communication.findMany).mockReset()
     vi.mocked(db.scrubQueue.upsert).mockReset()
     vi.mocked(assertWithinScrubBudget).mockReset()
+    vi.mocked(scrubEmailBatch).mockReset()
     vi.mocked(getSession).mockResolvedValue(session())
     vi.mocked(assertWithinScrubBudget).mockResolvedValue(undefined)
+    vi.mocked(scrubEmailBatch).mockResolvedValue({
+      status: "ok",
+      processed: 1,
+      succeeded: 1,
+      failed: 0,
+      droppedActions: 0,
+      tokensIn: 10,
+      tokensOut: 5,
+      cacheReadTokens: 0,
+      costUsdEstimate: 0.001,
+      cachingLive: true,
+      mode: "strict",
+    })
   })
 
   it("rejects cross-origin process requests", async () => {
@@ -161,6 +180,12 @@ describe("AI suggestions process route", () => {
       ok: true,
       enqueued: 1,
       pending: 1,
+      processed: 1,
+      succeeded: 1,
+    })
+    expect(scrubEmailBatch).toHaveBeenCalledWith({
+      limit: 1,
+      communicationIds: ["comm-1"],
     })
     expect(assertWithinScrubBudget).toHaveBeenCalledTimes(1)
     expect(db.scrubQueue.upsert).toHaveBeenCalledWith({

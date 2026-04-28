@@ -22,6 +22,7 @@ import {
   selectMissedFollowupReference,
 } from "@/lib/pipeline/server/followups"
 import { db } from "@/lib/prisma"
+import { listDashboardPrismaTodoNotesWithContexts } from "@/lib/todos/prisma-todo-notes"
 import { listNotes } from "@/lib/vault"
 import { resolveAllTodoContexts } from "@/lib/vault/resolve-context"
 
@@ -316,6 +317,7 @@ export async function getDashboardData(
   const [
     dealNotes,
     todoNotes,
+    prismaTodoData,
     meetingNotes,
     commNotes,
     clientNotes,
@@ -326,6 +328,7 @@ export async function getDashboardData(
   ] = await Promise.all([
     listNotes<DealMeta>("clients"),
     listNotes<TodoMeta>("todos"),
+    listDashboardPrismaTodoNotesWithContexts(now),
     listNotes<MeetingMeta>("meetings"),
     listNotes<CommunicationMeta>("communications"),
     listNotes<ClientMeta>("clients"),
@@ -334,6 +337,7 @@ export async function getDashboardData(
     getNewLeads(),
     getMissedFollowups(now),
   ])
+  const allTodoNotes = [...todoNotes, ...prismaTodoData.notes]
 
   const todayMeetings = meetingNotes.filter((meeting) => {
     const date = new Date(meeting.meta.date)
@@ -343,16 +347,17 @@ export async function getDashboardData(
       date.getDate() === now.getDate()
     )
   })
-  const proposedTodos = selectProposedTodos(todoNotes)
-  const todayTodos = selectTodayTodos(todoNotes, now)
-  const urgentTodos = selectUrgentTodos(todoNotes, now)
-  const todoContexts = resolveAllTodoContexts(
+  const proposedTodos = selectProposedTodos(allTodoNotes)
+  const todayTodos = selectTodayTodos(allTodoNotes, now)
+  const urgentTodos = selectUrgentTodos(allTodoNotes, now)
+  const vaultTodoContexts = resolveAllTodoContexts(
     todoNotes,
     clientNotes,
     contactNotes,
     dealNotes,
     commNotes
   )
+  const todoContexts = { ...vaultTodoContexts, ...prismaTodoData.contexts }
 
   return {
     pipeline: buildPipelineSnapshot(dealNotes, now),

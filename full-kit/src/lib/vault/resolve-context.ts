@@ -15,6 +15,9 @@ import type {
   VaultNote,
 } from "./types"
 
+import { getOutlookDeeplinkForSource } from "@/lib/communications/outlook-deeplink"
+import { prismaTodoPath } from "@/lib/todos/paths"
+
 import { normalizeEntityRef, toSlug } from "./utils"
 
 /** Minimal resolved client/contact info for UI display */
@@ -51,6 +54,9 @@ export interface ResolvedSourceComm {
   subject?: string
   date: string
   contact?: string
+  externalMessageId?: string | null
+  sourceSystem?: string | null
+  outlookUrl?: string | null
 }
 
 /** Full resolved context for a single todo */
@@ -58,6 +64,48 @@ export interface TodoResolvedContext {
   person?: ResolvedPerson
   deal?: ResolvedDeal
   sourceComm?: ResolvedSourceComm
+}
+
+type DecimalLike = number | string | { toNumber(): number } | null | undefined
+
+interface PrismaContactContext {
+  id: string
+  name: string
+  company?: string | null
+  email?: string | null
+  phone?: string | null
+  role?: string | null
+  preferredContact?: string | null
+}
+
+interface PrismaDealContext {
+  id: string
+  propertyAddress: string
+  propertyType?: string | null
+  stage: string
+  value?: DecimalLike
+  squareFeet?: number | null
+  closingDate?: Date | string | null
+  keyContacts?: unknown
+  contact?: { name: string } | null
+}
+
+interface PrismaCommunicationContext {
+  id: string
+  channel: string
+  subject?: string | null
+  date: Date | string
+  externalMessageId?: string | null
+  createdBy?: string | null
+  metadata?: unknown
+  contact?: { name: string } | null
+}
+
+export interface PrismaTodoContextInput {
+  id: string
+  contact?: PrismaContactContext | null
+  deal?: PrismaDealContext | null
+  communication?: PrismaCommunicationContext | null
 }
 
 /**
@@ -200,4 +248,115 @@ export function resolveAllTodoContexts(
   }
 
   return result
+}
+
+/**
+ * Resolve rich context for Prisma-backed todos.
+ *
+ * Prisma todos are represented to the UI as synthetic vault notes keyed by
+ * `prisma-todos/<uuid>`, but their context lives in relational Prisma data
+ * instead of vault note paths. This pure adapter maps already-fetched Prisma
+ * relations into the same drawer context shape used by vault todos.
+ */
+export function resolvePrismaTodoContexts(
+  todos: PrismaTodoContextInput[]
+): Record<string, TodoResolvedContext> {
+  const result: Record<string, TodoResolvedContext> = {}
+
+  for (const todo of todos) {
+    const context: TodoResolvedContext = {}
+
+    if (todo.contact) {
+      context.person = {
+        name: todo.contact.name,
+        slug: todo.contact.id,
+        company: todo.contact.company ?? undefined,
+        email: todo.contact.email ?? undefined,
+        phone: todo.contact.phone ?? undefined,
+        role: todo.contact.role ?? undefined,
+        preferredContact: todo.contact.preferredContact ?? undefined,
+        entityType: "contacts",
+      }
+    }
+
+    if (todo.deal) {
+      context.deal = {
+        noteTitle: todo.deal.propertyAddress,
+        slug: todo.deal.id,
+        propertyAddress: todo.deal.propertyAddress,
+        propertyType: todo.deal.propertyType
+          ? normalizePrismaEnum(todo.deal.propertyType)
+          : undefined,
+        stage: normalizePrismaEnum(todo.deal.stage),
+        value: decimalToNumber(todo.deal.value),
+        squareFeet: todo.deal.squareFeet ?? undefined,
+        clientName: todo.deal.contact?.name,
+        closingDate: todo.deal.closingDate
+          ? toIsoString(todo.deal.closingDate)
+          : undefined,
+        keyContacts: recordOfStrings(todo.deal.keyContacts),
+      }
+    }
+
+    if (todo.communication) {
+      const sourceSystem = getCommunicationSourceSystem(todo.communication)
+      const outlookUrl = getOutlookDeeplinkForSource(
+        todo.communication.externalMessageId,
+        sourceSystem
+      )
+
+      context.sourceComm = {
+        path: `communication:${todo.communication.id}`,
+        channel: todo.communication.channel,
+        subject: todo.communication.subject ?? undefined,
+        date: toIsoString(todo.communication.date),
+        contact: todo.communication.contact?.name,
+        externalMessageId: todo.communication.externalMessageId ?? undefined,
+        sourceSystem: sourceSystem ?? undefined,
+        outlookUrl: outlookUrl ?? undefined,
+      }
+    }
+
+    result[prismaTodoPath(todo.id)] = context
+  }
+
+  return result
+}
+
+function decimalToNumber(value: DecimalLike) {
+  if (value == null) return undefined
+  if (typeof value === "number") return value
+  if (typeof value === "string") return Number(value)
+  return value.toNumber()
+}
+
+function toIsoString(value: Date | string) {
+  return value instanceof Date ? value.toISOString() : value
+}
+
+function normalizePrismaEnum(value: string) {
+  return value.replace(/_/g, "-")
+}
+
+function getCommunicationSourceSystem(
+  communication: PrismaCommunicationContext
+) {
+  // createdBy identifies the ingestion/mailbox system (e.g. "msgraph-email").
+  // Communication.metadata.source holds lead-classification values like
+  // "crexi-lead" or "loopnet-lead" — those are routing tags from the message
+  // body, not mailbox identifiers, and must NOT be used to decide whether a
+  // message is Outlook-readable.
+  return communication.createdBy ?? null
+}
+
+function recordOfStrings(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined
+  }
+
+  const entries = Object.entries(value).filter(
+    (entry): entry is [string, string] => typeof entry[1] === "string"
+  )
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined
 }

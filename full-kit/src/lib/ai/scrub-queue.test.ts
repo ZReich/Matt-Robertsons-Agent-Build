@@ -66,6 +66,30 @@ describe("scrub-queue", () => {
     )
   })
 
+  it("scopes the claim to the requested communicationIds when provided", async () => {
+    ;(db.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "queue-1", communication_id: "comm-1" },
+    ])
+
+    await claimScrubQueueRows({ limit: 5, communicationIds: ["comm-1"] })
+
+    const sql = JSON.stringify(
+      (db.$queryRaw as ReturnType<typeof vi.fn>).mock.calls[0]
+    )
+    expect(sql).toContain("communication_id")
+    expect(sql).toContain("comm-1")
+  })
+
+  it("returns no rows for an empty communicationIds filter without hitting the DB", async () => {
+    const result = await claimScrubQueueRows({
+      limit: 5,
+      communicationIds: [],
+    })
+
+    expect(result).toEqual([])
+    expect(db.$queryRaw).not.toHaveBeenCalled()
+  })
+
   it("issues DISTINCT lease tokens per row in a multi-row claim", async () => {
     // This is the spec's rev-log #1: per-row tokens, not one batch-wide token.
     ;(db.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([

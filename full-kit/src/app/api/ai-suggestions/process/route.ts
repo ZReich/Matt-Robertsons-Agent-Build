@@ -4,6 +4,7 @@ import {
   ScrubBudgetError,
   assertWithinScrubBudget,
 } from "@/lib/ai/budget-tracker"
+import { scrubEmailBatch } from "@/lib/ai/scrub"
 import { PROMPT_VERSION } from "@/lib/ai/scrub-types"
 import { db } from "@/lib/prisma"
 import {
@@ -12,6 +13,8 @@ import {
   assertSameOriginRequest,
   requireAgentReviewer,
 } from "@/lib/reviewer-auth"
+
+export const maxDuration = 300
 
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -111,7 +114,28 @@ export async function POST(request: Request): Promise<Response> {
     enqueued += 1
   }
 
-  return NextResponse.json({ ok: true, enqueued, pending, alreadyCurrent })
+  // Scope the synchronous batch to the communications we just enqueued for
+  // this contact. Without communicationIds, scrubEmailBatch would claim the
+  // next N globally-pending rows and the toast would report counts unrelated
+  // to what the user clicked.
+  const batch =
+    enqueued > 0
+      ? await scrubEmailBatch({
+          limit: Math.min(enqueued, 5),
+          communicationIds: toEnqueue,
+        })
+      : null
+
+  return NextResponse.json({
+    ok: true,
+    enqueued,
+    pending,
+    alreadyCurrent,
+    processed: batch?.processed ?? 0,
+    succeeded: batch?.succeeded ?? 0,
+    failed: batch?.failed ?? 0,
+    batchStatus: batch?.status ?? null,
+  })
 }
 
 function getScrub(metadata: unknown): Record<string, unknown> | null {

@@ -5,7 +5,8 @@ import { db } from "@/lib/prisma"
 
 import { assertAuthCircuitClosed, tripAuthCircuit } from "./auth-circuit"
 import { ScrubBudgetError, assertWithinScrubBudget } from "./budget-tracker"
-import { ScrubClaudeAuthError, scrubWithClaude } from "./claude"
+import { ScrubClaudeAuthError } from "./claude"
+import { ScrubOpenAIAuthError } from "./openai"
 import { logScrubApiCall, updateScrubApiCallOutcome } from "./scrub-api-log"
 import { ScrubFencedOutError, applyScrubResult } from "./scrub-applier"
 import {
@@ -14,6 +15,7 @@ import {
   loadScopedMemory,
   runHeuristicLinker,
 } from "./scrub-linker"
+import { scrubWithConfiguredProvider } from "./scrub-provider"
 import { claimScrubQueueRows, markScrubQueueFailed } from "./scrub-queue"
 import { PROMPT_VERSION } from "./scrub-types"
 import { ScrubValidationError, validateScrubToolInput } from "./scrub-validator"
@@ -109,7 +111,7 @@ type ScrubOneResult = {
 
 export async function scrubOne(
   queueRow: ClaimedScrubQueueRow,
-  scrubClient: ScrubClient = scrubWithClaude,
+  scrubClient: ScrubClient = scrubWithConfiguredProvider,
   mode: ScrubMode = readScrubMode()
 ): Promise<ScrubOneResult> {
   const empty: ScrubOneResult = {
@@ -159,7 +161,7 @@ export async function scrubOne(
       err instanceof Error ? err.message : String(err)
     )
     // Re-throw auth errors so the batch loop can trip the circuit
-    if (err instanceof ScrubClaudeAuthError) throw err
+    if (isScrubProviderAuthError(err)) throw err
     return empty
   }
 
@@ -205,7 +207,7 @@ export async function scrubOne(
           queueRow.id,
           retryErr instanceof Error ? retryErr.message : String(retryErr)
         )
-        if (retryErr instanceof ScrubClaudeAuthError) throw retryErr
+        if (isScrubProviderAuthError(retryErr)) throw retryErr
         return {
           ...empty,
           tokensIn: response.usage.tokensIn,
@@ -308,12 +310,19 @@ export async function isCachingLive(): Promise<boolean> {
 
 export async function scrubEmailBatch({
   limit = 20,
-  scrubClient = scrubWithClaude,
+  scrubClient = scrubWithConfiguredProvider,
   mode = readScrubMode(),
+  communicationIds,
 }: {
   limit?: number
   scrubClient?: ScrubClient
   mode?: ScrubMode
+  /**
+   * Optional scope: only claim queue rows for these communication ids. Used
+   * by the per-contact "Process with AI" path so a synchronous batch doesn't
+   * drain unrelated pending rows.
+   */
+  communicationIds?: string[]
 } = {}): Promise<BatchSummary> {
   const zeroSummary = (status: BatchSummary["status"]): BatchSummary => ({
     status,
@@ -339,7 +348,7 @@ export async function scrubEmailBatch({
     throw err
   }
 
-  const rows = await claimScrubQueueRows({ limit })
+  const rows = await claimScrubQueueRows({ limit, communicationIds })
   if (rows.length === 0) {
     const summary = zeroSummary("ok")
     logDigest(summary)
@@ -384,7 +393,7 @@ export async function scrubEmailBatch({
       failed += 1
       consecutiveValidationFailures = 0
       const message = err instanceof Error ? err.message : String(err)
-      if (err instanceof ScrubClaudeAuthError) {
+      if (isScrubProviderAuthError(err)) {
         await tripAuthCircuit(message)
         break
       }
@@ -424,6 +433,14 @@ export async function scrubEmailBatch({
     )
   }
   return summary
+}
+
+function isScrubProviderAuthError(
+  err: unknown
+): err is ScrubClaudeAuthError | ScrubOpenAIAuthError {
+  return (
+    err instanceof ScrubClaudeAuthError || err instanceof ScrubOpenAIAuthError
+  )
 }
 
 function estimateAggregateCostUsd(usage: {

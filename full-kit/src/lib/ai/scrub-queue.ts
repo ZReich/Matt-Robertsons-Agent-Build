@@ -31,16 +31,32 @@ export async function enqueueScrubForCommunication(
 export async function claimScrubQueueRows({
   limit = 20,
   leaseMs = 5 * 60 * 1000,
+  communicationIds,
 }: {
   limit?: number
   leaseMs?: number
+  /**
+   * If provided, restricts the claim to these communication ids. An explicit
+   * empty array claims nothing — used when callers want to scope a batch to a
+   * known set of just-enqueued rows (e.g. the per-contact "Process with AI"
+   * button) rather than draining the global pending queue.
+   */
+  communicationIds?: string[]
 } = {}): Promise<ClaimedScrubQueueRow[]> {
+  if (communicationIds && communicationIds.length === 0) return []
+
+  const idFilter =
+    communicationIds && communicationIds.length > 0
+      ? Prisma.sql`AND communication_id IN (${Prisma.join(communicationIds)})`
+      : Prisma.empty
+
   return db.$transaction(async (tx) => {
     const rows = await tx.$queryRaw<RawClaimedRow[]>`
       SELECT id, communication_id
         FROM scrub_queue
-       WHERE status = 'pending'
-          OR (status = 'in_flight' AND locked_until < NOW())
+       WHERE (status = 'pending'
+          OR (status = 'in_flight' AND locked_until < NOW()))
+       ${idFilter}
        ORDER BY enqueued_at ASC
        LIMIT ${limit}
        FOR UPDATE SKIP LOCKED

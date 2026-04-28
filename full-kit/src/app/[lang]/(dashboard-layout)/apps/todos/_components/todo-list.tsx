@@ -26,6 +26,7 @@ interface TodoListProps {
   notes: TodoNote[]
   contexts: Record<string, TodoResolvedContext>
   lang: string
+  initialStatusFilter?: TodoStatusFilter
 }
 
 const PRIORITY_ORDER: Record<string, number> = {
@@ -40,6 +41,17 @@ const PRIORITY_STYLE: Record<string, string> = {
   high: "border-orange-400 text-orange-600",
   medium: "border-yellow-400 text-yellow-600",
   low: "text-muted-foreground",
+}
+
+type TodoStatusFilter = "active" | "proposed" | "done" | "all"
+
+function isActiveTodo(note: TodoNote) {
+  return (
+    note.meta.status == null ||
+    note.meta.status === "pending" ||
+    note.meta.status === "in_progress" ||
+    note.meta.status === "in-progress"
+  )
 }
 
 function sortTodos(todos: TodoNote[]): TodoNote[] {
@@ -151,10 +163,14 @@ function TodoItem({
   )
 }
 
-export function TodoList({ notes, contexts, lang }: TodoListProps) {
-  const [statusFilter, setStatusFilter] = useState<"active" | "done" | "all">(
-    "active"
-  )
+export function TodoList({
+  notes,
+  contexts,
+  lang,
+  initialStatusFilter = "active",
+}: TodoListProps) {
+  const [statusFilter, setStatusFilter] =
+    useState<TodoStatusFilter>(initialStatusFilter)
   const [selectedTodo, setSelectedTodo] = useState<TodoNote | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -168,8 +184,9 @@ export function TodoList({ notes, contexts, lang }: TodoListProps) {
   )
 
   function applyFilter(list: TodoNote[]) {
-    if (statusFilter === "active")
-      return list.filter((t) => t.meta.status !== "done")
+    if (statusFilter === "active") return list.filter(isActiveTodo)
+    if (statusFilter === "proposed")
+      return list.filter((t) => t.meta.status === "proposed")
     if (statusFilter === "done")
       return list.filter((t) => t.meta.status === "done")
     return list
@@ -181,22 +198,27 @@ export function TodoList({ notes, contexts, lang }: TodoListProps) {
   }
 
   function renderList(list: TodoNote[]) {
-    const active = sortTodos(list.filter((t) => t.meta.status !== "done"))
+    const active = sortTodos(list.filter(isActiveTodo))
+    const proposed = sortTodos(list.filter((t) => t.meta.status === "proposed"))
     const done = sortTodos(list.filter((t) => t.meta.status === "done"))
 
     const toShow =
       statusFilter === "active"
         ? active
-        : statusFilter === "done"
-          ? done
-          : [...active, ...done]
+        : statusFilter === "proposed"
+          ? proposed
+          : statusFilter === "done"
+            ? done
+            : [...active, ...proposed, ...done]
 
     if (toShow.length === 0) {
       return (
         <p className="text-sm text-muted-foreground py-8 text-center">
           {statusFilter === "done"
             ? "No completed todos yet."
-            : "All caught up — no pending todos."}
+            : statusFilter === "proposed"
+              ? "No todos need review."
+              : "All caught up — no pending todos."}
         </p>
       )
     }
@@ -218,9 +240,11 @@ export function TodoList({ notes, contexts, lang }: TodoListProps) {
   const statusLabel =
     statusFilter === "active"
       ? "Active"
-      : statusFilter === "done"
-        ? "Completed"
-        : "All"
+      : statusFilter === "proposed"
+        ? "Needs review"
+        : statusFilter === "done"
+          ? "Completed"
+          : "All"
 
   return (
     <>
@@ -235,6 +259,9 @@ export function TodoList({ notes, contexts, lang }: TodoListProps) {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setStatusFilter("active")}>
                 Active
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("proposed")}>
+                Needs review
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setStatusFilter("done")}>
                 Completed
