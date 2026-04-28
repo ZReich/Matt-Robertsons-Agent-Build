@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 
+import { getScrubCoverageStats } from "@/lib/ai"
 import { db } from "@/lib/prisma"
+import { requireAgentReviewer } from "@/lib/reviewer-auth"
 
 import { AgentControlCenter } from "./_components/agent-control-center"
 
@@ -9,7 +11,8 @@ export const metadata: Metadata = {
 }
 
 export default async function AgentPage() {
-  const [actions, memory] = await Promise.all([
+  await requireAgentReviewer()
+  const [actions, memory, coverage] = await Promise.all([
     db.agentAction.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -46,6 +49,7 @@ export default async function AgentPage() {
         updatedAt: true,
       },
     }),
+    getScrubCoverageStats(),
   ])
   const snoozes = await db.todoReminderPolicy.findMany({
     where: {
@@ -57,6 +61,27 @@ export default async function AgentPage() {
   const snoozedActionIds = new Set(
     snoozes.map((snooze) => snooze.agentActionId).filter(Boolean)
   )
+  const targetTodoIds = actions
+    .map((action) =>
+      action.targetEntity?.startsWith("todo:")
+        ? action.targetEntity.slice("todo:".length)
+        : null
+    )
+    .filter(Boolean) as string[]
+  const targetTodos =
+    targetTodoIds.length > 0
+      ? await db.todo.findMany({
+          where: { id: { in: targetTodoIds } },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            contactId: true,
+            dealId: true,
+          },
+        })
+      : []
+  const targetTodoById = new Map(targetTodos.map((todo) => [todo.id, todo]))
   const initialActions = actions.map((action) => ({
     id: action.id,
     actionType: action.actionType,
@@ -84,6 +109,9 @@ export default async function AgentPage() {
         }
       : null,
     todo: action.todo,
+    targetTodo: action.targetEntity?.startsWith("todo:")
+      ? (targetTodoById.get(action.targetEntity.slice("todo:".length)) ?? null)
+      : null,
     dedupedToTodo: action.dedupedToTodo,
   }))
   const initialMemory = memory.map((item) => ({
@@ -107,6 +135,7 @@ export default async function AgentPage() {
       <AgentControlCenter
         initialActions={initialActions}
         initialMemory={initialMemory}
+        coverage={coverage}
       />
     </section>
   )

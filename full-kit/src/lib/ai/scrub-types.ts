@@ -1,4 +1,4 @@
-export const PROMPT_VERSION = "v2"
+export const PROMPT_VERSION = "v3"
 export const PROMPT_RELEASED_AT = "2026-04-28T00:00:00.000Z"
 
 export const TOPIC_TAGS = [
@@ -54,6 +54,7 @@ export type SuggestedAction = {
     | "create-meeting"
     | "update-meeting"
     | "create-agent-memory"
+    | "mark-todo-done"
   summary: string
   payload: Record<string, unknown>
 }

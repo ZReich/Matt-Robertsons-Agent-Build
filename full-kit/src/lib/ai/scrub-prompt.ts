@@ -248,6 +248,27 @@ Correct:
 Do NOT suggest create-contact for Sarah even though she's new. That
 mutation type is reserved for a later spec. If the UI wants to create a
 contact, the user does it manually via the approve-refinement flow.
+
+### Example 10 — outbound evidence that an open todo is already handled
+
+Email from Matt: "Attached is the LOI we discussed for 303 N Broadway.
+Let me know what you think." The variable-tail context includes:
+openTodos=[{ id: "todo-123", title: "Send LOI for 303 N Broadway to
+Jacky Bradley", status: "pending" }].
+
+Correct:
+- summary: "Matt sent the LOI for 303 N Broadway."
+- topicTags: ["loi-or-offer"]
+- urgency: "fyi"
+- replyRequired: false
+- sentiment: "neutral"
+- suggestedActions:
+  - { actionType: "mark-todo-done", summary: "Mark LOI todo done for 303 N Broadway",
+      payload: { todoId: "todo-123", reason: "Outbound email says the LOI was attached and sent." } }
+
+Only use mark-todo-done for a todo id that appears in openTodos. The email
+must show the task was completed, not merely discussed. If the evidence is
+"I'll send it later" or "can you send it?", do not mark anything done.
 `.trim()
 
 const RULES = `
@@ -272,7 +293,10 @@ const RULES = `
   "client's attorney is off Fridays", "this deal has a 1031 constraint",
   "this counterparty prefers phone over email." NOT for single-email
   action items — those are todos.
-- Action types not in the v1 vocabulary (no create-contact, no
+- mark-todo-done is only for closing the loop on an existing open todo
+  supplied in openTodos. It requires direct evidence in the email or thread
+  that the requested action was completed. Never guess.
+- Action types not in the approved vocabulary (no create-contact, no
   update-contact, no send-email, no create-client) MUST NOT appear in
   suggestedActions. If you feel the email warrants one, leave
   suggestedActions empty and explain in the summary.
@@ -302,12 +326,16 @@ pipeline has hit in review or in production-adjacent testing:
   target. Many emails (standing coordination, acknowledgments,
   newsletters that slipped the filter) generate zero proposals — that is
   correct.
-- **"Action types not in v1 vocabulary MUST NOT appear"**: the six
-  action types in v1 were chosen because their approve-handlers exist
+- **"Action types not in approved vocabulary MUST NOT appear"**: the allowed
+  action types were chosen because their approve-handlers exist
   and are safe. Proposing a send-email or create-contact would either be
   rejected by the validator (dropping the whole row in strict mode) or
   silently ignored by the UI. Better to emit zero than to emit an
   impossible type.
+- **"mark-todo-done needs direct evidence"**: approving this action closes a
+  real task. A matching subject line is not enough. Use it only when the
+  current email/thread says the deliverable was sent, the call happened, the
+  meeting was scheduled, or the requested answer was provided.
 - **"Don't fabricate dates"**: once a parsedDueDate lands on a Todo, Matt
   sees it as authoritative. A hallucinated "by Friday" that was never in
   the email turns into a real deadline in Matt's calendar. If the email
@@ -370,7 +398,9 @@ prospecting → listing → marketing → showings → offer → under_contract 
 due_diligence → closing → closed.
 
 Your job is to turn each ingested email into enrichment data and 0-5
-proposed structured mutations that Matt will review and approve.
+proposed structured mutations that Matt will review and approve. The
+variable context may include openTodos; use those only to propose
+mark-todo-done when later thread evidence shows the task is handled.
 Approval is human today; tier-promotion to auto-execution is a future
 config decision per action type.
 `.trim()
@@ -461,6 +491,7 @@ export const SCRUB_TOOL = {
                 "create-meeting",
                 "update-meeting",
                 "create-agent-memory",
+                "mark-todo-done",
               ],
             },
             summary: { type: "string", maxLength: 200 },

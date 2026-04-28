@@ -27,6 +27,11 @@ vi.mock("@/lib/prisma", () => ({
     scrubQueue: {
       create: vi.fn(),
     },
+    contactPromotionCandidate: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
     communication: {
       count: vi.fn(),
       create: vi.fn(),
@@ -189,6 +194,9 @@ describe("persistMessage scrub enqueue", () => {
       id: "comm-1",
     })
     ;(db.externalSync.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    ;(
+      db.contactPromotionCandidate.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null)
   })
 
   it("enqueues signal communications inside the persist transaction", async () => {
@@ -227,6 +235,53 @@ describe("persistMessage scrub enqueue", () => {
     expect(db.communication.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ conversationId: "thread-1" }),
+      })
+    )
+  })
+
+  it("creates a contact candidate for unknown non-platform signal senders", async () => {
+    await persistMessage({
+      message: {
+        id: "graph-candidate-1",
+        receivedDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-candidate-1",
+        subject: "Lease question",
+        body: { contentType: "text", content: "Can we discuss suite 200?" },
+      },
+      folder: "inbox",
+      normalizedSender: {
+        address: "tenant@example.com",
+        displayName: "Tenant Prospect",
+        isInternal: false,
+        normalizationFailed: false,
+      },
+      classification: {
+        classification: "signal",
+        source: "known-counterparty",
+        tier1Rule: "contact-replied",
+      },
+      acquisition: acquisition(),
+      hints,
+      extracted: null,
+      attachments: undefined,
+      contactId: null,
+      leadContactId: null,
+      leadCreated: false,
+    })
+
+    expect(db.contactPromotionCandidate.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          dedupeKey: "email-sender:tenant@example.com",
+          normalizedEmail: "tenant@example.com",
+          displayName: "Tenant Prospect",
+          source: "msgraph-email-sender",
+          sourceKind: "known-counterparty",
+          communicationId: "comm-1",
+          metadata: expect.objectContaining({
+            communicationIds: ["comm-1"],
+          }),
+        }),
       })
     )
   })
@@ -431,5 +486,6 @@ describe("processOneMessage contact safety", () => {
         }),
       })
     )
+    expect(db.contactPromotionCandidate.create).not.toHaveBeenCalled()
   })
 })

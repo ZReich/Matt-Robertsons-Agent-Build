@@ -35,7 +35,16 @@ export async function approveAgentAction({
   const action = await getAction(id)
 
   if (action.status === "executed") {
-    const todo = await db.todo.findUnique({ where: { agentActionId: id } })
+    const todo =
+      action.actionType === "mark-todo-done"
+        ? await db.todo.findUnique({
+            where: {
+              id: parseMarkTodoDonePayload(action, {
+                requireEvidenceSnapshot: false,
+              }).todoId,
+            },
+          })
+        : await db.todo.findUnique({ where: { agentActionId: id } })
     if (!todo) {
       throw new AgentActionReviewError(
         "executed action has no linked todo",
@@ -63,7 +72,10 @@ export async function approveAgentAction({
     )
   }
 
-  if (action.actionType !== "create-todo") {
+  if (
+    action.actionType !== "create-todo" &&
+    action.actionType !== "mark-todo-done"
+  ) {
     throw new AgentActionReviewError(
       "unsupported action type",
       400,
@@ -71,6 +83,9 @@ export async function approveAgentAction({
     )
   }
 
+  if (action.actionType === "mark-todo-done") {
+    return markTodoDoneFromAction(action, reviewer)
+  }
   return createTodoFromAction(action, reviewer)
 }
 
@@ -128,7 +143,10 @@ export async function snoozeAgentAction({
       "invalid_action_status"
     )
   }
-  if (action.actionType !== "create-todo") {
+  if (
+    action.actionType !== "create-todo" &&
+    action.actionType !== "mark-todo-done"
+  ) {
     throw new AgentActionReviewError(
       "unsupported action type",
       400,
@@ -148,6 +166,158 @@ export async function snoozeAgentAction({
     actionId: id,
     snoozedUntil: snoozedUntil.toISOString(),
   }
+}
+
+async function markTodoDoneFromAction(
+  action: AgentAction,
+  reviewer: string
+): Promise<AgentActionReviewResult> {
+  const payload = parseMarkTodoDonePayload(action)
+
+  const result = await db.$transaction(async (tx) => {
+    const actionRows = await tx.$queryRaw<
+      Array<{ status: string; target_entity: string | null }>
+    >`
+      SELECT "status"::text, "target_entity"
+      FROM "agent_actions"
+      WHERE "id" = ${action.id}
+      LIMIT 1
+      FOR UPDATE
+    `
+    const lockedAction = actionRows[0]
+    if (!lockedAction) {
+      return { kind: "missing_action" as const }
+    }
+    if (lockedAction.status === "executed") {
+      return { kind: "already_handled" as const, todoId: payload.todoId }
+    }
+    if (lockedAction.status !== "pending") {
+      return { kind: "invalid_status" as const, status: lockedAction.status }
+    }
+    if (lockedAction.target_entity !== `todo:${payload.todoId}`) {
+      return { kind: "scope_mismatch" as const }
+    }
+
+    if (
+      await isSourceCommunicationStaleForUpdate(
+        tx,
+        action.sourceCommunicationId
+      )
+    ) {
+      return { kind: "stale" as const }
+    }
+
+    const rows = await tx.$queryRaw<
+      Array<{
+        id: string
+        archived_at: Date | null
+        status: string
+        contact_id: string | null
+        deal_id: string | null
+        communication_id: string | null
+        updated_at: Date
+      }>
+    >`
+      SELECT "id", "archived_at", "status"::text, "contact_id", "deal_id",
+             "communication_id", "updatedAt" AS updated_at
+      FROM "todos"
+      WHERE "id" = ${payload.todoId}
+      LIMIT 1
+      FOR UPDATE
+    `
+    const todo = rows[0]
+    if (!todo || todo.archived_at !== null) {
+      return { kind: "missing" as const }
+    }
+    if (todo.status !== "pending" && todo.status !== "in_progress") {
+      return { kind: "not_open" as const }
+    }
+    if (
+      todo.updated_at.toISOString() !== payload.todoUpdatedAt ||
+      todo.contact_id !== payload.contactId ||
+      todo.deal_id !== payload.dealId ||
+      todo.communication_id !== payload.communicationId
+    ) {
+      return { kind: "scope_mismatch" as const }
+    }
+
+    await tx.todo.update({
+      where: { id: payload.todoId },
+      data: { status: "done" },
+    })
+    await tx.agentAction.update({
+      where: { id: action.id },
+      data: { status: "executed", executedAt: new Date() },
+    })
+    await tx.todoReminderPolicy.updateMany({
+      where: {
+        todoId: payload.todoId,
+        state: {
+          in: [
+            "proposed",
+            "active",
+            "waiting_on_other",
+            "snoozed",
+            "due",
+            "overdue",
+          ],
+        },
+      },
+      data: {
+        state: "done",
+        lastEvidenceAt: new Date(),
+        policyReason: payload.reason,
+      },
+    })
+    await createFeedback(tx, {
+      action,
+      reviewer,
+      reason: payload.reason,
+      correctedAction: "mark-todo-done",
+    })
+    return { kind: "done" as const, todoId: payload.todoId }
+  })
+
+  if (result.kind === "already_handled") {
+    return { status: "executed", todoId: result.todoId, actionId: action.id }
+  }
+  if (result.kind === "stale") {
+    await markActionStale(action.id)
+    throw new AgentActionReviewError(
+      "source communication is stale",
+      409,
+      "stale_action"
+    )
+  }
+  if (result.kind === "missing_action") {
+    throw new AgentActionReviewError("action not found", 404, "not_found")
+  }
+  if (result.kind === "invalid_status") {
+    throw new AgentActionReviewError(
+      `cannot approve ${result.status} action`,
+      409,
+      "invalid_action_status"
+    )
+  }
+  if (result.kind === "missing") {
+    throw new AgentActionReviewError("todo not found", 404, "todo_missing")
+  }
+  if (result.kind === "not_open") {
+    throw new AgentActionReviewError(
+      "todo is no longer open",
+      409,
+      "todo_not_open"
+    )
+  }
+  if (result.kind === "scope_mismatch") {
+    throw new AgentActionReviewError(
+      "todo no longer matches action evidence",
+      409,
+      "todo_scope_mismatch"
+    )
+  }
+
+  return { status: "executed", todoId: result.todoId, actionId: action.id }
 }
 
 async function createTodoFromAction(
@@ -391,6 +561,55 @@ function parseCreateTodoPayload(action: AgentAction): {
       typeof payload.actionKind === "string" ? payload.actionKind : undefined,
     propertyKey:
       typeof payload.propertyKey === "string" ? payload.propertyKey : undefined,
+  }
+}
+
+function parseMarkTodoDonePayload(
+  action: AgentAction,
+  options: { requireEvidenceSnapshot?: boolean } = {}
+): {
+  todoId: string
+  reason: string
+  todoUpdatedAt: string
+  contactId: string | null
+  dealId: string | null
+  communicationId: string | null
+} {
+  const payload = asRecord(action.payload)
+  const todoId = typeof payload.todoId === "string" ? payload.todoId.trim() : ""
+  if (!todoId) {
+    throw new AgentActionReviewError(
+      "todo id is required",
+      400,
+      "invalid_payload"
+    )
+  }
+  const reason =
+    typeof payload.reason === "string" && payload.reason.trim()
+      ? payload.reason.trim()
+      : action.summary
+  const todoUpdatedAt =
+    typeof payload.todoUpdatedAt === "string" ? payload.todoUpdatedAt : ""
+  if (
+    options.requireEvidenceSnapshot !== false &&
+    (!todoUpdatedAt || Number.isNaN(Date.parse(todoUpdatedAt)))
+  ) {
+    throw new AgentActionReviewError(
+      "todo evidence snapshot is required",
+      400,
+      "invalid_payload"
+    )
+  }
+  return {
+    todoId,
+    reason,
+    todoUpdatedAt: todoUpdatedAt ? new Date(todoUpdatedAt).toISOString() : "",
+    contactId: typeof payload.contactId === "string" ? payload.contactId : null,
+    dealId: typeof payload.dealId === "string" ? payload.dealId : null,
+    communicationId:
+      typeof payload.communicationId === "string"
+        ? payload.communicationId
+        : null,
   }
 }
 

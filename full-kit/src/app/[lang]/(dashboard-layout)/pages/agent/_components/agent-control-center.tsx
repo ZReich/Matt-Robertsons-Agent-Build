@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 
+import type { ScrubCoverageStats } from "@/lib/ai/scrub-queue"
 import type { AgentMemoryView } from "./agent-memory-panel"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AgentCoveragePanel } from "@/components/agent/agent-coverage-panel"
 import { AgentActivityLog } from "./agent-activity-log"
 import { AgentConfig } from "./agent-config"
 import { AgentMemoryPanel } from "./agent-memory-panel"
@@ -31,15 +33,27 @@ export interface AgentActionView {
     archivedAt: string | null
   } | null
   todo?: { id: string; title: string; status: string } | null
+  targetTodo?: {
+    id: string
+    title: string
+    status: string
+    contactId: string | null
+    dealId: string | null
+  } | null
   dedupedToTodo?: { id: string; title: string; status: string } | null
 }
 
 interface Props {
   initialActions: AgentActionView[]
   initialMemory: AgentMemoryView[]
+  coverage: ScrubCoverageStats
 }
 
-export function AgentControlCenter({ initialActions, initialMemory }: Props) {
+export function AgentControlCenter({
+  initialActions,
+  initialMemory,
+  coverage,
+}: Props) {
   const [actions, setActions] = useState(initialActions)
   const [memory] = useState(initialMemory)
 
@@ -69,6 +83,7 @@ export function AgentControlCenter({ initialActions, initialMemory }: Props) {
           )}
         </TabsTrigger>
         <TabsTrigger value="activity">Activity Log</TabsTrigger>
+        <TabsTrigger value="coverage">Coverage</TabsTrigger>
         <TabsTrigger value="memory">Memory & Rules</TabsTrigger>
         <TabsTrigger value="config">Configuration</TabsTrigger>
       </TabsList>
@@ -82,6 +97,10 @@ export function AgentControlCenter({ initialActions, initialMemory }: Props) {
 
       <TabsContent value="activity" className="mt-4">
         <AgentActivityLog actions={completedActions} />
+      </TabsContent>
+
+      <TabsContent value="coverage" className="mt-4">
+        <AgentCoveragePanel coverage={coverage} />
       </TabsContent>
 
       <TabsContent value="memory" className="mt-4">

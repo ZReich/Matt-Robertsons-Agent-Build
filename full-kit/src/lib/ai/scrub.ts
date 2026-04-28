@@ -1,5 +1,5 @@
 import type { ClaudeScrubResponse } from "./claude"
-import type { ClaimedScrubQueueRow } from "./scrub-types"
+import type { ClaimedScrubQueueRow, SuggestedAction } from "./scrub-types"
 
 import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import { db } from "@/lib/prisma"
@@ -12,6 +12,7 @@ import { logScrubApiCall, updateScrubApiCallOutcome } from "./scrub-api-log"
 import { ScrubFencedOutError, applyScrubResult } from "./scrub-applier"
 import {
   loadGlobalMemoryBlock,
+  loadOpenTodoCandidates,
   loadRecentThread,
   loadScopedMemory,
   runHeuristicLinker,
@@ -113,6 +114,7 @@ export function buildScrubPromptPayload(comm: {
 function renderPerEmailPrompt({
   comm,
   matches,
+  openTodos,
   scopedMemory,
   threadContext,
 }: {
@@ -123,6 +125,7 @@ function renderPerEmailPrompt({
     metadata: unknown
   }
   matches: Awaited<ReturnType<typeof runHeuristicLinker>>
+  openTodos: Awaited<ReturnType<typeof loadOpenTodoCandidates>>
   scopedMemory: string
   threadContext: string
 }): string {
@@ -130,6 +133,7 @@ function renderPerEmailPrompt({
     {
       email: buildScrubPromptPayload(comm),
       candidates: matches,
+      openTodos,
       scopedMemory,
       threadContext,
     },
@@ -170,6 +174,9 @@ export async function scrubOne(
       body: true,
       date: true,
       metadata: true,
+      conversationId: true,
+      contactId: true,
+      dealId: true,
     },
   })
   if (!comm) {
@@ -178,14 +185,17 @@ export async function scrubOne(
   }
 
   const matches = await runHeuristicLinker(comm)
-  const [globalMemory, scopedMemory, threadContext] = await Promise.all([
-    loadGlobalMemoryBlock(),
-    loadScopedMemory(matches),
-    loadRecentThread(comm),
-  ])
+  const [globalMemory, scopedMemory, threadContext, openTodos] =
+    await Promise.all([
+      loadGlobalMemoryBlock(),
+      loadScopedMemory(matches),
+      loadRecentThread(comm),
+      loadOpenTodoCandidates(comm, matches),
+    ])
   const perEmailPrompt = renderPerEmailPrompt({
     comm,
     matches,
+    openTodos,
     scopedMemory,
     threadContext,
   })
@@ -276,6 +286,10 @@ export async function scrubOne(
 
   // Commit phase
   try {
+    const suggestedActions = bindMarkTodoDoneActions(
+      validated.suggestedActions,
+      openTodos
+    )
     await applyScrubResult({
       communicationId: comm.id,
       queueRowId: queueRow.id,
@@ -289,12 +303,14 @@ export async function scrubOne(
         tokensOut: response.usage.tokensOut,
         cacheHitTokens: response.usage.cacheReadTokens ?? 0,
       },
-      suggestedActions: validated.suggestedActions,
+      suggestedActions,
     })
     await updateScrubApiCallOutcome(apiCallId, "scrubbed")
     return {
       ok: true,
-      droppedActions: validated.droppedActions,
+      droppedActions:
+        validated.droppedActions +
+        (validated.suggestedActions.length - suggestedActions.length),
       tokensIn: response.usage.tokensIn,
       tokensOut: response.usage.tokensOut,
       cacheReadTokens: response.usage.cacheReadTokens ?? 0,
@@ -324,6 +340,37 @@ export async function scrubOne(
       cacheReadTokens: response.usage.cacheReadTokens ?? 0,
     }
   }
+}
+
+function bindMarkTodoDoneActions(
+  suggestedActions: SuggestedAction[],
+  openTodos: Awaited<ReturnType<typeof loadOpenTodoCandidates>>
+): SuggestedAction[] {
+  if (suggestedActions.length === 0) return suggestedActions
+  const openTodoById = new Map(openTodos.map((todo) => [todo.id, todo]))
+  return suggestedActions.flatMap((action) => {
+    if (action.actionType !== "mark-todo-done") return [action]
+    const todoId =
+      typeof action.payload.todoId === "string" ? action.payload.todoId : ""
+    const todo = openTodoById.get(todoId)
+    if (!todo) return []
+
+    return [
+      {
+        ...action,
+        payload: {
+          ...action.payload,
+          todoId: todo.id,
+          todoTitle: todo.title,
+          todoStatus: todo.status,
+          todoUpdatedAt: todo.updatedAt,
+          contactId: todo.contactId,
+          dealId: todo.dealId,
+          communicationId: todo.communicationId,
+        },
+      },
+    ]
+  })
 }
 
 /**

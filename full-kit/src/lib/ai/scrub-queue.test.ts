@@ -6,6 +6,7 @@ import {
   backfillScrubQueue,
   claimScrubQueueRows,
   enqueueScrubForCommunication,
+  getScrubCoverageStats,
 } from "./scrub-queue"
 
 vi.mock("@/lib/prisma", () => ({
@@ -15,7 +16,9 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
+      groupBy: vi.fn(),
     },
+    contactPromotionCandidate: { groupBy: vi.fn() },
     systemState: {
       upsert: vi.fn(),
     },
@@ -206,5 +209,61 @@ describe("scrub-queue", () => {
     } finally {
       process.env.SCRUB_BACKFILL_MAX_ENQUEUE_LIMIT = previous
     }
+  })
+
+  it("summarizes scrub coverage with missed eligible and skipped noise buckets", async () => {
+    ;(db.scrubQueue.groupBy as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { status: "done", _count: { status: 8 } },
+      { status: "failed", _count: { status: 1 } },
+    ])
+    ;(
+      db.contactPromotionCandidate.groupBy as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([
+      { status: "pending", _count: { status: 3 } },
+      { status: "approved", _count: { status: 2 } },
+    ])
+    ;(db.$queryRaw as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([
+        {
+          total: BigInt(20),
+          scrubbed: BigInt(8),
+          linked_to_contact: BigInt(7),
+        },
+      ])
+      .mockResolvedValueOnce([
+        { name: "signal", count: BigInt(10) },
+        { name: "noise", count: BigInt(8) },
+        { name: "uncertain", count: BigInt(2) },
+      ])
+      .mockResolvedValueOnce([
+        { name: "signal", count: BigInt(2) },
+        { name: "noise", count: BigInt(8) },
+        { name: "uncertain", count: BigInt(1) },
+      ])
+      .mockResolvedValueOnce([
+        { open: BigInt(4), pending_mark_done_actions: BigInt(1) },
+      ])
+
+    const stats = await getScrubCoverageStats()
+
+    expect(stats.communications).toMatchObject({
+      total: 20,
+      scrubbed: 8,
+      unscrubbed: 12,
+      linkedToContact: 7,
+      orphaned: 13,
+    })
+    expect(stats.queue).toEqual({ done: 8, failed: 1 })
+    expect(stats.neverQueued).toEqual({
+      total: 11,
+      missedEligible: 3,
+      intentionallySkipped: 8,
+      byClassification: { signal: 2, noise: 8, uncertain: 1 },
+    })
+    expect(stats.contactCandidates).toEqual({
+      total: 5,
+      byStatus: { pending: 3, approved: 2 },
+    })
+    expect(stats.todos).toEqual({ open: 4, pendingMarkDoneActions: 1 })
   })
 })

@@ -33,6 +33,7 @@ const ACTION_TYPE_LABELS: Record<string, string> = {
   "create-meeting": "Schedule Meeting",
   "update-meeting": "Update Meeting",
   "create-agent-memory": "Save Agent Memory",
+  "mark-todo-done": "Mark Todo Done",
 }
 
 const TIER_COLORS: Record<string, string> = {
@@ -159,6 +160,22 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
                 Evidence: {action.sourceCommunication.subject ?? "Email"} -{" "}
                 {new Date(action.sourceCommunication.date).toLocaleString()}
               </p>
+            )}
+            {action.targetTodo && (
+              <div className="mb-3 rounded-md border px-3 py-2 text-xs">
+                <p className="font-medium">
+                  Target todo: {action.targetTodo.title}
+                </p>
+                <p className="text-muted-foreground">
+                  Status: {action.targetTodo.status}
+                  {action.targetTodo.contactId
+                    ? ` | Contact: ${action.targetTodo.contactId}`
+                    : ""}
+                  {action.targetTodo.dealId
+                    ? ` | Deal: ${action.targetTodo.dealId}`
+                    : ""}
+                </p>
+              </div>
             )}
             <Textarea
               placeholder="Optional feedback for the agent..."

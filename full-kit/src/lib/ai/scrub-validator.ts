@@ -95,6 +95,10 @@ const payloadSchemas = {
     dealId: z.string().optional(),
     priority: prioritySchema.optional(),
   }),
+  "mark-todo-done": z.object({
+    todoId: z.string().min(1),
+    reason: z.string().min(1),
+  }),
 } satisfies Record<string, z.ZodTypeAny>
 
 const topLevelSchema = z.object({
@@ -133,6 +137,7 @@ const topLevelSchema = z.object({
           "create-meeting",
           "update-meeting",
           "create-agent-memory",
+          "mark-todo-done",
         ]),
         summary: z.string().min(1).max(200),
         payload: z.record(z.unknown()),

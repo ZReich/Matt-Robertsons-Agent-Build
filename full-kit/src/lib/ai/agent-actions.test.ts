@@ -14,7 +14,12 @@ vi.mock("@/lib/prisma", () => ({
     agentAction: { findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
     aiFeedback: { create: vi.fn() },
     communication: { findUnique: vi.fn() },
-    todo: { create: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn() },
+    todo: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
     todoReminderPolicy: {
       create: vi.fn(),
       updateMany: vi.fn(),
@@ -205,6 +210,127 @@ describe("agent action review workflow", () => {
         reason: "not useful",
       }),
     })
+  })
+
+  it("approves a mark-todo-done action by closing the existing todo", async () => {
+    const todoUpdatedAt = new Date("2026-04-27T13:00:00.000Z")
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "mark-todo-done",
+      summary: "Mark LOI todo done",
+      targetEntity: "todo:todo-open",
+      payload: {
+        todoId: "todo-open",
+        reason: "Matt sent the LOI in the outbound email.",
+        todoUpdatedAt: todoUpdatedAt.toISOString(),
+        contactId: "contact-1",
+        dealId: null,
+        communicationId: "comm-previous",
+      },
+    })
+    ;(db.$queryRaw as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([
+        { status: "pending", target_entity: "todo:todo-open" },
+      ])
+      .mockResolvedValueOnce([{ archived_at: null }])
+      .mockResolvedValueOnce([
+        {
+          id: "todo-open",
+          archived_at: null,
+          status: "pending",
+          contact_id: "contact-1",
+          deal_id: null,
+          communication_id: "comm-previous",
+          updated_at: todoUpdatedAt,
+        },
+      ])
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).resolves.toEqual({
+      status: "executed",
+      todoId: "todo-open",
+      actionId: "action-1",
+    })
+
+    expect(db.todo.update).toHaveBeenCalledWith({
+      where: { id: "todo-open" },
+      data: { status: "done" },
+    })
+    expect(db.agentAction.update).toHaveBeenCalledWith({
+      where: { id: "action-1" },
+      data: { status: "executed", executedAt: expect.any(Date) },
+    })
+    expect(db.todoReminderPolicy.updateMany).toHaveBeenCalledWith({
+      where: {
+        todoId: "todo-open",
+        state: {
+          in: [
+            "proposed",
+            "active",
+            "waiting_on_other",
+            "snoozed",
+            "due",
+            "overdue",
+          ],
+        },
+      },
+      data: {
+        state: "done",
+        lastEvidenceAt: expect.any(Date),
+        policyReason: "Matt sent the LOI in the outbound email.",
+      },
+    })
+    expect(db.aiFeedback.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        sourceId: "action-1",
+        correctedAction: "mark-todo-done",
+        reason: "Matt sent the LOI in the outbound email.",
+      }),
+    })
+  })
+
+  it("rejects a mark-todo-done action when the todo evidence snapshot no longer matches", async () => {
+    const todoUpdatedAt = new Date("2026-04-27T13:00:00.000Z")
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "mark-todo-done",
+      targetEntity: "todo:todo-open",
+      payload: {
+        todoId: "todo-open",
+        reason: "Matt sent the LOI in the outbound email.",
+        todoUpdatedAt: todoUpdatedAt.toISOString(),
+        contactId: "contact-1",
+        dealId: null,
+        communicationId: "comm-previous",
+      },
+    })
+    ;(db.$queryRaw as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce([
+        { status: "pending", target_entity: "todo:todo-open" },
+      ])
+      .mockResolvedValueOnce([{ archived_at: null }])
+      .mockResolvedValueOnce([
+        {
+          id: "todo-open",
+          archived_at: null,
+          status: "pending",
+          contact_id: "other-contact",
+          deal_id: null,
+          communication_id: "comm-previous",
+          updated_at: todoUpdatedAt,
+        },
+      ])
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).rejects.toMatchObject({
+      code: "todo_scope_mismatch",
+      status: 409,
+    })
+
+    expect(db.todo.update).not.toHaveBeenCalled()
+    expect(db.agentAction.update).not.toHaveBeenCalled()
   })
 
   it("refuses to snooze non-create-todo actions in V1", async () => {

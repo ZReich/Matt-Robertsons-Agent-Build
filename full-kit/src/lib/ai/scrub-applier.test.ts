@@ -127,4 +127,38 @@ describe("applyScrubResult", () => {
       },
     })
   })
+
+  it("targets mark-todo-done actions to the referenced todo", async () => {
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: scrub,
+      suggestedActions: [
+        {
+          actionType: "mark-todo-done",
+          summary: "Close sent LOI todo",
+          payload: {
+            todoId: "todo-123",
+            reason: "Outbound email says the LOI was attached.",
+            todoUpdatedAt: "2026-04-27T13:00:00.000Z",
+            contactId: "contact-1",
+            dealId: null,
+            communicationId: "comm-previous",
+          },
+        },
+      ],
+    })
+
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "mark-todo-done",
+        targetEntity: "todo:todo-123",
+      }),
+    })
+  })
 })

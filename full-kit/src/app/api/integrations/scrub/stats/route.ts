@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import {
   PROMPT_VERSION,
   authorizeScrubRequest,
+  getScrubCoverageStats,
   getScrubQueueStats,
   isCachingLive,
 } from "@/lib/ai"
@@ -102,19 +103,20 @@ export async function GET(request: Request): Promise<Response> {
     })
   }
 
-  const [queueStats, last24h, last7d, last30d, cachingLive] = await Promise.all(
-    [
+  const [queueStats, coverage, last24h, last7d, last30d, cachingLive] =
+    await Promise.all([
       getScrubQueueStats(),
+      getScrubCoverageStats(),
       aggregate(24 * 60 * 60 * 1000),
       aggregate(7 * 24 * 60 * 60 * 1000),
       aggregate(30 * 24 * 60 * 60 * 1000),
       isCachingLive(),
-    ]
-  )
+    ])
 
   return NextResponse.json({
     ok: true,
     ...queueStats,
+    coverage,
     last24h,
     last7d: { apiCalls: last7d.apiCalls, costUSD: last7d.costUSD },
     last30d: { apiCalls: last30d.apiCalls, costUSD: last30d.costUSD },

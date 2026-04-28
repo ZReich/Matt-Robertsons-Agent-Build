@@ -27,6 +27,7 @@ vi.mock("@/lib/prisma", () => ({
     contact: { findMany: vi.fn() },
     deal: { findMany: vi.fn() },
     agentMemory: { findMany: vi.fn() },
+    todo: { findMany: vi.fn() },
     scrubQueue: {
       update: vi.fn(),
       updateMany: vi.fn(),
@@ -82,6 +83,7 @@ function configureBasicPrismaMock(
   ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
   ;(db.deal.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
   ;(db.agentMemory.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+  ;(db.todo.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
   ;(db.communication.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
   ;(db.scrubQueue.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
 }
@@ -137,6 +139,74 @@ describe("scrubEmailBatch — real-path integration", () => {
 
     expect(summary.succeeded).toBe(1)
     expect(summary.failed).toBe(0)
+  })
+
+  it("injects open todos into the prompt and binds mark-done actions to that candidate snapshot", async () => {
+    configureBasicPrismaMock([{ id: "q-1", communicationId: "c-1" }])
+    const todoUpdatedAt = new Date("2026-04-27T13:00:00.000Z")
+    ;(
+      db.communication.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: "c-1",
+      subject: "LOI sent",
+      body: "Attached is the LOI we discussed.",
+      date: new Date("2026-04-24T10:00:00Z"),
+      metadata: { classification: "signal" },
+      conversationId: "thread-1",
+      contactId: "contact-1",
+      dealId: null,
+    })
+    ;(db.communication.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "c-0" },
+      { id: "c-1" },
+    ])
+    ;(db.todo.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      {
+        id: "todo-123",
+        title: "Send LOI",
+        status: "pending",
+        dueDate: null,
+        contactId: "contact-1",
+        dealId: null,
+        communicationId: "c-0",
+        updatedAt: todoUpdatedAt,
+      },
+    ])
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+    const response = validClaudeResponse()
+    ;(response.toolInput as { suggestedActions: unknown[] }).suggestedActions =
+      [
+        {
+          actionType: "mark-todo-done",
+          summary: "Close sent LOI todo",
+          payload: {
+            todoId: "todo-123",
+            reason: "Outbound email says the LOI was attached.",
+          },
+        },
+      ]
+    const scrubClient = vi.fn().mockResolvedValue(response)
+
+    const summary = await scrubEmailBatch({ scrubClient, mode: "relaxed" })
+
+    expect(summary.succeeded).toBe(1)
+    const prompt = scrubClient.mock.calls[0]?.[0]?.perEmailPrompt ?? ""
+    expect(prompt).toContain('"openTodos"')
+    expect(prompt).toContain('"id": "todo-123"')
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "mark-todo-done",
+        targetEntity: "todo:todo-123",
+        payload: expect.objectContaining({
+          todoId: "todo-123",
+          todoUpdatedAt: todoUpdatedAt.toISOString(),
+          contactId: "contact-1",
+          communicationId: "c-0",
+        }),
+      }),
+    })
   })
 
   it("validation-failed path: updates the pending-validation row's outcome so spend is correctly attributed", async () => {

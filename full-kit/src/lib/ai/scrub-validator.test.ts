@@ -39,6 +39,64 @@ describe("validateScrubToolInput", () => {
     expect(result.droppedActions).toBe(0)
   })
 
+  it("accepts a valid mark-todo-done action", () => {
+    const result = validateScrubToolInput({
+      ...baseScrub,
+      suggestedActions: [
+        {
+          actionType: "mark-todo-done",
+          summary: "Mark LOI todo done",
+          payload: {
+            todoId: "todo-123",
+            reason: "Outbound email says the LOI was attached.",
+          },
+        },
+      ],
+    })
+
+    expect(result.suggestedActions).toEqual([
+      {
+        actionType: "mark-todo-done",
+        summary: "Mark LOI todo done",
+        payload: {
+          todoId: "todo-123",
+          reason: "Outbound email says the LOI was attached.",
+        },
+      },
+    ])
+  })
+
+  it("drops invalid mark-todo-done actions in relaxed mode", () => {
+    const result = validateScrubToolInput(
+      {
+        ...baseScrub,
+        suggestedActions: [
+          {
+            actionType: "mark-todo-done",
+            summary: "Missing todo id",
+            payload: {
+              todoId: "",
+              reason: "Outbound email says it was sent.",
+            },
+          },
+          {
+            actionType: "create-todo",
+            summary: "Call Sarah",
+            payload: {
+              title: "Call Sarah",
+              priority: "medium",
+            },
+          },
+        ],
+      },
+      { mode: "relaxed" }
+    )
+
+    expect(result.droppedActions).toBe(1)
+    expect(result.suggestedActions).toHaveLength(1)
+    expect(result.suggestedActions[0]?.actionType).toBe("create-todo")
+  })
+
   it("rejects more than five suggested actions (outer-shape)", () => {
     let caught: unknown
     try {

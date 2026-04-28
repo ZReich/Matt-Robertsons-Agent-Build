@@ -247,3 +247,171 @@ export async function getScrubQueueStats(): Promise<{
     ),
   }
 }
+
+export type ScrubCoverageStats = {
+  communications: {
+    total: number
+    scrubbed: number
+    unscrubbed: number
+    linkedToContact: number
+    orphaned: number
+    byClassification: Record<string, number>
+  }
+  queue: Record<string, number>
+  neverQueued: {
+    total: number
+    missedEligible: number
+    intentionallySkipped: number
+    byClassification: Record<string, number>
+  }
+  contactCandidates: {
+    total: number
+    byStatus: Record<string, number>
+  }
+  todos: {
+    open: number
+    pendingMarkDoneActions: number
+  }
+}
+
+type CountRow = { count: number | bigint }
+type NamedCountRow = { name: string | null; count: number | bigint }
+
+export async function getScrubCoverageStats(): Promise<ScrubCoverageStats> {
+  const [
+    communicationRows,
+    classificationRows,
+    queueStats,
+    neverQueuedRows,
+    contactCandidateRows,
+    todoRows,
+  ] = await Promise.all([
+    db.$queryRaw<
+      Array<{
+        total: number | bigint
+        scrubbed: number | bigint
+        linked_to_contact: number | bigint
+      }>
+    >`
+      SELECT
+        COUNT(*)::bigint AS total,
+        COUNT(*) FILTER (WHERE metadata->'scrub' IS NOT NULL)::bigint AS scrubbed,
+        COUNT(*) FILTER (WHERE contact_id IS NOT NULL)::bigint AS linked_to_contact
+      FROM communications
+    `,
+    db.$queryRaw<NamedCountRow[]>`
+      SELECT CASE
+               WHEN metadata->>'classification' IN ('signal', 'uncertain', 'noise')
+                 THEN metadata->>'classification'
+               WHEN metadata->>'classification' IS NULL
+                 THEN 'unclassified'
+               ELSE 'other'
+             END AS name,
+             COUNT(*)::bigint AS count
+      FROM communications
+      GROUP BY 1
+      ORDER BY 2 DESC
+    `,
+    getScrubQueueStats(),
+    db.$queryRaw<NamedCountRow[]>`
+      SELECT CASE
+               WHEN c.metadata->>'classification' IN ('signal', 'uncertain', 'noise')
+                 THEN c.metadata->>'classification'
+               WHEN c.metadata->>'classification' IS NULL
+                 THEN 'unclassified'
+               ELSE 'other'
+             END AS name,
+             COUNT(*)::bigint AS count
+      FROM communications c
+      LEFT JOIN scrub_queue sq ON sq.communication_id = c.id
+      WHERE sq.id IS NULL
+      GROUP BY 1
+      ORDER BY 2 DESC
+    `,
+    db.contactPromotionCandidate.groupBy({
+      by: ["status"],
+      _count: { status: true },
+    }),
+    db.$queryRaw<
+      Array<{
+        open: number | bigint
+        pending_mark_done_actions: number | bigint
+      }>
+    >`
+      SELECT
+        (SELECT COUNT(*)::bigint
+          FROM todos
+          WHERE archived_at IS NULL
+            AND status::text IN ('pending', 'in_progress')) AS open,
+        (SELECT COUNT(*)::bigint
+           FROM agent_actions
+          WHERE status::text = 'pending'
+            AND action_type = 'mark-todo-done') AS pending_mark_done_actions
+    `,
+  ])
+
+  const communication = communicationRows[0] ?? {
+    total: 0,
+    scrubbed: 0,
+    linked_to_contact: 0,
+  }
+  const neverQueuedByClassification = toCountRecord(neverQueuedRows)
+  const neverQueuedTotal = Object.values(neverQueuedByClassification).reduce(
+    (sum, count) => sum + count,
+    0
+  )
+  const neverQueuedMissedEligible =
+    (neverQueuedByClassification.signal ?? 0) +
+    (neverQueuedByClassification.uncertain ?? 0) +
+    (neverQueuedByClassification.unclassified ?? 0) +
+    (neverQueuedByClassification.other ?? 0)
+  const neverQueuedIntentionallySkipped = neverQueuedByClassification.noise ?? 0
+  const total = toNumber(communication.total)
+  const scrubbed = toNumber(communication.scrubbed)
+  const linkedToContact = toNumber(communication.linked_to_contact)
+  const todoCounts = todoRows[0] ?? {
+    open: 0,
+    pending_mark_done_actions: 0,
+  }
+
+  return {
+    communications: {
+      total,
+      scrubbed,
+      unscrubbed: Math.max(0, total - scrubbed),
+      linkedToContact,
+      orphaned: Math.max(0, total - linkedToContact),
+      byClassification: toCountRecord(classificationRows),
+    },
+    queue: queueStats.queue,
+    neverQueued: {
+      total: neverQueuedTotal,
+      missedEligible: neverQueuedMissedEligible,
+      intentionallySkipped: neverQueuedIntentionallySkipped,
+      byClassification: neverQueuedByClassification,
+    },
+    contactCandidates: {
+      total: contactCandidateRows.reduce(
+        (sum, row) => sum + row._count.status,
+        0
+      ),
+      byStatus: Object.fromEntries(
+        contactCandidateRows.map((row) => [row.status, row._count.status])
+      ),
+    },
+    todos: {
+      open: toNumber(todoCounts.open),
+      pendingMarkDoneActions: toNumber(todoCounts.pending_mark_done_actions),
+    },
+  }
+}
+
+function toCountRecord(rows: NamedCountRow[]): Record<string, number> {
+  return Object.fromEntries(
+    rows.map((row) => [row.name ?? "unknown", toNumber(row.count)])
+  )
+}
+
+function toNumber(value: CountRow["count"]): number {
+  return typeof value === "bigint" ? Number(value) : value
+}

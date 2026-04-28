@@ -114,6 +114,10 @@ function getActionTargetEntity(action: SuggestedAction): string | null {
   if (action.actionType === "update-meeting" && meetingId) {
     return `meeting:${meetingId}`
   }
+  if (action.actionType === "mark-todo-done") {
+    const todoId = typeof payload.todoId === "string" ? payload.todoId : null
+    if (todoId) return `todo:${todoId}`
+  }
   if (action.actionType === "create-agent-memory") {
     if (dealId) return `deal:${dealId}`
     if (contactId) return `contact:${contactId}`

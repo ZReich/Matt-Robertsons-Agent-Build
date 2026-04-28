@@ -12,6 +12,17 @@ export type HeuristicMatches = {
   deals: Array<{ id: string; propertyAddress: string; reason: string }>
 }
 
+export type OpenTodoCandidate = {
+  id: string
+  title: string
+  status: string
+  dueDate: string | null
+  contactId: string | null
+  dealId: string | null
+  communicationId: string | null
+  updatedAt: string
+}
+
 function asRecord(value: unknown): MetadataRecord {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as MetadataRecord)
@@ -121,4 +132,77 @@ export async function loadRecentThread(comm: {
         `${row.date.toISOString()} ${row.subject ?? ""}: ${(row.body ?? "").slice(0, 300)}`
     )
     .join("\n")
+}
+
+export async function loadOpenTodoCandidates(
+  comm: {
+    id?: string | null
+    conversationId?: string | null
+    contactId?: string | null
+    dealId?: string | null
+  },
+  matches: HeuristicMatches
+): Promise<OpenTodoCandidate[]> {
+  const contactIds = new Set(
+    [
+      comm.contactId ?? null,
+      ...matches.contacts.map((contact) => contact.id),
+    ].filter(Boolean) as string[]
+  )
+  const dealIds = new Set(
+    [comm.dealId ?? null, ...matches.deals.map((deal) => deal.id)].filter(
+      Boolean
+    ) as string[]
+  )
+  const communicationIds = new Set(
+    [comm.id ?? null].filter(Boolean) as string[]
+  )
+  if (comm.conversationId) {
+    const threadComms = await db.communication.findMany({
+      where: { conversationId: comm.conversationId },
+      take: 20,
+      select: { id: true },
+    })
+    for (const threadComm of threadComms) {
+      communicationIds.add(threadComm.id)
+    }
+  }
+  if (
+    contactIds.size === 0 &&
+    dealIds.size === 0 &&
+    communicationIds.size === 0
+  ) {
+    return []
+  }
+
+  const rows = await db.todo.findMany({
+    where: {
+      archivedAt: null,
+      status: { in: ["pending", "in_progress"] },
+      OR: [
+        ...Array.from(contactIds).map((contactId) => ({ contactId })),
+        ...Array.from(dealIds).map((dealId) => ({ dealId })),
+        ...Array.from(communicationIds).map((communicationId) => ({
+          communicationId,
+        })),
+      ],
+    },
+    orderBy: [{ dueDate: "asc" }, { updatedAt: "desc" }],
+    take: 10,
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      dueDate: true,
+      contactId: true,
+      dealId: true,
+      communicationId: true,
+      updatedAt: true,
+    },
+  })
+  return rows.map((row) => ({
+    ...row,
+    dueDate: row.dueDate?.toISOString() ?? null,
+    updatedAt: row.updatedAt.toISOString(),
+  }))
 }

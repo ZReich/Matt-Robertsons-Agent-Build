@@ -510,6 +510,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       where: { id: sync.id },
       data: { entityId: comm.id },
     })
+    await upsertEmailSenderContactCandidate(tx, p, comm.id, dateIso)
     const auditTx = tx as Prisma.TransactionClient & {
       emailFilterAudit?: Pick<
         Prisma.TransactionClient["emailFilterAudit"],
@@ -558,6 +559,129 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
     leadContactId: resolvedLeadContactId,
     leadCreated: resolvedLeadCreated,
   }
+}
+
+async function upsertEmailSenderContactCandidate(
+  tx: Prisma.TransactionClient,
+  p: ProcessedMessage,
+  communicationId: string,
+  dateIso: string
+): Promise<void> {
+  const email = p.normalizedSender.address.trim().toLowerCase()
+  if (
+    p.folder !== "inbox" ||
+    p.classification.classification !== "signal" ||
+    p.contactId ||
+    p.leadContactId ||
+    p.normalizedSender.isInternal ||
+    p.normalizedSender.normalizationFailed ||
+    !email.includes("@") ||
+    isPlatformLeadSource(p.classification.source)
+  ) {
+    return
+  }
+
+  const dedupeKey = `email-sender:${email}`
+  const existing = await tx.contactPromotionCandidate.findUnique({
+    where: { dedupeKey },
+    select: { id: true, metadata: true, status: true },
+  })
+  const existingMetadata = jsonObject(existing?.metadata)
+  const communicationIds = new Set([
+    ...metadataStringArray(existingMetadata, "communicationIds"),
+    ...[
+      metadataString(existingMetadata, "firstCommunicationId"),
+      metadataString(existingMetadata, "lastCommunicationId"),
+    ].filter((id): id is string => !!id),
+  ])
+  const alreadyCounted = communicationIds.has(communicationId)
+  communicationIds.add(communicationId)
+  const displayName = p.normalizedSender.displayName?.trim() || null
+  const now = new Date(dateIso)
+  const shouldReopenSuppressed =
+    !alreadyCounted &&
+    (existing?.status === "rejected" || existing?.status === "not_a_contact")
+
+  if (!existing) {
+    await tx.contactPromotionCandidate.create({
+      data: {
+        dedupeKey,
+        normalizedEmail: email,
+        displayName,
+        message: p.message.subject ?? null,
+        source: "msgraph-email-sender",
+        sourceKind: p.classification.source,
+        status: "pending",
+        firstSeenAt: now,
+        lastSeenAt: now,
+        communicationId,
+        metadata: {
+          firstCommunicationId: communicationId,
+          lastCommunicationId: communicationId,
+          communicationIds: [...communicationIds],
+          classification: p.classification.classification,
+          classificationSource: p.classification.source,
+        } as Prisma.InputJsonValue,
+      },
+    })
+    return
+  }
+
+  await tx.contactPromotionCandidate.update({
+    where: { id: existing.id },
+    data: {
+      displayName: displayName ?? undefined,
+      message: p.message.subject ?? undefined,
+      sourceKind: p.classification.source,
+      ...(alreadyCounted ? {} : { communicationId }),
+      lastSeenAt: now,
+      ...(alreadyCounted ? {} : { evidenceCount: { increment: 1 } }),
+      ...(shouldReopenSuppressed
+        ? { status: "needs_more_evidence" as const, snoozedUntil: null }
+        : {}),
+      metadata: {
+        ...existingMetadata,
+        lastCommunicationId: communicationId,
+        communicationIds: [...communicationIds],
+        classification: p.classification.classification,
+        classificationSource: p.classification.source,
+        ...(shouldReopenSuppressed
+          ? {
+              reopenedFromStatus: existing.status,
+              reopenedAt: now.toISOString(),
+              reopenReason: "new-material-communication-evidence",
+              reopenEvidenceIds: [communicationId],
+            }
+          : {}),
+      } as Prisma.InputJsonValue,
+    },
+  })
+}
+
+function isPlatformLeadSource(source: string): boolean {
+  return (
+    source === "crexi-lead" ||
+    source === "loopnet-lead" ||
+    source === "buildout-event"
+  )
+}
+
+function metadataString(metadata: unknown, key: string): string | null {
+  const value = jsonObject(metadata)[key]
+  return typeof value === "string" ? value : null
+}
+
+function metadataStringArray(metadata: unknown, key: string): string[] {
+  const value = jsonObject(metadata)[key]
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : []
+}
+
+function jsonObject(metadata: unknown): Record<string, unknown> {
+  return metadata && typeof metadata === "object" && !Array.isArray(metadata)
+    ? (metadata as Record<string, unknown>)
+    : {}
 }
 
 interface ProcessMessageSummary {
