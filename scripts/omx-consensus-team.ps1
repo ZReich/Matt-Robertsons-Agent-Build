@@ -85,6 +85,34 @@ function Assert-CommandAvailable {
   }
 }
 
+function Get-ShortPath {
+  param([Parameter(Mandatory = $true)][string]$Path)
+
+  $resolved = (Resolve-Path -LiteralPath $Path).Path
+  try {
+    $fso = New-Object -ComObject Scripting.FileSystemObject
+    if ((Get-Item -LiteralPath $resolved).PSIsContainer) {
+      return $fso.GetFolder($resolved).ShortPath
+    }
+    return $fso.GetFile($resolved).ShortPath
+  }
+  catch {
+    return $resolved
+  }
+}
+
+function Get-DefaultWorkerLaunchArgs {
+  param([Parameter(Mandatory = $true)][string]$RepoRoot)
+
+  $teamRoot = Join-Path $RepoRoot ".omx\team"
+  New-Item -ItemType Directory -Force -Path $teamRoot | Out-Null
+
+  $repoShort = Get-ShortPath -Path $RepoRoot
+  $teamShort = Get-ShortPath -Path $teamRoot
+
+  return "--no-alt-screen --dangerously-bypass-approvals-and-sandbox --add-dir $repoShort --add-dir $teamShort"
+}
+
 function Assert-MixedCliHealth {
   if ($SkipHealthCheck) {
     Write-Host "SkipHealthCheck set; assuming manual Codex/Claude health verification is already complete."
@@ -149,18 +177,23 @@ function Invoke-OmxTeam {
     [Parameter(Mandatory = $true)][int]$WorkerCount,
     [Parameter(Mandatory = $true)][string]$AgentType,
     [Parameter(Mandatory = $true)][string]$TaskText,
-    [Parameter(Mandatory = $true)][string]$CliMap
+    [Parameter(Mandatory = $true)][string]$CliMap,
+    [Parameter(Mandatory = $true)][string]$WorkerLaunchArgs
   )
 
   $previous = @{
     OMX_TEAM_WORKER_CLI = $env:OMX_TEAM_WORKER_CLI
     OMX_TEAM_WORKER_CLI_MAP = $env:OMX_TEAM_WORKER_CLI_MAP
+    OMX_TEAM_WORKER_LAUNCH_ARGS = $env:OMX_TEAM_WORKER_LAUNCH_ARGS
     OMX_TEAM_DISABLE_HUD = $env:OMX_TEAM_DISABLE_HUD
   }
 
   try {
     $env:OMX_TEAM_WORKER_CLI = "auto"
     $env:OMX_TEAM_WORKER_CLI_MAP = $CliMap
+    if (-not $env:OMX_TEAM_WORKER_LAUNCH_ARGS) {
+      $env:OMX_TEAM_WORKER_LAUNCH_ARGS = $WorkerLaunchArgs
+    }
     if (-not $env:OMX_TEAM_DISABLE_HUD) {
       $env:OMX_TEAM_DISABLE_HUD = "1"
     }
@@ -433,7 +466,8 @@ Fix contract:
 function Write-Plan {
   param(
     [Parameter(Mandatory = $true)][string]$BaselineRef,
-    [Parameter(Mandatory = $true)][int]$ImplementationWorkerCount
+    [Parameter(Mandatory = $true)][int]$ImplementationWorkerCount,
+    [Parameter(Mandatory = $true)][string]$WorkerLaunchArgs
   )
 
   Write-Host "Consensus team plan"
@@ -444,6 +478,7 @@ function Write-Plan {
   if ($FixMode -eq "ralph") {
     Write-Host "  ralph deslop pass: $(-not $RalphNoDeslop)"
   }
+  Write-Host "  worker launch args: $WorkerLaunchArgs"
   Write-Host "  preflight health checks: $(-not $SkipHealthCheck)"
   Write-Host "  max audit rounds: $MaxAuditRounds"
   Write-Host "  artifacts: $ArtifactRoot/<run-id>/round-<n>/{codex-verdict.json,claude-verdict.json}"
@@ -467,8 +502,9 @@ $baselineRef = (Invoke-Checked -Command "git" -Arguments @("rev-parse", "HEAD"))
 $runId = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
 $artifactBase = Join-Path (Join-Path $repoRoot $ArtifactRoot) $runId
 $implementationWorkerCount = Get-CliMapWorkerCount -CliMap $ImplementationCliMap
+$workerLaunchArgs = Get-DefaultWorkerLaunchArgs -RepoRoot $repoRoot
 
-Write-Plan -BaselineRef $baselineRef -ImplementationWorkerCount $implementationWorkerCount
+Write-Plan -BaselineRef $baselineRef -ImplementationWorkerCount $implementationWorkerCount -WorkerLaunchArgs $workerLaunchArgs
 
 if ($ShowPlan) {
   return
@@ -486,7 +522,7 @@ Assert-CleanLeaderWorkspace
 New-Item -ItemType Directory -Force -Path $artifactBase | Out-Null
 
 $implementationPrompt = New-ImplementationPrompt -TaskText $Task -BaselineRef $baselineRef
-$implementationTeam = Invoke-OmxTeam -WorkerCount $implementationWorkerCount -AgentType "executor" -TaskText $implementationPrompt -CliMap $ImplementationCliMap
+$implementationTeam = Invoke-OmxTeam -WorkerCount $implementationWorkerCount -AgentType "executor" -TaskText $implementationPrompt -CliMap $ImplementationCliMap -WorkerLaunchArgs $workerLaunchArgs
 Wait-OmxTeamTerminal -TeamName $implementationTeam | Out-Null
 Stop-OmxTeam -TeamName $implementationTeam
 
@@ -497,7 +533,7 @@ for ($round = 1; $round -le $MaxAuditRounds; $round++) {
   New-Item -ItemType Directory -Force -Path $roundDir | Out-Null
 
   $auditPrompt = New-AuditPrompt -TaskText $Task -BaselineRef $baselineRef -AuditDir $roundDir -Round $round
-  $auditTeam = Invoke-OmxTeam -WorkerCount 2 -AgentType "code-reviewer" -TaskText $auditPrompt -CliMap $AuditCliMap
+  $auditTeam = Invoke-OmxTeam -WorkerCount 2 -AgentType "code-reviewer" -TaskText $auditPrompt -CliMap $AuditCliMap -WorkerLaunchArgs $workerLaunchArgs
   Wait-OmxTeamTerminal -TeamName $auditTeam | Out-Null
   Stop-OmxTeam -TeamName $auditTeam
 
@@ -520,7 +556,7 @@ for ($round = 1; $round -le $MaxAuditRounds; $round++) {
 
   $fixPrompt = New-FixPrompt -TaskText $Task -AuditDir $roundDir -Round $round
   if ($FixMode -eq "team") {
-    $fixTeam = Invoke-OmxTeam -WorkerCount $implementationWorkerCount -AgentType "executor" -TaskText $fixPrompt -CliMap $ImplementationCliMap
+    $fixTeam = Invoke-OmxTeam -WorkerCount $implementationWorkerCount -AgentType "executor" -TaskText $fixPrompt -CliMap $ImplementationCliMap -WorkerLaunchArgs $workerLaunchArgs
     Wait-OmxTeamTerminal -TeamName $fixTeam | Out-Null
     Stop-OmxTeam -TeamName $fixTeam
   }

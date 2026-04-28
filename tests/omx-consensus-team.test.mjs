@@ -56,10 +56,20 @@ test('team invocation restores OMX launch environment after worker launch', () =
   assert.match(script, /\$previous\s*=\s*@\{/);
   assert.match(script, /OMX_TEAM_WORKER_CLI/);
   assert.match(script, /OMX_TEAM_WORKER_CLI_MAP/);
+  assert.match(script, /OMX_TEAM_WORKER_LAUNCH_ARGS/);
   assert.match(script, /OMX_TEAM_DISABLE_HUD/);
   assert.match(script, /finally\s*\{/);
   assert.match(script, /Remove-Item\s+"env:\$key"/);
   assert.match(script, /Set-Item\s+"env:\$key"\s+\$previous\[\$key\]/);
+});
+
+test('worker launch args grant Codex access to team worktrees', () => {
+  assert.match(script, /function\s+Get-DefaultWorkerLaunchArgs\b/);
+  assert.match(script, /Get-ShortPath -Path \$RepoRoot/);
+  assert.match(script, /Get-ShortPath -Path \$teamRoot/);
+  assert.match(script, /--dangerously-bypass-approvals-and-sandbox --add-dir \$repoShort --add-dir \$teamShort/);
+  assert.match(script, /\$env:OMX_TEAM_WORKER_LAUNCH_ARGS\s*=\s*\$WorkerLaunchArgs/);
+  assert.match(script, /Write-Host "  worker launch args: \$WorkerLaunchArgs"/);
 });
 
 test('consensus approval requires both reviewers to approve with no blocking findings', () => {
