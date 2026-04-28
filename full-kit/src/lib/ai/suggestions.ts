@@ -1,5 +1,10 @@
+import type {
+  AttachmentCategory,
+  AttachmentFetchStatus,
+} from "@/lib/communications/attachment-types"
 import type { AgentActionStatus, Prisma } from "@prisma/client"
 
+import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import { db } from "@/lib/prisma"
 
 import { PROMPT_RELEASED_AT, PROMPT_VERSION } from "./scrub-types"
@@ -38,6 +43,13 @@ export type AiSuggestionAction = {
     date: string | null
     summary: string | null
     outlookUrl: string | null
+    attachments?: Array<{
+      name: string
+      contentType: string
+      category: AttachmentCategory
+    }>
+    attachmentsRemaining?: number
+    attachmentFetchStatus?: AttachmentFetchStatus
   } | null
   promptVersion: string
   createdAt: string
@@ -155,6 +167,9 @@ export async function getAiSuggestionState({
       const scrub = getScrub(action.sourceCommunication?.metadata)
       const staleReason = getStaleReason(action)
       const { contacts, deals, hasMore } = linkedCandidateChips(scrub)
+      const attachmentSummary = getAttachmentSummary(
+        action.sourceCommunication?.metadata
+      )
       return {
         id: action.id,
         actionType: action.actionType,
@@ -174,6 +189,13 @@ export async function getAiSuggestionState({
                     action.sourceCommunication.externalMessageId
                   )}`
                 : null,
+              attachments: attachmentSummary.items.map((item) => ({
+                name: item.name,
+                contentType: item.contentType,
+                category: item.category,
+              })),
+              attachmentsRemaining: attachmentSummary.remaining,
+              attachmentFetchStatus: attachmentSummary.fetchStatus,
             }
           : null,
         promptVersion: action.promptVersion,

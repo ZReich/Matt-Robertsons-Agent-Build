@@ -1,10 +1,15 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { AlertTriangle, CheckCircle2, Clock, Sparkles } from "lucide-react"
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Paperclip,
+  Sparkles,
+} from "lucide-react"
 
 import type { AiSuggestionState } from "@/lib/ai/suggestions"
 
@@ -40,10 +45,7 @@ function formatProcessedCopy(state: AiSuggestionState) {
   return "Not processed"
 }
 
-export function LeadAISuggestions({
-  state,
-  lang = "en",
-}: LeadAISuggestionsProps) {
+export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
   const router = useRouter()
   const [actions, setActions] = useState(state.actions)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -232,17 +234,26 @@ export function LeadAISuggestions({
                   {action.evidence.summary}
                 </p>
               ) : null}
+              {action.evidence?.attachments?.length ? (
+                <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <Paperclip className="size-3" />
+                  {action.evidence.attachments.map((attachment, index) => (
+                    <span
+                      key={`${action.id}-attachment-${index}`}
+                      className="rounded-full border px-2 py-0.5"
+                      title={attachment.contentType}
+                    >
+                      {attachment.name}
+                    </span>
+                  ))}
+                  {action.evidence.attachmentsRemaining ? (
+                    <span className="rounded-full border px-2 py-0.5">
+                      +{action.evidence.attachmentsRemaining} more
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
-                {action.sourceCommunicationId ? (
-                  <Link
-                    href={`/${lang}/apps/communications?communicationId=${encodeURIComponent(
-                      action.sourceCommunicationId
-                    )}`}
-                    className="text-primary hover:underline"
-                  >
-                    Source communication
-                  </Link>
-                ) : null}
                 {action.evidence?.outlookUrl ? (
                   <a
                     href={action.evidence.outlookUrl}

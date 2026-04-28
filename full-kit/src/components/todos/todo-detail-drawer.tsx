@@ -36,6 +36,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 
 type TodoNote = VaultNote<TodoMeta>
 
@@ -361,6 +362,9 @@ export function TodoDetailDrawer({
                           {format(new Date(sourceComm.date), "MMM d, yyyy")}
                           {sourceComm.contact && ` · ${sourceComm.contact}`}
                         </p>
+                        <AttachmentSummaryInline
+                          summary={sourceComm.attachments}
+                        />
                         {sourceComm.outlookUrl && (
                           <div className="mt-2 border-t pt-2">
                             <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

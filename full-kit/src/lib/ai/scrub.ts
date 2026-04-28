@@ -1,6 +1,7 @@
 import type { ClaudeScrubResponse } from "./claude"
 import type { ClaimedScrubQueueRow } from "./scrub-types"
 
+import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import { db } from "@/lib/prisma"
 
 import { assertAuthCircuitClosed, tripAuthCircuit } from "./auth-circuit"
@@ -66,6 +67,49 @@ type ScrubClient = (input: {
   correction?: string
 }) => Promise<ClaudeScrubResponse>
 
+export function buildScrubPromptPayload(comm: {
+  subject: string | null
+  body: string | null
+  date: Date
+  metadata: unknown
+}) {
+  const metadata =
+    comm.metadata &&
+    typeof comm.metadata === "object" &&
+    !Array.isArray(comm.metadata)
+      ? (comm.metadata as Record<string, unknown>)
+      : {}
+  const attachmentSummary = getAttachmentSummary(metadata, { limit: 10 })
+  const attachmentFetch =
+    metadata.attachmentFetch &&
+    typeof metadata.attachmentFetch === "object" &&
+    !Array.isArray(metadata.attachmentFetch)
+      ? (metadata.attachmentFetch as Record<string, unknown>)
+      : undefined
+
+  return {
+    subject: comm.subject,
+    receivedDate: comm.date.toISOString(),
+    body: (comm.body ?? "").slice(0, 4000),
+    metadata: {
+      classification: metadata.classification,
+      source: metadata.source,
+      tier1Rule: metadata.tier1Rule,
+      extracted: metadata.extracted,
+      hasAttachments: metadata.hasAttachments,
+      attachmentFetch: attachmentSummary.fetchStatus
+        ? { status: attachmentSummary.fetchStatus }
+        : attachmentFetch?.status
+          ? { status: attachmentFetch.status }
+          : undefined,
+      attachments: attachmentSummary.items.map((item) => ({
+        name: item.name,
+        contentType: item.contentType,
+      })),
+    },
+  }
+}
+
 function renderPerEmailPrompt({
   comm,
   matches,
@@ -84,12 +128,7 @@ function renderPerEmailPrompt({
 }): string {
   return JSON.stringify(
     {
-      email: {
-        subject: comm.subject,
-        receivedDate: comm.date.toISOString(),
-        body: (comm.body ?? "").slice(0, 4000),
-        metadata: comm.metadata,
-      },
+      email: buildScrubPromptPayload(comm),
       candidates: matches,
       scopedMemory,
       threadContext,

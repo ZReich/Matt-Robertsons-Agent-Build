@@ -17,6 +17,7 @@ import {
 import type { CommunicationMeta, VaultNote } from "@/lib/vault/shared"
 import type { ReactNode } from "react"
 
+import { getExplicitAttachmentSummary } from "@/lib/communications/attachment-types"
 import { normalizeEntityRef } from "@/lib/vault/shared"
 
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 
 type CommNote = VaultNote<CommunicationMeta>
 
@@ -245,6 +247,13 @@ export function CommsList({
                             {note.meta.subject}
                           </p>
                         )}
+                        <AttachmentSummaryInline
+                          summary={getExplicitAttachmentSummary(
+                            note.meta.attachments,
+                            note.meta.attachmentFetchStatus
+                          )}
+                          className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground"
+                        />
                       </div>
                       <span className="text-[11px] text-muted-foreground shrink-0">
                         {format(new Date(note.meta.date), "h:mm a")}

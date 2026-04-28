@@ -26,12 +26,14 @@ import type {
 } from "@/lib/vault/shared"
 import type { ReactNode } from "react"
 
+import { getExplicitAttachmentSummary } from "@/lib/communications/attachment-types"
 import { parseSections } from "@/lib/parse-sections"
 import { normalizeEntityRef } from "@/lib/vault/shared"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 
 // =============================================================================
 // Types
@@ -213,6 +215,13 @@ function TimelineEntry({ event }: { event: ActivityEvent }) {
           {comm.meta.subject && (
             <p className="text-sm text-muted-foreground">{comm.meta.subject}</p>
           )}
+
+          <AttachmentSummaryInline
+            summary={getExplicitAttachmentSummary(
+              comm.meta.attachments,
+              comm.meta.attachmentFetchStatus
+            )}
+          />
 
           {/* Inline summary if available */}
           {parsed?.summary && !expanded && (

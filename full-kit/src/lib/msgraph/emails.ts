@@ -1,3 +1,7 @@
+import type {
+  AttachmentFetchMeta,
+  AttachmentMeta,
+} from "@/lib/communications/attachment-types"
 import type { Prisma } from "@prisma/client"
 import type {
   BuildoutEventExtract,
@@ -269,26 +273,68 @@ export async function computeBehavioralHints(
 // Attachment metadata
 // ---------------------------------------------------------------------------
 
-export interface AttachmentMeta {
-  id: string
-  name: string
-  size: number
-  contentType: string
+type GraphAttachment = AttachmentMeta & {
+  "@odata.type"?: string
+}
+
+export interface AttachmentFetchResult {
+  attachments: AttachmentMeta[]
+  fetch: AttachmentFetchMeta
+}
+
+function attachmentTypeFromOdata(
+  value: unknown
+): AttachmentMeta["attachmentType"] {
+  if (value === "#microsoft.graph.fileAttachment") return "file"
+  if (value === "#microsoft.graph.itemAttachment") return "item"
+  if (value === "#microsoft.graph.referenceAttachment") return "reference"
+  return "unknown"
 }
 
 /** Fetches attachment metadata (not binary) for a single message. */
 export async function fetchAttachmentMeta(
   targetUpn: string,
   messageId: string
-): Promise<AttachmentMeta[]> {
+): Promise<AttachmentFetchResult> {
+  const attemptedAt = new Date().toISOString()
   const path =
     `/users/${encodeURIComponent(targetUpn)}/messages/${encodeURIComponent(messageId)}/attachments` +
-    `?$select=id,name,size,contentType`
+    `?$select=id,name,size,contentType,isInline`
   try {
-    const res = await graphFetch<{ value: AttachmentMeta[] }>(path)
-    return res.value ?? []
+    const res = await graphFetch<{ value: GraphAttachment[] }>(path)
+    const rawAttachments = res.value ?? []
+    const attachments = rawAttachments.map((attachment) => ({
+      id: attachment.id,
+      name: attachment.name,
+      size: attachment.size,
+      contentType: attachment.contentType,
+      isInline: attachment.isInline,
+      attachmentType: attachmentTypeFromOdata(attachment["@odata.type"]),
+    }))
+    const inlineCount = attachments.filter(
+      (attachment) => attachment.isInline
+    ).length
+    return {
+      attachments,
+      fetch: {
+        status: "success",
+        attemptedAt,
+        totalCount: attachments.length,
+        inlineCount,
+        nonInlineCount: attachments.length - inlineCount,
+      },
+    }
   } catch (err) {
-    if (err instanceof GraphError) return []
+    if (err instanceof GraphError) {
+      return {
+        attachments: [],
+        fetch: {
+          status: "failed",
+          attemptedAt,
+          errorCode: err.code ?? String(err.status),
+        },
+      }
+    }
     throw err
   }
 }
@@ -338,6 +384,7 @@ export interface ProcessedMessage {
   hints: BehavioralHints
   extracted: ExtractedData | null
   attachments: AttachmentMeta[] | undefined
+  attachmentFetch?: AttachmentFetchMeta
   contactId: string | null
   leadContactId: string | null
   leadCreated: boolean
@@ -400,6 +447,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
     ccRecipients: p.message.ccRecipients ?? [],
     hasAttachments: !!p.message.hasAttachments,
     attachments: p.attachments,
+    attachmentFetch: p.attachmentFetch,
     importance: p.message.importance ?? "normal",
     isRead: !!p.message.isRead,
     senderNormalizationFailed:
@@ -651,12 +699,18 @@ export async function processOneMessage(
 
   // Attachment metadata — only for signal rows with attachments.
   let attachments: AttachmentMeta[] | undefined
+  let attachmentFetch: AttachmentFetchMeta | undefined
   if (
     classification.classification === "signal" &&
     workingMessage.hasAttachments &&
     !!workingMessage.id
   ) {
-    attachments = await fetchAttachmentMeta(cfg.targetUpn, workingMessage.id)
+    const attachmentResult = await fetchAttachmentMeta(
+      cfg.targetUpn,
+      workingMessage.id
+    )
+    attachments = attachmentResult.attachments
+    attachmentFetch = attachmentResult.fetch
   }
 
   // Persist with retry.
@@ -673,6 +727,7 @@ export async function processOneMessage(
         hints,
         extracted,
         attachments,
+        attachmentFetch,
         contactId,
         leadContactId,
         leadCreated,

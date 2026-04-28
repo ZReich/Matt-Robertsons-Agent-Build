@@ -6,6 +6,7 @@
  * is serialized and passed to client components as plain objects.
  */
 
+import type { AttachmentSummary } from "@/lib/communications/attachment-types"
 import type {
   ClientMeta,
   CommunicationMeta,
@@ -15,6 +16,10 @@ import type {
   VaultNote,
 } from "./types"
 
+import {
+  getAttachmentSummary,
+  getExplicitAttachmentSummary,
+} from "@/lib/communications/attachment-types"
 import { getOutlookDeeplinkForSource } from "@/lib/communications/outlook-deeplink"
 import { prismaTodoPath } from "@/lib/todos/paths"
 
@@ -57,6 +62,7 @@ export interface ResolvedSourceComm {
   externalMessageId?: string | null
   sourceSystem?: string | null
   outlookUrl?: string | null
+  attachments?: AttachmentSummary
 }
 
 /** Full resolved context for a single todo */
@@ -194,6 +200,10 @@ export function buildContextMaps(
       subject: n.meta.subject,
       date: n.meta.date,
       contact: n.meta.contact ? normalizeEntityRef(n.meta.contact) : undefined,
+      attachments: nonEmptyExplicitAttachmentSummary(
+        n.meta.attachments,
+        n.meta.attachmentFetchStatus
+      ),
     })
   }
 
@@ -314,6 +324,7 @@ export function resolvePrismaTodoContexts(
         externalMessageId: todo.communication.externalMessageId ?? undefined,
         sourceSystem: sourceSystem ?? undefined,
         outlookUrl: outlookUrl ?? undefined,
+        attachments: nonEmptyAttachmentSummary(todo.communication.metadata),
       }
     }
 
@@ -321,6 +332,16 @@ export function resolvePrismaTodoContexts(
   }
 
   return result
+}
+
+function nonEmptyAttachmentSummary(metadata: unknown) {
+  const summary = getAttachmentSummary(metadata)
+  return summary.items.length > 0 || summary.fetchStatus ? summary : undefined
+}
+
+function nonEmptyExplicitAttachmentSummary(items: unknown, status?: unknown) {
+  const summary = getExplicitAttachmentSummary(items, status)
+  return summary.items.length > 0 || summary.fetchStatus ? summary : undefined
 }
 
 function decimalToNumber(value: DecimalLike) {

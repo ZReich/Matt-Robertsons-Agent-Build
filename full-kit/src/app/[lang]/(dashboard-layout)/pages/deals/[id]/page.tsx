@@ -16,6 +16,7 @@ import {
 import type { Metadata } from "next"
 
 import { getAiSuggestionState } from "@/lib/ai/suggestions"
+import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import { DEAL_STAGE_LABELS } from "@/lib/pipeline/stage-probability"
 import { computeWeightedCommission } from "@/lib/pipeline/weighted-commission"
 import { db } from "@/lib/prisma"
@@ -28,6 +29,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DealStageEditor } from "./_components/deal-stage-editor"
 import { DocLink } from "./_components/doc-link"
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 
 interface DealDetailPageProps {
@@ -250,6 +252,9 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
                       {format(comm.date, "MMMM d, yyyy · h:mm a")}
                     </p>
                   </div>
+                  <AttachmentSummaryInline
+                    summary={getAttachmentSummary(comm.metadata)}
+                  />
                 </CardContent>
               </Card>
             ))

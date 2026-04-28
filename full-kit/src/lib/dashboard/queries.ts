@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache"
 import { isBefore, startOfDay } from "date-fns"
 
+import type { AttachmentSummary } from "@/lib/communications/attachment-types"
 import type {
   ClientMeta,
   CommunicationMeta,
@@ -17,6 +18,7 @@ import type {
   LeadSource,
 } from "@prisma/client"
 
+import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import {
   getMissedFollowupCutoff,
   selectMissedFollowupReference,
@@ -66,6 +68,7 @@ export interface RecentCommunication {
   date: Date
   direction: Direction | null
   contact: { id: string; name: string } | null
+  attachments: AttachmentSummary
 }
 
 export interface MissedFollowup {
@@ -224,19 +227,27 @@ export function selectMissedFollowupsFromContacts(
 
 const getRecentCommunications = unstable_cache(
   async (): Promise<RecentCommunication[]> =>
-    db.communication.findMany({
-      orderBy: { date: "desc" },
-      take: 5,
-      select: {
-        id: true,
-        channel: true,
-        subject: true,
-        body: true,
-        date: true,
-        direction: true,
-        contact: { select: { id: true, name: true } },
-      },
-    }),
+    db.communication
+      .findMany({
+        orderBy: { date: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          channel: true,
+          subject: true,
+          body: true,
+          date: true,
+          direction: true,
+          contact: { select: { id: true, name: true } },
+          metadata: true,
+        },
+      })
+      .then((communications) =>
+        communications.map((communication) => ({
+          ...communication,
+          attachments: getAttachmentSummary(communication.metadata),
+        }))
+      ),
   ["dashboard-recent-communications"],
   { tags: [DASHBOARD_DATA_TAG] }
 )

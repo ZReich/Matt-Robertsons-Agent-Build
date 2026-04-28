@@ -26,6 +26,7 @@ import {
 import type { CommunicationMeta, TodoMeta, VaultNote } from "@/lib/vault/shared"
 import type { ReactNode } from "react"
 
+import { getExplicitAttachmentSummary } from "@/lib/communications/attachment-types"
 import { parseSections } from "@/lib/parse-sections"
 import { normalizeEntityRef, toSlug } from "@/lib/vault/shared"
 
@@ -35,6 +36,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 
 type CommNote = VaultNote<CommunicationMeta>
 type TodoNote = VaultNote<TodoMeta>
@@ -242,6 +244,12 @@ export function CommsDetail({
                 {format(new Date(note.meta.date), "MMM d, yyyy 'at' h:mm a")}
               </span>
             </div>
+            <AttachmentSummaryInline
+              summary={getExplicitAttachmentSummary(
+                note.meta.attachments,
+                note.meta.attachmentFetchStatus
+              )}
+            />
           </div>
 
           {/* Action buttons */}

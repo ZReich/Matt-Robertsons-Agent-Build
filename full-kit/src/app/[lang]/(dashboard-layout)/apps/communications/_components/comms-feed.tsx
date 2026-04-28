@@ -19,6 +19,8 @@ import {
 import type { CommunicationMeta, VaultNote } from "@/lib/vault/shared"
 import type { ReactNode } from "react"
 
+import { getExplicitAttachmentSummary } from "@/lib/communications/attachment-types"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DocumentViewer } from "@/components/ui/document-viewer"
@@ -29,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 
 type CommNote = VaultNote<CommunicationMeta>
 
@@ -250,6 +253,12 @@ export function CommsFeed({ notes }: CommsFeedProps) {
                               {note.meta.subject}
                             </p>
                           )}
+                          <AttachmentSummaryInline
+                            summary={getExplicitAttachmentSummary(
+                              note.meta.attachments,
+                              note.meta.attachmentFetchStatus
+                            )}
+                          />
                         </div>
 
                         {/* Time + expand indicator */}

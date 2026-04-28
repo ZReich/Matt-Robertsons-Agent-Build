@@ -23,6 +23,7 @@ import { MissedFollowupsWidget } from "./_components/missed-followups-widget"
 import { NewLeadsWidget } from "./_components/new-leads-widget"
 import { RevalidateOnFocus } from "./_components/revalidate-on-focus"
 import { TodosWidget } from "./_components/todos-widget"
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 
 export const metadata: Metadata = {
   title: "Home",
@@ -213,6 +214,10 @@ export default async function HomePage({ params }: HomePageProps) {
                           addSuffix: true,
                         })}
                       </p>
+                      <AttachmentSummaryInline
+                        summary={communication.attachments}
+                        className="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted-foreground"
+                      />
                     </div>
                   </div>
                 ))}

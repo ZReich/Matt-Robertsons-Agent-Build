@@ -1,3 +1,8 @@
+import type {
+  AttachmentFetchStatus,
+  AttachmentSummaryItem,
+} from "@/lib/communications/attachment-types"
+
 /** Vault category used for Life/Work toggle filtering */
 export type VaultCategory = "business" | "personal"
 
@@ -129,6 +134,8 @@ export interface CommunicationMeta extends VaultNoteMeta {
   date: string
   direction?: "inbound" | "outbound"
   deal?: string
+  attachments?: AttachmentSummaryItem[]
+  attachmentFetchStatus?: AttachmentFetchStatus
 }
 
 /** Meeting/calendar event frontmatter (vault/meetings/*.md) */
@@ -140,6 +147,8 @@ export interface MeetingMeta extends VaultNoteMeta {
   duration_minutes?: number
   location?: string
   deal?: string
+  attachments?: AttachmentSummaryItem[]
+  attachmentFetchStatus?: AttachmentFetchStatus
 }
 
 /** Todo item frontmatter (vault/todos/business/ and vault/todos/personal/) */

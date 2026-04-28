@@ -8,8 +8,11 @@ import {
   Smartphone,
 } from "lucide-react"
 
+import type { AttachmentSummary } from "@/lib/communications/attachment-types"
 import type { CommunicationChannel, Direction } from "@prisma/client"
 import type { ReactNode } from "react"
+
+import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 
 const CHANNEL_ICONS: Record<string, ReactNode> = {
   email: <Mail className="size-3.5" />,
@@ -26,6 +29,7 @@ export interface LeadActivityItem {
   date: Date
   direction: Direction | null
   outlookUrl?: string | null
+  attachments?: AttachmentSummary
 }
 
 interface LeadActivityTimelineProps {
@@ -135,6 +139,7 @@ export function LeadActivityTimeline({
                 </time>
               </div>
             </div>
+            <AttachmentSummaryInline summary={communication.attachments} />
             {bodySnippet ? (
               <p className="whitespace-pre-line rounded-md bg-muted/20 px-3 py-2 text-sm leading-relaxed text-foreground/90">
                 {bodySnippet}

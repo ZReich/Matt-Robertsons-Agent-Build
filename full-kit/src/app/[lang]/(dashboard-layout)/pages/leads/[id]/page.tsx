@@ -4,6 +4,7 @@ import type { LeadActivityItem } from "@/components/leads/lead-activity-timeline
 import type { Metadata } from "next"
 
 import { getAiSuggestionState } from "@/lib/ai/suggestions"
+import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import { extractLeadInquiryFacts } from "@/lib/leads/inquiry-facts"
 import { cleanLeadMessageText } from "@/lib/leads/message-text"
 import { db } from "@/lib/prisma"
@@ -127,6 +128,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             communication.externalMessageId
           )}`
         : null,
+      attachments: getAttachmentSummary(communication.metadata),
     })
   )
 
