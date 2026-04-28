@@ -6,13 +6,19 @@ const script = readFileSync(new URL('../scripts/omx-consensus-team.ps1', import.
 
 test('implementation prompt preserves the requested task and team execution contract', () => {
   assert.match(script, /function\s+New-ImplementationPrompt\b/);
-  assert.match(script, /Task:\s*\r?\n\$TaskText/);
+  assert.match(script, /Implement this approved task using the approved repository conventions: \$TaskText/);
   assert.match(script, /Team staffing is fixed by the launch environment:/);
   assert.match(script, /workers 1-3 are Codex/);
   assert.match(script, /workers 4-5 are Claude/);
   assert.match(script, /Run relevant lint\/typecheck\/tests before reporting completion/);
   assert.match(script, /Commit worker changes before marking tasks complete/);
   assert.match(script, /Audit baseline for later review: \$BaselineRef/);
+});
+
+test('team invocation compacts multiline prompts before calling omx team', () => {
+  assert.match(script, /function\s+ConvertTo-OmxTeamTaskText\b/);
+  assert.match(script, /\$teamTaskText\s*=\s*ConvertTo-OmxTeamTaskText -Text \$TaskText/);
+  assert.match(script, /"omx" -Arguments @\("team", "\$\{WorkerCount\}:\$AgentType", \$teamTaskText\)/);
 });
 
 test('audit prompt requires machine-readable dual-reviewer verdicts', () => {

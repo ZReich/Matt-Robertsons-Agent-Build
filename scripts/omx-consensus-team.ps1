@@ -96,6 +96,14 @@ function Get-JsonFromOutput {
   return $jsonLine | ConvertFrom-Json
 }
 
+function ConvertTo-OmxTeamTaskText {
+  param([Parameter(Mandatory = $true)][string]$Text)
+
+  return (($Text -split "`r?`n") |
+    ForEach-Object { $_.Trim() } |
+    Where-Object { $_ }) -join " "
+}
+
 function Invoke-OmxTeam {
   param(
     [Parameter(Mandatory = $true)][int]$WorkerCount,
@@ -117,7 +125,8 @@ function Invoke-OmxTeam {
       $env:OMX_TEAM_DISABLE_HUD = "1"
     }
 
-    $output = Invoke-Checked -Command "omx" -Arguments @("team", "${WorkerCount}:$AgentType", $TaskText)
+    $teamTaskText = ConvertTo-OmxTeamTaskText -Text $TaskText
+    $output = Invoke-Checked -Command "omx" -Arguments @("team", "${WorkerCount}:$AgentType", $teamTaskText)
   }
   finally {
     foreach ($key in $previous.Keys) {
@@ -206,10 +215,7 @@ function New-ImplementationPrompt {
   )
 
   return @"
-Implement the task below using the approved repository conventions.
-
-Task:
-$TaskText
+Implement this approved task using the approved repository conventions: $TaskText
 
 Team staffing is fixed by the launch environment:
 - workers 1-3 are Codex
