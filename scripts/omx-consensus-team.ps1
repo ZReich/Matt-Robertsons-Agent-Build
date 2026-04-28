@@ -215,13 +215,14 @@ function New-ImplementationPrompt {
   )
 
   return @"
-Implement this approved task using the approved repository conventions: $TaskText
+1. Coverage ledger data API lane: implement corpus-level communication coverage stats, scrub queue coverage, missed eligible counts, noise counts, contact linkage counts, and candidate status counts for this approved task: $TaskText
+2. Scrub context prompt schema lane: implement bounded open-todo/thread context, scrub prompt/schema/validator updates, and no-duplicate/no-already-handled behavior for this approved task: $TaskText
+3. Agent action todo resolution lane: implement the human-approved mark-todo-done action contract, applier target mapping, approval/reject/snooze API behavior, stale/idempotent handling, and tests for this approved task: $TaskText
+4. Agent UI coverage review lane: implement Agent Control Center coverage display, mark-todo-done review rendering, evidence labels, and candidate/todo deep links for this approved task: $TaskText
+5. Contact candidate coverage lane: verify or implement conservative non-platform contact candidate generation/coverage, evidence aggregation, false-negative sampling hooks, and related tests for this approved task: $TaskText
 
-Team staffing is fixed by the launch environment:
-- workers 1-3 are Codex
-- workers 4-5 are Claude
-
-Execution contract:
+Global execution contract:
+- workers 1-3 are Codex and workers 4-5 are Claude by launch environment; every worker must keep its assigned numbered lane unless blocked.
 - Split the work by independently verifiable slices.
 - Keep diffs scoped and reversible.
 - Run relevant lint/typecheck/tests before reporting completion.
@@ -244,7 +245,8 @@ function New-AuditPrompt {
   $claudePath = Join-Path $AuditDir "claude-verdict.json"
 
   return @"
-Run an adversarial audit of the full implementation currently integrated on the leader branch.
+1. Codex adversarial audit lane: inspect the full implementation currently integrated on the leader branch, compare against the original task, and write the required Codex verdict JSON to $codexPath.
+2. Claude adversarial audit lane: independently inspect the full implementation currently integrated on the leader branch, compare against the original task, and write the required Claude verdict JSON to $claudePath.
 
 Original task:
 $TaskText
