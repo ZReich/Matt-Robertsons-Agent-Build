@@ -69,3 +69,18 @@ test('consensus approval requires both reviewers to approve with no blocking fin
   assert.match(script, /Get-BlockingCount -Verdict \$CodexVerdict\) -eq 0/);
   assert.match(script, /Get-BlockingCount -Verdict \$ClaudeVerdict\) -eq 0/);
 });
+
+test('consensus driver probes Codex and Claude before launching teams', () => {
+  assert.match(script, /function\s+Assert-MixedCliHealth\b/);
+  assert.match(script, /Checking codex CLI availability/);
+  assert.match(script, /codexVersion/);
+  assert.match(script, /claude-health-ok/);
+  assert.match(script, /\[switch\]\$HealthCheckOnly/);
+  assert.match(script, /\[switch\]\$SkipHealthCheck/);
+
+  const healthIndex = script.indexOf('Assert-MixedCliHealth');
+  const launchIndex = script.indexOf('$implementationTeam = Invoke-OmxTeam');
+  assert.ok(healthIndex > -1);
+  assert.ok(launchIndex > -1);
+  assert.ok(healthIndex < launchIndex);
+});

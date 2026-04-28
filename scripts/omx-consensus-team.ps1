@@ -40,6 +40,10 @@ param(
 
   [switch]$NoShutdown,
 
+  [switch]$SkipHealthCheck,
+
+  [switch]$HealthCheckOnly,
+
   [switch]$ShowPlan
 )
 
@@ -55,9 +59,16 @@ function Invoke-Checked {
     [string[]]$Arguments
   )
 
-  $output = & $Command @Arguments 2>&1
-  $exitCode = $LASTEXITCODE
-  $text = ($output | Out-String).TrimEnd()
+  $previousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $output = & $Command @Arguments 2>&1
+    $exitCode = $LASTEXITCODE
+    $text = ($output | Out-String).TrimEnd()
+  }
+  finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
 
   if ($exitCode -ne 0) {
     throw "Command failed ($exitCode): $Command $($Arguments -join ' ')`n$text"
@@ -71,6 +82,24 @@ function Assert-CommandAvailable {
 
   if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
     throw "Required command is not on PATH: $Name"
+  }
+}
+
+function Assert-MixedCliHealth {
+  if ($SkipHealthCheck) {
+    Write-Host "SkipHealthCheck set; assuming manual Codex/Claude health verification is already complete."
+    return
+  }
+
+  Write-Host "Checking codex CLI availability"
+  $codexVersion = Invoke-Checked -Command "codex" -Arguments @("--version")
+  if ($codexVersion -notmatch "codex") {
+    throw "codex version check did not return expected output. Output:`n$codexVersion"
+  }
+
+  if ($ImplementationCliMap -match "(^|,)\s*claude\s*(,|$)" -or $AuditCliMap -match "(^|,)\s*claude\s*(,|$)") {
+    $manualProbe = 'claude -p "Reply with exactly: claude-health-ok" --output-format text --no-session-persistence'
+    throw "Claude prompt health must be verified manually before launching a mixed team. Run this from the same tmux/PowerShell environment and confirm it prints claude-health-ok:`n$manualProbe`nThen rerun this script with -SkipHealthCheck."
   }
 }
 
@@ -415,6 +444,7 @@ function Write-Plan {
   if ($FixMode -eq "ralph") {
     Write-Host "  ralph deslop pass: $(-not $RalphNoDeslop)"
   }
+  Write-Host "  preflight health checks: $(-not $SkipHealthCheck)"
   Write-Host "  max audit rounds: $MaxAuditRounds"
   Write-Host "  artifacts: $ArtifactRoot/<run-id>/round-<n>/{codex-verdict.json,claude-verdict.json}"
   Write-Host "  shutdown after each team: $(-not $NoShutdown)"
@@ -441,6 +471,13 @@ $implementationWorkerCount = Get-CliMapWorkerCount -CliMap $ImplementationCliMap
 Write-Plan -BaselineRef $baselineRef -ImplementationWorkerCount $implementationWorkerCount
 
 if ($ShowPlan) {
+  return
+}
+
+Assert-MixedCliHealth
+
+if ($HealthCheckOnly) {
+  Write-Host "HealthCheckOnly complete; not launching teams."
   return
 }
 
