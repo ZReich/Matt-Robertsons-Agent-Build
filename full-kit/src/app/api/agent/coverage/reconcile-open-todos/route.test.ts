@@ -167,6 +167,19 @@ describe("reconcile open todos route", () => {
     })
   })
 
+  it("rejects malformed JSON bodies with a 400 instead of a 500", async () => {
+    process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
+    vi.mocked(getSession).mockResolvedValue(session())
+
+    const response = await POST(
+      request("{not valid json", { contentType: "application/json" })
+    )
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toMatchObject({ error: "invalid JSON body" })
+    expect(reconcileOpenTodosFromOutbound).not.toHaveBeenCalled()
+  })
+
   it("rejects payloads missing required mode field", async () => {
     process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
     vi.mocked(getSession).mockResolvedValue(session())

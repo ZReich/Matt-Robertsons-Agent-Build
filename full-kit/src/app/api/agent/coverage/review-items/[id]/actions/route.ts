@@ -22,7 +22,13 @@ export async function POST(
     assertSameOriginRequest(request)
     assertJsonRequest(request)
     const reviewer = await requireAgentReviewer()
-    const payload = parseReviewActionPayload(await request.json())
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      throw new CoverageValidationError("invalid JSON body")
+    }
+    const payload = parseReviewActionPayload(body)
     const { id } = await params
     const result = await applyCoverageReviewAction(id, {
       ...payload,

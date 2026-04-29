@@ -28,7 +28,16 @@ export async function POST(request: Request): Promise<Response> {
     assertSameOriginRequest(request)
     assertJsonRequest(request)
     await requireAgentReviewer()
-    const parsed = payloadSchema.safeParse(await request.json())
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json(
+        { error: "invalid JSON body" },
+        { status: 400 }
+      )
+    }
+    const parsed = payloadSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json(
         { error: "invalid payload", issues: parsed.error.flatten() },

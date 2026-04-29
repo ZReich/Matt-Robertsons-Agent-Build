@@ -202,6 +202,32 @@ describe("bindMarkTodoDoneActions", () => {
     expect(malicious).toEqual([])
   })
 
+  it("rejects dotted todoIds so the binder shape matches the applier's isSafeEntityId", () => {
+    // The applier in scrub-applier.ts uses /^[A-Za-z0-9_-]{1,128}$/ — the
+    // binder must agree, otherwise dotted ids slip through here only to be
+    // dropped later, wasting work and creating a confusing skew between the
+    // two layers' contracts.
+    const dotted: typeof todo = { ...todo, id: "todo.123" }
+    const actions = bindMarkTodoDoneActions(
+      [
+        {
+          actionType: "mark-todo-done",
+          summary: "Dotted",
+          payload: { todoId: "todo.123", reason: "ok" },
+        },
+      ],
+      [dotted],
+      {
+        communicationId: "comm-outbound",
+        communicationDate: new Date("2026-04-28T12:00:00.000Z"),
+        direction: "outbound",
+        hasThreadOutboundEvidence: false,
+      }
+    )
+
+    expect(actions).toEqual([])
+  })
+
   it("does not bind when the model invents a todoId that is not in the bounded context", () => {
     const actions = bindMarkTodoDoneActions(
       [

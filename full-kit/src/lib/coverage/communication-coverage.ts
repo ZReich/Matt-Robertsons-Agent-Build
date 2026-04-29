@@ -255,21 +255,28 @@ export async function listCoverageReviewItems(
      ORDER BY risk_score DESC, item_created_at DESC, id DESC
      LIMIT ${limit + 1}
   `
+  const pageRawRows = rows.slice(0, limit)
   const pageRows = await materializeReviewRows(
     input.filter,
-    rows.slice(0, limit),
+    pageRawRows,
     client
   )
   const hasNext = rows.length > limit
+  // Anchor the cursor on the LAST raw row in this page, not on the last
+  // materialized row. Terminal-suppressed rows are dropped from the items
+  // array but they still occupy slots in the SQL ordering; using the
+  // materialized tail would dead-end pagination whenever a whole page got
+  // suppressed even though more eligible rows exist beyond it.
+  const cursorAnchor = pageRawRows[pageRawRows.length - 1]
   return {
     items: pageRows.map((row) => toReviewItemDto(input.filter, row)),
     pageInfo: {
       nextCursor:
-        hasNext && pageRows.length > 0
+        hasNext && cursorAnchor
           ? encodeCursor({
-              riskScore: toNumber(pageRows[pageRows.length - 1].risk_score),
-              createdAt: toIso(pageRows[pageRows.length - 1].item_created_at),
-              id: pageRows[pageRows.length - 1].id,
+              riskScore: toNumber(cursorAnchor.risk_score),
+              createdAt: toIso(cursorAnchor.item_created_at),
+              id: cursorAnchor.id,
             })
           : null,
       limit,
@@ -538,80 +545,90 @@ export async function applyCoverageReviewAction(
 
   await requirePriorDryRun(client, reviewItemId, input.action, input.runId)
 
-  if (input.action === "mark_true_noise") {
-    return runReviewMutation(client, reviewItemId, async (tx) => {
-      const updated = await updateOpenReview(tx, reviewItemId, {
-        status: "resolved",
-        operatorOutcome: "true_noise",
-        operatorNotes: input.reason,
-        resolvedBy: input.reviewer,
-        resolvedAt: now,
+  const writeResult: CoverageActionResult = await (async () => {
+    if (input.action === "mark_true_noise") {
+      return runReviewMutation(client, reviewItemId, async (tx) => {
+        const updated = await updateOpenReview(tx, reviewItemId, {
+          status: "resolved",
+          operatorOutcome: "true_noise",
+          operatorNotes: input.reason,
+          resolvedBy: input.reviewer,
+          resolvedAt: now,
+        })
+        if (!updated) return staleReviewResult(reviewItemId, input.action)
+        return updatedResult(reviewItemId, input.action, "resolved")
       })
-      if (!updated) return staleReviewResult(reviewItemId, input.action)
-      return updatedResult(reviewItemId, input.action, "resolved")
-    })
-  }
+    }
 
-  if (input.action === "mark_false_negative") {
-    return runReviewMutation(client, reviewItemId, async (tx) => {
-      const updated = await updateOpenReview(tx, reviewItemId, {
-        status: "resolved",
-        operatorOutcome: "false_negative",
-        operatorNotes: input.reason,
-        resolvedBy: input.reviewer,
-        resolvedAt: now,
+    if (input.action === "mark_false_negative") {
+      return runReviewMutation(client, reviewItemId, async (tx) => {
+        const updated = await updateOpenReview(tx, reviewItemId, {
+          status: "resolved",
+          operatorOutcome: "false_negative",
+          operatorNotes: input.reason,
+          resolvedBy: input.reviewer,
+          resolvedAt: now,
+        })
+        if (!updated) return staleReviewResult(reviewItemId, input.action)
+        return updatedResult(reviewItemId, input.action, "resolved")
       })
-      if (!updated) return staleReviewResult(reviewItemId, input.action)
-      return updatedResult(reviewItemId, input.action, "resolved")
-    })
-  }
+    }
 
-  if (input.action === "snooze" || input.action === "defer") {
-    const snoozedUntil =
-      input.snoozedUntil ?? new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    return runReviewMutation(client, reviewItemId, async (tx) => {
-      const updated = await updateOpenReview(tx, reviewItemId, {
-        status: "snoozed",
-        snoozedUntil,
-        operatorOutcome: input.action,
-        operatorNotes: input.reason,
+    if (input.action === "snooze" || input.action === "defer") {
+      const snoozedUntil =
+        input.snoozedUntil ?? new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+      return runReviewMutation(client, reviewItemId, async (tx) => {
+        const updated = await updateOpenReview(tx, reviewItemId, {
+          status: "snoozed",
+          snoozedUntil,
+          operatorOutcome: input.action,
+          operatorNotes: input.reason,
+        })
+        if (!updated) return staleReviewResult(reviewItemId, input.action)
+        return updatedResult(reviewItemId, input.action, "snoozed")
       })
-      if (!updated) return staleReviewResult(reviewItemId, input.action)
-      return updatedResult(reviewItemId, input.action, "snoozed")
-    })
-  }
+    }
 
-  if (input.action === "enqueue_scrub" || input.action === "requeue_scrub") {
-    return runReviewMutation(client, reviewItemId, async (tx) => {
-      const updated = await updateOpenReview(tx, reviewItemId, {
-        status: "resolved",
-        operatorOutcome: input.action,
-        operatorNotes: input.reason,
-        resolvedBy: input.reviewer,
-        resolvedAt: now,
+    if (input.action === "enqueue_scrub" || input.action === "requeue_scrub") {
+      return runReviewMutation(client, reviewItemId, async (tx) => {
+        const updated = await updateOpenReview(tx, reviewItemId, {
+          status: "resolved",
+          operatorOutcome: input.action,
+          operatorNotes: input.reason,
+          resolvedBy: input.reviewer,
+          resolvedAt: now,
+        })
+        if (!updated) return staleReviewResult(reviewItemId, input.action)
+        const queue = await upsertScrubQueue(tx, review.communicationId)
+        return {
+          ok: true,
+          dryRun: false,
+          action: input.action,
+          reviewItemId,
+          status: input.action === "enqueue_scrub" ? "enqueued" : "requeued",
+          reviewStatus: "resolved",
+          scrubQueueId: queue.id,
+        } satisfies CoverageActionResult
       })
-      if (!updated) return staleReviewResult(reviewItemId, input.action)
-      const queue = await upsertScrubQueue(tx, review.communicationId)
-      return {
-        ok: true,
-        dryRun: false,
-        action: input.action,
-        reviewItemId,
-        status: input.action === "enqueue_scrub" ? "enqueued" : "requeued",
-        reviewStatus: "resolved",
-        scrubQueueId: queue.id,
-      }
-    })
-  }
+    }
 
-  return {
-    ok: true,
-    dryRun: false,
-    action: input.action,
-    reviewItemId,
-    status: "noop",
-    reviewStatus: review.status,
-  }
+    return {
+      ok: true,
+      dryRun: false,
+      action: input.action,
+      reviewItemId,
+      status: "noop",
+      reviewStatus: review.status,
+    }
+  })()
+
+  // Consume the dry-run record so the same (reviewItemId, action, runId)
+  // can't be replayed for additional writes. We consume even on "noop"/stale
+  // outcomes — the runId is single-use; replay protection should not depend
+  // on whether the row state ultimately allowed the update.
+  await consumeDryRun(client, reviewItemId, input.action, input.runId)
+
+  return writeResult
 }
 
 async function updateOpenReview(
@@ -638,9 +655,19 @@ async function runReviewMutation<T>(
     if (typeof tx.$queryRaw === "function") {
       try {
         await tx.$queryRaw`SELECT id FROM operational_email_reviews WHERE id = ${reviewItemId} FOR UPDATE`
-      } catch {
-        // Lock acquisition failures fall through to the status-guarded
-        // updateMany; we never silently widen access on lock errors.
+      } catch (lockError) {
+        // Lock acquisition failures must surface in logs so ops can detect
+        // a regressed/missing lock path; the status-guarded updateMany still
+        // prevents corruption, but a silent catch would hide a broken lock
+        // until something else exploded.
+        console.error(
+          "[coverage] runReviewMutation row lock failed",
+          {
+            reviewItemId,
+            message:
+              lockError instanceof Error ? lockError.message : String(lockError),
+          }
+        )
       }
     }
     return fn(tx as CoverageDb)
@@ -648,6 +675,14 @@ async function runReviewMutation<T>(
 }
 
 function baseReviewItemsSql(filter: CoverageFilter): Prisma.Sql {
+  // For pending_mark_done, the row identity is the (communication, todo)
+  // pair, so the review join must scope by subject_entity_id too — otherwise
+  // a communication with multiple pending mark-todo-done actions would
+  // cartesian-product reviews x actions.
+  const reviewSubjectScope =
+    filter === "pending_mark_done"
+      ? Prisma.sql`AND oer.subject_entity_kind = 'todo' AND oer.subject_entity_id = SUBSTRING(aa.target_entity FROM 6)`
+      : Prisma.empty
   return Prisma.sql`
     SELECT
       COALESCE(oer.id, c.id) AS id,
@@ -686,10 +721,12 @@ function baseReviewItemsSql(filter: CoverageFilter): Prisma.Sql {
       ON aa.source_communication_id = c.id
      AND aa.status::text = 'pending'
      AND aa.action_type = 'mark-todo-done'
+     AND aa.target_entity LIKE 'todo:%'
     LEFT JOIN operational_email_reviews oer
       ON oer.communication_id = c.id
      AND oer.type::text = ${filter}
      AND oer.status::text IN ('open', 'snoozed')
+     ${reviewSubjectScope}
     WHERE c.channel::text = 'email'
       AND ${filterWhereSql(filter)}
   `
@@ -1139,6 +1176,26 @@ async function requirePriorDryRun(
   })
   if (!row) {
     throw new CoverageValidationError("dry run required before write")
+  }
+}
+
+async function consumeDryRun(
+  client: CoverageDb,
+  reviewItemId: string,
+  action: CoverageAction,
+  runId: string | null
+) {
+  if (!runId) return
+  if (typeof client.systemState?.delete !== "function") return
+  // Best-effort delete; the unique conflict path already guards against
+  // concurrent consumption and a missing row is benign.
+  try {
+    await client.systemState.delete({
+      where: { key: dryRunKey(reviewItemId, action, runId) },
+    })
+  } catch {
+    // Missing rows or transient delete failures are non-fatal — the row's
+    // only purpose was the prior-existence check that already passed.
   }
 }
 

@@ -1083,6 +1083,180 @@ describe("communication coverage service", () => {
     expect(json).not.toContain("tenant@example.com")
   })
 
+  it("scopes the OperationalEmailReview join by subject_entity_id for pending_mark_done", async () => {
+    // Capture the raw SQL to assert the join shape; this is the only
+    // reliable way to prove a cross-join regression would be caught.
+    const queryRaw = vi.fn().mockResolvedValue([])
+    const client = {
+      $queryRaw: queryRaw,
+      operationalEmailReview: { findFirst: vi.fn(), create: vi.fn() },
+    }
+
+    await listCoverageReviewItems(
+      { filter: "pending_mark_done", limit: 5 },
+      client as never
+    )
+
+    expect(queryRaw).toHaveBeenCalled()
+    const callArgs = queryRaw.mock.calls[0]
+    // Prisma.sql tagged templates pass an array of strings as the first arg;
+    // join everything into one string for substring assertions.
+    const stitched = JSON.stringify(callArgs)
+    expect(stitched).toContain("subject_entity_kind = 'todo'")
+    expect(stitched).toContain(
+      "oer.subject_entity_id = SUBSTRING(aa.target_entity FROM 6)"
+    )
+    expect(stitched).toContain("aa.target_entity LIKE 'todo:%'")
+  })
+
+  it("does not add the pending_mark_done subject scope to other filters", async () => {
+    const queryRaw = vi.fn().mockResolvedValue([])
+    const client = {
+      $queryRaw: queryRaw,
+      operationalEmailReview: { findFirst: vi.fn(), create: vi.fn() },
+    }
+
+    await listCoverageReviewItems(
+      { filter: "missed_eligible", limit: 5 },
+      client as never
+    )
+
+    const stitched = JSON.stringify(queryRaw.mock.calls[0])
+    expect(stitched).not.toContain("subject_entity_kind = 'todo'")
+    expect(stitched).not.toContain("subject_entity_id = SUBSTRING")
+  })
+
+  it("emits a forward cursor when a whole page is terminal-suppressed", async () => {
+    const ts = new Date("2026-04-29T12:00:00Z")
+    const rawRow = (id: string) => ({
+      id,
+      communication_id: id,
+      review_id: null,
+      review_status: null,
+      review_reason_codes: null,
+      review_reason_key: null,
+      review_recommended_action: null,
+      review_policy_version: null,
+      review_created_at: null,
+      review_snoozed_until: null,
+      date: ts,
+      created_at: ts,
+      subject: `subject ${id}`,
+      direction: "inbound",
+      contact_id: null,
+      metadata: { classification: "noise" },
+      queue_id: null,
+      queue_status: null,
+      queue_attempts: null,
+      queue_enqueued_at: null,
+      queue_locked_until: null,
+      queue_last_error: null,
+      action_id: null,
+      action_type: null,
+      action_status: null,
+      action_target_entity: null,
+      action_summary: null,
+      action_created_at: null,
+      risk_score: 60,
+      item_created_at: ts,
+    })
+
+    const client = {
+      $queryRaw: vi.fn().mockResolvedValue([
+        rawRow("comm-suppressed-1"),
+        rawRow("comm-suppressed-2"),
+        rawRow("comm-spillover"),
+      ]),
+      operationalEmailReview: {
+        // Every materialization returns terminal_suppressed for this fixture.
+        findFirst: vi.fn().mockResolvedValue({
+          id: "review-resolved",
+          communicationId: "comm-suppressed-1",
+          type: "suspicious_noise",
+          status: "resolved",
+          operatorOutcome: "true_noise",
+          policyVersion: "coverage-review-v1",
+          reasonKey: "noise_active_thread",
+          dedupeKey: "x|suspicious_noise|noise_active_thread",
+          createdAt: ts,
+        }),
+        create: vi.fn(),
+      },
+    }
+
+    const result = await listCoverageReviewItems(
+      { filter: "suspicious_noise", limit: 2 },
+      client as never
+    )
+
+    expect(result.items).toHaveLength(0)
+    // Even though the materialized page is empty, the raw page had a
+    // spillover row so we must hand back a forward cursor anchored on the
+    // last raw row in the limited slice.
+    expect(result.pageInfo.nextCursor).not.toBeNull()
+    const decoded = JSON.parse(
+      Buffer.from(result.pageInfo.nextCursor as string, "base64url").toString(
+        "utf8"
+      )
+    )
+    expect(decoded.id).toBe("comm-suppressed-2")
+  })
+
+  it("consumes the dry-run record after a successful write so it cannot be replayed", async () => {
+    const review = {
+      id: "review-consume",
+      communicationId: "comm-1",
+      type: "missed_eligible",
+      status: "open",
+      reasonCodes: ["signal_without_queue"],
+      reasonKey: "signal_without_queue",
+      dedupeKey: "comm-1|missed_eligible|signal_without_queue",
+      recommendedAction: "enqueue_or_requeue_scrub",
+      policyVersion: "coverage-review-v1",
+      riskScore: 90,
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const deleteFn = vi.fn().mockResolvedValue({})
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+      systemState: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ key: "dry-run", value: { runId: "run-1" } }),
+        upsert: vi.fn(),
+        delete: deleteFn,
+      },
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(client)
+      ),
+    }
+
+    await applyCoverageReviewAction(
+      "review-consume",
+      {
+        action: "mark_true_noise",
+        dryRun: false,
+        runId: "run-1",
+        reason: "confirmed",
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(deleteFn).toHaveBeenCalledWith({
+      where: {
+        key: expect.stringContaining(
+          "coverage-review-action-dry-run:run-1:review-consume:mark_true_noise"
+        ),
+      },
+    })
+  })
+
   it("locks the review row in a transaction before mutating non-queue actions", async () => {
     const review = {
       id: "review-lock",

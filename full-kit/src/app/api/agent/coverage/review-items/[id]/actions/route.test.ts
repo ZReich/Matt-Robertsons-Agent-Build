@@ -244,6 +244,20 @@ describe("coverage review item actions route", () => {
     )
   })
 
+  it("rejects malformed JSON bodies with a 400 instead of a 500", async () => {
+    process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
+    vi.mocked(getSession).mockResolvedValue(session())
+
+    const response = await POST(
+      request("{not valid json", { contentType: "application/json" }),
+      params()
+    )
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toMatchObject({ error: "invalid JSON body" })
+    expect(applyCoverageReviewAction).not.toHaveBeenCalled()
+  })
+
   it("rejects past snoozedUntil even on snooze", async () => {
     process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
     vi.mocked(getSession).mockResolvedValue(session())

@@ -423,7 +423,11 @@ export function bindMarkTodoDoneActions(
   })
 }
 
-const SAFE_BOUND_TODO_ID = /^[A-Za-z0-9_.-]{1,128}$/
+// Mirror isSafeEntityId in scrub-applier.ts exactly so the binder doesn't
+// admit ids the applier will later reject — dots are NOT permitted because
+// uuid/cuid identifiers don't use them and accepting them only widens the
+// prompt-injection surface.
+const SAFE_BOUND_TODO_ID = /^[A-Za-z0-9_-]{1,128}$/
 
 function isSafeBoundTodoId(value: string): boolean {
   return SAFE_BOUND_TODO_ID.test(value)
