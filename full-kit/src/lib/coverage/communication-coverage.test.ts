@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
+  COVERAGE_BATCH_ACTION_MAX,
   applyCoverageReviewAction,
+  applyCoverageReviewActionBatch,
   dedupeKey,
   listCoverageReviewItems,
   minimizeOperationalReviewMetadata,
+  parseBatchReviewActionPayload,
   parseReviewActionPayload,
   parseReviewItemsQuery,
   reasonKey,
@@ -1309,5 +1312,261 @@ describe("communication coverage service", () => {
         where: { id: "review-lock", status: { in: ["open", "snoozed"] } },
       })
     )
+  })
+
+  it("strictly validates batch action payloads", () => {
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: true,
+        selectAll: true,
+      })
+    ).toThrow("unknown body key: selectAll")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "bogus",
+        reviewItemIds: ["review-1"],
+        dryRun: true,
+      })
+    ).toThrow("invalid action")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: [],
+        dryRun: true,
+      })
+    ).toThrow("reviewItemIds is required")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: "review-1",
+        dryRun: true,
+      })
+    ).toThrow("reviewItemIds must be an array")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1", 7],
+        dryRun: true,
+      })
+    ).toThrow("invalid reviewItemId")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1", "   "],
+        dryRun: true,
+      })
+    ).toThrow("invalid reviewItemId")
+
+    const oversize = Array.from(
+      { length: COVERAGE_BATCH_ACTION_MAX + 1 },
+      (_, i) => `review-${i}`
+    )
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: oversize,
+        dryRun: true,
+      })
+    ).toThrow("reviewItemIds exceeds batch cap")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: false,
+      })
+    ).toThrow("runId is required")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: false,
+        runId: "not legal id!!",
+      })
+    ).toThrow("invalid runId")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: true,
+        snoozedUntil: new Date(Date.now() + 86_400_000).toISOString(),
+      })
+    ).toThrow("snoozedUntil only allowed")
+  })
+
+  it("returns parsed batch payload with reviewItemIds preserved in order", () => {
+    const future = new Date(Date.now() + 86_400_000).toISOString()
+    const payload = parseBatchReviewActionPayload({
+      action: "snooze",
+      reviewItemIds: ["  review-1  ", "review-2"],
+      dryRun: false,
+      runId: "run-1",
+      reason: "wait",
+      snoozedUntil: future,
+    })
+
+    expect(payload).toMatchObject({
+      action: "snooze",
+      reviewItemIds: ["review-1", "review-2"],
+      dryRun: false,
+      runId: "run-1",
+      reason: "wait",
+    })
+    expect(payload.snoozedUntil).toBeInstanceOf(Date)
+  })
+
+  it("reports per-row outcomes and is idempotent on re-run", async () => {
+    type ReviewState = "open" | "resolved"
+    const reviewState = new Map<string, ReviewState>([
+      ["review-a", "open"],
+      ["review-b", "open"],
+      ["review-c", "resolved"],
+    ])
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn(async ({ where }: { where: { id: string } }) => {
+          const status = reviewState.get(where.id)
+          if (!status) return null
+          return {
+            id: where.id,
+            communicationId: `comm-${where.id}`,
+            type: "suspicious_noise",
+            status,
+            reasonCodes: ["noise_cre_terms"],
+            reasonKey: "noise_cre_terms",
+            dedupeKey: `${where.id}|suspicious_noise|noise_cre_terms`,
+            recommendedAction: "review_noise_classification",
+            policyVersion: "coverage-review-v1",
+            riskScore: 50,
+            createdAt: new Date("2026-04-29T12:00:00Z"),
+          }
+        }),
+        updateMany: vi.fn(
+          async ({ where }: { where: { id: string; status?: unknown } }) => {
+            if (reviewState.get(where.id) === "open") {
+              reviewState.set(where.id, "resolved")
+              return { count: 1 }
+            }
+            return { count: 0 }
+          }
+        ),
+      },
+      systemState: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ key: "dry-run", value: { runId: "run-1" } }),
+        upsert: vi.fn().mockResolvedValue({}),
+      },
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      $transaction: vi.fn(
+        async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+      ),
+    }
+
+    const first = await applyCoverageReviewActionBatch(
+      ["review-a", "review-b", "review-c"],
+      {
+        action: "mark_true_noise",
+        dryRun: false,
+        runId: "run-1",
+        reason: "confirmed",
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(first.summary).toEqual({
+      count: 3,
+      applied: 2,
+      skipped: 1,
+      unsupported: 0,
+    })
+    expect(first.results.map((row) => row.reviewItemId)).toEqual([
+      "review-a",
+      "review-b",
+      "review-c",
+    ])
+    expect(first.results[0]).toMatchObject({ status: "updated" })
+    expect(first.results[1]).toMatchObject({ status: "updated" })
+    expect(first.results[2]).toMatchObject({ status: "noop" })
+    expect(client.$transaction).toHaveBeenCalledTimes(2)
+
+    const second = await applyCoverageReviewActionBatch(
+      ["review-a", "review-b", "review-c"],
+      {
+        action: "mark_true_noise",
+        dryRun: false,
+        runId: "run-1",
+        reason: "confirmed",
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(second.summary).toEqual({
+      count: 3,
+      applied: 0,
+      skipped: 3,
+      unsupported: 0,
+    })
+    for (const row of second.results) {
+      expect(row).toMatchObject({ status: "noop" })
+    }
+  })
+
+  it("flags unsupported identity actions per row without mutating", async () => {
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "review-1",
+          communicationId: "comm-1",
+          status: "open",
+        }),
+        updateMany: vi.fn(),
+      },
+      systemState: {
+        findUnique: vi.fn(),
+        upsert: vi.fn(),
+      },
+      $transaction: vi.fn(),
+    }
+
+    const result = await applyCoverageReviewActionBatch(
+      ["review-1", "review-2"],
+      {
+        action: "deterministic_link_contact",
+        dryRun: true,
+        runId: "run-1",
+        reason: null,
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result.summary).toEqual({
+      count: 2,
+      applied: 0,
+      skipped: 0,
+      unsupported: 2,
+    })
+    for (const row of result.results) {
+      expect(row).toMatchObject({
+        status: "unsupported",
+        unsupportedReason: expect.stringContaining("deferred"),
+      })
+    }
+    expect(client.operationalEmailReview.updateMany).not.toHaveBeenCalled()
   })
 })

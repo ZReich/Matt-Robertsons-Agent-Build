@@ -35,6 +35,8 @@ const MAX_REASON_LENGTH = 1000
 const RUN_ID_PATTERN = /^[A-Za-z0-9_.:-]{1,100}$/
 const SNOOZE_ACTIONS = new Set(["snooze", "defer"])
 
+export const COVERAGE_BATCH_ACTION_MAX = 50
+
 export type CoverageFilter = (typeof COVERAGE_FILTERS)[number]
 export type CoverageAction = (typeof COVERAGE_ACTIONS)[number]
 export type ReviewStatus = (typeof REVIEW_STATUSES)[number]
@@ -86,23 +88,46 @@ export type CoverageReviewItemsResult = {
   }
 }
 
+export type CoverageActionStatus =
+  | "would_update"
+  | "updated"
+  | "would_enqueue"
+  | "enqueued"
+  | "would_requeue"
+  | "requeued"
+  | "noop"
+  | "unsupported"
+
 export type CoverageActionResult = {
   ok: boolean
   dryRun: boolean
   action: CoverageAction
   reviewItemId: string
-  status:
-    | "would_update"
-    | "updated"
-    | "would_enqueue"
-    | "enqueued"
-    | "would_requeue"
-    | "requeued"
-    | "noop"
-    | "unsupported"
+  status: CoverageActionStatus
   unsupportedReason?: string
   reviewStatus?: ReviewStatus
   scrubQueueId?: string
+}
+
+export type CoverageBatchActionRow = {
+  reviewItemId: string
+  status: CoverageActionStatus
+  unsupportedReason?: string
+  reviewStatus?: ReviewStatus
+  scrubQueueId?: string
+}
+
+export type CoverageBatchActionResult = {
+  ok: boolean
+  dryRun: boolean
+  runId: string | null
+  results: CoverageBatchActionRow[]
+  summary: {
+    count: number
+    applied: number
+    skipped: number
+    unsupported: number
+  }
 }
 
 type CursorTuple = {
@@ -415,7 +440,49 @@ export async function upsertOperationalEmailReview(
   }
 }
 
+const ACTION_PAYLOAD_KEYS = new Set([
+  "action",
+  "dryRun",
+  "runId",
+  "reason",
+  "snoozedUntil",
+])
+
+const BATCH_ACTION_PAYLOAD_KEYS = new Set([
+  ...ACTION_PAYLOAD_KEYS,
+  "reviewItemIds",
+])
+
 export function parseReviewActionPayload(body: unknown): {
+  action: CoverageAction
+  dryRun: boolean
+  runId: string | null
+  reason: string | null
+  snoozedUntil: Date | null
+} {
+  return parseSharedActionFields(body, ACTION_PAYLOAD_KEYS)
+}
+
+export function parseBatchReviewActionPayload(body: unknown): {
+  action: CoverageAction
+  reviewItemIds: string[]
+  dryRun: boolean
+  runId: string | null
+  reason: string | null
+  snoozedUntil: Date | null
+} {
+  if (!isObject(body)) {
+    throw new CoverageValidationError("invalid JSON body")
+  }
+  const reviewItemIds = parseReviewItemIds(body.reviewItemIds)
+  const fields = parseSharedActionFields(body, BATCH_ACTION_PAYLOAD_KEYS)
+  return { ...fields, reviewItemIds }
+}
+
+function parseSharedActionFields(
+  body: unknown,
+  allowed: Set<string>
+): {
   action: CoverageAction
   dryRun: boolean
   runId: string | null
@@ -425,13 +492,6 @@ export function parseReviewActionPayload(body: unknown): {
   if (!isObject(body)) {
     throw new CoverageValidationError("invalid JSON body")
   }
-  const allowed = new Set([
-    "action",
-    "dryRun",
-    "runId",
-    "reason",
-    "snoozedUntil",
-  ])
   for (const key of Object.keys(body)) {
     if (!allowed.has(key)) {
       throw new CoverageValidationError(`unknown body key: ${key}`)
@@ -478,6 +538,28 @@ export function parseReviewActionPayload(body: unknown): {
     }
   }
   return { action, dryRun: body.dryRun, runId: rawRunId, reason, snoozedUntil }
+}
+
+function parseReviewItemIds(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    throw new CoverageValidationError("reviewItemIds must be an array")
+  }
+  if (value.length === 0) {
+    throw new CoverageValidationError("reviewItemIds is required")
+  }
+  if (value.length > COVERAGE_BATCH_ACTION_MAX) {
+    throw new CoverageValidationError(
+      `reviewItemIds exceeds batch cap of ${COVERAGE_BATCH_ACTION_MAX}`
+    )
+  }
+  const ids: string[] = []
+  for (const entry of value) {
+    if (typeof entry !== "string" || !entry.trim()) {
+      throw new CoverageValidationError("invalid reviewItemId")
+    }
+    ids.push(entry.trim())
+  }
+  return ids
 }
 
 function sanitizeOperatorNotes(value: string): string | null {
@@ -629,6 +711,66 @@ export async function applyCoverageReviewAction(
   await consumeDryRun(client, reviewItemId, input.action, input.runId)
 
   return writeResult
+}
+
+const APPLIED_BATCH_STATUSES = new Set<CoverageActionStatus>([
+  "updated",
+  "enqueued",
+  "requeued",
+  "would_update",
+  "would_enqueue",
+  "would_requeue",
+])
+
+export async function applyCoverageReviewActionBatch(
+  reviewItemIds: readonly string[],
+  input: {
+    action: CoverageAction
+    dryRun: boolean
+    runId: string | null
+    reason: string | null
+    snoozedUntil: Date | null
+    reviewer: string
+  },
+  client: CoverageDb = db,
+  now = new Date()
+): Promise<CoverageBatchActionResult> {
+  const results: CoverageBatchActionRow[] = []
+  let applied = 0
+  let skipped = 0
+  let unsupported = 0
+  for (const reviewItemId of reviewItemIds) {
+    const result = await applyCoverageReviewAction(
+      reviewItemId,
+      input,
+      client,
+      now
+    )
+    const row: CoverageBatchActionRow = {
+      reviewItemId: result.reviewItemId,
+      status: result.status,
+    }
+    if (result.unsupportedReason !== undefined)
+      row.unsupportedReason = result.unsupportedReason
+    if (result.reviewStatus !== undefined) row.reviewStatus = result.reviewStatus
+    if (result.scrubQueueId !== undefined) row.scrubQueueId = result.scrubQueueId
+    results.push(row)
+    if (APPLIED_BATCH_STATUSES.has(result.status)) applied++
+    else if (result.status === "unsupported") unsupported++
+    else skipped++
+  }
+  return {
+    ok: true,
+    dryRun: input.dryRun,
+    runId: input.runId,
+    results,
+    summary: {
+      count: reviewItemIds.length,
+      applied,
+      skipped,
+      unsupported,
+    },
+  }
 }
 
 async function updateOpenReview(
