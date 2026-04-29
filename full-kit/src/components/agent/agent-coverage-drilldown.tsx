@@ -1,9 +1,12 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 import {
   AlertTriangle,
   CheckCircle2,
+  ExternalLink,
   LoaderCircle,
   RotateCw,
 } from "lucide-react"
@@ -50,6 +53,15 @@ export type CoverageFilterMeta = {
   description: string
 }
 
+type PendingMarkDoneSnapshot = {
+  todoId: string | null
+  todoTitle: string | null
+  todoCreatedAt: string | null
+  todoUpdatedAt: string | null
+  sourceCommunicationId: string | null
+  reason: string | null
+}
+
 type CoverageReviewItem = {
   id: string
   communicationId: string
@@ -85,6 +97,7 @@ type CoverageReviewItem = {
   policyVersion: string
   evidenceSnippets: string[]
   createdAt: string
+  pendingMarkDoneSnapshot?: PendingMarkDoneSnapshot
 }
 
 type ReviewItemsResponse = {
@@ -120,6 +133,9 @@ export function AgentCoverageDrilldown({ open, filter, onOpenChange }: Props) {
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [loadState, setLoadState] = useState<LoadState>({ status: "idle" })
   const [actionState, setActionState] = useState<ActionState | null>(null)
+  const params = useParams()
+  const lang =
+    typeof params?.lang === "string" && params.lang.trim() ? params.lang : "en"
 
   const filterName = filter?.label ?? "Coverage drilldown"
 
@@ -303,6 +319,7 @@ export function AgentCoverageDrilldown({ open, filter, onOpenChange }: Props) {
               items={items}
               actionState={actionState}
               onDryRunAction={runDryRunAction}
+              lang={lang}
             />
           )}
 
@@ -417,10 +434,12 @@ function CoverageItemsTable({
   items,
   actionState,
   onDryRunAction,
+  lang,
 }: {
   items: CoverageReviewItem[]
   actionState: ActionState | null
   onDryRunAction: (item: CoverageReviewItem, action: CoverageAction) => void
+  lang: string
 }) {
   return (
     <Table>
@@ -468,20 +487,10 @@ function CoverageItemsTable({
               />
             </TableCell>
             <TableCell className="align-top">
-              <StateStack
-                primary={item.contactState.linked ? "linked" : "orphaned"}
-                secondary={item.contactState.contactId ?? "no contact id"}
-              />
+              <ContactCell item={item} lang={lang} />
             </TableCell>
             <TableCell className="align-top">
-              <StateStack
-                primary={item.actionState.status ?? "no pending action"}
-                secondary={
-                  item.actionState.actionType ??
-                  item.recommendedAction ??
-                  "review"
-                }
-              />
+              <ActionCell item={item} lang={lang} />
             </TableCell>
             <TableCell className="align-top">
               <DryRunActions
@@ -495,6 +504,140 @@ function CoverageItemsTable({
       </TableBody>
     </Table>
   )
+}
+
+function ContactCell({
+  item,
+  lang,
+}: {
+  item: CoverageReviewItem
+  lang: string
+}) {
+  const contactId = item.contactState.contactId
+  const linked = item.contactState.linked
+  const primary = linked ? "linked" : "orphaned"
+  if (!contactId) {
+    return <StateStack primary={primary} secondary="no contact id" />
+  }
+  return (
+    <div className="max-w-[170px]">
+      <div className="truncate text-sm font-medium">{primary}</div>
+      <Link
+        href={`/${lang}/pages/contacts/${contactId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 truncate text-xs text-primary hover:underline"
+        aria-label={`Open contact ${contactId}`}
+      >
+        <span className="truncate">{contactId}</span>
+        <ExternalLink className="h-3 w-3 shrink-0" />
+      </Link>
+    </div>
+  )
+}
+
+function ActionCell({
+  item,
+  lang,
+}: {
+  item: CoverageReviewItem
+  lang: string
+}) {
+  if (item.type === "pending_mark_done" && item.pendingMarkDoneSnapshot) {
+    return (
+      <PendingMarkDoneCell
+        snapshot={item.pendingMarkDoneSnapshot}
+        actionStatus={item.actionState.status}
+        targetEntity={item.actionState.targetEntity}
+        lang={lang}
+      />
+    )
+  }
+  const todoId = parseTodoTarget(item.actionState.targetEntity)
+  return (
+    <div className="max-w-[180px]">
+      <div className="truncate text-sm font-medium">
+        {item.actionState.status ?? "no pending action"}
+      </div>
+      <div className="truncate text-xs text-muted-foreground">
+        {item.actionState.actionType ?? item.recommendedAction ?? "review"}
+      </div>
+      {todoId ? <TodoLink lang={lang} label={`todo ${todoId}`} /> : null}
+    </div>
+  )
+}
+
+function PendingMarkDoneCell({
+  snapshot,
+  actionStatus,
+  targetEntity,
+  lang,
+}: {
+  snapshot: PendingMarkDoneSnapshot
+  actionStatus: string | null
+  targetEntity: string | null
+  lang: string
+}) {
+  const todoId = snapshot.todoId ?? parseTodoTarget(targetEntity)
+  const dateLine = formatTodoDates(snapshot)
+  return (
+    <div className="max-w-[260px] space-y-1 text-xs">
+      <div className="truncate text-sm font-medium">
+        {actionStatus ?? "pending"} · close todo
+      </div>
+      <div className="truncate font-medium text-foreground">
+        {snapshot.todoTitle ?? "Untitled todo"}
+      </div>
+      {dateLine ? (
+        <div className="text-muted-foreground">{dateLine}</div>
+      ) : null}
+      {snapshot.reason ? (
+        <p className="line-clamp-3 whitespace-pre-wrap text-muted-foreground">
+          {snapshot.reason}
+        </p>
+      ) : null}
+      {todoId ? <TodoLink lang={lang} label={`todo ${todoId}`} /> : null}
+      {snapshot.sourceCommunicationId ? (
+        <div className="truncate text-muted-foreground">
+          From comm {snapshot.sourceCommunicationId}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function TodoLink({ lang, label }: { lang: string; label: string }) {
+  return (
+    <Link
+      href={`/${lang}/apps/todos`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 truncate text-xs text-primary hover:underline"
+      aria-label={`Open ${label}`}
+    >
+      <span className="truncate">Open {label}</span>
+      <ExternalLink className="h-3 w-3 shrink-0" />
+    </Link>
+  )
+}
+
+function parseTodoTarget(targetEntity: string | null): string | null {
+  if (!targetEntity) return null
+  return targetEntity.startsWith("todo:")
+    ? targetEntity.slice("todo:".length)
+    : null
+}
+
+function formatTodoDates(snapshot: PendingMarkDoneSnapshot): string | null {
+  const parts: string[] = []
+  if (snapshot.todoCreatedAt) parts.push(`created ${snapshot.todoCreatedAt}`)
+  if (
+    snapshot.todoUpdatedAt &&
+    snapshot.todoUpdatedAt !== snapshot.todoCreatedAt
+  ) {
+    parts.push(`updated ${snapshot.todoUpdatedAt}`)
+  }
+  return parts.length > 0 ? parts.join(" · ") : null
 }
 
 function ReasonCodes({ codes }: { codes: string[] }) {

@@ -41,6 +41,15 @@ export type ReviewStatus = (typeof REVIEW_STATUSES)[number]
 
 export type CoverageDb = typeof db
 
+export type PendingMarkDoneSnapshot = {
+  todoId: string | null
+  todoTitle: string | null
+  todoCreatedAt: string | null
+  todoUpdatedAt: string | null
+  sourceCommunicationId: string | null
+  reason: string | null
+}
+
 export type CoverageReviewItemDto = {
   id: string
   communicationId: string
@@ -75,6 +84,7 @@ export type CoverageReviewItemDto = {
   policyVersion: string
   evidenceSnippets: string[]
   createdAt: string
+  pendingMarkDoneSnapshot?: PendingMarkDoneSnapshot
 }
 
 export type CoverageReviewItemsResult = {
@@ -140,6 +150,11 @@ type ReviewItemRow = {
   action_target_entity: string | null
   action_summary: string | null
   action_created_at: Date | string | null
+  action_payload: unknown
+  todo_id: string | null
+  todo_title: string | null
+  todo_created_at: Date | string | null
+  todo_updated_at: Date | string | null
   risk_score: number | bigint
   item_created_at: Date | string
 }
@@ -449,9 +464,7 @@ export function parseReviewActionPayload(body: unknown): {
     throw new CoverageValidationError("invalid runId")
   }
   const reason =
-    typeof body.reason === "string"
-      ? sanitizeOperatorNotes(body.reason)
-      : null
+    typeof body.reason === "string" ? sanitizeOperatorNotes(body.reason) : null
   let snoozedUntil: Date | null = null
   if (body.snoozedUntil !== undefined) {
     if (!SNOOZE_ACTIONS.has(action)) {
@@ -476,10 +489,7 @@ export function parseReviewActionPayload(body: unknown): {
 function sanitizeOperatorNotes(value: string): string | null {
   // Strip C0/DEL control characters before length cap so untrusted notes
   // cannot smuggle ANSI escapes or null bytes into the audit trail.
-  const stripped = value
-    .replace(/[ -]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
+  const stripped = value.replace(/[ -]/g, " ").replace(/\s+/g, " ").trim()
   if (!stripped) return null
   return stripped.slice(0, MAX_REASON_LENGTH)
 }
@@ -678,6 +688,11 @@ function baseReviewItemsSql(filter: CoverageFilter): Prisma.Sql {
       aa.target_entity AS action_target_entity,
       aa.summary AS action_summary,
       aa."createdAt" AS action_created_at,
+      aa.payload AS action_payload,
+      t.id AS todo_id,
+      t.title AS todo_title,
+      t."createdAt" AS todo_created_at,
+      t."updatedAt" AS todo_updated_at,
       ${riskScoreSql(filter)} AS risk_score,
       COALESCE(oer.created_at, aa."createdAt", c."createdAt", c.date) AS item_created_at
     FROM communications c
@@ -686,6 +701,8 @@ function baseReviewItemsSql(filter: CoverageFilter): Prisma.Sql {
       ON aa.source_communication_id = c.id
      AND aa.status::text = 'pending'
      AND aa.action_type = 'mark-todo-done'
+    LEFT JOIN todos t
+      ON aa.target_entity = ('todo:' || t.id::text)
     LEFT JOIN operational_email_reviews oer
       ON oer.communication_id = c.id
      AND oer.type::text = ${filter}
@@ -845,7 +862,7 @@ function toReviewItemDto(
     : inferReasonCodes(filter, row, classification)
   const canonicalReasonKey = row.review_reason_key ?? reasonKey(reasonCodes)
   const senderEmail = extractSenderEmail(metadata)
-  return {
+  const dto: CoverageReviewItemDto = {
     id: row.review_id ?? row.id,
     communicationId: row.communication_id,
     type: filter,
@@ -885,6 +902,45 @@ function toReviewItemDto(
       .filter((snippet): snippet is string => Boolean(snippet)),
     createdAt: toIso(row.item_created_at),
   }
+  if (filter === "pending_mark_done" && row.action_id) {
+    dto.pendingMarkDoneSnapshot = buildPendingMarkDoneSnapshot(row)
+  }
+  return dto
+}
+
+function buildPendingMarkDoneSnapshot(
+  row: ReviewItemRow
+): PendingMarkDoneSnapshot {
+  const payload = isObject(row.action_payload) ? row.action_payload : {}
+  const targetEntity = row.action_target_entity ?? ""
+  const todoIdFromTarget = targetEntity.startsWith("todo:")
+    ? targetEntity.slice("todo:".length)
+    : null
+  const todoId = row.todo_id ?? todoIdFromTarget ?? null
+  const reasonRaw =
+    typeof payload.reason === "string" && payload.reason.trim()
+      ? payload.reason
+      : typeof row.action_summary === "string" && row.action_summary.trim()
+        ? row.action_summary
+        : null
+  return {
+    todoId: passThroughId(todoId),
+    todoTitle: redactText(row.todo_title, 160),
+    todoCreatedAt: row.todo_created_at
+      ? toCoarseDate(row.todo_created_at)
+      : null,
+    todoUpdatedAt: row.todo_updated_at
+      ? toCoarseDate(row.todo_updated_at)
+      : null,
+    sourceCommunicationId: passThroughId(row.communication_id),
+    reason: redactText(reasonRaw, 240),
+  }
+}
+
+function passThroughId(value: string | null | undefined): string | null {
+  if (typeof value !== "string") return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 && trimmed.length <= 64 ? trimmed : null
 }
 
 function inferReasonCodes(

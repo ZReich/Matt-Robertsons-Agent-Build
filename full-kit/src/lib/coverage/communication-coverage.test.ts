@@ -583,7 +583,10 @@ describe("communication coverage service", () => {
       client as never
     )
 
-    expect(result).toMatchObject({ skipped: true, reason: "terminal_suppressed" })
+    expect(result).toMatchObject({
+      skipped: true,
+      reason: "terminal_suppressed",
+    })
     expect(client.operationalEmailReview.create).not.toHaveBeenCalled()
   })
 
@@ -809,7 +812,9 @@ describe("communication coverage service", () => {
 
       const result = await listCoverageReviewItems(
         {
-          filter: filter as Parameters<typeof listCoverageReviewItems>[0]["filter"],
+          filter: filter as Parameters<
+            typeof listCoverageReviewItems
+          >[0]["filter"],
           limit: 5,
         },
         client as never
@@ -982,9 +987,7 @@ describe("communication coverage service", () => {
     expect(firstPage.pageInfo.nextCursor).not.toBeNull()
 
     const cursor = firstPage.pageInfo.nextCursor as string
-    const parsed = JSON.parse(
-      Buffer.from(cursor, "base64url").toString("utf8")
-    )
+    const parsed = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"))
     expect(parsed).toMatchObject({
       riskScore: 50,
       createdAt: ts.toISOString(),
@@ -1081,6 +1084,195 @@ describe("communication coverage service", () => {
     expect(json).not.toContain("leak preview")
     expect(json).not.toContain("matt@example.com")
     expect(json).not.toContain("tenant@example.com")
+  })
+
+  it("exposes only the snapshot allowlist for pending_mark_done rows and rejects injected payload fields", async () => {
+    const ts = new Date("2026-04-29T12:00:00Z")
+    const row = {
+      id: "review-pmd",
+      communication_id: "comm-pmd",
+      review_id: "review-pmd",
+      review_status: "open",
+      review_reason_codes: ["pending_mark_done"],
+      review_reason_key: "pending_mark_done",
+      review_recommended_action: "review_todo_completion",
+      review_policy_version: "coverage-review-v1",
+      review_created_at: ts,
+      review_snoozed_until: null,
+      date: ts,
+      created_at: ts,
+      subject: "Status update",
+      direction: "inbound",
+      contact_id: "contact-1",
+      metadata: {
+        classification: "signal",
+        from: { address: "tenant@example.com" },
+      },
+      queue_id: null,
+      queue_status: null,
+      queue_attempts: null,
+      queue_enqueued_at: null,
+      queue_locked_until: null,
+      queue_last_error: null,
+      action_id: "action-pmd",
+      action_type: "mark-todo-done",
+      action_status: "pending",
+      action_target_entity: "todo:todo-pmd",
+      action_summary: "Mark Smith follow-up done",
+      action_created_at: ts,
+      action_payload: {
+        todoId: "todo-pmd",
+        reason:
+          "Tenant signed lease via https://example.test/?token=abcdefghijklmnopqrstuvwxyz123456",
+        todoUpdatedAt: ts.toISOString(),
+        contactId: "secret-contact-id",
+        dealId: "secret-deal-id",
+        communicationId: "secret-comm-id",
+        bodyPreview: "leak preview",
+        internetMessageId: "<leak@example.com>",
+        graphId: "AAMkPmdLeak",
+      },
+      todo_id: "todo-pmd",
+      todo_title: "Follow up on Smith lease",
+      todo_created_at: ts,
+      todo_updated_at: ts,
+      risk_score: 60,
+      item_created_at: ts,
+    }
+    const client = {
+      $queryRaw: vi.fn().mockResolvedValue([row]),
+      operationalEmailReview: { findFirst: vi.fn(), create: vi.fn() },
+    }
+
+    const result = await listCoverageReviewItems(
+      { filter: "pending_mark_done", limit: 5 },
+      client as never
+    )
+
+    expect(result.items).toHaveLength(1)
+    const allowedItem = new Set([
+      "id",
+      "communicationId",
+      "type",
+      "status",
+      "coarseDate",
+      "subject",
+      "senderDomain",
+      "classification",
+      "queueState",
+      "scrubState",
+      "contactState",
+      "actionState",
+      "riskScore",
+      "reasonCodes",
+      "reasonKey",
+      "recommendedAction",
+      "policyVersion",
+      "evidenceSnippets",
+      "createdAt",
+      "pendingMarkDoneSnapshot",
+    ])
+    const itemKeys = new Set(Object.keys(result.items[0]))
+    expect(new Set([...itemKeys].filter((k) => !allowedItem.has(k)))).toEqual(
+      new Set()
+    )
+    expect(allowedItem.size).toBe(itemKeys.size)
+
+    const snapshot = result.items[0].pendingMarkDoneSnapshot
+    expect(snapshot).toBeDefined()
+    const allowedSnapshot = new Set([
+      "todoId",
+      "todoTitle",
+      "todoCreatedAt",
+      "todoUpdatedAt",
+      "sourceCommunicationId",
+      "reason",
+    ])
+    const snapshotKeys = new Set(Object.keys(snapshot ?? {}))
+    expect(
+      new Set([...snapshotKeys].filter((k) => !allowedSnapshot.has(k)))
+    ).toEqual(new Set())
+    expect(allowedSnapshot.size).toBe(snapshotKeys.size)
+
+    expect(snapshot).toMatchObject({
+      todoId: "todo-pmd",
+      todoTitle: "Follow up on Smith lease",
+      todoCreatedAt: "2026-04-29",
+      todoUpdatedAt: "2026-04-29",
+      sourceCommunicationId: "comm-pmd",
+    })
+    expect(snapshot?.reason).toContain("Tenant signed lease")
+    expect(snapshot?.reason).not.toContain("https://example.test")
+    expect(snapshot?.reason).not.toContain("abcdefghijklmnopqrstuvwxyz123456")
+    expect((snapshot?.reason ?? "").length).toBeLessThanOrEqual(240)
+
+    const json = JSON.stringify(result)
+    for (const forbidden of [
+      "bodyPreview",
+      "internetMessageId",
+      "AAMkPmdLeak",
+      "leak preview",
+      "secret-contact-id",
+      "secret-deal-id",
+      "secret-comm-id",
+      "dealId",
+    ]) {
+      expect(json).not.toContain(forbidden)
+    }
+  })
+
+  it("omits pendingMarkDoneSnapshot for rows without a pending mark-todo-done action", async () => {
+    const ts = new Date("2026-04-29T12:00:00Z")
+    const client = {
+      $queryRaw: vi.fn().mockResolvedValue([
+        {
+          id: "review-pmd-empty",
+          communication_id: "comm-pmd-empty",
+          review_id: "review-pmd-empty",
+          review_status: "open",
+          review_reason_codes: ["signal_without_queue"],
+          review_reason_key: "signal_without_queue",
+          review_recommended_action: "enqueue_or_requeue_scrub",
+          review_policy_version: "coverage-review-v1",
+          review_created_at: ts,
+          review_snoozed_until: null,
+          date: ts,
+          created_at: ts,
+          subject: "Standalone",
+          direction: "inbound",
+          contact_id: null,
+          metadata: { classification: "signal" },
+          queue_id: null,
+          queue_status: null,
+          queue_attempts: null,
+          queue_enqueued_at: null,
+          queue_locked_until: null,
+          queue_last_error: null,
+          action_id: null,
+          action_type: null,
+          action_status: null,
+          action_target_entity: null,
+          action_summary: null,
+          action_created_at: null,
+          action_payload: null,
+          todo_id: null,
+          todo_title: null,
+          todo_created_at: null,
+          todo_updated_at: null,
+          risk_score: 70,
+          item_created_at: ts,
+        },
+      ]),
+      operationalEmailReview: { findFirst: vi.fn(), create: vi.fn() },
+    }
+
+    const result = await listCoverageReviewItems(
+      { filter: "missed_eligible", limit: 5 },
+      client as never
+    )
+
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0]).not.toHaveProperty("pendingMarkDoneSnapshot")
   })
 
   it("locks the review row in a transaction before mutating non-queue actions", async () => {

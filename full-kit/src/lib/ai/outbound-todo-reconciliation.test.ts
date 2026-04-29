@@ -252,8 +252,9 @@ describe("outbound todo reconciliation", () => {
         targetEntity: "todo:todo-1",
       }),
     })
-    const createCall = vi.mocked(db.agentAction.create).mock
-      .calls[0][0] as { data: { targetEntity?: unknown } }
+    const createCall = vi.mocked(db.agentAction.create).mock.calls[0][0] as {
+      data: { targetEntity?: unknown }
+    }
     expect(createCall.data.targetEntity).not.toContain("other-tenant-secret")
     expect(createCall.data.targetEntity).not.toContain("NOT-IN-CONTEXT")
   })
