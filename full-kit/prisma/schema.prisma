@@ -485,6 +485,11 @@ model Deal {
   @@index([stage])
   @@index([propertyType])
   @@index([propertyAddress])
+  /// @prisma-unique-partial: deal_type='seller_rep' AND archived_at IS NULL AND property_key IS NOT NULL
+  /// Partial unique index `deals_property_key_seller_rep_active_uidx` enforces
+  /// this in Postgres (see migration 20260430140000_deals_property_key_unique).
+  /// Prisma's schema DSL can't express partial unique indexes, so this is
+  /// document-only — the constraint is created via raw SQL migration.
   @@index([propertyKey])
   @@index([dealType])
   @@index([dealSource])
