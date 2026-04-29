@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import {
   COVERAGE_POLICY_VERSION,
+  type CoverageActionStatus,
   CoverageValidationError,
   applyCoverageReviewAction,
   parseReviewActionPayload,
@@ -67,23 +68,19 @@ export async function POST(
 }
 
 function outcomeForApplyResult(
-  status:
-    | "would_update"
-    | "updated"
-    | "would_enqueue"
-    | "enqueued"
-    | "would_requeue"
-    | "requeued"
-    | "noop"
-    | "unsupported"
+  status: CoverageActionStatus
 ): CoverageActionAuditOutcome {
   switch (status) {
     case "updated":
     case "enqueued":
     case "requeued":
+    case "linked":
+    case "candidate_created":
     case "would_update":
     case "would_enqueue":
     case "would_requeue":
+    case "would_link":
+    case "would_create_candidate":
       return { applied: 1, skipped: 0, unsupported: 0 }
     case "noop":
       return { applied: 0, skipped: 1, unsupported: 0 }
