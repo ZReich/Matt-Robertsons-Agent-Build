@@ -86,6 +86,24 @@ Phase 1 (schema migration) — FOUNDATIONAL, blocks 4–10
 
 ---
 
+## Amendments after audit (2026-04-29)
+
+After Phase 1 landed, an external code-review pass surfaced four issues that have been corrected in this plan in-place. Quick reference for any agent dispatched to a downstream phase:
+
+1. **Phase 1 follow-up: TypeScript build fixes + DB unique constraint.** The original Phase 1 made `Deal.propertyAddress` and `Deal.propertyType` nullable, breaking 7 type-level consumers. Repair commits add narrow-by-filter on the deal board / list / dashboard / scrub-linker / todo-context callsites and add a partial unique index on `property_key WHERE deal_type='seller_rep' AND archived_at IS NULL AND property_key IS NOT NULL`.
+
+5. **Phase 5 race-recovery on the unique constraint.** `upsertDealForLead` now matches the unique index's `dealType='seller_rep'` scope in its `findFirst`, and catches Postgres `P2002` on `create` (re-runs findFirst and links to whichever deal won the race). A new unit test for the race-recovery path was added to Task 5.1.
+
+2. **Phase 3 rewritten.** The original Phase 3 created a new `address-normalize.ts` going `n → north`. The repo already has `normalizeBuildoutProperty` in `full-kit/src/lib/buildout/property-normalizer.ts` going `north → n` — the inverse direction. Two normalizers would prevent lead-derived Deals from joining to Buildout-side data. Phase 3 is now a single test task that adds cross-platform parity coverage to the existing function. Phase 4 imports `normalizeBuildoutProperty` directly.
+
+3. **Phase 7/10.4 `executedBy` removed.** The `AgentAction` model has no `executedBy` field; only `executedAt`. The `reviewer` parameter still exists in handler signatures (used by `AI_FEEDBACK_SOURCE_TYPES` audit downstream) but does NOT get persisted on the action row.
+
+4. **Phase 11 `applyScrubResult` signature corrected.** The real signature is `{communicationId, queueRowId, leaseToken, scrubOutput, suggestedActions}` — no `modelUsed`, no `usage`. Token logging via `ScrubApiCall` is the real provider's responsibility (not done by `applyScrubResult` itself), so the subscription path bypasses that audit row entirely.
+
+The original Phase 1 commits remain on-branch (`047c7c7`, `fe5b0ed`, `397807c`) — they're still correct, just incomplete. The repair commits land on top.
+
+---
+
 # Phase 1: Schema migration — Deal model extensions + new enums
 
 **Why this phase:** Every downstream phase depends on schema fields that don't exist today. The `propertyAddress` non-null constraint blocks buyer-rep deals (no address at engagement). The lack of `dealType` makes it impossible to route handlers correctly. The lack of `propertyKey` makes address-based join impossible. No `outcome`/`closedAt` means won/lost is ambiguous.
@@ -479,217 +497,107 @@ git commit -m "feat(scripts): add reclassify-communications + version stamp"
 
 ---
 
-# Phase 3: Address normalization utility
+# Phase 3: Cross-platform coverage for the existing normalizer
 
-**Parallel-safe with:** Phase 2, Phase 7, Phase 11. Pure function, no DB or Prisma dependency.
+> **Amended after audit (2026-04-29):** the original Phase 3 specified a brand-new `address-normalize.ts` utility that expanded `n → north`. That direction is opposite of what the existing repo does. `full-kit/src/lib/buildout/property-normalizer.ts` already implements `normalizeBuildoutProperty(raw, bodyText)` going `north → n` and is the function used to compute Buildout's existing `normalizedPropertyKey`. Creating a second normalizer would split keys and prevent lead-derived Deals from joining to Buildout-side data.
+>
+> Phase 3 is rewritten to **reuse the existing utility** and add test coverage for the cross-platform inputs Phase 4 will feed it. Phase 4's extractor changes import `normalizeBuildoutProperty` from `@/lib/buildout/property-normalizer` rather than a new file.
 
-**Why this phase:** The address-as-join-key strategy depends on a normalization function that reliably collapses platform variations (`N` ↔ `North`, `St` ↔ `Street`, `|` ↔ `,`, county presence) to a canonical form. Pure function, fully unit-testable.
+**Parallel-safe with:** Phase 2, Phase 7, Phase 11. No DB or Prisma dependency.
 
-**Files:**
-- Create: `full-kit/src/lib/deals/address-normalize.ts`
-- Create: `full-kit/src/lib/deals/address-normalize.test.ts`
-
-### Task 3.1: Test-first — write the address-normalize test suite
+**Why this phase:** Verify that `normalizeBuildoutProperty` produces a consistent `normalizedPropertyKey` across the four platform formats Phase 4 will pass it (Buildout `Listing Address`, Crexi `Regarding listing at` with county, LoopNet pipe-separator, LoopNet subject-only "favorited"). Catch any normalizer gaps now so they're fixed before Phase 4 wires the extractors to it.
 
 **Files:**
-- Create: `full-kit/src/lib/deals/address-normalize.test.ts`
+- Modify: `full-kit/src/lib/buildout/property-normalizer.ts` (only if a test exposes a real bug — extend the existing function, don't fork)
+- Modify: `full-kit/src/lib/buildout/buildout-foundations.test.ts` (or add a new test file beside it — match repo convention)
 
-- [ ] **Step 1: Write the test file**
+### Task 3.1: Add cross-platform parity tests for `normalizeBuildoutProperty`
+
+**Files:**
+- Read first: `full-kit/src/lib/buildout/property-normalizer.ts` (the existing `normalizeBuildoutProperty(raw, bodyText)` function — note the `ROAD_SUFFIXES` table at line 12 and the `firstAddress` helper at line 146)
+- Modify: `full-kit/src/lib/buildout/buildout-foundations.test.ts` (or create a sibling test file if the existing one is large — match the convention you see)
+
+- [ ] **Step 1: Write parity tests**
+
+The existing function takes `(raw: string | null | undefined, bodyText = "")` and returns `{normalizedPropertyKey, propertyAddressRaw, aliases, addressMissing, ...} | null`. Phase 4 will pass this function the property name (from email subject) plus the body text.
+
+Add a `describe` block named "cross-platform property key parity" with these tests:
 
 ```typescript
 import { describe, expect, it } from "vitest"
 
-import { normalizeAddress } from "./address-normalize"
+import { normalizeBuildoutProperty } from "./property-normalizer"
 
-describe("normalizeAddress", () => {
-  it("collapses N vs North directional", () => {
-    const a = normalizeAddress("303 N Broadway, Billings, MT 59101")
-    const b = normalizeAddress("303 North Broadway, Billings, MT 59101")
-    expect(a.propertyKey).toEqual(b.propertyKey)
-    expect(a.propertyKey).toMatch(/north broadway/)
+describe("normalizeBuildoutProperty — cross-platform parity", () => {
+  it("Buildout 'Listing Address' line and LoopNet pipe format produce the same key", () => {
+    const buildoutBody = "Hello,\n\nName Samuel Blum\nListing Address 303 North Broadway, Billings, MT 59101\nView Lead Details"
+    const loopnetBody = "New Lead\nFrom: Alex Wright\n303 N Broadway | Billings, MT 59101"
+    const buildout = normalizeBuildoutProperty("US Bank Building", buildoutBody)
+    const loopnet = normalizeBuildoutProperty("303 N Broadway", loopnetBody)
+    expect(buildout?.normalizedPropertyKey).toEqual(loopnet?.normalizedPropertyKey)
   })
 
-  it("collapses St vs Street", () => {
-    const a = normalizeAddress("14 N 29th St, Billings, MT 59101")
-    const b = normalizeAddress("14 N 29th Street, Billings, MT 59101")
-    expect(a.propertyKey).toEqual(b.propertyKey)
+  it("Crexi 'Regarding listing at' with county strips county and matches no-county form", () => {
+    const withCounty = normalizeBuildoutProperty(
+      "Montana Paint Building",
+      "Regarding listing at 2610 Montana Ave, Billings, Yellowstone County, MT 59101"
+    )
+    const without = normalizeBuildoutProperty(
+      "Montana Paint Building",
+      "2610 Montana Ave, Billings, MT 59101"
+    )
+    expect(withCounty?.normalizedPropertyKey).toEqual(without?.normalizedPropertyKey)
   })
 
-  it("strips the county component (Crexi format)", () => {
-    const withCounty = normalizeAddress(
-      "13 Colorado Ave, Laurel, Yellowstone County, MT 59044"
+  it("LoopNet 'favorited' subject-only path produces a key that prefixes the full body-derived key", () => {
+    const subjectOnly = normalizeBuildoutProperty("303 N Broadway", "")
+    const full = normalizeBuildoutProperty(
+      "303 N Broadway",
+      "303 N Broadway | Billings, MT 59101"
     )
-    const without = normalizeAddress("13 Colorado Ave, Laurel, MT 59044")
-    expect(withCounty.propertyKey).toEqual(without.propertyKey)
-  })
-
-  it("treats pipe and comma as equivalent separators (LoopNet vs Buildout)", () => {
-    const loopnet = normalizeAddress("303 N Broadway | Billings, MT 59101")
-    const buildout = normalizeAddress("303 North Broadway, Billings, MT 59101")
-    expect(loopnet.propertyKey).toEqual(buildout.propertyKey)
-  })
-
-  it("expands common street-type abbreviations", () => {
-    expect(normalizeAddress("100 Main St").propertyKey).toEqual(
-      normalizeAddress("100 Main Street").propertyKey
-    )
-    expect(normalizeAddress("100 Main Ave").propertyKey).toEqual(
-      normalizeAddress("100 Main Avenue").propertyKey
-    )
-    expect(normalizeAddress("100 Main Blvd").propertyKey).toEqual(
-      normalizeAddress("100 Main Boulevard").propertyKey
-    )
-    expect(normalizeAddress("100 Main Rd").propertyKey).toEqual(
-      normalizeAddress("100 Main Road").propertyKey
+    expect(subjectOnly).not.toBeNull()
+    expect(full).not.toBeNull()
+    expect(full!.normalizedPropertyKey.startsWith(subjectOnly!.normalizedPropertyKey)).toBe(
+      true
     )
   })
 
-  it("returns null propertyKey when input lacks a numeric house number", () => {
-    const namedOnly = normalizeAddress("Rockets | Gourmet Wraps & Sodas, Billings, MT")
-    expect(namedOnly.propertyKey).toBeNull()
-    expect(namedOnly.displayAddress).toEqual(
-      "Rockets | Gourmet Wraps & Sodas, Billings, MT"
+  it("returns addressMissing=true when the input is a property name only", () => {
+    const result = normalizeBuildoutProperty(
+      "Rockets | Gourmet Wraps & Sodas",
+      "Listing Address Rockets | Gourmet Wraps & Sodas, Billings, MT"
     )
-    expect(namedOnly.fallbackName).toEqual("rockets gourmet wraps sodas billings mt")
-  })
-
-  it("preserves the original input as displayAddress", () => {
-    const result = normalizeAddress("303 North Broadway, Billings, MT 59101")
-    expect(result.displayAddress).toEqual("303 North Broadway, Billings, MT 59101")
-  })
-
-  it("collapses extra whitespace and trims", () => {
-    expect(
-      normalizeAddress("  303   North   Broadway,   Billings, MT 59101  ").propertyKey
-    ).toEqual(normalizeAddress("303 North Broadway, Billings, MT 59101").propertyKey)
-  })
-
-  it("returns lowercase keys", () => {
-    expect(normalizeAddress("303 N BROADWAY, BILLINGS, MT").propertyKey).toMatch(
-      /^[a-z0-9 ]+$/
-    )
-  })
-
-  it("handles all four observed platform formats producing the same key", () => {
-    const buildout = normalizeAddress("303 North Broadway, Billings, MT 59101")
-    const loopnet = normalizeAddress("303 N Broadway | Billings, MT 59101")
-    const crexi = normalizeAddress(
-      "303 North Broadway, Billings, Yellowstone County, MT 59101"
-    )
-    const subjectOnly = normalizeAddress("303 N Broadway")
-
-    expect(buildout.propertyKey).toEqual(loopnet.propertyKey)
-    expect(loopnet.propertyKey).toEqual(crexi.propertyKey)
-    // subject-only (no city/state) should still produce a partial-match key
-    // that's a prefix of the full key
-    expect(buildout.propertyKey?.startsWith(subjectOnly.propertyKey ?? "")).toBe(true)
+    expect(result?.addressMissing).toBe(true)
+    expect(result?.normalizedPropertyKey).toBeTruthy()
   })
 })
 ```
 
-- [ ] **Step 2: Run test (expect fail)**
+- [ ] **Step 2: Run the tests**
 
-Run: `cd full-kit && pnpm test src/lib/deals/address-normalize.test.ts`
-Expected: all tests fail with "Cannot find module './address-normalize'" or similar.
-
-### Task 3.2: Implement the normalizer
-
-**Files:**
-- Create: `full-kit/src/lib/deals/address-normalize.ts`
-
-- [ ] **Step 1: Write the implementation**
-
-```typescript
-export type NormalizedAddress = {
-  propertyKey: string | null
-  displayAddress: string
-  fallbackName: string | null
-}
-
-const DIRECTIONALS: Record<string, string> = {
-  n: "north",
-  s: "south",
-  e: "east",
-  w: "west",
-  ne: "northeast",
-  nw: "northwest",
-  se: "southeast",
-  sw: "southwest",
-}
-
-const STREET_TYPES: Record<string, string> = {
-  st: "street",
-  ave: "avenue",
-  blvd: "boulevard",
-  rd: "road",
-  dr: "drive",
-  ln: "lane",
-  pkwy: "parkway",
-  hwy: "highway",
-  ct: "court",
-  cir: "circle",
-  pl: "place",
-  ter: "terrace",
-  way: "way",
-}
-
-const COUNTY_PATTERN = /,\s*[a-z\s]+\s+county\b/gi
-
-export function normalizeAddress(input: string): NormalizedAddress {
-  const displayAddress = input.trim()
-  if (!displayAddress) {
-    return { propertyKey: null, displayAddress, fallbackName: null }
-  }
-
-  let working = displayAddress.toLowerCase()
-  working = working.replace(COUNTY_PATTERN, "")
-  working = working.replace(/[|]/g, ",")
-  working = working.replace(/[.,]/g, " ")
-  working = working.replace(/\s+/g, " ").trim()
-
-  const tokens = working.split(" ").filter(Boolean)
-  const expanded: string[] = []
-  for (const token of tokens) {
-    const stripped = token.replace(/[^\w]/g, "")
-    if (DIRECTIONALS[stripped]) {
-      expanded.push(DIRECTIONALS[stripped])
-    } else if (STREET_TYPES[stripped]) {
-      expanded.push(STREET_TYPES[stripped])
-    } else {
-      expanded.push(stripped)
-    }
-  }
-
-  const canonical = expanded.filter(Boolean).join(" ")
-  const hasNumber = /\b\d{1,6}\b/.test(canonical)
-
-  if (hasNumber) {
-    return {
-      propertyKey: canonical,
-      displayAddress,
-      fallbackName: null,
-    }
-  }
-
-  return {
-    propertyKey: null,
-    displayAddress,
-    fallbackName: canonical,
-  }
-}
+```
+cd full-kit && pnpm test src/lib/buildout/buildout-foundations.test.ts -t "cross-platform"
 ```
 
-- [ ] **Step 2: Run tests (expect pass)**
-
-Run: `cd full-kit && pnpm test src/lib/deals/address-normalize.test.ts`
-Expected: all tests pass.
+If any test fails, the existing normalizer has a real gap that Phase 4 would have hit. Choose ONE response:
+- **The gap is small and fixable** (e.g., `firstAddress` regex misses a specific format) → fix it inline in `property-normalizer.ts`, add a comment explaining why, and re-run.
+- **The gap requires bigger changes** → STOP and report DONE_WITH_CONCERNS with the failing test output. Don't expand the function's scope without coordinating.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add full-kit/src/lib/deals/address-normalize.ts full-kit/src/lib/deals/address-normalize.test.ts
-git commit -m "feat(deals): add address-normalize utility for cross-platform property key"
+git add full-kit/src/lib/buildout/buildout-foundations.test.ts full-kit/src/lib/buildout/property-normalizer.ts
+git commit -m "test(buildout): add cross-platform parity tests for normalizeBuildoutProperty"
 ```
+
+Phase 4 imports `normalizeBuildoutProperty` directly (no new utility file). The original Phase 3 plan to create a separate `address-normalize.ts` is dropped — that would have created two normalizers with opposite directional conventions.
+
+(Removed: original Task 3.2 which would have created a duplicate `normalizeAddress` function. The existing `normalizeBuildoutProperty` covers this responsibility.)
+
+```
+# DROPPED — superseded by single Task 3.1 above
+```
+
 
 ---
 
@@ -789,22 +697,26 @@ Expected: 3 failing tests.
 In `email-extractors.ts`, add an import at the top:
 
 ```typescript
-import { normalizeAddress } from "@/lib/deals/address-normalize"
+import { normalizeBuildoutProperty } from "@/lib/buildout/property-normalizer"
 ```
 
 Inside `extractBuildoutEvent`, after the existing parsing produces the return object, add:
 
 ```typescript
+// Extract the labelled "Listing Address" line for high-fidelity address text,
+// then delegate canonical-key derivation to the existing Buildout normalizer
+// (single source of truth across lead-derived and Buildout-event Deal joins).
 const addressMatch = body.match(/Listing Address\s+(.+?)(?:\r?\n|<|$)/)
-if (addressMatch) {
-  const raw = addressMatch[1].trim()
-  const normalized = normalizeAddress(raw)
-  result.propertyAddress = raw
-  if (normalized.propertyKey) {
-    result.propertyKey = normalized.propertyKey
-  } else if (normalized.fallbackName) {
-    result.propertyFallbackName = normalized.fallbackName
-  }
+const addressFromLabel = addressMatch?.[1]?.trim()
+const normalized = normalizeBuildoutProperty(
+  result.propertyName ?? addressFromLabel ?? "",
+  addressFromLabel ?? body
+)
+if (normalized) {
+  result.propertyAddress = normalized.propertyAddressRaw ?? addressFromLabel
+  result.propertyKey = normalized.normalizedPropertyKey
+  result.propertyAliases = normalized.aliases
+  result.propertyAddressMissing = normalized.addressMissing
 }
 ```
 
@@ -863,14 +775,20 @@ Add inside the function, after existing parsing:
 
 ```typescript
 const addressMatch = body.match(/Regarding listing at\s+(.+?)(?:\r?\n|<|$)/)
-if (addressMatch) {
-  const raw = addressMatch[1].trim()
-  const normalized = normalizeAddress(raw)
-  result.propertyAddress = raw
-  if (normalized.propertyKey) result.propertyKey = normalized.propertyKey
-  else if (normalized.fallbackName) result.propertyFallbackName = normalized.fallbackName
+const addressFromLabel = addressMatch?.[1]?.trim()
+const normalized = normalizeBuildoutProperty(
+  result.propertyName ?? addressFromLabel ?? "",
+  addressFromLabel ?? body
+)
+if (normalized) {
+  result.propertyAddress = normalized.propertyAddressRaw ?? addressFromLabel
+  result.propertyKey = normalized.normalizedPropertyKey
+  result.propertyAliases = normalized.aliases
+  result.propertyAddressMissing = normalized.addressMissing
 }
 ```
+
+(Add the same `import { normalizeBuildoutProperty } from "@/lib/buildout/property-normalizer"` import if it isn't already at the top of the file from Task 4.2.)
 
 - [ ] **Step 4: Run test (expect pass)**
 
@@ -941,9 +859,16 @@ if (pipeLineMatch) {
   if (subjectMatch) addressLine = subjectMatch[1].trim()
 }
 if (addressLine) {
-  const normalized = normalizeAddress(addressLine)
-  result.propertyAddress = addressLine
-  if (normalized.propertyKey) result.propertyKey = normalized.propertyKey
+  const normalized = normalizeBuildoutProperty(
+    result.propertyName ?? addressLine,
+    addressLine
+  )
+  if (normalized) {
+    result.propertyAddress = normalized.propertyAddressRaw ?? addressLine
+    result.propertyKey = normalized.normalizedPropertyKey
+    result.propertyAliases = normalized.aliases
+    result.propertyAddressMissing = normalized.addressMissing
+  }
 }
 ```
 
@@ -1110,14 +1035,21 @@ export async function upsertDealForLead(
     return { dealId: null, created: false }
   }
 
-  const existing = await db.deal.findFirst({
-    where: {
-      propertyKey: input.propertyKey,
-      archivedAt: null,
-    },
-    select: { id: true, propertyAliases: true },
-  })
+  // Match the partial-unique-index scope from the Phase 1 repair migration:
+  // (deal_type='seller_rep' AND archived_at IS NULL AND property_key IS NOT NULL).
+  // Filtering by dealType ensures we don't link a lead to a stale buyer-rep
+  // deal that happens to share the same propertyKey.
+  const findExisting = () =>
+    db.deal.findFirst({
+      where: {
+        propertyKey: input.propertyKey,
+        dealType: "seller_rep",
+        archivedAt: null,
+      },
+      select: { id: true, propertyAliases: true },
+    })
 
+  const existing = await findExisting()
   if (existing) {
     await db.communication.update({
       where: { id: input.communicationId },
@@ -1126,25 +1058,89 @@ export async function upsertDealForLead(
     return { dealId: existing.id, created: false }
   }
 
-  const created = await db.deal.create({
-    data: {
-      contactId: input.contactId,
-      propertyKey: input.propertyKey,
-      propertyAddress: input.propertyAddress,
-      dealType: "seller_rep",
-      dealSource: "lead_derived",
-      stage: "marketing",
-      propertyAliases: [],
-    },
-    select: { id: true },
-  })
+  // Race window: another worker may insert a matching seller_rep Deal between
+  // findFirst and create. The partial unique index makes that race safe — the
+  // second create throws P2002, which we catch and treat as "found existing"
+  // by re-running findFirst.
+  let createdDealId: string
+  try {
+    const created = await db.deal.create({
+      data: {
+        contactId: input.contactId,
+        propertyKey: input.propertyKey,
+        propertyAddress: input.propertyAddress,
+        dealType: "seller_rep",
+        dealSource: "lead_derived",
+        stage: "marketing",
+        propertyAliases: [],
+      },
+      select: { id: true },
+    })
+    createdDealId = created.id
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      const racedTo = await findExisting()
+      if (!racedTo) throw err // unique violation but no row found — re-throw
+      await db.communication.update({
+        where: { id: input.communicationId },
+        data: { dealId: racedTo.id },
+      })
+      return { dealId: racedTo.id, created: false }
+    }
+    throw err
+  }
   await db.communication.update({
     where: { id: input.communicationId },
-    data: { dealId: created.id },
+    data: { dealId: createdDealId },
   })
-  return { dealId: created.id, created: true }
+  return { dealId: createdDealId, created: true }
 }
 ```
+
+Required imports for the implementation file:
+
+```typescript
+import { Prisma } from "@prisma/client"
+
+import { db } from "@/lib/prisma"
+```
+
+(The `Prisma` namespace import is what gives you `Prisma.PrismaClientKnownRequestError` for the P2002 catch.)
+
+> **Phase 5 amendment after Phase 1 repair:** the unique partial index on `(property_key) WHERE deal_type='seller_rep' AND archived_at IS NULL AND property_key IS NOT NULL` was added in Phase 1 follow-up commit `10a5b58`. It's the DB-level guarantee that this `findFirst+create` flow can race safely. Add a unit test (alongside Task 5.1's tests) for the race-recovery path: mock `db.deal.create` to throw a `P2002` Prisma error on first call, then assert `upsertDealForLead` re-runs `findFirst` and returns the raced-to id with `created: false`. The test sits at `lead-to-deal.test.ts` and looks like:
+>
+> ```typescript
+> it("recovers when create races with another worker (P2002)", async () => {
+>   const p2002 = Object.assign(new Error("Unique constraint failed"), {
+>     code: "P2002",
+>   })
+>   Object.setPrototypeOf(p2002, Prisma.PrismaClientKnownRequestError.prototype)
+>
+>   db.deal.findFirst
+>     .mockResolvedValueOnce(null) // first findFirst — no deal yet
+>     .mockResolvedValueOnce({ id: "deal-raced", propertyAliases: [] }) // post-throw findFirst
+>   db.deal.create.mockRejectedValue(p2002)
+>   db.communication.update.mockResolvedValue({})
+>
+>   const result = await upsertDealForLead({
+>     contactId: "contact-1",
+>     communicationId: "comm-1",
+>     propertyKey: "303 north broadway billings mt 59101",
+>     propertyAddress: "303 N Broadway",
+>     propertySource: "loopnet",
+>   })
+>
+>   expect(result.created).toBe(false)
+>   expect(result.dealId).toEqual("deal-raced")
+>   expect(db.communication.update).toHaveBeenCalledWith({
+>     where: { id: "comm-1" },
+>     data: { dealId: "deal-raced" },
+>   })
+> })
+> ```
 
 - [ ] **Step 2: Run tests (expect pass)**
 
@@ -1670,7 +1666,6 @@ export async function moveDealStageFromAction(
     data: {
       status: "executed",
       executedAt: new Date(),
-      executedBy: reviewer,
     },
   })
   return { status: "executed", todoId: payload.dealId, actionId: action.id }
@@ -1711,7 +1706,6 @@ export async function updateDealFromAction(
     data: {
       status: "executed",
       executedAt: new Date(),
-      executedBy: reviewer,
     },
   })
   return { status: "executed", todoId: payload.dealId, actionId: action.id }
@@ -2733,7 +2727,6 @@ export async function createDealFromAction(
     data: {
       status: "executed",
       executedAt: new Date(),
-      executedBy: reviewer,
     },
   })
   await syncContactRoleFromDeals(payload.contactId)
@@ -2918,9 +2911,12 @@ git commit -m "feat(scripts): scrub-export — claim queue rows, emit JSONL for 
 ### Task 11.2: scrub-import.mjs — feed results JSONL through scrub-applier
 
 ```javascript
-// Reads tmp/scrub-results-<runId>.jsonl and feeds each row's toolInput
-// through the existing scrub-validator + scrub-applier pipeline. Records
-// the modelUsed as the Claude Code session model and usage as null.
+// Reads tmp/scrub-results-<runId>.jsonl and feeds each row through the
+// existing scrub-validator + scrub-applier pipeline. The toolInput is
+// validated, then split into scrubOutput + suggestedActions to match
+// applyScrubResult's actual signature. No ScrubApiCall row is written
+// (that's the real provider's job — the subscription path bypasses
+// token-budget tracking entirely; the runId is the audit trail).
 //
 // Usage:
 //   set -a && source .env.local && set +a
@@ -2948,10 +2944,17 @@ async function main() {
   const lines = content.split("\n").filter(Boolean)
   console.log(`Importing ${lines.length} results from ${path}`)
 
+  // Real applyScrubResult signature (verified against scrub-applier.ts):
+  //   { communicationId, queueRowId, leaseToken, scrubOutput, suggestedActions }
+  // — no `modelUsed`, no `usage`. Token logging via ScrubApiCall is the real
+  // provider's responsibility (claude.ts / openai.ts call sites). The
+  // subscription path bypasses that audit row entirely; the runId in the
+  // batch filename + commit history is the equivalent audit trail.
+
   const counters = { applied: 0, validationFailed: 0, errors: 0 }
   for (const line of lines) {
     try {
-      const { queueRowId, communicationId, leaseToken, toolInput, modelUsed } =
+      const { queueRowId, communicationId, leaseToken, toolInput } =
         JSON.parse(line)
       const validation = validateScrubResult(toolInput)
       if (!validation.ok) {
@@ -2959,13 +2962,16 @@ async function main() {
         console.error(`Validation failed for ${communicationId}:`, validation.errors)
         continue
       }
+      // Split the validated tool output into the two shapes applyScrubResult expects.
+      // (Inspect scrub-types.ts for the exact field names — `suggestedActions` is the
+      // action array; everything else is enrichment that goes into `scrubOutput`.)
+      const { suggestedActions = [], ...scrubOutput } = validation.value
       await applyScrubResult({
         queueRowId,
         communicationId,
         leaseToken,
-        toolInput: validation.value,
-        modelUsed: modelUsed ?? "claude-code-session",
-        usage: null,
+        scrubOutput,
+        suggestedActions,
       })
       counters.applied++
     } catch (err) {
@@ -3036,8 +3042,9 @@ Validate AI scrub output quality on 50-100 emails at $0 API spend before committ
 ## Caveats
 
 - Model used here is Opus 4.7, not Haiku 4.5 — output quality will be HIGHER than production. A "looks fine in Claude Code" result is necessary but not sufficient evidence that Haiku will perform.
-- Token usage is not tracked (`usage: null`). Budget tracker is bypassed for this path.
-- The cache is cold (no Anthropic prompt-cache hits) — irrelevant for this path but means cache instrumentation should be re-verified before bulk run.
+- **No `ScrubApiCall` audit row is written** for the subscription path. `applyScrubResult` doesn't write that row; the real provider (`claude.ts` / `openai.ts`) does, and we're bypassing both. The `runId` in the batch filenames + the commit log are the equivalent audit trail. Budget tracker is therefore also bypassed.
+- The `modelUsed` field in the JSONL is audit metadata only; `applyScrubResult` ignores it. It just records which Claude Code session model produced each row in case we need to compare runs across model versions.
+- The cache is cold (no Anthropic prompt-cache hits) — irrelevant for this path but means cache instrumentation should be re-verified before the Phase 13 bulk run.
 ```
 
 - [ ] **Step 2: Commit**
