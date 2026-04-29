@@ -30,6 +30,27 @@ enum DealStage {
   closed
 }
 
+enum DealType {
+  listing
+  buyer_rep
+  tenant_rep
+}
+
+enum DealOutcome {
+  won
+  lost
+  withdrawn
+  expired
+}
+
+enum DealSource {
+  manual
+  lead_derived
+  buildout_event
+  email_buyer_rep
+  ai_suggestion
+}
+
 enum CanonicalDealStage {
   unknown
   prospect
