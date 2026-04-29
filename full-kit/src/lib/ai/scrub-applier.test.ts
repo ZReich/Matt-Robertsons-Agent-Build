@@ -5,6 +5,7 @@ import type { ScrubOutput } from "./scrub-types"
 import { db } from "@/lib/prisma"
 
 import { applyScrubResult } from "./scrub-applier"
+import { PROFILE_FACT_CATEGORIES } from "./scrub-types"
 
 vi.mock("@/lib/prisma", () => ({
   db: {
@@ -328,18 +329,18 @@ describe("applyScrubResult", () => {
         ...scrub,
         profileFacts: [
           {
-            category: "personal",
-            fact: "Has a delicate personal constraint.",
-            normalizedKey: "personal:constraint",
+            category: "preference",
+            fact: "Prefers smaller broker teams.",
+            normalizedKey: "preference:smaller_teams",
             confidence: 0.9,
             wordingClass: "caution",
             contactId: "contact-1",
             sourceCommunicationId: "comm-1",
           },
           {
-            category: "schedule",
+            category: "schedule_constraint",
             fact: "Might prefer mornings.",
-            normalizedKey: "schedule:mornings",
+            normalizedKey: "schedule_constraint:mornings",
             confidence: 0.5,
             wordingClass: "operational",
             contactId: "contact-1",
@@ -376,9 +377,9 @@ describe("applyScrubResult", () => {
         ...scrub,
         profileFacts: [
           {
-            category: "schedule",
+            category: "schedule_constraint",
             fact: "Might prefer mornings.",
-            normalizedKey: "schedule:mornings",
+            normalizedKey: "schedule_constraint:mornings",
             confidence: 0.5,
             wordingClass: "operational",
             contactId: "contact-1",
@@ -406,9 +407,9 @@ describe("applyScrubResult", () => {
         ...scrub,
         profileFacts: [
           {
-            category: "personal",
+            category: "preference",
             fact: "Has a medical issue.",
-            normalizedKey: "personal:medical",
+            normalizedKey: "preference:medical",
             confidence: 0.9,
             wordingClass: "caution",
             contactId: "contact-1",
@@ -525,5 +526,94 @@ describe("applyScrubResult", () => {
     })
 
     expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
+  })
+
+  it("locks the profile fact category vocabulary to the RALPLAN taxonomy", () => {
+    // Negative control: this test fails if any old name (constraint, schedule,
+    // personal, relationship, other) is reintroduced. The list must stay
+    // exactly aligned with RALPLAN Phase 5.
+    expect([...PROFILE_FACT_CATEGORIES].sort()).toEqual(
+      [
+        "preference",
+        "communication_style",
+        "schedule_constraint",
+        "deal_interest",
+        "objection",
+        "important_date",
+      ].sort()
+    )
+  })
+
+  it.each([...PROFILE_FACT_CATEGORIES])(
+    "drops forbidden sensitive content regardless of category (%s)",
+    async (category) => {
+      process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+      ;(
+        db.scrubQueue.updateMany as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({ count: 1 })
+
+      await applyScrubResult({
+        communicationId: "comm-1",
+        queueRowId: "queue-1",
+        leaseToken: "fresh-token",
+        scrubOutput: {
+          ...scrub,
+          profileFacts: [
+            {
+              category,
+              fact: "Mentioned an ongoing medical issue at the showing.",
+              normalizedKey: `${category}:medical_drop`,
+              confidence: 0.95,
+              wordingClass: "operational",
+              contactId: "contact-1",
+              sourceCommunicationId: "comm-1",
+            },
+          ],
+        },
+        suggestedActions: [],
+      })
+
+      expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
+    }
+  )
+
+  it("routes business_context facts below the auto-save threshold to the review path", async () => {
+    process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "deal_interest",
+            fact: "Eyeing flex industrial space in the 5-10K sf range.",
+            normalizedKey: "deal_interest:flex_industrial_5_10k",
+            confidence: 0.7,
+            wordingClass: "business_context",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).toHaveBeenCalledTimes(1)
+    const call = (db.contactProfileFact.upsert as ReturnType<typeof vi.fn>)
+      .mock.calls[0][0] as {
+      create: { status: string; wordingClass: string; category: string }
+      update: { status: string; wordingClass: string }
+    }
+    expect(call.create.status).toBe("review")
+    expect(call.create.wordingClass).toBe("business_context")
+    expect(call.create.category).toBe("deal_interest")
+    expect(call.update.status).toBe("review")
+    expect(call.update.wordingClass).toBe("business_context")
   })
 })
