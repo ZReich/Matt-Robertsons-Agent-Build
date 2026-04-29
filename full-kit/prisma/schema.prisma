@@ -1014,6 +1014,28 @@ model OperationalEmailReview {
   @@map("operational_email_reviews")
 }
 
+/// Audit ledger for reviewer-driven coverage actions and outbound-todo
+/// reconciliation runs. Captures aggregate outcome counts only — raw email
+/// bodies, recipients, Graph IDs, internetMessageId values, and operator
+/// notes MUST NOT be written into this table.
+model CoverageActionAuditLog {
+  id             String    @id @default(uuid())
+  actor          String
+  actorHash      String?   @map("actor_hash")
+  anonymizedAt   DateTime? @map("anonymized_at")
+  action         String
+  runId          String?   @map("run_id")
+  dryRun         Boolean   @map("dry_run")
+  policyVersion  String    @map("policy_version")
+  reviewItemIds  Json      @default("[]") @map("review_item_ids")
+  outcomeSummary Json      @default("{}") @map("outcome_summary")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([runId])
+  @@map("coverage_action_audit_logs")
+}
+
 model EmailFilterRule {
   id                  String              @id @default(uuid())
   ruleId              String              @map("rule_id")

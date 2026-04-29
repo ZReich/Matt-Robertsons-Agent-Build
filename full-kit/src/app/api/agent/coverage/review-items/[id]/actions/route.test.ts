@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getSession } from "@/lib/auth"
 import { applyCoverageReviewAction } from "@/lib/coverage/communication-coverage"
+import { recordCoverageActionAudit } from "@/lib/coverage/coverage-observability"
 
 import { POST } from "./route"
 
@@ -15,12 +16,18 @@ vi.mock("@/lib/coverage/communication-coverage", async (importOriginal) => {
   }
 })
 
+vi.mock("@/lib/coverage/coverage-observability", () => ({
+  recordCoverageActionAudit: vi.fn().mockResolvedValue({ id: "audit-1" }),
+}))
+
 describe("coverage review item actions route", () => {
   beforeEach(() => {
     delete process.env.AGENT_ACTION_REVIEWER_EMAILS
     delete process.env.AGENT_ACTION_REVIEWER_IDS
     vi.mocked(getSession).mockReset()
     vi.mocked(applyCoverageReviewAction).mockReset()
+    vi.mocked(recordCoverageActionAudit).mockClear()
+    vi.mocked(recordCoverageActionAudit).mockResolvedValue({ id: "audit-1" })
   })
 
   it("rejects unauthenticated mutations", async () => {
