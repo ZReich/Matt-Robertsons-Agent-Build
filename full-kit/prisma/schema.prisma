@@ -31,7 +31,7 @@ enum DealStage {
 }
 
 enum DealType {
-  listing
+  seller_rep
   buyer_rep
   tenant_rep
 }
@@ -47,7 +47,7 @@ enum DealSource {
   manual
   lead_derived
   buildout_event
-  email_buyer_rep
+  buyer_rep_inferred
   ai_suggestion
 }
 
