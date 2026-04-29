@@ -443,24 +443,32 @@ model ContactProfileFact {
 
 /// CRE deals — the core pipeline entity
 model Deal {
-  id              String       @id @default(uuid())
-  contactId       String       @map("contact_id")
-  propertyAddress String       @map("property_address")
-  propertyType    PropertyType @map("property_type")
-  squareFeet      Int?         @map("square_feet")
-  stage           DealStage    @default(prospecting)
-  value           Decimal?     @db.Decimal(14, 2)
-  listedDate      DateTime?    @map("listed_date")
-  closingDate     DateTime?    @map("closing_date")
-  keyContacts     Json?        @default("{}") @map("key_contacts") // { role: name }
-  category        Category     @default(business)
-  tags            Json?        @default("[]")
-  notes           String?      @db.Text
-  createdBy       String?      @map("created_by")
-  archivedAt      DateTime?    @map("archived_at")
-  commissionRate  Decimal?     @default(0.03) @map("commission_rate") @db.Decimal(5, 4)
+  id              String        @id @default(uuid())
+  contactId       String        @map("contact_id")
+  propertyAddress String?       @map("property_address")
+  propertyType    PropertyType? @map("property_type")
+  squareFeet      Int?          @map("square_feet")
+  stage           DealStage     @default(prospecting)
+  value           Decimal?      @db.Decimal(14, 2)
+  listedDate      DateTime?     @map("listed_date")
+  closingDate     DateTime?     @map("closing_date")
+  closedAt        DateTime?     @map("closed_at")
+  outcome         DealOutcome?
+  dealType        DealType      @default(seller_rep) @map("deal_type")
+  dealSource      DealSource    @default(manual) @map("deal_source")
+  propertyKey     String?       @map("property_key")
+  propertyAliases Json?         @default("[]") @map("property_aliases")
+  unit            String?
+  searchCriteria  Json?         @map("search_criteria")
+  keyContacts     Json?         @default("{}") @map("key_contacts")
+  category        Category      @default(business)
+  tags            Json?         @default("[]")
+  notes           String?       @db.Text
+  createdBy       String?       @map("created_by")
+  archivedAt      DateTime?     @map("archived_at")
+  commissionRate  Decimal?      @default(0.03) @map("commission_rate") @db.Decimal(5, 4)
   probability     Int?
-  stageChangedAt  DateTime?    @map("stage_changed_at")
+  stageChangedAt  DateTime?     @map("stage_changed_at")
 
   // Relations
   contact        Contact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
@@ -477,6 +485,10 @@ model Deal {
   @@index([stage])
   @@index([propertyType])
   @@index([propertyAddress])
+  @@index([propertyKey])
+  @@index([dealType])
+  @@index([dealSource])
+  @@index([closedAt])
   @@index([listedDate])
   @@index([closingDate])
   @@index([stageChangedAt])
