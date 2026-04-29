@@ -5,7 +5,7 @@ import type { ClaimedScrubQueueRow } from "./scrub-types"
 
 import { db } from "@/lib/prisma"
 
-import { scrubEmailBatch } from "./scrub"
+import { buildScrubPromptPayload, scrubEmailBatch } from "./scrub"
 
 /**
  * These tests exercise real control flow paths that the mock-heavy unit
@@ -41,6 +41,7 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
     },
     agentAction: { create: vi.fn() },
+    contactProfileFact: { upsert: vi.fn() },
     systemState: { findUnique: vi.fn(), delete: vi.fn() },
   },
 }))
@@ -313,5 +314,23 @@ describe("scrubEmailBatch — real-path integration", () => {
     const summary = await scrubEmailBatch({ scrubClient, mode: "relaxed" })
     expect(summary.status).toBe("caching-not-live")
     expect(summary.cachingLive).toBe(false)
+  })
+})
+
+describe("buildScrubPromptPayload", () => {
+  it("includes communication and linked contact ids for profile fact provenance", () => {
+    expect(
+      buildScrubPromptPayload({
+        id: "comm-1",
+        contactId: "contact-1",
+        subject: "Tour",
+        body: "Can we tour Tuesday?",
+        date: new Date("2026-04-24T10:00:00Z"),
+        metadata: { classification: "signal" },
+      })
+    ).toMatchObject({
+      id: "comm-1",
+      linkedContactId: "contact-1",
+    })
   })
 })

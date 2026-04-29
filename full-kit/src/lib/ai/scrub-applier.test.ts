@@ -11,6 +11,7 @@ vi.mock("@/lib/prisma", () => ({
     communication: { findUnique: vi.fn(), update: vi.fn() },
     scrubQueue: { updateMany: vi.fn(), update: vi.fn() },
     agentAction: { create: vi.fn() },
+    contactProfileFact: { upsert: vi.fn() },
     $transaction: vi.fn(),
   },
 }))
@@ -23,6 +24,7 @@ const scrub: ScrubOutput = {
   sentiment: "neutral",
   linkedContactCandidates: [],
   linkedDealCandidates: [],
+  profileFacts: [],
   modelUsed: "claude-haiku-4-5-20251001",
   promptVersion: "v1",
   scrubbedAt: "2026-04-24T12:00:00.000Z",
@@ -41,7 +43,10 @@ describe("applyScrubResult", () => {
       db.communication.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
       metadata: { classification: "signal" },
+      contactId: "contact-1",
+      date: new Date("2026-04-24T12:00:00.000Z"),
     })
+    delete process.env.PROFILE_FACT_EXTRACTION_MODE
   })
 
   it("refuses to write Communication or AgentAction rows when the lease token has been rotated", async () => {
@@ -160,5 +165,195 @@ describe("applyScrubResult", () => {
         targetEntity: "todo:todo-123",
       }),
     })
+  })
+
+  it("saves high-confidence live profile facts for the linked contact", async () => {
+    process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "communication_style",
+            fact: "Prefers email over phone for scheduling.",
+            normalizedKey: "communication_style:prefers_email",
+            confidence: 0.92,
+            wordingClass: "operational",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+            evidence: "Email me the times.",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          contactId_normalizedKey: {
+            contactId: "contact-1",
+            normalizedKey: "communication_style:prefers_email",
+          },
+        },
+      })
+    )
+  })
+
+  it("does not save low-confidence or caution profile facts automatically", async () => {
+    process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "personal",
+            fact: "Has a delicate personal constraint.",
+            normalizedKey: "personal:constraint",
+            confidence: 0.9,
+            wordingClass: "caution",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+          },
+          {
+            category: "schedule",
+            fact: "Might prefer mornings.",
+            normalizedKey: "schedule:mornings",
+            confidence: 0.5,
+            wordingClass: "operational",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).toHaveBeenCalledTimes(2)
+    expect(db.contactProfileFact.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ status: "review" }),
+        update: expect.objectContaining({ status: "review" }),
+      })
+    )
+  })
+
+  it("does not save profile facts when env mode is unset", async () => {
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "communication_style",
+            fact: "Prefers email.",
+            normalizedKey: "communication_style:prefers_email",
+            confidence: 0.92,
+            wordingClass: "operational",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
+  })
+
+  it("does not save profile facts with mismatched identity or provenance", async () => {
+    process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "communication_style",
+            fact: "Prefers email.",
+            normalizedKey: "communication_style:wrong_contact",
+            confidence: 0.92,
+            wordingClass: "operational",
+            contactId: "contact-2",
+            sourceCommunicationId: "comm-1",
+          },
+          {
+            category: "communication_style",
+            fact: "Prefers email.",
+            normalizedKey: "communication_style:wrong_source",
+            confidence: 0.92,
+            wordingClass: "operational",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-2",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
+  })
+
+  it("does not save profile facts when the communication has no linked contact", async () => {
+    process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+    ;(
+      db.communication.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValueOnce({
+      metadata: { classification: "signal" },
+      contactId: null,
+      date: new Date("2026-04-24T12:00:00.000Z"),
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "communication_style",
+            fact: "Prefers email.",
+            normalizedKey: "communication_style:prefers_email",
+            confidence: 0.92,
+            wordingClass: "operational",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
   })
 })

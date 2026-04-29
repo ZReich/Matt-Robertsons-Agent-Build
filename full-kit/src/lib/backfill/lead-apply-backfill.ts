@@ -3,6 +3,11 @@ import type { LeadSource, Prisma, PrismaClient } from "@prisma/client"
 import type { LeadDiagnosticPlatform } from "./lead-extractor-diagnostics"
 
 import {
+  evaluateContactAutoPromotion,
+  hasRealAttachmentEvidenceFromMetadata,
+  readContactAutoPromotionMode,
+} from "@/lib/contact-auto-promotion-policy"
+import {
   extractBuildoutEvent,
   extractCrexiLead,
   extractLoopNetLead,
@@ -24,7 +29,9 @@ export type LeadApplyOutcome =
   | "would_create_lead_contact"
   | "created_lead_contact"
   | "would_create_contact_candidate"
+  | "would_auto_create_sender_contact"
   | "created_contact_candidate"
+  | "created_sender_contact"
   | "updated_contact_candidate"
   | "would_link_existing_contact"
   | "linked_existing_contact"
@@ -56,6 +63,7 @@ export type LeadApplyBackfillResult = {
   scanned: number
   nextCursor: string | null
   createdLeadContacts: number
+  createdSenderContacts: number
   createdContactCandidates: number
   markedExistingContacts: number
   communicationLinked: number
@@ -75,6 +83,7 @@ type CommunicationRow = {
 type ContactLookup = {
   id: string
   email: string | null
+  archivedAt?: Date | null
   leadSource: LeadSource | null
   leadStatus: string | null
   _count: { deals: number }
@@ -200,6 +209,7 @@ function emptyResult(runId: string, dryRun: boolean): LeadApplyBackfillResult {
     scanned: 0,
     nextCursor: null,
     createdLeadContacts: 0,
+    createdSenderContacts: 0,
     createdContactCandidates: 0,
     markedExistingContacts: 0,
     communicationLinked: 0,
@@ -312,6 +322,7 @@ async function applyRow(
   )
   if (
     planned !== "would_create_contact_candidate" &&
+    planned !== "would_auto_create_sender_contact" &&
     planned !== "would_create_lead_contact" &&
     planned !== "would_link_existing_contact"
   ) {
@@ -342,6 +353,13 @@ async function applyRow(
         result,
         client
       )
+      return
+    }
+    if (
+      planned === "would_auto_create_sender_contact" &&
+      readContactAutoPromotionMode() === "write"
+    ) {
+      await createSenderContact(row, senderCandidate, result, client)
       return
     }
     await client.$transaction(async (tx) => {
@@ -438,8 +456,38 @@ function planSenderCandidate(
       contactId: contact?.id ?? null,
     })
   }
-  if (!contact)
+  if (!contact) {
+    const promotion = evaluateContactAutoPromotion({
+      classification: metadataString(row.metadata, "classification"),
+      source: metadataString(row.metadata, "source"),
+      direction: "inbound",
+      normalizedEmail: candidate.email,
+      displayName: candidate.displayName,
+      contactMatches: [],
+      currentCommunicationId: row.id,
+      currentHasRealAttachment: hasRealAttachmentEvidenceFromMetadata(
+        row.metadata
+      ),
+      mattRepliedBefore: metadataBoolean(
+        metadataObject(row.metadata, "behavioralHints"),
+        "mattRepliedBefore"
+      ),
+      materialCommunicationCount:
+        metadataNumber(
+          metadataObject(row.metadata, "behavioralHints"),
+          "threadSize"
+        ) ?? 1,
+    })
+    if (
+      readContactAutoPromotionMode() !== "off" &&
+      promotion.decision === "auto_create_contact"
+    ) {
+      return record(result, row, "would_auto_create_sender_contact", {
+        ...options,
+      })
+    }
     return record(result, row, "would_create_contact_candidate", options)
+  }
   if (!row.contactId) {
     return record(result, row, "would_link_existing_contact", {
       ...options,
@@ -592,6 +640,168 @@ async function createLeadContact(
     record(result, row, "created_lead_contact", {
       platform: extracted.platform,
       extracted,
+      contactId: contact.id,
+    })
+  })
+}
+
+async function createSenderContact(
+  row: CommunicationRow,
+  candidate: SenderCandidate,
+  result: LeadApplyBackfillResult,
+  client: DbLike
+): Promise<void> {
+  await client.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      SELECT pg_advisory_xact_lock(hashtext(${"contact-promotion-email:" + candidate.email}))
+    `
+    const duplicates = await tx.contact.findMany({
+      where: {
+        email: { equals: candidate.email, mode: "insensitive" },
+        archivedAt: null,
+      },
+      select: { id: true },
+      take: 2,
+    })
+    if (duplicates.length > 1) {
+      record(result, row, "skipped_ambiguous_contact", {
+        inquirerEmail: candidate.email,
+        extractedKind: candidate.sourceKind ?? "email-sender",
+      })
+      return
+    }
+    const duplicate = duplicates[0] ?? null
+    if (duplicate) {
+      const update = await tx.communication.updateMany({
+        where: {
+          id: row.id,
+          OR: [{ contactId: null }, { contactId: duplicate.id }],
+        },
+        data: {
+          contactId: duplicate.id,
+          metadata: mergeLeadApplyMetadata(row.metadata, {
+            runId: result.runId,
+            appliedAt: new Date().toISOString(),
+            strategy: "historical-email-sender-auto-promotion",
+            source: metadataString(row.metadata, "source"),
+            extractedKind: candidate.sourceKind ?? "email-sender",
+            inquirerEmail: candidate.email,
+            previousContactId: row.contactId,
+            newContactId: duplicate.id,
+            outcome: "linked_existing_contact",
+            dryRun: false,
+          }),
+        },
+      })
+      if (update.count !== 1) {
+        record(result, row, "skipped_race_lost", {
+          inquirerEmail: candidate.email,
+          extractedKind: candidate.sourceKind ?? "email-sender",
+          contactId: duplicate.id,
+        })
+        return
+      }
+      result.communicationLinked += 1
+      record(result, row, "linked_existing_contact", {
+        inquirerEmail: candidate.email,
+        extractedKind: candidate.sourceKind ?? "email-sender",
+        contactId: duplicate.id,
+      })
+      return
+    }
+
+    const [currentCommunication] = await tx.$queryRaw<
+      Array<{ contactId: string | null }>
+    >`
+      SELECT contact_id AS "contactId"
+      FROM communications
+      WHERE id = ${row.id}
+      FOR UPDATE
+    `
+    if (!currentCommunication || currentCommunication.contactId) {
+      record(result, row, "skipped_race_lost", {
+        inquirerEmail: candidate.email,
+        extractedKind: candidate.sourceKind ?? "email-sender",
+        contactId: currentCommunication?.contactId ?? null,
+      })
+      return
+    }
+
+    const promotion = evaluateContactAutoPromotion({
+      classification: metadataString(row.metadata, "classification"),
+      source: metadataString(row.metadata, "source"),
+      direction: "inbound",
+      normalizedEmail: candidate.email,
+      displayName: candidate.displayName,
+      contactMatches: [],
+      currentCommunicationId: row.id,
+      currentHasRealAttachment: hasRealAttachmentEvidenceFromMetadata(
+        row.metadata
+      ),
+      mattRepliedBefore: metadataBoolean(
+        metadataObject(row.metadata, "behavioralHints"),
+        "mattRepliedBefore"
+      ),
+      materialCommunicationCount:
+        metadataNumber(
+          metadataObject(row.metadata, "behavioralHints"),
+          "threadSize"
+        ) ?? 1,
+    })
+    if (promotion.decision !== "auto_create_contact") {
+      record(result, row, "skipped_race_lost", {
+        inquirerEmail: candidate.email,
+        extractedKind: candidate.sourceKind ?? "email-sender",
+      })
+      return
+    }
+
+    const contact = await tx.contact.create({
+      data: {
+        name: candidate.displayName || candidate.email,
+        email: candidate.email,
+        category: "business",
+        tags: ["auto-promoted-contact", "historical-email-sender"],
+        createdBy: "historical-email-sender-auto-promotion",
+        notes: "Auto-created from historical email relationship evidence.",
+      },
+      select: { id: true },
+    })
+
+    const update = await tx.communication.updateMany({
+      where: {
+        id: row.id,
+        OR: [{ contactId: null }, { contactId: contact.id }],
+      },
+      data: {
+        contactId: contact.id,
+        metadata: mergeLeadApplyMetadata(row.metadata, {
+          runId: result.runId,
+          appliedAt: new Date().toISOString(),
+          strategy: "historical-email-sender-auto-promotion",
+          inquirerEmail: candidate.email,
+          extractedKind: candidate.sourceKind ?? "email-sender",
+          previousContactId: row.contactId,
+          newContactId: contact.id,
+          outcome: "created_sender_contact",
+          dryRun: false,
+          autoPromotion: promotion,
+        }),
+      },
+    })
+    if (update.count !== 1) {
+      record(result, row, "skipped_race_lost", {
+        inquirerEmail: candidate.email,
+        extractedKind: candidate.sourceKind ?? "email-sender",
+        contactId: contact.id,
+      })
+      return
+    }
+    result.createdSenderContacts += 1
+    result.communicationLinked += 1
+    record(result, row, "created_sender_contact", {
+      inquirerEmail: candidate.email,
+      extractedKind: candidate.sourceKind ?? "email-sender",
       contactId: contact.id,
     })
   })
@@ -963,6 +1173,7 @@ async function loadContactsByEmail(
   if (uniqueEmails.length === 0) return new Map()
   const contacts = await client.contact.findMany({
     where: {
+      archivedAt: null,
       OR: uniqueEmails.map((email) => ({
         email: { equals: email, mode: "insensitive" as const },
       })),
@@ -970,6 +1181,7 @@ async function loadContactsByEmail(
     select: {
       id: true,
       email: true,
+      archivedAt: true,
       leadSource: true,
       leadStatus: true,
       _count: { select: { deals: true } },
@@ -1024,6 +1236,11 @@ function metadataString(metadata: unknown, key: string): string | null {
 
 function metadataBoolean(metadata: unknown, key: string): boolean {
   return jsonObject(metadata)[key] === true
+}
+
+function metadataNumber(metadata: unknown, key: string): number | null {
+  const value = jsonObject(metadata)[key]
+  return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
 function metadataObject(

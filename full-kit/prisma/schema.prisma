@@ -359,6 +359,7 @@ model Contact {
   meetings       MeetingAttendee[]
   todos          Todo[]
   agentMemories  AgentMemory[]
+  profileFacts   ContactProfileFact[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -372,6 +373,34 @@ model Contact {
   @@index([leadStatus, updatedAt])
   @@index([leadSource, leadStatus, leadLastViewedAt])
   @@map("contacts")
+}
+
+model ContactProfileFact {
+  id                    String    @id @default(uuid())
+  contactId             String    @map("contact_id")
+  category              String
+  fact                  String    @db.Text
+  normalizedKey         String    @map("normalized_key")
+  confidence            Decimal   @db.Decimal(5, 4)
+  wordingClass          String    @map("wording_class")
+  sourceCommunicationId String    @map("source_communication_id")
+  sourceAgentActionId   String?   @map("source_agent_action_id")
+  observedAt            DateTime  @default(now()) @map("observed_at")
+  lastSeenAt            DateTime  @default(now()) @map("last_seen_at")
+  expiresAt             DateTime? @map("expires_at")
+  status                String    @default("active")
+  metadata              Json?     @default("{}")
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([contactId, normalizedKey])
+  @@index([contactId, category])
+  @@index([sourceCommunicationId])
+  @@index([status])
+  @@map("contact_profile_facts")
 }
 
 /// CRE deals — the core pipeline entity

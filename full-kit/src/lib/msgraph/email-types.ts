@@ -130,6 +130,8 @@ export interface GraphEmailMessage {
 export interface BehavioralHints {
   senderInContacts: boolean
   mattRepliedBefore: boolean
+  directOutboundCount?: number
+  threadOutboundCount?: number
   threadSize: number
   domainIsLargeCreBroker: boolean
 }

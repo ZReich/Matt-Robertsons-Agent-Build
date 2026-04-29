@@ -20,6 +20,12 @@ import type {
 import type { NormalizedSender } from "./sender-normalize"
 
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
+import {
+  evaluateContactAutoPromotion,
+  hasRealAttachmentEvidence,
+  hasRealAttachmentEvidenceFromMetadata,
+  readContactAutoPromotionMode,
+} from "@/lib/contact-auto-promotion-policy"
 import { db } from "@/lib/prisma"
 
 import { graphFetch } from "./client"
@@ -264,6 +270,8 @@ export async function computeBehavioralHints(
   return {
     senderInContacts: !!contactRow,
     mattRepliedBefore: directOutboundCount > 0 || threadOutboundCount > 0,
+    directOutboundCount,
+    threadOutboundCount,
     threadSize: threadSize + 1,
     domainIsLargeCreBroker: domainIsLargeCreBroker(senderDomain),
   }
@@ -393,6 +401,7 @@ export interface ProcessedMessage {
 /** Persist one processed message as a Communication + ExternalSync pair, in a txn. */
 export async function persistMessage(p: ProcessedMessage): Promise<{
   inserted: boolean
+  contactCreated: boolean
   leadContactId: string | null
   leadCreated: boolean
 }> {
@@ -416,6 +425,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   if (existing) {
     return {
       inserted: false,
+      contactCreated: false,
       leadContactId: p.leadContactId,
       leadCreated: false,
     }
@@ -459,6 +469,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   let resolvedContactId = p.contactId
   let resolvedLeadContactId = p.leadContactId
   let resolvedLeadCreated = p.leadCreated
+  let resolvedContactCreated = false
 
   await db.$transaction(async (tx) => {
     const sync = await tx.externalSync.create({
@@ -485,6 +496,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       resolvedContactId = autoLead.contactId
       resolvedLeadContactId = autoLead.contactId
       resolvedLeadCreated = autoLead.created
+      resolvedContactCreated = autoLead.created
       metadata.leadContactId = autoLead.contactId
       metadata.leadCreated = autoLead.created || undefined
     }
@@ -510,7 +522,12 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       where: { id: sync.id },
       data: { entityId: comm.id },
     })
-    await upsertEmailSenderContactCandidate(tx, p, comm.id, dateIso)
+    resolvedContactCreated =
+      (await autoPromoteOrUpsertEmailSenderContact(tx, p, comm.id, dateIso)) ||
+      resolvedContactCreated
+    resolvedContactCreated =
+      (await autoPromoteOutboundSingleRecipient(tx, p, comm.id, dateIso)) ||
+      resolvedContactCreated
     const auditTx = tx as Prisma.TransactionClient & {
       emailFilterAudit?: Pick<
         Prisma.TransactionClient["emailFilterAudit"],
@@ -556,17 +573,107 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
 
   return {
     inserted: true,
+    contactCreated: resolvedContactCreated,
     leadContactId: resolvedLeadContactId,
     leadCreated: resolvedLeadCreated,
   }
 }
 
-async function upsertEmailSenderContactCandidate(
+async function autoPromoteOutboundSingleRecipient(
   tx: Prisma.TransactionClient,
   p: ProcessedMessage,
   communicationId: string,
   dateIso: string
-): Promise<void> {
+): Promise<boolean> {
+  const mode = readContactAutoPromotionMode()
+  if (
+    mode !== "write" ||
+    p.folder !== "sentitems" ||
+    p.classification.classification !== "signal" ||
+    !hasRealAttachmentEvidence({
+      attachments: p.attachments ?? null,
+      attachmentFetch: p.attachmentFetch ?? null,
+    })
+  ) {
+    return false
+  }
+  const email = singleRecipientEmail(p.message.toRecipients)
+  if (!email) return false
+
+  await tx.$executeRaw`
+    SELECT pg_advisory_xact_lock(hashtext(${"contact-promotion-email:" + email}))
+  `
+  const contactMatches = await tx.contact.findMany({
+    where: {
+      email: { equals: email, mode: "insensitive" },
+      archivedAt: null,
+    },
+    select: { id: true, archivedAt: true },
+    take: 2,
+  })
+  const promotion = evaluateContactAutoPromotion({
+    classification: p.classification.classification,
+    source: p.classification.source,
+    direction: "outbound",
+    normalizedEmail: email,
+    displayName: singleRecipientDisplayName(p.message.toRecipients),
+    contactMatches,
+    currentCommunicationId: communicationId,
+    currentHasRealAttachment: true,
+    mattRepliedBefore: true,
+    materialCommunicationCount: p.hints.threadSize,
+    outboundAttachmentEvidenceIds: [communicationId],
+  })
+  if (
+    promotion.decision === "auto_link_existing" &&
+    promotion.matchedContactId
+  ) {
+    await tx.communication.update({
+      where: { id: communicationId },
+      data: {
+        contactId: promotion.matchedContactId,
+        metadata: mergeCommunicationMetadataForAutoPromotion(
+          p,
+          promotion,
+          dateIso
+        ),
+      },
+    })
+    return false
+  }
+  if (promotion.decision !== "auto_create_contact") return false
+
+  const contact = await tx.contact.create({
+    data: {
+      name: singleRecipientDisplayName(p.message.toRecipients) || email,
+      email,
+      category: "business",
+      tags: ["auto-promoted-contact", "outbound-file-recipient"],
+      createdBy: "msgraph-email-auto-promotion",
+      notes: buildAutoPromotedContactNotes(p, promotion.reasonCodes),
+    },
+    select: { id: true },
+  })
+  await tx.communication.update({
+    where: { id: communicationId },
+    data: {
+      contactId: contact.id,
+      metadata: mergeCommunicationMetadataForAutoPromotion(
+        p,
+        { ...promotion, matchedContactId: contact.id },
+        dateIso
+      ),
+    },
+  })
+  return true
+}
+
+async function autoPromoteOrUpsertEmailSenderContact(
+  tx: Prisma.TransactionClient,
+  p: ProcessedMessage,
+  communicationId: string,
+  dateIso: string
+): Promise<boolean> {
   const email = p.normalizedSender.address.trim().toLowerCase()
   if (
     p.folder !== "inbox" ||
@@ -578,7 +685,93 @@ async function upsertEmailSenderContactCandidate(
     !email.includes("@") ||
     isPlatformLeadSource(p.classification.source)
   ) {
-    return
+    return false
+  }
+
+  await tx.$executeRaw`
+    SELECT pg_advisory_xact_lock(hashtext(${"contact-promotion-email:" + email}))
+  `
+  const contactMatches = await tx.contact.findMany({
+    where: {
+      email: { equals: email, mode: "insensitive" },
+      archivedAt: null,
+    },
+    select: { id: true, archivedAt: true },
+    take: 2,
+  })
+  const directOutboundEvidence = await loadDirectOutboundEvidence(tx, email)
+  const currentHasRealAttachment = hasRealAttachmentEvidence({
+    attachments: p.attachments ?? null,
+    attachmentFetch: p.attachmentFetch ?? null,
+  })
+  const promotion = evaluateContactAutoPromotion({
+    classification: p.classification.classification,
+    source: p.classification.source,
+    direction: p.folder === "inbox" ? "inbound" : "outbound",
+    normalizedEmail: email,
+    displayName: p.normalizedSender.displayName,
+    isInternal: p.normalizedSender.isInternal,
+    normalizationFailed: p.normalizedSender.normalizationFailed,
+    existingContactId: p.contactId,
+    existingLeadContactId: p.leadContactId,
+    contactMatches,
+    currentCommunicationId: communicationId,
+    currentHasRealAttachment,
+    mattRepliedBefore: directOutboundEvidence.count > 0,
+    materialCommunicationCount: p.hints.threadSize,
+    outboundAttachmentEvidenceIds: directOutboundEvidence.attachmentIds,
+  })
+  const autoPromotionMode = readContactAutoPromotionMode()
+
+  if (
+    autoPromotionMode === "write" &&
+    promotion.decision === "auto_link_existing" &&
+    promotion.matchedContactId
+  ) {
+    await tx.communication.update({
+      where: { id: communicationId },
+      data: {
+        contactId: promotion.matchedContactId,
+        metadata: mergeCommunicationMetadataForAutoPromotion(
+          p,
+          promotion,
+          dateIso
+        ),
+      },
+    })
+    return false
+  }
+
+  if (
+    autoPromotionMode === "write" &&
+    promotion.decision === "auto_create_contact"
+  ) {
+    const contact = await tx.contact.create({
+      data: {
+        name:
+          p.normalizedSender.displayName?.trim() ||
+          p.normalizedSender.address ||
+          "Unknown contact",
+        email,
+        category: "business",
+        tags: ["auto-promoted-contact", "email-sender"],
+        createdBy: "msgraph-email-auto-promotion",
+        notes: buildAutoPromotedContactNotes(p, promotion.reasonCodes),
+      },
+      select: { id: true },
+    })
+    await tx.communication.update({
+      where: { id: communicationId },
+      data: {
+        contactId: contact.id,
+        metadata: mergeCommunicationMetadataForAutoPromotion(
+          p,
+          { ...promotion, matchedContactId: contact.id },
+          dateIso
+        ),
+      },
+    })
+    return true
   }
 
   const dedupeKey = `email-sender:${email}`
@@ -621,10 +814,11 @@ async function upsertEmailSenderContactCandidate(
           communicationIds: [...communicationIds],
           classification: p.classification.classification,
           classificationSource: p.classification.source,
+          autoPromotion: promotion,
         } as Prisma.InputJsonValue,
       },
     })
-    return
+    return false
   }
 
   await tx.contactPromotionCandidate.update({
@@ -645,6 +839,7 @@ async function upsertEmailSenderContactCandidate(
         communicationIds: [...communicationIds],
         classification: p.classification.classification,
         classificationSource: p.classification.source,
+        autoPromotion: promotion,
         ...(shouldReopenSuppressed
           ? {
               reopenedFromStatus: existing.status,
@@ -656,6 +851,127 @@ async function upsertEmailSenderContactCandidate(
       } as Prisma.InputJsonValue,
     },
   })
+  return false
+}
+
+async function loadDirectOutboundEvidence(
+  tx: Prisma.TransactionClient,
+  email: string
+): Promise<{ count: number; attachmentIds: string[] }> {
+  const rows = await tx.communication.findMany({
+    where: {
+      direction: "outbound",
+      OR: [
+        {
+          metadata: {
+            path: ["toRecipients"],
+            array_contains: [{ emailAddress: { address: email } }],
+          },
+        },
+        {
+          metadata: {
+            path: ["ccRecipients"],
+            array_contains: [{ emailAddress: { address: email } }],
+          },
+        },
+      ],
+    },
+    select: { id: true, metadata: true },
+    take: 10,
+  })
+  return {
+    count: rows.length,
+    attachmentIds: rows
+      .filter((row) => hasRealAttachmentEvidenceFromMetadata(row.metadata))
+      .map((row) => row.id),
+  }
+}
+
+function mergeCommunicationMetadataForAutoPromotion(
+  p: ProcessedMessage,
+  promotion: { [key: string]: unknown },
+  dateIso: string
+): Prisma.InputJsonValue {
+  return {
+    classification: p.classification.classification,
+    source: p.classification.source,
+    tier1Rule: p.classification.tier1Rule,
+    acquisition: {
+      bodyDecision: p.acquisition.bodyDecision,
+      disposition: p.acquisition.disposition,
+      ruleId: p.acquisition.ruleId,
+      ruleVersion: p.acquisition.ruleVersion,
+      riskFlags: p.acquisition.riskFlags,
+      rescueFlags: p.acquisition.rescueFlags,
+      rationale: p.acquisition.rationale,
+    },
+    behavioralHints: p.hints,
+    conversationId: p.message.conversationId,
+    internetMessageId: p.message.internetMessageId,
+    parentFolderId: p.message.parentFolderId,
+    from: {
+      address: p.normalizedSender.address,
+      displayName: p.normalizedSender.displayName,
+      isInternal: p.normalizedSender.isInternal,
+    },
+    toRecipients: p.message.toRecipients ?? [],
+    ccRecipients: p.message.ccRecipients ?? [],
+    hasAttachments: !!p.message.hasAttachments,
+    attachments: p.attachments,
+    attachmentFetch: p.attachmentFetch,
+    importance: p.message.importance ?? "normal",
+    isRead: !!p.message.isRead,
+    senderNormalizationFailed:
+      p.normalizedSender.normalizationFailed || undefined,
+    extracted: p.extracted ?? undefined,
+    leadContactId: p.leadContactId ?? undefined,
+    leadCreated: p.leadCreated || undefined,
+    contactAutoPromotion: {
+      ...promotion,
+      appliedAt: new Date(dateIso).toISOString(),
+    },
+  } as unknown as Prisma.InputJsonValue
+}
+
+function buildAutoPromotedContactNotes(
+  p: ProcessedMessage,
+  reasonCodes: string[]
+): string {
+  const subject = p.message.subject?.trim()
+  const reason = reasonCodes.join(", ") || "strong email engagement evidence"
+  return [
+    "Auto-created from email relationship evidence.",
+    `Reason: ${reason}.`,
+    subject ? `Source email: ${subject}` : null,
+  ]
+    .filter((line): line is string => !!line)
+    .join("\n")
+}
+
+function singleRecipientEmail(recipients: unknown): string | null {
+  if (!Array.isArray(recipients) || recipients.length !== 1) return null
+  const email = recipientEmail(recipients[0])
+  return email?.includes("@") ? email.toLowerCase() : null
+}
+
+function singleRecipientDisplayName(recipients: unknown): string | null {
+  if (!Array.isArray(recipients) || recipients.length !== 1) return null
+  const emailAddress = asRecord(asRecord(recipients[0]).emailAddress)
+  const name = typeof emailAddress.name === "string" ? emailAddress.name : null
+  return name?.trim() || null
+}
+
+function recipientEmail(recipient: unknown): string | null {
+  const emailAddress = asRecord(asRecord(recipient).emailAddress)
+  const address =
+    typeof emailAddress.address === "string" ? emailAddress.address : null
+  return address?.trim() || null
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
 }
 
 function isPlatformLeadSource(source: string): boolean {
@@ -812,13 +1128,15 @@ export async function processOneMessage(
     !contactId &&
     normalizedSender.address.includes("@")
   ) {
-    const match = await db.contact.findFirst({
+    const matches = await db.contact.findMany({
       where: {
         email: { equals: normalizedSender.address, mode: "insensitive" },
+        archivedAt: null,
       },
       select: { id: true },
+      take: 2,
     })
-    contactId = match?.id ?? null
+    contactId = matches.length === 1 ? (matches[0]?.id ?? null) : null
   }
 
   // Attachment metadata — only for signal rows with attachments.
@@ -859,7 +1177,7 @@ export async function processOneMessage(
       return {
         classification: classification.classification,
         extractedPlatform: extracted?.platform ?? null,
-        contactCreated: persisted.leadCreated,
+        contactCreated: persisted.contactCreated,
         leadCreated: persisted.leadCreated,
         inserted: persisted.inserted,
       }

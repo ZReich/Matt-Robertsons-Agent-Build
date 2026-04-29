@@ -60,12 +60,21 @@ export default async function ContactDetailPage({
 }: ContactDetailPageProps) {
   const { id, lang } = await params
 
-  const [contact, meetingNotes, commNotes, aiSuggestions] = await Promise.all([
-    db.contact.findUnique({ where: { id } }),
-    listNotes<MeetingMeta>("meetings"),
-    listNotes<CommunicationMeta>("communications"),
-    getAiSuggestionState({ entityType: "contact", entityId: id }),
-  ])
+  const [contact, profileFacts, meetingNotes, commNotes, aiSuggestions] =
+    await Promise.all([
+      db.contact.findUnique({ where: { id } }),
+      db.contactProfileFact.findMany({
+        where: {
+          contactId: id,
+          status: "active",
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+        orderBy: [{ category: "asc" }, { lastSeenAt: "desc" }],
+      }),
+      listNotes<MeetingMeta>("meetings"),
+      listNotes<CommunicationMeta>("communications"),
+      getAiSuggestionState({ entityType: "contact", entityId: id }),
+    ])
 
   if (!contact) notFound()
 
@@ -175,6 +184,40 @@ export default async function ContactDetailPage({
 
           <LeadAISuggestions state={aiSuggestions} lang={lang} />
 
+          {profileFacts.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Relationship Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {Object.entries(groupProfileFacts(profileFacts)).map(
+                  ([category, facts]) => (
+                    <div key={category} className="space-y-1">
+                      <div className="text-xs font-medium uppercase text-muted-foreground">
+                        {formatProfileCategory(category)}
+                      </div>
+                      <ul className="space-y-1">
+                        {facts.map((fact) => (
+                          <li key={fact.id} className="space-y-0.5 text-sm">
+                            <div>{fact.fact}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Source: {fact.sourceCommunicationId}
+                              {profileFactEvidence(fact.metadata)
+                                ? ` - ${profileFactEvidence(fact.metadata)}`
+                                : ""}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {upcomingMeetings.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
@@ -256,4 +299,31 @@ export default async function ContactDetailPage({
       </Tabs>
     </section>
   )
+}
+
+function groupProfileFacts<
+  T extends { category: string; id: string; fact: string },
+>(facts: T[]): Record<string, T[]> {
+  return facts.reduce<Record<string, T[]>>((groups, fact) => {
+    const key = fact.category || "other"
+    groups[key] = [...(groups[key] ?? []), fact]
+    return groups
+  }, {})
+}
+
+function formatProfileCategory(category: string): string {
+  return category
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
+function profileFactEvidence(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return null
+  }
+  const evidence = (metadata as Record<string, unknown>).evidence
+  return typeof evidence === "string" && evidence.trim()
+    ? evidence.trim()
+    : null
 }

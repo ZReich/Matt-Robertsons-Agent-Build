@@ -1,4 +1,4 @@
-export const PROMPT_VERSION = "v3"
+export const PROMPT_VERSION = "v4"
 export const PROMPT_RELEASED_AT = "2026-04-28T00:00:00.000Z"
 
 export const TOPIC_TAGS = [
@@ -46,6 +46,26 @@ export const DEAL_STAGES = [
   "closed",
 ] as const
 
+export const PROFILE_FACT_CATEGORIES = [
+  "preference",
+  "constraint",
+  "schedule",
+  "personal",
+  "relationship",
+  "communication_style",
+  "deal_interest",
+  "objection",
+  "important_date",
+  "other",
+] as const
+
+export const PROFILE_FACT_WORDING_CLASSES = [
+  "operational",
+  "relationship_context",
+  "business_context",
+  "caution",
+] as const
+
 export type SuggestedAction = {
   actionType:
     | "create-todo"
@@ -80,12 +100,26 @@ export type ScrubOutput = {
       | "key_contact"
       | "subject_match"
   }>
+  profileFacts: ContactProfileFactSuggestion[]
   modelUsed: string
   promptVersion: string
   scrubbedAt: string
   tokensIn: number
   tokensOut: number
   cacheHitTokens: number
+}
+
+export type ContactProfileFactSuggestion = {
+  category: (typeof PROFILE_FACT_CATEGORIES)[number]
+  fact: string
+  normalizedKey: string
+  confidence: number
+  wordingClass: (typeof PROFILE_FACT_WORDING_CLASSES)[number]
+  contactId: string
+  sourceCommunicationId: string
+  observedAt?: string
+  expiresAt?: string
+  evidence?: string
 }
 
 export type ValidatedScrubResult = {

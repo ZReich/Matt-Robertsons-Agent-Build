@@ -21,6 +21,7 @@ vi.mock("@/lib/prisma", () => ({
     },
     contact: {
       findFirst: vi.fn(),
+      findMany: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
     },
@@ -35,6 +36,8 @@ vi.mock("@/lib/prisma", () => ({
     communication: {
       count: vi.fn(),
       create: vi.fn(),
+      findMany: vi.fn(),
+      update: vi.fn(),
     },
     $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
@@ -197,6 +200,14 @@ describe("persistMessage scrub enqueue", () => {
     ;(
       db.contactPromotionCandidate.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(null)
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+    ;(db.communication.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      []
+    )
+    ;(db.communication.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    ;(db.contact.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "contact-auto",
+    })
   })
 
   it("enqueues signal communications inside the persist transaction", async () => {
@@ -378,7 +389,11 @@ describe("processOneMessage contact safety", () => {
     ;(db.contact.findFirst as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce(null)
       .mockResolvedValue({ id: "vendor-contact" })
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
     ;(db.communication.count as ReturnType<typeof vi.fn>).mockResolvedValue(0)
+    ;(db.communication.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      []
+    )
     ;(db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
       null
     )
@@ -392,6 +407,7 @@ describe("processOneMessage contact safety", () => {
       id: "comm-1",
     })
     ;(db.externalSync.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    ;(db.communication.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
   })
 
   it("creates Buildout lead contacts instead of linking to the vendor sender Contact", async () => {
@@ -399,6 +415,7 @@ describe("processOneMessage contact safety", () => {
       .mockReset()
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null)
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
     ;(db.contact.create as ReturnType<typeof vi.fn>).mockResolvedValue({
       id: "contact-buildout",
     })
@@ -487,5 +504,39 @@ describe("processOneMessage contact safety", () => {
       })
     )
     expect(db.contactPromotionCandidate.create).not.toHaveBeenCalled()
+  })
+
+  it("does not silently link duplicate non-platform sender email matches", async () => {
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "contact-1" },
+      { id: "contact-2" },
+    ])
+
+    await processOneMessage(
+      {
+        id: "regular-duplicate-1",
+        receivedDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-duplicate-1",
+        subject: "Lease question",
+        from: {
+          emailAddress: {
+            name: "Tenant Prospect",
+            address: "tenant@example.com",
+          },
+        },
+        body: {
+          contentType: "text",
+          content: "Can we discuss suite 200?",
+        },
+      },
+      "inbox",
+      "observe"
+    )
+
+    expect(db.communication.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ contactId: null }),
+      })
+    )
   })
 })

@@ -1,5 +1,9 @@
 import type { Prisma } from "@prisma/client"
-import type { ScrubOutput, SuggestedAction } from "./scrub-types"
+import type {
+  ContactProfileFactSuggestion,
+  ScrubOutput,
+  SuggestedAction,
+} from "./scrub-types"
 
 import { db } from "@/lib/prisma"
 
@@ -64,7 +68,7 @@ export async function applyScrubResult({
     // Past this point we hold exclusive write rights for this row.
     const comm = await tx.communication.findUnique({
       where: { id: communicationId },
-      select: { metadata: true },
+      select: { metadata: true, contactId: true, date: true },
     })
     const existingMetadata =
       comm?.metadata &&
@@ -97,7 +101,143 @@ export async function applyScrubResult({
         },
       })
     }
+
+    if (comm && shouldPersistProfileFacts()) {
+      for (const fact of scrubOutput.profileFacts ?? []) {
+        const contactId = comm.contactId
+        if (!shouldAutoSaveProfileFact(fact, communicationId, contactId)) {
+          if (shouldReviewProfileFact(fact, communicationId, contactId)) {
+            await tx.contactProfileFact.upsert({
+              where: {
+                contactId_normalizedKey: {
+                  contactId,
+                  normalizedKey: fact.normalizedKey,
+                },
+              },
+              create: {
+                contactId,
+                category: fact.category,
+                fact: fact.fact,
+                normalizedKey: fact.normalizedKey,
+                confidence: fact.confidence,
+                wordingClass: fact.wordingClass,
+                sourceCommunicationId: communicationId,
+                observedAt: fact.observedAt
+                  ? new Date(fact.observedAt)
+                  : comm.date,
+                lastSeenAt: comm.date,
+                expiresAt: fact.expiresAt ? new Date(fact.expiresAt) : null,
+                status: "review",
+                metadata: buildFactMetadata(fact, scrubOutput),
+              },
+              update: {
+                category: fact.category,
+                fact: fact.fact,
+                confidence: fact.confidence,
+                wordingClass: fact.wordingClass,
+                sourceCommunicationId: communicationId,
+                lastSeenAt: comm.date,
+                expiresAt: fact.expiresAt ? new Date(fact.expiresAt) : null,
+                status: "review",
+                metadata: buildFactMetadata(fact, scrubOutput),
+              },
+            })
+          }
+          continue
+        }
+        await tx.contactProfileFact.upsert({
+          where: {
+            contactId_normalizedKey: {
+              contactId,
+              normalizedKey: fact.normalizedKey,
+            },
+          },
+          create: {
+            contactId,
+            category: fact.category,
+            fact: fact.fact,
+            normalizedKey: fact.normalizedKey,
+            confidence: fact.confidence,
+            wordingClass: fact.wordingClass,
+            sourceCommunicationId: communicationId,
+            observedAt: fact.observedAt ? new Date(fact.observedAt) : comm.date,
+            lastSeenAt: comm.date,
+            expiresAt: fact.expiresAt ? new Date(fact.expiresAt) : null,
+            status: "active",
+            metadata: buildFactMetadata(fact, scrubOutput),
+          },
+          update: {
+            category: fact.category,
+            fact: fact.fact,
+            confidence: fact.confidence,
+            wordingClass: fact.wordingClass,
+            sourceCommunicationId: communicationId,
+            lastSeenAt: comm.date,
+            expiresAt: fact.expiresAt ? new Date(fact.expiresAt) : null,
+            status: "active",
+            metadata: buildFactMetadata(fact, scrubOutput),
+          },
+        })
+      }
+    }
   })
+}
+
+function shouldReviewProfileFact(
+  fact: ContactProfileFactSuggestion,
+  communicationId: string,
+  linkedContactId: string | null
+): linkedContactId is string {
+  if (!linkedContactId) return false
+  if (fact.contactId !== linkedContactId) return false
+  if (fact.sourceCommunicationId !== communicationId) return false
+  if (fact.expiresAt && new Date(fact.expiresAt).getTime() <= Date.now()) {
+    return false
+  }
+  return (
+    fact.confidence < 0.85 ||
+    fact.wordingClass === "caution" ||
+    fact.category === "personal" ||
+    FORBIDDEN_AUTO_FACT_PATTERN.test(fact.fact)
+  )
+}
+
+function shouldPersistProfileFacts(): boolean {
+  const mode = process.env.PROFILE_FACT_EXTRACTION_MODE
+  return mode === "live_only" || mode === "targeted_replay" || mode === "write"
+}
+
+const FORBIDDEN_AUTO_FACT_PATTERN =
+  /\b(disability|diagnosis|pregnant|pregnancy|religion|citizenship|bankrupt|bankruptcy|addict|addiction|depressed|anxious|cancer|divorce|lawsuit|legal trouble|debt|medical|health issue|ssn|social security)\b/i
+
+function shouldAutoSaveProfileFact(
+  fact: ContactProfileFactSuggestion,
+  communicationId: string,
+  linkedContactId: string | null
+): linkedContactId is string {
+  if (!linkedContactId) return false
+  if (fact.contactId !== linkedContactId) return false
+  if (fact.sourceCommunicationId !== communicationId) return false
+  if (fact.confidence < 0.85) return false
+  if (fact.wordingClass === "caution") return false
+  if (fact.category === "personal") return false
+  if (FORBIDDEN_AUTO_FACT_PATTERN.test(fact.fact)) return false
+  if (fact.expiresAt && new Date(fact.expiresAt).getTime() <= Date.now()) {
+    return false
+  }
+  return true
+}
+
+function buildFactMetadata(
+  fact: ContactProfileFactSuggestion,
+  scrubOutput: ScrubOutput
+): Prisma.InputJsonValue {
+  return {
+    evidence: fact.evidence,
+    promptVersion: scrubOutput.promptVersion || PROMPT_VERSION,
+    modelUsed: scrubOutput.modelUsed,
+    savedBy: "scrub-profile-fact",
+  } as Prisma.InputJsonValue
 }
 
 function getActionTargetEntity(action: SuggestedAction): string | null {

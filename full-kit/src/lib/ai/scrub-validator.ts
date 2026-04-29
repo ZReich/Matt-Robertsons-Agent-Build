@@ -6,6 +6,8 @@ import {
   DEAL_STAGES,
   MEMORY_TYPES,
   PRIORITIES,
+  PROFILE_FACT_CATEGORIES,
+  PROFILE_FACT_WORDING_CLASSES,
   SENTIMENTS,
   TOPIC_TAGS,
   URGENCIES,
@@ -127,6 +129,23 @@ const topLevelSchema = z.object({
       ]),
     })
   ),
+  profileFacts: z
+    .array(
+      z.object({
+        category: z.enum(PROFILE_FACT_CATEGORIES),
+        fact: z.string().min(1).max(500),
+        normalizedKey: z.string().min(1).max(160),
+        confidence: z.number().min(0).max(1),
+        wordingClass: z.enum(PROFILE_FACT_WORDING_CLASSES),
+        contactId: z.string().min(1),
+        sourceCommunicationId: z.string().min(1),
+        observedAt: z.string().datetime().optional(),
+        expiresAt: z.string().datetime().optional(),
+        evidence: z.string().max(300).optional(),
+      })
+    )
+    .max(8)
+    .default([]),
   suggestedActions: z
     .array(
       z.object({
@@ -206,6 +225,7 @@ export function validateScrubToolInput(
       sentiment: parsed.sentiment,
       linkedContactCandidates: parsed.linkedContactCandidates,
       linkedDealCandidates: parsed.linkedDealCandidates,
+      profileFacts: parsed.profileFacts,
     },
     suggestedActions: good,
     droppedActions: dropped.length,

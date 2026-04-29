@@ -98,6 +98,64 @@ describe("lead-apply-backfill", () => {
     expect(client.communication.updateMany).not.toHaveBeenCalled()
   })
 
+  it("dry-runs strong unknown sender evidence as auto-create", async () => {
+    const client = makeClient({
+      rows: [strongSenderRow()],
+      contacts: [],
+    })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: true, limit: 25, runId: "run-1" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({
+      would_auto_create_sender_contact: 1,
+    })
+    expect(client.contact.create).not.toHaveBeenCalled()
+  })
+
+  it("write mode auto-creates a sender contact for strong historical evidence", async () => {
+    const client = makeClient({
+      rows: [strongSenderRow()],
+      contacts: [],
+    })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-apply" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({ created_sender_contact: 1 })
+    expect(result.createdSenderContacts).toBe(1)
+    expect(result.communicationLinked).toBe(1)
+    expect(client.contact.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: "tenant@example.com",
+          createdBy: "historical-email-sender-auto-promotion",
+        }),
+      })
+    )
+    expect(client.communication.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          contactId: "contact-created",
+          metadata: expect.objectContaining({
+            backfill: expect.objectContaining({
+              leadApply: expect.objectContaining({
+                outcome: "created_sender_contact",
+                autoPromotion: expect.objectContaining({
+                  decision: "auto_create_contact",
+                }),
+              }),
+            }),
+          }),
+        }),
+      })
+    )
+  })
+
   it("links existing contacts for historical non-platform signal senders", async () => {
     const client = makeClient({
       rows: [senderRow()],
@@ -507,6 +565,36 @@ function senderRow(overrides: Record<string, unknown> = {}) {
   }
 }
 
+function strongSenderRow() {
+  return senderRow({
+    metadata: {
+      classification: "signal",
+      source: "known-counterparty",
+      from: {
+        address: "tenant@example.com",
+        displayName: "Tenant Prospect",
+        isInternal: false,
+      },
+      attachmentFetch: {
+        status: "success",
+        nonInlineCount: 1,
+      },
+      attachments: [
+        {
+          id: "att-1",
+          name: "space-plan.pdf",
+          contentType: "application/pdf",
+          isInline: false,
+        },
+      ],
+      behavioralHints: {
+        mattRepliedBefore: true,
+        threadSize: 2,
+      },
+    },
+  })
+}
+
 function bodyFor(email: string): string {
   return `New Lead From: Dana Lead | 406-555-0100 | ${email} | Listing ID 123`
 }
@@ -516,15 +604,18 @@ function contact({
   email,
   deals,
   leadSource = null,
+  archivedAt = null,
 }: {
   id: string
   email: string
   deals: number
   leadSource?: string | null
+  archivedAt?: Date | null
 }) {
   return {
     id,
     email,
+    archivedAt,
     leadSource,
     leadStatus: leadSource ? "new" : null,
     _count: { deals },
@@ -549,6 +640,7 @@ function makeClient({
       updateMany: vi.fn(async () => ({ count: updateCount })),
     },
     contact: {
+      findMany: vi.fn(async () => contacts),
       findFirst: vi.fn(async () => null),
       create: vi.fn(async () => ({ id: "contact-created" })),
     },

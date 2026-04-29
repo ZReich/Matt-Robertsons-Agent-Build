@@ -69,10 +69,12 @@ type ScrubClient = (input: {
 }) => Promise<ClaudeScrubResponse>
 
 export function buildScrubPromptPayload(comm: {
+  id?: string
   subject: string | null
   body: string | null
   date: Date
   metadata: unknown
+  contactId?: string | null
 }) {
   const metadata =
     comm.metadata &&
@@ -89,6 +91,8 @@ export function buildScrubPromptPayload(comm: {
       : undefined
 
   return {
+    id: comm.id,
+    linkedContactId: comm.contactId,
     subject: comm.subject,
     receivedDate: comm.date.toISOString(),
     body: (comm.body ?? "").slice(0, 4000),
@@ -119,10 +123,12 @@ function renderPerEmailPrompt({
   threadContext,
 }: {
   comm: {
+    id?: string
     subject: string | null
     body: string | null
     date: Date
     metadata: unknown
+    contactId?: string | null
   }
   matches: Awaited<ReturnType<typeof runHeuristicLinker>>
   openTodos: Awaited<ReturnType<typeof loadOpenTodoCandidates>>

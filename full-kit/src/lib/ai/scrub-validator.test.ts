@@ -66,6 +66,55 @@ describe("validateScrubToolInput", () => {
     ])
   })
 
+  it("keeps profile facts separate from suggested actions", () => {
+    const result = validateScrubToolInput({
+      ...baseScrub,
+      profileFacts: [
+        {
+          category: "communication_style",
+          fact: "Prefers email for scheduling.",
+          normalizedKey: "communication_style:prefers_email",
+          confidence: 0.91,
+          wordingClass: "operational",
+          contactId: "contact-1",
+          sourceCommunicationId: "comm-1",
+        },
+      ],
+      suggestedActions: [],
+    })
+
+    expect(result.suggestedActions).toHaveLength(0)
+    expect(result.scrubOutput.profileFacts).toEqual([
+      {
+        category: "communication_style",
+        fact: "Prefers email for scheduling.",
+        normalizedKey: "communication_style:prefers_email",
+        confidence: 0.91,
+        wordingClass: "operational",
+        contactId: "contact-1",
+        sourceCommunicationId: "comm-1",
+      },
+    ])
+  })
+
+  it("rejects profile facts without source communication provenance", () => {
+    expect(() =>
+      validateScrubToolInput({
+        ...baseScrub,
+        profileFacts: [
+          {
+            category: "communication_style",
+            fact: "Prefers email.",
+            normalizedKey: "communication_style:prefers_email",
+            confidence: 0.91,
+            wordingClass: "operational",
+            contactId: "contact-1",
+          },
+        ],
+      })
+    ).toThrow(ScrubValidationError)
+  })
+
   it("drops invalid mark-todo-done actions in relaxed mode", () => {
     const result = validateScrubToolInput(
       {
