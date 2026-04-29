@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer"
 
 import { Prisma } from "@prisma/client"
 
+import { resolveDeterministicContactMatch } from "@/lib/contact-link"
 import { db } from "@/lib/prisma"
 
 export const COVERAGE_POLICY_VERSION = "coverage-review-v1"
@@ -105,6 +106,10 @@ export type CoverageActionStatus =
   | "enqueued"
   | "would_requeue"
   | "requeued"
+  | "would_link"
+  | "linked"
+  | "would_create_candidate"
+  | "candidate_created"
   | "noop"
   | "unsupported"
 
@@ -613,20 +618,12 @@ export async function applyCoverageReviewAction(
     }
   }
 
-  if (
-    input.action === "create_contact_candidate" ||
-    input.action === "deterministic_link_contact"
-  ) {
-    return {
-      ok: true,
-      dryRun: input.dryRun,
-      action: input.action,
-      reviewItemId,
-      status: "unsupported",
-      unsupportedReason:
-        "Contact candidate creation and deterministic contact linking are intentionally deferred to the identity/linking lane.",
-      reviewStatus: review.status,
-    }
+  if (input.action === "deterministic_link_contact") {
+    return applyDeterministicLinkContact(client, review, input, now)
+  }
+
+  if (input.action === "create_contact_candidate") {
+    return applyCreateContactCandidate(client, review, input, now)
   }
 
   if (input.dryRun) {
@@ -793,6 +790,256 @@ async function updateOpenReview(
     data,
   })
   return result.count === 1
+}
+
+async function applyDeterministicLinkContact(
+  client: CoverageDb,
+  review: ReviewRecord,
+  input: {
+    action: CoverageAction
+    dryRun: boolean
+    runId: string | null
+    reason: string | null
+    reviewer: string
+  },
+  now: Date
+): Promise<CoverageActionResult> {
+  const sourceEmail = await loadSourceEmail(client, review.communicationId)
+  const resolution = await resolveDeterministicContactMatch(
+    { email: sourceEmail.email, isInternal: sourceEmail.isInternal },
+    client
+  )
+
+  if (resolution.kind === "blocked") {
+    return unsupportedResult(input, review, resolution.reason)
+  }
+  if (resolution.kind === "multiple") {
+    return unsupportedResult(input, review, "multiple_active_contacts")
+  }
+  if (resolution.kind === "none") {
+    return unsupportedResult(input, review, "no_active_contact_match")
+  }
+
+  if (
+    sourceEmail.contactId &&
+    sourceEmail.contactId !== resolution.contactId
+  ) {
+    return unsupportedResult(input, review, "conflicting_contact_link")
+  }
+  if (sourceEmail.contactId === resolution.contactId) {
+    return {
+      ok: true,
+      dryRun: input.dryRun,
+      action: input.action,
+      reviewItemId: review.id,
+      status: "noop",
+      reviewStatus: review.status,
+    }
+  }
+
+  if (input.dryRun) {
+    if (input.runId) {
+      await rememberDryRun(client, review.id, input.action, input.runId, now)
+    }
+    return {
+      ok: true,
+      dryRun: true,
+      action: input.action,
+      reviewItemId: review.id,
+      status: "would_link",
+      reviewStatus: review.status,
+    }
+  }
+
+  await requirePriorDryRun(client, review.id, input.action, input.runId)
+
+  return runReviewMutation(client, review.id, async (tx) => {
+    const linked = await tx.communication.updateMany({
+      where: { id: review.communicationId, contactId: null },
+      data: { contactId: resolution.contactId },
+    })
+    if (linked.count !== 1) {
+      return {
+        ok: true,
+        dryRun: false,
+        action: input.action,
+        reviewItemId: review.id,
+        status: "noop",
+        reviewStatus: review.status,
+      }
+    }
+    const updated = await updateOpenReview(tx, review.id, {
+      status: "resolved",
+      operatorOutcome: "deterministic_link",
+      operatorNotes: input.reason,
+      resolvedBy: input.reviewer,
+      resolvedAt: now,
+    })
+    if (!updated) return staleReviewResult(review.id, input.action)
+    return {
+      ok: true,
+      dryRun: false,
+      action: input.action,
+      reviewItemId: review.id,
+      status: "linked",
+      reviewStatus: "resolved",
+    }
+  })
+}
+
+async function applyCreateContactCandidate(
+  client: CoverageDb,
+  review: ReviewRecord,
+  input: {
+    action: CoverageAction
+    dryRun: boolean
+    runId: string | null
+    reason: string | null
+    reviewer: string
+  },
+  now: Date
+): Promise<CoverageActionResult> {
+  const sourceEmail = await loadSourceEmail(client, review.communicationId)
+  const normalizedEmail = normalizeSourceEmailValue(sourceEmail.email)
+  if (!normalizedEmail) {
+    return unsupportedResult(input, review, "invalid_email")
+  }
+  if (sourceEmail.isInternal === true) {
+    return unsupportedResult(input, review, "internal_sender")
+  }
+
+  const dedupeKey = `email-sender:${normalizedEmail}`
+  const existing = await client.contactPromotionCandidate.findUnique({
+    where: { dedupeKey },
+    select: { id: true },
+  })
+
+  if (existing) {
+    return {
+      ok: true,
+      dryRun: input.dryRun,
+      action: input.action,
+      reviewItemId: review.id,
+      status: "noop",
+      reviewStatus: review.status,
+    }
+  }
+
+  if (input.dryRun) {
+    if (input.runId) {
+      await rememberDryRun(client, review.id, input.action, input.runId, now)
+    }
+    return {
+      ok: true,
+      dryRun: true,
+      action: input.action,
+      reviewItemId: review.id,
+      status: "would_create_candidate",
+      reviewStatus: review.status,
+    }
+  }
+
+  await requirePriorDryRun(client, review.id, input.action, input.runId)
+
+  return runReviewMutation(client, review.id, async (tx) => {
+    const collision = await tx.contactPromotionCandidate.findUnique({
+      where: { dedupeKey },
+      select: { id: true },
+    })
+    if (collision) {
+      return {
+        ok: true,
+        dryRun: false,
+        action: input.action,
+        reviewItemId: review.id,
+        status: "noop",
+        reviewStatus: review.status,
+      }
+    }
+    await tx.contactPromotionCandidate.create({
+      data: {
+        dedupeKey,
+        normalizedEmail,
+        source: "coverage-review",
+        sourceKind: review.type,
+        status: "pending",
+        firstSeenAt: now,
+        lastSeenAt: now,
+        communicationId: review.communicationId,
+        metadata: {
+          firstCommunicationId: review.communicationId,
+          lastCommunicationId: review.communicationId,
+          communicationIds: [review.communicationId],
+          coverageReviewId: review.id,
+          coverageReviewType: review.type,
+        } as Prisma.InputJsonValue,
+      },
+    })
+    const updated = await updateOpenReview(tx, review.id, {
+      status: "resolved",
+      operatorOutcome: "create_contact_candidate",
+      operatorNotes: input.reason,
+      resolvedBy: input.reviewer,
+      resolvedAt: now,
+    })
+    if (!updated) return staleReviewResult(review.id, input.action)
+    return {
+      ok: true,
+      dryRun: false,
+      action: input.action,
+      reviewItemId: review.id,
+      status: "candidate_created",
+      reviewStatus: "resolved",
+    }
+  })
+}
+
+async function loadSourceEmail(
+  client: CoverageDb,
+  communicationId: string
+): Promise<{
+  email: string | null
+  isInternal: boolean | null
+  contactId: string | null
+}> {
+  const comm = await client.communication.findUnique({
+    where: { id: communicationId },
+    select: { id: true, contactId: true, metadata: true },
+  })
+  if (!comm) return { email: null, isInternal: null, contactId: null }
+  const metadata = isObject(comm.metadata) ? comm.metadata : {}
+  const from = isObject(metadata.from) ? metadata.from : {}
+  const address = typeof from.address === "string" ? from.address : null
+  const isInternal =
+    typeof from.isInternal === "boolean" ? from.isInternal : null
+  return { email: address, isInternal, contactId: comm.contactId }
+}
+
+function normalizeSourceEmailValue(
+  value: string | null | undefined
+): string | null {
+  if (typeof value !== "string") return null
+  const trimmed = value.trim().toLowerCase()
+  if (!trimmed) return null
+  const atIdx = trimmed.indexOf("@")
+  if (atIdx <= 0 || atIdx === trimmed.length - 1) return null
+  return trimmed
+}
+
+function unsupportedResult(
+  input: { action: CoverageAction; dryRun: boolean },
+  review: ReviewRecord,
+  reason: string
+): CoverageActionResult {
+  return {
+    ok: true,
+    dryRun: input.dryRun,
+    action: input.action,
+    reviewItemId: review.id,
+    status: "unsupported",
+    unsupportedReason: reason,
+    reviewStatus: review.status,
+  }
 }
 
 async function runReviewMutation<T>(

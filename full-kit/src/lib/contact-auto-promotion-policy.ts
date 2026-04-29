@@ -234,7 +234,7 @@ function result(
   }
 }
 
-function isPlatformLeadSource(source: string | null): boolean {
+export function isPlatformLeadSource(source: string | null): boolean {
   return (
     source === "crexi-lead" ||
     source === "loopnet-lead" ||
@@ -242,7 +242,7 @@ function isPlatformLeadSource(source: string | null): boolean {
   )
 }
 
-function isBlockedAutomationAddress(email: string): boolean {
+export function isBlockedAutomationAddress(email: string): boolean {
   const [local = "", domain = ""] = email.split("@")
   if (
     /^(no-?reply|do-?not-?reply|notification|notifications|mailer|postmaster)$/i.test(
@@ -261,7 +261,7 @@ function isBlockedAutomationAddress(email: string): boolean {
   ].some((blocked) => domain === blocked || domain.endsWith(`.${blocked}`))
 }
 
-function isRoleAccount(email: string): boolean {
+export function isRoleAccount(email: string): boolean {
   const local = email.split("@")[0] ?? ""
   return /^(info|admin|office|leasing|sales|support|hello|contact|team)$/i.test(
     local
