@@ -171,6 +171,41 @@ describe("coverage review item actions route", () => {
     })
   })
 
+  it("forwards deterministic_link_contact dry-run with the reviewer label", async () => {
+    process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
+    vi.mocked(getSession).mockResolvedValue(session())
+    vi.mocked(applyCoverageReviewAction).mockResolvedValue({
+      ok: true,
+      dryRun: true,
+      action: "deterministic_link_contact",
+      reviewItemId: "review-1",
+      status: "would_link",
+      reviewStatus: "open",
+    })
+
+    const response = await POST(
+      request({
+        action: "deterministic_link_contact",
+        dryRun: true,
+        runId: "run-1",
+      }),
+      params()
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      status: "would_link",
+    })
+    expect(applyCoverageReviewAction).toHaveBeenCalledWith("review-1", {
+      action: "deterministic_link_contact",
+      dryRun: true,
+      runId: "run-1",
+      reason: null,
+      snoozedUntil: null,
+      reviewer: "Zach Reviewer",
+    })
+  })
+
   it("rejects malformed runId formats before invoking the service", async () => {
     process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
     vi.mocked(getSession).mockResolvedValue(session())

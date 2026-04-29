@@ -1,10 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
+  COVERAGE_BATCH_ACTION_MAX,
   applyCoverageReviewAction,
+  applyCoverageReviewActionBatch,
   dedupeKey,
   listCoverageReviewItems,
   minimizeOperationalReviewMetadata,
+  parseBatchReviewActionPayload,
   parseReviewActionPayload,
   parseReviewItemsQuery,
   reasonKey,
@@ -383,15 +386,99 @@ describe("communication coverage service", () => {
     expect(client.operationalEmailReview.create).not.toHaveBeenCalled()
   })
 
-  it("returns structured unsupported responses for coupled identity actions", async () => {
+  it("dry-runs would_link for deterministic_link_contact when one active contact matches", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      reasonCodes: ["orphaned_signal"],
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      policyVersion: "coverage-review-v1",
+      riskScore: 75,
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const findMany = vi.fn().mockResolvedValue([{ id: "contact-7" }])
     const client = {
       operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+      },
+      communication: {
         findUnique: vi.fn().mockResolvedValue({
-          id: "review-1",
-          communicationId: "comm-1",
-          status: "open",
+          id: "comm-1",
+          contactId: null,
+          metadata: {
+            from: { address: "Tenant@Example.COM", isInternal: false },
+          },
         }),
       },
+      contact: { findMany },
+      systemState: { upsert: vi.fn().mockResolvedValue({}) },
+    }
+
+    const result = await applyCoverageReviewAction(
+      "review-1",
+      {
+        action: "deterministic_link_contact",
+        dryRun: true,
+        runId: "run-1",
+        reason: null,
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result).toMatchObject({
+      status: "would_link",
+      reviewItemId: "review-1",
+    })
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          email: { equals: "tenant@example.com", mode: "insensitive" },
+          archivedAt: null,
+        }),
+        take: 2,
+      })
+    )
+  })
+
+  it("blocks deterministic_link_contact when more than one active contact matches the email", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      policyVersion: "coverage-review-v1",
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      riskScore: 75,
+      reasonCodes: ["orphaned_signal"],
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const updateMany = vi.fn()
+    const updateComm = vi.fn()
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+        updateMany,
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "tenant@example.com" } },
+        }),
+        update: updateComm,
+      },
+      contact: {
+        findMany: vi.fn().mockResolvedValue([{ id: "c-1" }, { id: "c-2" }]),
+      },
+      systemState: { upsert: vi.fn().mockResolvedValue({}) },
     }
 
     const result = await applyCoverageReviewAction(
@@ -409,8 +496,426 @@ describe("communication coverage service", () => {
 
     expect(result).toMatchObject({
       status: "unsupported",
-      unsupportedReason: expect.stringContaining("deferred"),
+      unsupportedReason: "multiple_active_contacts",
     })
+    expect(updateMany).not.toHaveBeenCalled()
+    expect(updateComm).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ["noreply@example.com", false, "automation_or_platform_address"],
+    ["info@vendor.com", false, "role_account"],
+    ["matt@robertson.com", true, "internal_sender"],
+  ])(
+    "blocks deterministic_link_contact for %s",
+    async (address, isInternal, expectedReason) => {
+      const review = {
+        id: "review-1",
+        communicationId: "comm-1",
+        type: "orphaned_context",
+        status: "open",
+        policyVersion: "coverage-review-v1",
+        reasonKey: "orphaned_signal",
+        dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+        recommendedAction: "review_contact_linkage",
+        riskScore: 75,
+        reasonCodes: ["orphaned_signal"],
+        createdAt: new Date("2026-04-29T12:00:00Z"),
+      }
+      const findMany = vi
+        .fn()
+        .mockResolvedValue([{ id: "should-not-be-used" }])
+      const client = {
+        operationalEmailReview: {
+          findUnique: vi.fn().mockResolvedValue(review),
+        },
+        communication: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "comm-1",
+            contactId: null,
+            metadata: { from: { address, isInternal } },
+          }),
+        },
+        contact: { findMany },
+        systemState: { upsert: vi.fn().mockResolvedValue({}) },
+      }
+      const result = await applyCoverageReviewAction(
+        "review-1",
+        {
+          action: "deterministic_link_contact",
+          dryRun: true,
+          runId: "run-1",
+          reason: null,
+          snoozedUntil: null,
+          reviewer: "Reviewer",
+        },
+        client as never
+      )
+      expect(result).toMatchObject({
+        status: "unsupported",
+        unsupportedReason: expectedReason,
+      })
+      expect(findMany).not.toHaveBeenCalled()
+    }
+  )
+
+  it("requires a prior dry-run before deterministic_link_contact writes", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      policyVersion: "coverage-review-v1",
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      riskScore: 75,
+      reasonCodes: ["orphaned_signal"],
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+        updateMany: vi.fn(),
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "tenant@example.com" } },
+        }),
+        update: vi.fn(),
+      },
+      contact: {
+        findMany: vi.fn().mockResolvedValue([{ id: "contact-7" }]),
+      },
+      systemState: { findUnique: vi.fn().mockResolvedValue(null) },
+    }
+
+    await expect(
+      applyCoverageReviewAction(
+        "review-1",
+        {
+          action: "deterministic_link_contact",
+          dryRun: false,
+          runId: "run-1",
+          reason: null,
+          snoozedUntil: null,
+          reviewer: "Reviewer",
+        },
+        client as never
+      )
+    ).rejects.toThrow("dry run required before write")
+  })
+
+  it("links the contact in a transaction and resolves the review with deterministic_link outcome", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      policyVersion: "coverage-review-v1",
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      riskScore: 75,
+      reasonCodes: ["orphaned_signal"],
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const queryRaw = vi.fn().mockResolvedValue([])
+    const reviewUpdateMany = vi.fn().mockResolvedValue({ count: 1 })
+    const commUpdate = vi.fn().mockResolvedValue({ count: 1 })
+    const client: Record<string, unknown> = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+        updateMany: reviewUpdateMany,
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "tenant@example.com" } },
+        }),
+        updateMany: commUpdate,
+      },
+      contact: {
+        findMany: vi.fn().mockResolvedValue([{ id: "contact-7" }]),
+      },
+      systemState: {
+        findUnique: vi.fn().mockResolvedValue({ key: "dry-run" }),
+        upsert: vi.fn(),
+      },
+      $queryRaw: queryRaw,
+    }
+    client.$transaction = vi.fn(
+      async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+    )
+
+    const result = await applyCoverageReviewAction(
+      "review-1",
+      {
+        action: "deterministic_link_contact",
+        dryRun: false,
+        runId: "run-1",
+        reason: "matched by email",
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result).toMatchObject({ status: "linked" })
+    expect(client.$transaction).toHaveBeenCalledTimes(1)
+    expect(queryRaw).toHaveBeenCalled()
+    expect(commUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "comm-1", contactId: null },
+        data: { contactId: "contact-7" },
+      })
+    )
+    expect(reviewUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: "resolved",
+          operatorOutcome: "deterministic_link",
+        }),
+      })
+    )
+  })
+
+  it("dry-runs would_create_candidate when no candidate exists for the sender email", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      policyVersion: "coverage-review-v1",
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      riskScore: 75,
+      reasonCodes: ["orphaned_signal"],
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const candidateCreate = vi.fn()
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "tenant@example.com" } },
+        }),
+      },
+      contactPromotionCandidate: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        create: candidateCreate,
+      },
+      systemState: { upsert: vi.fn().mockResolvedValue({}) },
+    }
+
+    const result = await applyCoverageReviewAction(
+      "review-1",
+      {
+        action: "create_contact_candidate",
+        dryRun: true,
+        runId: "run-1",
+        reason: null,
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result).toMatchObject({ status: "would_create_candidate" })
+    expect(candidateCreate).not.toHaveBeenCalled()
+  })
+
+  it("returns noop on create_contact_candidate dry-run when a candidate already exists", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      policyVersion: "coverage-review-v1",
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      riskScore: 75,
+      reasonCodes: ["orphaned_signal"],
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "tenant@example.com" } },
+        }),
+      },
+      contactPromotionCandidate: {
+        findUnique: vi.fn().mockResolvedValue({ id: "cand-1" }),
+        create: vi.fn(),
+      },
+      systemState: { upsert: vi.fn().mockResolvedValue({}) },
+    }
+
+    const result = await applyCoverageReviewAction(
+      "review-1",
+      {
+        action: "create_contact_candidate",
+        dryRun: true,
+        runId: "run-1",
+        reason: null,
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result).toMatchObject({ status: "noop" })
+  })
+
+  it("creates a candidate inside a transaction and resolves the review on write", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      policyVersion: "coverage-review-v1",
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      riskScore: 75,
+      reasonCodes: ["orphaned_signal"],
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const queryRaw = vi.fn().mockResolvedValue([])
+    const create = vi.fn().mockResolvedValue({ id: "cand-2" })
+    const reviewUpdateMany = vi.fn().mockResolvedValue({ count: 1 })
+    const client: Record<string, unknown> = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+        updateMany: reviewUpdateMany,
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "tenant@example.com" } },
+        }),
+      },
+      contactPromotionCandidate: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        create,
+      },
+      systemState: {
+        findUnique: vi.fn().mockResolvedValue({ key: "dry-run" }),
+        upsert: vi.fn(),
+      },
+      $queryRaw: queryRaw,
+    }
+    client.$transaction = vi.fn(
+      async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+    )
+
+    const result = await applyCoverageReviewAction(
+      "review-1",
+      {
+        action: "create_contact_candidate",
+        dryRun: false,
+        runId: "run-1",
+        reason: null,
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result).toMatchObject({ status: "candidate_created" })
+    expect(client.$transaction).toHaveBeenCalledTimes(1)
+    expect(queryRaw).toHaveBeenCalled()
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          dedupeKey: "email-sender:tenant@example.com",
+          normalizedEmail: "tenant@example.com",
+          communicationId: "comm-1",
+        }),
+      })
+    )
+    expect(reviewUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: "resolved",
+          operatorOutcome: "create_contact_candidate",
+        }),
+      })
+    )
+  })
+
+  it("returns noop on create_contact_candidate write when a candidate already exists", async () => {
+    const review = {
+      id: "review-1",
+      communicationId: "comm-1",
+      type: "orphaned_context",
+      status: "open",
+      policyVersion: "coverage-review-v1",
+      reasonKey: "orphaned_signal",
+      dedupeKey: "comm-1|orphaned_context|orphaned_signal",
+      recommendedAction: "review_contact_linkage",
+      riskScore: 75,
+      reasonCodes: ["orphaned_signal"],
+      createdAt: new Date("2026-04-29T12:00:00Z"),
+    }
+    const queryRaw = vi.fn().mockResolvedValue([])
+    const create = vi.fn()
+    const client: Record<string, unknown> = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue(review),
+        updateMany: vi.fn(),
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "tenant@example.com" } },
+        }),
+      },
+      contactPromotionCandidate: {
+        findUnique: vi.fn().mockResolvedValue({ id: "cand-existing" }),
+        create,
+      },
+      systemState: {
+        findUnique: vi.fn().mockResolvedValue({ key: "dry-run" }),
+        upsert: vi.fn(),
+      },
+      $queryRaw: queryRaw,
+    }
+    client.$transaction = vi.fn(
+      async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+    )
+
+    const result = await applyCoverageReviewAction(
+      "review-1",
+      {
+        action: "create_contact_candidate",
+        dryRun: false,
+        runId: "run-1",
+        reason: null,
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result).toMatchObject({ status: "noop" })
+    expect(create).not.toHaveBeenCalled()
   })
 
   it("strictly rejects invalid action payloads", () => {
@@ -1135,5 +1640,272 @@ describe("communication coverage service", () => {
         where: { id: "review-lock", status: { in: ["open", "snoozed"] } },
       })
     )
+  })
+
+  it("strictly validates batch action payloads", () => {
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: true,
+        selectAll: true,
+      })
+    ).toThrow("unknown body key: selectAll")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "bogus",
+        reviewItemIds: ["review-1"],
+        dryRun: true,
+      })
+    ).toThrow("invalid action")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: [],
+        dryRun: true,
+      })
+    ).toThrow("reviewItemIds is required")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: "review-1",
+        dryRun: true,
+      })
+    ).toThrow("reviewItemIds must be an array")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1", 7],
+        dryRun: true,
+      })
+    ).toThrow("invalid reviewItemId")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1", "   "],
+        dryRun: true,
+      })
+    ).toThrow("invalid reviewItemId")
+
+    const oversize = Array.from(
+      { length: COVERAGE_BATCH_ACTION_MAX + 1 },
+      (_, i) => `review-${i}`
+    )
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: oversize,
+        dryRun: true,
+      })
+    ).toThrow("reviewItemIds exceeds batch cap")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: false,
+      })
+    ).toThrow("runId is required")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: false,
+        runId: "not legal id!!",
+      })
+    ).toThrow("invalid runId")
+
+    expect(() =>
+      parseBatchReviewActionPayload({
+        action: "mark_true_noise",
+        reviewItemIds: ["review-1"],
+        dryRun: true,
+        snoozedUntil: new Date(Date.now() + 86_400_000).toISOString(),
+      })
+    ).toThrow("snoozedUntil only allowed")
+  })
+
+  it("returns parsed batch payload with reviewItemIds preserved in order", () => {
+    const future = new Date(Date.now() + 86_400_000).toISOString()
+    const payload = parseBatchReviewActionPayload({
+      action: "snooze",
+      reviewItemIds: ["  review-1  ", "review-2"],
+      dryRun: false,
+      runId: "run-1",
+      reason: "wait",
+      snoozedUntil: future,
+    })
+
+    expect(payload).toMatchObject({
+      action: "snooze",
+      reviewItemIds: ["review-1", "review-2"],
+      dryRun: false,
+      runId: "run-1",
+      reason: "wait",
+    })
+    expect(payload.snoozedUntil).toBeInstanceOf(Date)
+  })
+
+  it("reports per-row outcomes and is idempotent on re-run", async () => {
+    type ReviewState = "open" | "resolved"
+    const reviewState = new Map<string, ReviewState>([
+      ["review-a", "open"],
+      ["review-b", "open"],
+      ["review-c", "resolved"],
+    ])
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn(async ({ where }: { where: { id: string } }) => {
+          const status = reviewState.get(where.id)
+          if (!status) return null
+          return {
+            id: where.id,
+            communicationId: `comm-${where.id}`,
+            type: "suspicious_noise",
+            status,
+            reasonCodes: ["noise_cre_terms"],
+            reasonKey: "noise_cre_terms",
+            dedupeKey: `${where.id}|suspicious_noise|noise_cre_terms`,
+            recommendedAction: "review_noise_classification",
+            policyVersion: "coverage-review-v1",
+            riskScore: 50,
+            createdAt: new Date("2026-04-29T12:00:00Z"),
+          }
+        }),
+        updateMany: vi.fn(
+          async ({ where }: { where: { id: string; status?: unknown } }) => {
+            if (reviewState.get(where.id) === "open") {
+              reviewState.set(where.id, "resolved")
+              return { count: 1 }
+            }
+            return { count: 0 }
+          }
+        ),
+      },
+      systemState: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ key: "dry-run", value: { runId: "run-1" } }),
+        upsert: vi.fn().mockResolvedValue({}),
+      },
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      $transaction: vi.fn(
+        async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+      ),
+    }
+
+    const first = await applyCoverageReviewActionBatch(
+      ["review-a", "review-b", "review-c"],
+      {
+        action: "mark_true_noise",
+        dryRun: false,
+        runId: "run-1",
+        reason: "confirmed",
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(first.summary).toEqual({
+      count: 3,
+      applied: 2,
+      skipped: 1,
+      unsupported: 0,
+    })
+    expect(first.results.map((row) => row.reviewItemId)).toEqual([
+      "review-a",
+      "review-b",
+      "review-c",
+    ])
+    expect(first.results[0]).toMatchObject({ status: "updated" })
+    expect(first.results[1]).toMatchObject({ status: "updated" })
+    expect(first.results[2]).toMatchObject({ status: "noop" })
+    expect(client.$transaction).toHaveBeenCalledTimes(2)
+
+    const second = await applyCoverageReviewActionBatch(
+      ["review-a", "review-b", "review-c"],
+      {
+        action: "mark_true_noise",
+        dryRun: false,
+        runId: "run-1",
+        reason: "confirmed",
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(second.summary).toEqual({
+      count: 3,
+      applied: 0,
+      skipped: 3,
+      unsupported: 0,
+    })
+    for (const row of second.results) {
+      expect(row).toMatchObject({ status: "noop" })
+    }
+  })
+
+  it("flags unsupported identity actions per row without mutating", async () => {
+    const client = {
+      operationalEmailReview: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "review-1",
+          communicationId: "comm-1",
+          status: "open",
+        }),
+        updateMany: vi.fn(),
+      },
+      communication: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "comm-1",
+          contactId: null,
+          metadata: { from: { address: "matt@robertson.com", isInternal: true } },
+        }),
+      },
+      contact: {
+        findMany: vi.fn(),
+      },
+      systemState: {
+        findUnique: vi.fn(),
+        upsert: vi.fn(),
+      },
+      $transaction: vi.fn(),
+    }
+
+    const result = await applyCoverageReviewActionBatch(
+      ["review-1", "review-2"],
+      {
+        action: "deterministic_link_contact",
+        dryRun: true,
+        runId: "run-1",
+        reason: null,
+        snoozedUntil: null,
+        reviewer: "Reviewer",
+      },
+      client as never
+    )
+
+    expect(result.summary).toEqual({
+      count: 2,
+      applied: 0,
+      skipped: 0,
+      unsupported: 2,
+    })
+    for (const row of result.results) {
+      expect(row).toMatchObject({
+        status: "unsupported",
+        unsupportedReason: "internal_sender",
+      })
+    }
+    expect(client.operationalEmailReview.updateMany).not.toHaveBeenCalled()
+    expect(client.contact.findMany).not.toHaveBeenCalled()
   })
 })
