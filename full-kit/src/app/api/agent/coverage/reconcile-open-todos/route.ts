@@ -5,6 +5,8 @@ import {
   ReconciliationInputError,
   reconcileOpenTodosFromOutbound,
 } from "@/lib/ai/outbound-todo-reconciliation"
+import { COVERAGE_POLICY_VERSION } from "@/lib/coverage/communication-coverage"
+import { recordCoverageActionAudit } from "@/lib/coverage/coverage-observability"
 import {
   ReviewerAuthError,
   assertJsonRequest,
@@ -27,7 +29,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     assertSameOriginRequest(request)
     assertJsonRequest(request)
-    await requireAgentReviewer()
+    const reviewer = await requireAgentReviewer()
     const parsed = payloadSchema.safeParse(await request.json())
     if (!parsed.success) {
       return NextResponse.json(
@@ -36,6 +38,23 @@ export async function POST(request: Request): Promise<Response> {
       )
     }
     const result = await reconcileOpenTodosFromOutbound(parsed.data)
+    await recordCoverageActionAudit({
+      actor: reviewer.label,
+      action: "reconcile_open_todos_from_outbound",
+      runId: result.runId ?? parsed.data.runId ?? null,
+      dryRun: parsed.data.mode === "dry-run",
+      policyVersion: COVERAGE_POLICY_VERSION,
+      reviewItemIds: [],
+      outcome: {
+        applied:
+          parsed.data.mode === "dry-run"
+            ? result.candidateCount
+            : result.createdActionCount,
+        skipped:
+          parsed.data.mode === "dry-run" ? 0 : result.duplicateSuppressedCount,
+        unsupported: 0,
+      },
+    })
     return NextResponse.json({ ok: true, ...result })
   } catch (error) {
     if (error instanceof ReviewerAuthError) {

@@ -5,6 +5,7 @@ import {
   reconcileOpenTodosFromOutbound,
 } from "@/lib/ai/outbound-todo-reconciliation"
 import { getSession } from "@/lib/auth"
+import { recordCoverageActionAudit } from "@/lib/coverage/coverage-observability"
 
 import { POST } from "./route"
 
@@ -17,12 +18,18 @@ vi.mock("@/lib/ai/outbound-todo-reconciliation", () => ({
   reconcileOpenTodosFromOutbound: vi.fn(),
 }))
 
+vi.mock("@/lib/coverage/coverage-observability", () => ({
+  recordCoverageActionAudit: vi.fn().mockResolvedValue({ id: "audit-1" }),
+}))
+
 describe("reconcile open todos route", () => {
   beforeEach(() => {
     delete process.env.AGENT_ACTION_REVIEWER_EMAILS
     delete process.env.AGENT_ACTION_REVIEWER_IDS
     vi.mocked(getSession).mockReset()
     vi.mocked(reconcileOpenTodosFromOutbound).mockReset()
+    vi.mocked(recordCoverageActionAudit).mockClear()
+    vi.mocked(recordCoverageActionAudit).mockResolvedValue({ id: "audit-1" })
   })
 
   it("requires a configured reviewer", async () => {
