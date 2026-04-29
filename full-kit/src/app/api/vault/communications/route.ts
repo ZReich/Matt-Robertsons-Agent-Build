@@ -3,6 +3,10 @@ import { NextResponse } from "next/server"
 import type { CommunicationMeta } from "@/lib/vault"
 
 import {
+  requireApiUser,
+  validateJsonMutationRequest,
+} from "@/lib/api-route-auth"
+import {
   createNote,
   deleteNote,
   listNotes,
@@ -12,6 +16,9 @@ import {
 
 export async function GET(req: Request) {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+
     const { searchParams } = new URL(req.url)
     const notePath = searchParams.get("path")
     const channel = searchParams.get("channel")
@@ -59,6 +66,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateJsonMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const body = await req.json()
     const {
       channel,
@@ -122,6 +134,11 @@ function isValidCommPath(p: string): boolean {
 
 export async function PATCH(req: Request) {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateJsonMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const body = await req.json()
     const { path, ...updates } = body as {
       path: string
@@ -147,6 +164,11 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateJsonMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const { path } = (await req.json()) as { path: string }
 
     if (!path || !isValidCommPath(path)) {

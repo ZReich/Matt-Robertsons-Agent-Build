@@ -2,10 +2,17 @@ import { NextResponse } from "next/server"
 
 import type { ContactMeta } from "@/lib/vault"
 
+import {
+  requireApiUser,
+  validateJsonMutationRequest,
+} from "@/lib/api-route-auth"
 import { createNote, deleteNote, listNotes, updateNote } from "@/lib/vault"
 
 export async function GET() {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+
     const notes = await listNotes<ContactMeta>("contacts")
 
     return NextResponse.json(notes)
@@ -20,6 +27,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateJsonMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const body = await req.json()
     const { name, role, company, email, phone, address, content = "" } = body
 
@@ -59,6 +71,11 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateJsonMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const body = await req.json()
     const { path, ...updates } = body as { path: string } & Partial<ContactMeta>
 
@@ -79,6 +96,11 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+    const invalidRequest = validateJsonMutationRequest(req)
+    if (invalidRequest) return invalidRequest
+
     const { path } = (await req.json()) as { path: string }
 
     if (!path) {

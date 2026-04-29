@@ -20,6 +20,7 @@ export type OpenTodoCandidate = {
   contactId: string | null
   dealId: string | null
   communicationId: string | null
+  createdAt: string
   updatedAt: string
 }
 
@@ -32,6 +33,27 @@ function asRecord(value: unknown): MetadataRecord {
 function metadataString(metadata: unknown, key: string): string | null {
   const value = asRecord(metadata)[key]
   return typeof value === "string" ? value : null
+}
+
+function recipientEmail(recipient: unknown): string | null {
+  const emailAddress = asRecord(asRecord(recipient).emailAddress)
+  const address =
+    typeof emailAddress.address === "string" ? emailAddress.address : null
+  return address?.trim().toLowerCase() || null
+}
+
+export function extractOutboundRecipientEmails(metadata: unknown): string[] {
+  const record = asRecord(metadata)
+  const emails = new Set<string>()
+  for (const key of ["toRecipients", "ccRecipients"]) {
+    const recipients = record[key]
+    if (!Array.isArray(recipients)) continue
+    for (const recipient of recipients) {
+      const email = recipientEmail(recipient)
+      if (email?.includes("@")) emails.add(email)
+    }
+  }
+  return [...emails].slice(0, 25)
 }
 
 export function extractSenderEmail(metadata: unknown): string | null {
@@ -140,6 +162,8 @@ export async function loadOpenTodoCandidates(
     conversationId?: string | null
     contactId?: string | null
     dealId?: string | null
+    direction?: string | null
+    metadata?: unknown
   },
   matches: HeuristicMatches
 ): Promise<OpenTodoCandidate[]> {
@@ -157,6 +181,22 @@ export async function loadOpenTodoCandidates(
   const communicationIds = new Set(
     [comm.id ?? null].filter(Boolean) as string[]
   )
+  if (comm.direction === "outbound") {
+    const recipientEmails = extractOutboundRecipientEmails(comm.metadata)
+    if (recipientEmails.length > 0) {
+      const recipientContacts = await db.contact.findMany({
+        where: {
+          archivedAt: null,
+          email: { in: recipientEmails, mode: "insensitive" },
+        },
+        take: 25,
+        select: { id: true },
+      })
+      for (const contact of recipientContacts) {
+        contactIds.add(contact.id)
+      }
+    }
+  }
   if (comm.conversationId) {
     const threadComms = await db.communication.findMany({
       where: { conversationId: comm.conversationId },
@@ -197,12 +237,37 @@ export async function loadOpenTodoCandidates(
       contactId: true,
       dealId: true,
       communicationId: true,
+      createdAt: true,
       updatedAt: true,
     },
   })
   return rows.map((row) => ({
     ...row,
     dueDate: row.dueDate?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }))
+}
+
+export async function hasThreadOutboundEvidence(comm: {
+  id?: string | null
+  conversationId?: string | null
+}): Promise<boolean> {
+  if (!comm.conversationId) return false
+  const count = await db.communication.count({
+    where: {
+      direction: "outbound",
+      id: comm.id ? { not: comm.id } : undefined,
+      OR: [
+        { conversationId: comm.conversationId },
+        {
+          metadata: {
+            path: ["conversationId"],
+            equals: comm.conversationId,
+          },
+        },
+      ],
+    },
+  })
+  return count > 0
 }

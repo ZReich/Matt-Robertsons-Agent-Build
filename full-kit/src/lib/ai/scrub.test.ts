@@ -22,6 +22,7 @@ vi.mock("@/lib/prisma", () => ({
     communication: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      count: vi.fn(),
       update: vi.fn(),
     },
     contact: { findMany: vi.fn() },
@@ -40,8 +41,8 @@ vi.mock("@/lib/prisma", () => ({
       update: vi.fn(),
       findMany: vi.fn(),
     },
-    agentAction: { create: vi.fn() },
-    contactProfileFact: { upsert: vi.fn() },
+    agentAction: { create: vi.fn(), findFirst: vi.fn() },
+    contactProfileFact: { findUnique: vi.fn(), upsert: vi.fn() },
     systemState: { findUnique: vi.fn(), delete: vi.fn() },
   },
 }))
@@ -86,6 +87,13 @@ function configureBasicPrismaMock(
   ;(db.agentMemory.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
   ;(db.todo.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
   ;(db.communication.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+  ;(db.communication.count as ReturnType<typeof vi.fn>).mockResolvedValue(0)
+  ;(db.agentAction.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(
+    null
+  )
+  ;(
+    db.contactProfileFact.findUnique as ReturnType<typeof vi.fn>
+  ).mockResolvedValue(null)
   ;(db.scrubQueue.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
 }
 
@@ -151,9 +159,10 @@ describe("scrubEmailBatch — real-path integration", () => {
       id: "c-1",
       subject: "LOI sent",
       body: "Attached is the LOI we discussed.",
-      date: new Date("2026-04-24T10:00:00Z"),
+      date: new Date("2026-04-28T10:00:00Z"),
       metadata: { classification: "signal" },
       conversationId: "thread-1",
+      direction: "outbound",
       contactId: "contact-1",
       dealId: null,
     })
@@ -170,6 +179,7 @@ describe("scrubEmailBatch — real-path integration", () => {
         contactId: "contact-1",
         dealId: null,
         communicationId: "c-0",
+        createdAt: new Date("2026-04-27T12:00:00.000Z"),
         updatedAt: todoUpdatedAt,
       },
     ])
@@ -203,8 +213,10 @@ describe("scrubEmailBatch — real-path integration", () => {
         payload: expect.objectContaining({
           todoId: "todo-123",
           todoUpdatedAt: todoUpdatedAt.toISOString(),
+          todoCreatedAt: "2026-04-27T12:00:00.000Z",
           contactId: "contact-1",
           communicationId: "c-0",
+          targetEntity: "todo:todo-123",
         }),
       }),
     })

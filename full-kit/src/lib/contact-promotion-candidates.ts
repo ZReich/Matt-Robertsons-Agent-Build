@@ -292,7 +292,14 @@ async function approveCreateContact(
   if (existingDecision) return existingDecision
   ensureCanApprove(candidate)
 
-  const duplicate = await findDuplicateContact(tx, candidate)
+  const duplicates = await findDuplicateContacts(tx, candidate)
+  if (duplicates.length > 1) {
+    throw new CandidateReviewError(
+      "multiple active contacts match candidate email",
+      409
+    )
+  }
+  const duplicate = duplicates[0]
   if (duplicate) {
     return approveLinkContact(tx, candidate, duplicate.id, {
       ...context,
@@ -550,17 +557,18 @@ async function findMatchingContacts(
   })
 }
 
-async function findDuplicateContact(
+async function findDuplicateContacts(
   tx: CandidateTransaction,
   candidate: CandidateRow
-): Promise<ContactSummary | null> {
-  if (!candidate.normalizedEmail) return null
-  return tx.contact.findFirst({
+): Promise<ContactSummary[]> {
+  if (!candidate.normalizedEmail) return []
+  return tx.contact.findMany({
     where: {
       email: { equals: candidate.normalizedEmail, mode: "insensitive" },
       archivedAt: null,
     },
     select: CONTACT_SELECT,
+    take: 2,
   })
 }
 

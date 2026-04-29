@@ -522,12 +522,22 @@ async function createLeadContact(
     await tx.$executeRaw`
       SELECT pg_advisory_xact_lock(hashtext(${"platform-lead-email:" + extracted.inquirer.email}))
     `
-    const duplicate = await tx.contact.findFirst({
+    const duplicates = await tx.contact.findMany({
       where: {
         email: { equals: extracted.inquirer.email, mode: "insensitive" },
+        archivedAt: null,
       },
       select: { id: true },
+      take: 2,
     })
+    if (duplicates.length > 1) {
+      record(result, row, "skipped_ambiguous_contact", {
+        platform: extracted.platform,
+        extracted,
+      })
+      return
+    }
+    const duplicate = duplicates[0] ?? null
     if (duplicate) {
       const update = await tx.communication.updateMany({
         where: {

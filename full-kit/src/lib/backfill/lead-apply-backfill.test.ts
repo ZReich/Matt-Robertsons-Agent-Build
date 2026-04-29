@@ -1,8 +1,12 @@
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { runLeadApplyBackfill } from "./lead-apply-backfill"
 
 describe("lead-apply-backfill", () => {
+  beforeEach(() => {
+    delete process.env.CONTACT_AUTO_PROMOTION_MODE
+  })
+
   it("dry-runs confirmed signal extractor-email rows without writes", async () => {
     const client = makeClient({
       rows: [leadRow()],
@@ -116,6 +120,7 @@ describe("lead-apply-backfill", () => {
   })
 
   it("write mode auto-creates a sender contact for strong historical evidence", async () => {
+    process.env.CONTACT_AUTO_PROMOTION_MODE = "write"
     const client = makeClient({
       rows: [strongSenderRow()],
       contacts: [],

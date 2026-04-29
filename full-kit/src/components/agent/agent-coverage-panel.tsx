@@ -1,11 +1,17 @@
 "use client"
 
+import { useState } from "react"
 import { CircleAlert, Contact, ListChecks, MailCheck } from "lucide-react"
 
+import type {
+  CoverageFilter,
+  CoverageFilterMeta,
+} from "@/components/agent/agent-coverage-drilldown"
 import type { ScrubCoverageStats } from "@/lib/ai/scrub-queue"
 import type { ReactNode } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -13,12 +19,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { AgentCoverageDrilldown } from "@/components/agent/agent-coverage-drilldown"
 
 interface Props {
   coverage: ScrubCoverageStats
 }
 
 export function AgentCoveragePanel({ coverage }: Props) {
+  const [activeFilter, setActiveFilter] = useState<CoverageFilterMeta | null>(
+    null
+  )
   const scrubbedPercent = percent(
     coverage.communications.scrubbed,
     coverage.communications.total
@@ -42,24 +52,48 @@ export function AgentCoveragePanel({ coverage }: Props) {
           label="Never queued"
           value={formatNumber(coverage.neverQueued.total)}
           detail="No scrub queue row"
+          filter={filterMeta.never_queued}
+          onOpenFilter={setActiveFilter}
         />
         <MetricCard
           icon={<CircleAlert className="h-4 w-4" />}
           label="Missed eligible"
           value={formatNumber(coverage.neverQueued.missedEligible)}
           detail={`${formatNumber(coverage.neverQueued.intentionallySkipped)} skipped noise`}
+          filter={filterMeta.missed_eligible}
+          onOpenFilter={setActiveFilter}
         />
         <MetricCard
           icon={<Contact className="h-4 w-4" />}
           label="Contact linked"
           value={`${linkedPercent}%`}
           detail={`${formatNumber(coverage.communications.orphaned)} orphaned`}
+          filter={filterMeta.orphaned_context}
+          onOpenFilter={setActiveFilter}
         />
         <MetricCard
           icon={<ListChecks className="h-4 w-4" />}
           label="Open todos"
           value={formatNumber(coverage.todos.open)}
           detail={`${formatNumber(coverage.todos.pendingMarkDoneActions)} close proposals`}
+          filter={filterMeta.pending_mark_done}
+          onOpenFilter={setActiveFilter}
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/20 px-3 py-2">
+        <span className="text-sm font-medium">Operational drilldowns</span>
+        <FilterButton
+          meta={filterMeta.suspicious_noise}
+          onOpenFilter={setActiveFilter}
+        />
+        <FilterButton
+          meta={filterMeta.failed_scrub}
+          onOpenFilter={setActiveFilter}
+        />
+        <FilterButton
+          meta={filterMeta.stale_queue}
+          onOpenFilter={setActiveFilter}
         />
       </div>
 
@@ -80,6 +114,14 @@ export function AgentCoveragePanel({ coverage }: Props) {
           rows={coverage.contactCandidates.byStatus}
         />
       </div>
+
+      <AgentCoverageDrilldown
+        open={Boolean(activeFilter)}
+        filter={activeFilter}
+        onOpenChange={(open) => {
+          if (!open) setActiveFilter(null)
+        }}
+      />
     </div>
   )
 }
@@ -89,14 +131,18 @@ function MetricCard({
   label,
   value,
   detail,
+  filter,
+  onOpenFilter,
 }: {
   icon: ReactNode
   label: string
   value: string
   detail: string
+  filter?: CoverageFilterMeta
+  onOpenFilter?: (filter: CoverageFilterMeta) => void
 }) {
-  return (
-    <Card>
+  const body = (
+    <>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardDescription>{label}</CardDescription>
         <span className="text-muted-foreground">{icon}</span>
@@ -104,8 +150,56 @@ function MetricCard({
       <CardContent>
         <div className="text-2xl font-semibold">{value}</div>
         <p className="text-xs text-muted-foreground">{detail}</p>
+        {filter ? (
+          <p className="mt-2 text-xs font-medium text-primary">
+            Open {filter.label}
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">Summary only</p>
+        )}
       </CardContent>
-    </Card>
+    </>
+  )
+
+  if (filter && onOpenFilter) {
+    return (
+      <Card
+        role="button"
+        tabIndex={0}
+        className="group h-full cursor-pointer transition-colors hover:border-primary/60 hover:bg-muted/20 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+        aria-label={`Open ${filter.label} coverage drilldown`}
+        onClick={() => onOpenFilter(filter)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault()
+            onOpenFilter(filter)
+          }
+        }}
+      >
+        {body}
+      </Card>
+    )
+  }
+
+  return <Card className="h-full">{body}</Card>
+}
+
+function FilterButton({
+  meta,
+  onOpenFilter,
+}: {
+  meta: CoverageFilterMeta
+  onOpenFilter: (filter: CoverageFilterMeta) => void
+}) {
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      onClick={() => onOpenFilter(meta)}
+    >
+      {meta.label}
+    </Button>
   )
 }
 
@@ -150,4 +244,48 @@ function percent(part: number, total: number) {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value)
+}
+
+const filterMeta: Record<CoverageFilter, CoverageFilterMeta> = {
+  never_queued: {
+    filter: "never_queued",
+    label: "Never queued",
+    description:
+      "Communications with no scrub queue row, grouped by coverage reason codes.",
+  },
+  missed_eligible: {
+    filter: "missed_eligible",
+    label: "Missed eligible",
+    description:
+      "Signal, uncertain, or unclassified communications that look eligible but were not queued.",
+  },
+  suspicious_noise: {
+    filter: "suspicious_noise",
+    label: "Suspicious noise",
+    description:
+      "Noise-classified communications with contact, inbound, active-thread, or CRE-term signals.",
+  },
+  orphaned_context: {
+    filter: "orphaned_context",
+    label: "Orphaned context",
+    description:
+      "Signal-bearing communications that are not linked to a contact.",
+  },
+  failed_scrub: {
+    filter: "failed_scrub",
+    label: "Failed scrub",
+    description: "Scrub queue rows that failed and need review or requeue.",
+  },
+  stale_queue: {
+    filter: "stale_queue",
+    label: "Stale queue",
+    description:
+      "Pending or in-flight scrub queue rows older than the queue freshness threshold.",
+  },
+  pending_mark_done: {
+    filter: "pending_mark_done",
+    label: "Pending mark-done",
+    description:
+      "Open todo closure proposals backed by source communications and pending agent actions.",
+  },
 }

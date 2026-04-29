@@ -11,6 +11,7 @@ import { ScrubOpenAIAuthError } from "./openai"
 import { logScrubApiCall, updateScrubApiCallOutcome } from "./scrub-api-log"
 import { ScrubFencedOutError, applyScrubResult } from "./scrub-applier"
 import {
+  hasThreadOutboundEvidence,
   loadGlobalMemoryBlock,
   loadOpenTodoCandidates,
   loadRecentThread,
@@ -181,6 +182,7 @@ export async function scrubOne(
       date: true,
       metadata: true,
       conversationId: true,
+      direction: true,
       contactId: true,
       dealId: true,
     },
@@ -191,13 +193,19 @@ export async function scrubOne(
   }
 
   const matches = await runHeuristicLinker(comm)
-  const [globalMemory, scopedMemory, threadContext, openTodos] =
-    await Promise.all([
-      loadGlobalMemoryBlock(),
-      loadScopedMemory(matches),
-      loadRecentThread(comm),
-      loadOpenTodoCandidates(comm, matches),
-    ])
+  const [
+    globalMemory,
+    scopedMemory,
+    threadContext,
+    openTodos,
+    threadHasOutboundEvidence,
+  ] = await Promise.all([
+    loadGlobalMemoryBlock(),
+    loadScopedMemory(matches),
+    loadRecentThread(comm),
+    loadOpenTodoCandidates(comm, matches),
+    hasThreadOutboundEvidence(comm),
+  ])
   const perEmailPrompt = renderPerEmailPrompt({
     comm,
     matches,
@@ -294,7 +302,13 @@ export async function scrubOne(
   try {
     const suggestedActions = bindMarkTodoDoneActions(
       validated.suggestedActions,
-      openTodos
+      openTodos,
+      {
+        communicationId: comm.id,
+        communicationDate: comm.date,
+        direction: comm.direction,
+        hasThreadOutboundEvidence: threadHasOutboundEvidence,
+      }
     )
     await applyScrubResult({
       communicationId: comm.id,
@@ -348,18 +362,45 @@ export async function scrubOne(
   }
 }
 
-function bindMarkTodoDoneActions(
+export function bindMarkTodoDoneActions(
   suggestedActions: SuggestedAction[],
-  openTodos: Awaited<ReturnType<typeof loadOpenTodoCandidates>>
+  openTodos: Awaited<ReturnType<typeof loadOpenTodoCandidates>>,
+  source: {
+    communicationId: string
+    communicationDate: Date
+    direction: string | null
+    hasThreadOutboundEvidence: boolean
+  }
 ): SuggestedAction[] {
   if (suggestedActions.length === 0) return suggestedActions
   const openTodoById = new Map(openTodos.map((todo) => [todo.id, todo]))
+  const seenTodoIds = new Set<string>()
   return suggestedActions.flatMap((action) => {
     if (action.actionType !== "mark-todo-done") return [action]
     const todoId =
       typeof action.payload.todoId === "string" ? action.payload.todoId : ""
+    // Defense-in-depth: prompt-injected todoIds with control characters,
+    // colons, slashes, etc. must be rejected at the binder boundary, even
+    // when no targetEntity is supplied. The applier enforces the same shape
+    // via isSafeEntityId, but binders should not pass through unsafe ids.
+    if (!isSafeBoundTodoId(todoId)) return []
+    const targetEntity =
+      typeof action.payload.targetEntity === "string"
+        ? action.payload.targetEntity
+        : null
     const todo = openTodoById.get(todoId)
     if (!todo) return []
+    if (targetEntity && targetEntity !== `todo:${todo.id}`) return []
+    if (seenTodoIds.has(todo.id)) return []
+    if (source.direction !== "outbound" && !source.hasThreadOutboundEvidence) {
+      return []
+    }
+    if (
+      source.communicationDate.getTime() < new Date(todo.createdAt).getTime()
+    ) {
+      return []
+    }
+    seenTodoIds.add(todo.id)
 
     return [
       {
@@ -370,13 +411,22 @@ function bindMarkTodoDoneActions(
           todoTitle: todo.title,
           todoStatus: todo.status,
           todoUpdatedAt: todo.updatedAt,
+          todoCreatedAt: todo.createdAt,
           contactId: todo.contactId,
           dealId: todo.dealId,
           communicationId: todo.communicationId,
+          sourceCommunicationId: source.communicationId,
+          targetEntity: `todo:${todo.id}`,
         },
       },
     ]
   })
+}
+
+const SAFE_BOUND_TODO_ID = /^[A-Za-z0-9_.-]{1,128}$/
+
+function isSafeBoundTodoId(value: string): boolean {
+  return SAFE_BOUND_TODO_ID.test(value)
 }
 
 /**

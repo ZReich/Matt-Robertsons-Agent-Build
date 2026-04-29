@@ -251,6 +251,30 @@ describe("contact promotion candidate review", () => {
       })
     )
   })
+
+  it("refuses to auto-pick when multiple active Contacts share the candidate email", async () => {
+    const client = makeClient({
+      candidate: candidate(),
+      duplicateContacts: [
+        existingContact({ id: "contact-duplicate-a" }),
+        existingContact({ id: "contact-duplicate-b" }),
+      ],
+    })
+
+    await expect(
+      reviewContactPromotionCandidate({
+        id: "candidate-1",
+        action: "approve_create_contact",
+        now: now(),
+        client: client as never,
+      })
+    ).rejects.toMatchObject({
+      status: 409,
+      message: "multiple active contacts match candidate email",
+    })
+    expect(client.contact.create).not.toHaveBeenCalled()
+    expect(client.contactPromotionCandidate.update).not.toHaveBeenCalled()
+  })
 })
 
 function now() {
@@ -319,11 +343,15 @@ function makeClient({
   candidate,
   contact = existingContact(),
   duplicateContact = null,
+  duplicateContacts,
 }: {
   candidate: unknown
   contact?: unknown
   duplicateContact?: unknown
+  duplicateContacts?: unknown[]
 }) {
+  const duplicateRows =
+    duplicateContacts ?? (duplicateContact ? [duplicateContact] : [])
   const tx = {
     contactPromotionCandidate: {
       findUnique: vi.fn(async () => candidate),
@@ -338,6 +366,7 @@ function makeClient({
       create: vi.fn(async () => existingContact({ id: "contact-created" })),
       findUnique: vi.fn(async () => contact),
       findFirst: vi.fn(async () => duplicateContact),
+      findMany: vi.fn(async () => duplicateRows),
     },
     communication: {
       findMany: vi.fn(async () => [

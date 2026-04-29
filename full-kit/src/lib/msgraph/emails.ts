@@ -21,6 +21,7 @@ import type { NormalizedSender } from "./sender-normalize"
 
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
 import {
+  CONTACT_AUTO_PROMOTION_POLICY_VERSION,
   evaluateContactAutoPromotion,
   hasRealAttachmentEvidence,
   hasRealAttachmentEvidenceFromMetadata,
@@ -466,6 +467,23 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
     leadContactId: p.leadContactId ?? undefined,
     leadCreated: p.leadCreated || undefined,
   }
+  if (
+    p.contactId &&
+    !p.leadContactId &&
+    p.classification.classification === "signal"
+  ) {
+    metadata.contactAutoPromotion = {
+      decision: "auto_link_existing",
+      policyVersion: CONTACT_AUTO_PROMOTION_POLICY_VERSION,
+      score: 100,
+      reasonCodes: ["single_existing_contact_email_match"],
+      blockedReasons: [],
+      evidenceCommunicationIds: [],
+      matchedContactId: p.contactId,
+      appliedAt: new Date(dateIso).toISOString(),
+      mode: "pre_insert_exact_match",
+    }
+  }
   let resolvedContactId = p.contactId
   let resolvedLeadContactId = p.leadContactId
   let resolvedLeadCreated = p.leadCreated
@@ -597,8 +615,17 @@ async function autoPromoteOutboundSingleRecipient(
   ) {
     return false
   }
+  if (
+    recipientCount(p.message.toRecipients) !== 1 ||
+    recipientCount(p.message.ccRecipients) > 0 ||
+    recipientCount(p.message.bccRecipients) > 0
+  ) {
+    return false
+  }
+
   const email = singleRecipientEmail(p.message.toRecipients)
   if (!email) return false
+  if (isInternalEmail(email, p.normalizedSender.address)) return false
 
   await tx.$executeRaw`
     SELECT pg_advisory_xact_lock(hashtext(${"contact-promotion-email:" + email}))
@@ -858,30 +885,30 @@ async function loadDirectOutboundEvidence(
   tx: Prisma.TransactionClient,
   email: string
 ): Promise<{ count: number; attachmentIds: string[] }> {
-  const rows = await tx.communication.findMany({
-    where: {
-      direction: "outbound",
-      OR: [
-        {
-          metadata: {
-            path: ["toRecipients"],
-            array_contains: [{ emailAddress: { address: email } }],
-          },
-        },
-        {
-          metadata: {
-            path: ["ccRecipients"],
-            array_contains: [{ emailAddress: { address: email } }],
-          },
-        },
-      ],
-    },
-    select: { id: true, metadata: true },
-    take: 10,
-  })
+  const matchingRows: Array<{ id: string; metadata: Prisma.JsonValue }> = []
+  let cursor: { id: string } | undefined
+  for (let page = 0; page < 10 && matchingRows.length < 50; page += 1) {
+    const rows = await tx.communication.findMany({
+      where: {
+        direction: "outbound",
+      },
+      select: { id: true, metadata: true },
+      orderBy: [{ date: "desc" }, { id: "desc" }],
+      take: 50,
+      ...(cursor ? { skip: 1, cursor } : {}),
+    })
+    if (rows.length === 0) break
+    for (const row of rows) {
+      if (metadataHasRecipient(row.metadata, email)) {
+        matchingRows.push(row)
+        if (matchingRows.length >= 50) break
+      }
+    }
+    cursor = { id: rows[rows.length - 1].id }
+  }
   return {
-    count: rows.length,
-    attachmentIds: rows
+    count: matchingRows.length,
+    attachmentIds: matchingRows
       .filter((row) => hasRealAttachmentEvidenceFromMetadata(row.metadata))
       .map((row) => row.id),
   }
@@ -954,6 +981,10 @@ function singleRecipientEmail(recipients: unknown): string | null {
   return email?.includes("@") ? email.toLowerCase() : null
 }
 
+function recipientCount(recipients: unknown): number {
+  return Array.isArray(recipients) ? recipients.length : 0
+}
+
 function singleRecipientDisplayName(recipients: unknown): string | null {
   if (!Array.isArray(recipients) || recipients.length !== 1) return null
   const emailAddress = asRecord(asRecord(recipients[0]).emailAddress)
@@ -966,6 +997,27 @@ function recipientEmail(recipient: unknown): string | null {
   const address =
     typeof emailAddress.address === "string" ? emailAddress.address : null
   return address?.trim() || null
+}
+
+function metadataHasRecipient(metadata: unknown, email: string): boolean {
+  const record = asRecord(metadata)
+  return (
+    recipientListHasEmail(record.toRecipients, email) ||
+    recipientListHasEmail(record.ccRecipients, email)
+  )
+}
+
+function recipientListHasEmail(recipients: unknown, email: string): boolean {
+  if (!Array.isArray(recipients)) return false
+  return recipients.some(
+    (recipient) => recipientEmail(recipient)?.toLowerCase() === email
+  )
+}
+
+function isInternalEmail(email: string, targetAddress: string): boolean {
+  const domain = email.split("@")[1]?.toLowerCase()
+  const targetDomain = targetAddress.split("@")[1]?.toLowerCase()
+  return !!domain && !!targetDomain && domain === targetDomain
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

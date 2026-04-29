@@ -184,6 +184,7 @@ const hints = {
 describe("persistMessage scrub enqueue", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    delete process.env.CONTACT_AUTO_PROMOTION_MODE
     ;(db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
       null
     )
@@ -295,6 +296,100 @@ describe("persistMessage scrub enqueue", () => {
         }),
       })
     )
+  })
+
+  it("records provenance when an exact email match links an existing Contact", async () => {
+    await persistMessage({
+      message: {
+        id: "graph-existing-contact",
+        receivedDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-existing-contact",
+        subject: "Follow up",
+      },
+      folder: "inbox",
+      normalizedSender: {
+        address: "tenant@example.com",
+        displayName: "Tenant Prospect",
+        isInternal: false,
+        normalizationFailed: false,
+      },
+      classification: {
+        classification: "signal",
+        source: "known-counterparty",
+        tier1Rule: "contact-replied",
+      },
+      acquisition: acquisition(),
+      hints,
+      extracted: null,
+      attachments: undefined,
+      contactId: "contact-existing",
+      leadContactId: null,
+      leadCreated: false,
+    })
+
+    expect(db.communication.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          contactId: "contact-existing",
+          metadata: expect.objectContaining({
+            contactAutoPromotion: expect.objectContaining({
+              decision: "auto_link_existing",
+              matchedContactId: "contact-existing",
+              reasonCodes: ["single_existing_contact_email_match"],
+              mode: "pre_insert_exact_match",
+            }),
+          }),
+        }),
+      })
+    )
+  })
+
+  it("does not auto-create contacts for internal single-recipient outbound attachments", async () => {
+    process.env.CONTACT_AUTO_PROMOTION_MODE = "write"
+
+    await persistMessage({
+      message: {
+        id: "graph-internal-outbound",
+        sentDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-internal-outbound",
+        subject: "Attached",
+        toRecipients: [
+          { emailAddress: { address: "ops@example.com", name: "Ops" } },
+        ],
+        hasAttachments: true,
+      },
+      folder: "sentitems",
+      normalizedSender: {
+        address: "matt@example.com",
+        displayName: "Matt",
+        isInternal: true,
+        normalizationFailed: false,
+      },
+      classification: {
+        classification: "signal",
+        source: "matt-outbound",
+        tier1Rule: "sent",
+      },
+      acquisition: acquisition(),
+      hints,
+      extracted: null,
+      attachments: [
+        {
+          id: "att-1",
+          name: "loi.pdf",
+          size: 1000,
+          contentType: "application/pdf",
+          isInline: false,
+        },
+      ],
+      attachmentFetch: { status: "success", nonInlineCount: 1 },
+      contactId: null,
+      leadContactId: null,
+      leadCreated: false,
+    })
+
+    expect(db.contact.create).not.toHaveBeenCalled()
+    expect(db.communication.update).not.toHaveBeenCalled()
   })
 
   it("does not enqueue noise communications", async () => {

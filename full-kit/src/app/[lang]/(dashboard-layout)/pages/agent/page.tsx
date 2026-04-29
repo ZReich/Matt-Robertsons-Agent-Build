@@ -1,17 +1,35 @@
+import Link from "next/link"
+import { ShieldAlert } from "lucide-react"
+
 import type { Metadata } from "next"
 
 import { getScrubCoverageStats } from "@/lib/ai"
+import { getSession } from "@/lib/auth"
 import { db } from "@/lib/prisma"
 import { requireAgentReviewer } from "@/lib/reviewer-auth"
 
+import { Button } from "@/components/ui/button"
 import { AgentControlCenter } from "./_components/agent-control-center"
 
 export const metadata: Metadata = {
   title: "Agent Control Center",
 }
 
-export default async function AgentPage() {
-  await requireAgentReviewer()
+export const dynamic = "force-dynamic"
+
+type AgentPageProps = {
+  params: Promise<{ lang: string }>
+}
+
+export default async function AgentPage({ params }: AgentPageProps) {
+  const { lang } = await params
+  try {
+    await requireAgentReviewer()
+  } catch {
+    const session = await getSession()
+    return <AgentAccessDenied lang={lang} email={session?.user?.email} />
+  }
+
   const [actions, memory, coverage] = await Promise.all([
     db.agentAction.findMany({
       orderBy: { createdAt: "desc" },
@@ -137,6 +155,42 @@ export default async function AgentPage() {
         initialMemory={initialMemory}
         coverage={coverage}
       />
+    </section>
+  )
+}
+
+function AgentAccessDenied({
+  lang,
+  email,
+}: {
+  lang: string
+  email: string | null | undefined
+}) {
+  return (
+    <section className="container grid min-h-[60vh] place-items-center p-6">
+      <div className="grid max-w-xl gap-5 rounded-md border bg-background p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-destructive/10">
+            <ShieldAlert className="size-5 text-destructive" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold">
+              Agent access is restricted
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Signed in as {email || "an account that is not allowed"}.
+            </p>
+          </div>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          This queue only opens for configured agent reviewers.
+        </p>
+
+        <Button variant="outline" asChild>
+          <Link href={`/${lang}/dashboards/home`}>Back to Home</Link>
+        </Button>
+      </div>
     </section>
   )
 }

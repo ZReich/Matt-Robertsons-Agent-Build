@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   evaluateContactAutoPromotion,
   hasRealAttachmentEvidence,
+  readContactAutoPromotionMode,
 } from "./contact-auto-promotion-policy"
 
 const base = {
@@ -16,6 +17,12 @@ const base = {
 }
 
 describe("evaluateContactAutoPromotion", () => {
+  it("fails closed to dry-run when auto-promotion mode is unset or invalid", () => {
+    expect(readContactAutoPromotionMode(undefined)).toBe("dry_run")
+    expect(readContactAutoPromotionMode("surprise")).toBe("dry_run")
+    expect(readContactAutoPromotionMode("write")).toBe("write")
+  })
+
   it("auto-links exactly one active contact email match", () => {
     expect(
       evaluateContactAutoPromotion({

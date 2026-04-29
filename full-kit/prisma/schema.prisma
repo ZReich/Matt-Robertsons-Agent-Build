@@ -248,6 +248,23 @@ enum EmailFilterAuditDisposition {
   uncertain
 }
 
+enum OperationalEmailReviewType {
+  suspicious_noise
+  never_queued
+  missed_eligible
+  orphaned_context
+  failed_scrub
+  stale_queue
+  pending_mark_done
+}
+
+enum OperationalEmailReviewStatus {
+  open
+  resolved
+  snoozed
+  ignored
+}
+
 // =============================================================================
 // AUTH MODELS (existing — do not modify, required by NextAuth/PrismaAdapter)
 // =============================================================================
@@ -502,8 +519,9 @@ model Communication {
   externalSync   ExternalSync? @relation(fields: [externalSyncId], references: [id])
 
   // Todos that were created from this communication
-  todos      Todo[]
-  scrubQueue ScrubQueue?
+  todos                   Todo[]
+  scrubQueue              ScrubQueue?
+  operationalEmailReviews OperationalEmailReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -862,14 +880,15 @@ model AgentAction {
   dedupedToTodoId       String?   @map("deduped_to_todo_id")
 
   // Relations: which entity did this action create?
-  todo                Todo?
-  communication       Communication? @relation("CreatedCommunicationAction")
-  meeting             Meeting?
-  memory              AgentMemory?
-  sourceCommunication Communication? @relation("SourceCommunicationAction", fields: [sourceCommunicationId], references: [id], onDelete: SetNull)
-  duplicateOfAction   AgentAction?   @relation("AgentActionDuplicate", fields: [duplicateOfActionId], references: [id], onDelete: SetNull)
-  duplicateActions    AgentAction[]  @relation("AgentActionDuplicate")
-  dedupedToTodo       Todo?          @relation("DedupedTodoAction", fields: [dedupedToTodoId], references: [id], onDelete: SetNull)
+  todo                    Todo?
+  communication           Communication?           @relation("CreatedCommunicationAction")
+  meeting                 Meeting?
+  memory                  AgentMemory?
+  sourceCommunication     Communication?           @relation("SourceCommunicationAction", fields: [sourceCommunicationId], references: [id], onDelete: SetNull)
+  duplicateOfAction       AgentAction?             @relation("AgentActionDuplicate", fields: [duplicateOfActionId], references: [id], onDelete: SetNull)
+  duplicateActions        AgentAction[]            @relation("AgentActionDuplicate")
+  dedupedToTodo           Todo?                    @relation("DedupedTodoAction", fields: [dedupedToTodoId], references: [id], onDelete: SetNull)
+  operationalEmailReviews OperationalEmailReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -954,6 +973,45 @@ model ScrubApiCall {
   @@index([at])
   @@index([communicationId])
   @@map("scrub_api_calls")
+}
+
+model OperationalEmailReview {
+  id                 String                       @id @default(uuid())
+  communicationId    String                       @map("communication_id")
+  emailFilterAuditId String?                      @map("email_filter_audit_id")
+  subjectEntityKind  String?                      @map("subject_entity_kind")
+  subjectEntityId    String?                      @map("subject_entity_id")
+  agentActionId      String?                      @map("agent_action_id")
+  type               OperationalEmailReviewType
+  status             OperationalEmailReviewStatus @default(open)
+  riskScore          Int                          @default(0) @map("risk_score")
+  reasonCodes        Json                         @default("[]") @map("reason_codes")
+  reasonKey          String                       @map("reason_key")
+  dedupeKey          String                       @map("dedupe_key")
+  recommendedAction  String                       @map("recommended_action")
+  operatorOutcome    String?                      @map("operator_outcome")
+  operatorNotes      String?                      @map("operator_notes") @db.Text
+  snoozedUntil       DateTime?                    @map("snoozed_until")
+  policyVersion      String                       @map("policy_version")
+  promptVersion      String?                      @map("prompt_version")
+  createdFromRunId   String?                      @map("created_from_run_id")
+  resolvedBy         String?                      @map("resolved_by")
+  resolvedAt         DateTime?                    @map("resolved_at")
+  metadata           Json                         @default("{}")
+  createdAt          DateTime                     @default(now()) @map("created_at")
+  updatedAt          DateTime                     @updatedAt @map("updated_at")
+
+  communication    Communication     @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  emailFilterAudit EmailFilterAudit? @relation(fields: [emailFilterAuditId], references: [id], onDelete: SetNull)
+  agentAction      AgentAction?      @relation(fields: [agentActionId], references: [id], onDelete: SetNull)
+
+  @@index([communicationId])
+  @@index([emailFilterAuditId])
+  @@index([subjectEntityKind, subjectEntityId])
+  @@index([agentActionId])
+  @@index([type, status])
+  @@index([createdFromRunId])
+  @@map("operational_email_reviews")
 }
 
 model EmailFilterRule {
@@ -1088,6 +1146,8 @@ model EmailFilterAudit {
   graphFetchStatus  String?                     @map("graph_fetch_status")
   graphErrorCode    String?                     @map("graph_error_code")
   createdAt         DateTime                    @default(now()) @map("created_at")
+
+  operationalEmailReviews OperationalEmailReview[]
 
   @@index([runId])
   @@index([chunkId])

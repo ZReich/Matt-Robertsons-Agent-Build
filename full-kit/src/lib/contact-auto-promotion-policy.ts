@@ -15,7 +15,7 @@ export function readContactAutoPromotionMode(
 ): ContactAutoPromotionMode {
   return value === "off" || value === "dry_run" || value === "write"
     ? value
-    : "write"
+    : "dry_run"
 }
 
 export type ContactAutoPromotionInput = {

@@ -87,26 +87,76 @@ export async function applyScrubResult({
       },
     })
 
+    const pendingMarkTodoDoneTargets = new Set<string>()
     for (const action of suggestedActions) {
-      await tx.agentAction.create({
-        data: {
-          actionType: action.actionType,
-          tier: "approve",
-          status: "pending",
-          summary: action.summary,
-          sourceCommunicationId: communicationId,
-          promptVersion: scrubOutput.promptVersion || PROMPT_VERSION,
-          targetEntity: getActionTargetEntity(action),
-          payload: action.payload as Prisma.InputJsonValue,
-        },
-      })
+      const targetEntity = getActionTargetEntity(action)
+      if (action.actionType === "mark-todo-done") {
+        if (!targetEntity) continue
+        if (pendingMarkTodoDoneTargets.has(targetEntity)) continue
+        pendingMarkTodoDoneTargets.add(targetEntity)
+        const existing = await tx.agentAction.findFirst({
+          where: {
+            actionType: "mark-todo-done",
+            status: "pending",
+            targetEntity,
+          },
+          select: { id: true },
+        })
+        if (existing) continue
+      }
+      try {
+        await tx.agentAction.create({
+          data: {
+            actionType: action.actionType,
+            tier: "approve",
+            status: "pending",
+            summary: action.summary,
+            sourceCommunicationId: communicationId,
+            promptVersion: scrubOutput.promptVersion || PROMPT_VERSION,
+            targetEntity,
+            payload: action.payload as Prisma.InputJsonValue,
+          },
+        })
+      } catch (error) {
+        if (action.actionType === "mark-todo-done" && isUniqueConflict(error)) {
+          continue
+        }
+        throw error
+      }
     }
 
     if (comm && shouldPersistProfileFacts()) {
       for (const fact of scrubOutput.profileFacts ?? []) {
         const contactId = comm.contactId
+        if (shouldDropProfileFact(fact)) continue
         if (!shouldAutoSaveProfileFact(fact, communicationId, contactId)) {
           if (shouldReviewProfileFact(fact, communicationId, contactId)) {
+            const existing = await tx.contactProfileFact.findUnique({
+              where: {
+                contactId_normalizedKey: {
+                  contactId,
+                  normalizedKey: fact.normalizedKey,
+                },
+              },
+              select: { status: true },
+            })
+            if (existing?.status === "active") continue
+            const create = {
+              contactId,
+              category: fact.category,
+              fact: fact.fact,
+              normalizedKey: fact.normalizedKey,
+              confidence: fact.confidence,
+              wordingClass: fact.wordingClass,
+              sourceCommunicationId: communicationId,
+              observedAt: fact.observedAt
+                ? new Date(fact.observedAt)
+                : comm.date,
+              lastSeenAt: comm.date,
+              expiresAt: fact.expiresAt ? new Date(fact.expiresAt) : null,
+              status: "review",
+              metadata: buildFactMetadata(fact, scrubOutput),
+            } satisfies Prisma.ContactProfileFactUncheckedCreateInput
             await tx.contactProfileFact.upsert({
               where: {
                 contactId_normalizedKey: {
@@ -114,22 +164,7 @@ export async function applyScrubResult({
                   normalizedKey: fact.normalizedKey,
                 },
               },
-              create: {
-                contactId,
-                category: fact.category,
-                fact: fact.fact,
-                normalizedKey: fact.normalizedKey,
-                confidence: fact.confidence,
-                wordingClass: fact.wordingClass,
-                sourceCommunicationId: communicationId,
-                observedAt: fact.observedAt
-                  ? new Date(fact.observedAt)
-                  : comm.date,
-                lastSeenAt: comm.date,
-                expiresAt: fact.expiresAt ? new Date(fact.expiresAt) : null,
-                status: "review",
-                metadata: buildFactMetadata(fact, scrubOutput),
-              },
+              create,
               update: {
                 category: fact.category,
                 fact: fact.fact,
@@ -210,6 +245,13 @@ function shouldPersistProfileFacts(): boolean {
 const FORBIDDEN_AUTO_FACT_PATTERN =
   /\b(disability|diagnosis|pregnant|pregnancy|religion|citizenship|bankrupt|bankruptcy|addict|addiction|depressed|anxious|cancer|divorce|lawsuit|legal trouble|debt|medical|health issue|ssn|social security)\b/i
 
+function shouldDropProfileFact(fact: ContactProfileFactSuggestion): boolean {
+  return (
+    FORBIDDEN_AUTO_FACT_PATTERN.test(fact.fact) ||
+    (fact.evidence ? FORBIDDEN_AUTO_FACT_PATTERN.test(fact.evidence) : false)
+  )
+}
+
 function shouldAutoSaveProfileFact(
   fact: ContactProfileFactSuggestion,
   communicationId: string,
@@ -221,7 +263,6 @@ function shouldAutoSaveProfileFact(
   if (fact.confidence < 0.85) return false
   if (fact.wordingClass === "caution") return false
   if (fact.category === "personal") return false
-  if (FORBIDDEN_AUTO_FACT_PATTERN.test(fact.fact)) return false
   if (fact.expiresAt && new Date(fact.expiresAt).getTime() <= Date.now()) {
     return false
   }
@@ -233,11 +274,22 @@ function buildFactMetadata(
   scrubOutput: ScrubOutput
 ): Prisma.InputJsonValue {
   return {
-    evidence: fact.evidence,
+    evidence: redactFactEvidence(fact.evidence),
     promptVersion: scrubOutput.promptVersion || PROMPT_VERSION,
     modelUsed: scrubOutput.modelUsed,
     savedBy: "scrub-profile-fact",
   } as Prisma.InputJsonValue
+}
+
+function redactFactEvidence(value: string | undefined): string | undefined {
+  if (!value) return undefined
+  return value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]")
+    .replace(/https?:\/\/\S+/gi, "[redacted-url]")
+    .replace(/\b[A-Za-z0-9_-]{24,}\b/g, "[redacted-token]")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 240)
 }
 
 function getActionTargetEntity(action: SuggestedAction): string | null {
@@ -256,11 +308,30 @@ function getActionTargetEntity(action: SuggestedAction): string | null {
   }
   if (action.actionType === "mark-todo-done") {
     const todoId = typeof payload.todoId === "string" ? payload.todoId : null
-    if (todoId) return `todo:${todoId}`
+    const targetEntity =
+      typeof payload.targetEntity === "string" ? payload.targetEntity : null
+    if (!todoId || !isSafeEntityId(todoId)) return null
+    const canonical = `todo:${todoId}`
+    if (targetEntity && targetEntity !== canonical) return null
+    return canonical
   }
   if (action.actionType === "create-agent-memory") {
     if (dealId) return `deal:${dealId}`
     if (contactId) return `contact:${contactId}`
   }
   return null
+}
+
+function isSafeEntityId(id: string): boolean {
+  return /^[A-Za-z0-9_-]{1,128}$/.test(id)
+}
+
+function isUniqueConflict(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    ((error as { code?: string }).code === "P2002" ||
+      (error as { code?: string }).code === "23505")
+  )
 }

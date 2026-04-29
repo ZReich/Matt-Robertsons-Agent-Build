@@ -10,8 +10,8 @@ vi.mock("@/lib/prisma", () => ({
   db: {
     communication: { findUnique: vi.fn(), update: vi.fn() },
     scrubQueue: { updateMany: vi.fn(), update: vi.fn() },
-    agentAction: { create: vi.fn() },
-    contactProfileFact: { upsert: vi.fn() },
+    agentAction: { create: vi.fn(), findFirst: vi.fn() },
+    contactProfileFact: { findUnique: vi.fn(), upsert: vi.fn() },
     $transaction: vi.fn(),
   },
 }))
@@ -47,6 +47,12 @@ describe("applyScrubResult", () => {
       date: new Date("2026-04-24T12:00:00.000Z"),
     })
     delete process.env.PROFILE_FACT_EXTRACTION_MODE
+    ;(
+      db.contactProfileFact.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null)
+    ;(db.agentAction.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(
+      null
+    )
   })
 
   it("refuses to write Communication or AgentAction rows when the lease token has been rotated", async () => {
@@ -151,9 +157,11 @@ describe("applyScrubResult", () => {
             todoId: "todo-123",
             reason: "Outbound email says the LOI was attached.",
             todoUpdatedAt: "2026-04-27T13:00:00.000Z",
+            todoCreatedAt: "2026-04-27T12:00:00.000Z",
             contactId: "contact-1",
             dealId: null,
             communicationId: "comm-previous",
+            targetEntity: "todo:todo-123",
           },
         },
       ],
@@ -165,6 +173,80 @@ describe("applyScrubResult", () => {
         targetEntity: "todo:todo-123",
       }),
     })
+  })
+
+  it("suppresses duplicate pending mark-todo-done proposals before insert", async () => {
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+    ;(db.agentAction.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "existing-action",
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: scrub,
+      suggestedActions: [
+        {
+          actionType: "mark-todo-done",
+          summary: "Close sent LOI todo",
+          payload: {
+            todoId: "todo-123",
+            reason: "Outbound email says the LOI was attached.",
+            todoUpdatedAt: "2026-04-27T13:00:00.000Z",
+            todoCreatedAt: "2026-04-27T12:00:00.000Z",
+            contactId: "contact-1",
+            dealId: null,
+            communicationId: "comm-previous",
+            targetEntity: "todo:todo-123",
+          },
+        },
+      ],
+    })
+
+    expect(db.agentAction.findFirst).toHaveBeenCalledWith({
+      where: {
+        actionType: "mark-todo-done",
+        status: "pending",
+        targetEntity: "todo:todo-123",
+      },
+      select: { id: true },
+    })
+    expect(db.agentAction.create).not.toHaveBeenCalled()
+  })
+
+  it("rejects non-canonical mark-todo-done target variants", async () => {
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: scrub,
+      suggestedActions: [
+        {
+          actionType: "mark-todo-done",
+          summary: "Close sent LOI todo",
+          payload: {
+            todoId: "todo-123",
+            reason: "Outbound email says the LOI was attached.",
+            todoUpdatedAt: "2026-04-27T13:00:00.000Z",
+            todoCreatedAt: "2026-04-27T12:00:00.000Z",
+            contactId: "contact-1",
+            dealId: null,
+            communicationId: "comm-previous",
+            targetEntity: "Todo:todo-123",
+          },
+        },
+      ],
+    })
+
+    expect(db.agentAction.findFirst).not.toHaveBeenCalled()
+    expect(db.agentAction.create).not.toHaveBeenCalled()
   })
 
   it("saves high-confidence live profile facts for the linked contact", async () => {
@@ -188,7 +270,8 @@ describe("applyScrubResult", () => {
             wordingClass: "operational",
             contactId: "contact-1",
             sourceCommunicationId: "comm-1",
-            evidence: "Email me the times.",
+            evidence:
+              "Email me at abcdefghijklmnopqrstuvwxyz@example.com via https://example.test/schedule with code abcdefghijklmnopqrstuvwxyz1234567890.",
           },
         ],
       },
@@ -203,8 +286,32 @@ describe("applyScrubResult", () => {
             normalizedKey: "communication_style:prefers_email",
           },
         },
+        create: expect.objectContaining({
+          contactId: "contact-1",
+          status: "active",
+          fact: "Prefers email over phone for scheduling.",
+          confidence: 0.92,
+          sourceCommunicationId: "comm-1",
+          metadata: expect.objectContaining({
+            evidence: expect.stringContaining("[redacted-email]"),
+            savedBy: "scrub-profile-fact",
+          }),
+        }),
+        update: expect.objectContaining({
+          status: "active",
+          lastSeenAt: new Date("2026-04-24T12:00:00.000Z"),
+        }),
       })
     )
+    const metadata = (db.contactProfileFact.upsert as ReturnType<typeof vi.fn>)
+      .mock.calls[0][0].create.metadata as { evidence?: string }
+    expect(metadata.evidence).toContain("[redacted-url]")
+    expect(metadata.evidence).toContain("[redacted-token]")
+    expect(metadata.evidence).not.toContain(
+      "abcdefghijklmnopqrstuvwxyz@example.com"
+    )
+    expect(metadata.evidence).not.toContain("@example.com")
+    expect(metadata.evidence).not.toContain("abcdefghijklmnopqrstuvwxyz")
   })
 
   it("does not save low-confidence or caution profile facts automatically", async () => {
@@ -250,6 +357,69 @@ describe("applyScrubResult", () => {
         update: expect.objectContaining({ status: "review" }),
       })
     )
+  })
+
+  it("does not let review profile facts overwrite an active fact", async () => {
+    process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+    ;(
+      db.contactProfileFact.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ status: "active" })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "schedule",
+            fact: "Might prefer mornings.",
+            normalizedKey: "schedule:mornings",
+            confidence: 0.5,
+            wordingClass: "operational",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
+  })
+
+  it("drops forbidden sensitive profile facts instead of storing them for review", async () => {
+    process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    await applyScrubResult({
+      communicationId: "comm-1",
+      queueRowId: "queue-1",
+      leaseToken: "fresh-token",
+      scrubOutput: {
+        ...scrub,
+        profileFacts: [
+          {
+            category: "personal",
+            fact: "Has a medical issue.",
+            normalizedKey: "personal:medical",
+            confidence: 0.9,
+            wordingClass: "caution",
+            contactId: "contact-1",
+            sourceCommunicationId: "comm-1",
+          },
+        ],
+      },
+      suggestedActions: [],
+    })
+
+    expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
   })
 
   it("does not save profile facts when env mode is unset", async () => {
