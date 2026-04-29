@@ -187,6 +187,40 @@ function includesText(value: string | null | undefined, query: string) {
   return value?.toLowerCase().includes(query) ?? false
 }
 
+/**
+ * Narrow a Prisma Deal-shaped row array (where propertyAddress / propertyType
+ * are typed `string | null` / `PropertyType | null` because the columns are
+ * nullable in the schema) down to the `DealBoardInput` shape the board
+ * serializer expects (non-null on both fields).
+ *
+ * Callers MUST pair this with a `where: { propertyAddress: { not: null },
+ * propertyType: { not: null }, dealType: "seller_rep" }` filter on the
+ * underlying findMany — Prisma doesn't narrow the result type from those
+ * `where` clauses, so this helper exists purely to make TS happy without
+ * widening the consumer types. Rows that slip through with nulls are dropped
+ * defensively.
+ */
+export function narrowToBoardDeals<
+  T extends {
+    propertyAddress: string | null
+    propertyType: PropertyType | null
+  },
+>(
+  deals: T[]
+): Array<
+  Omit<T, "propertyAddress" | "propertyType"> & {
+    propertyAddress: string
+    propertyType: PropertyType
+  }
+> {
+  return deals.filter(
+    (
+      deal
+    ): deal is T & { propertyAddress: string; propertyType: PropertyType } =>
+      deal.propertyAddress !== null && deal.propertyType !== null
+  )
+}
+
 export function extractLeadInquiryMessage(
   metadata: unknown,
   fallback: string | null

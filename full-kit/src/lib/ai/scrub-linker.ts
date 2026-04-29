@@ -79,8 +79,15 @@ export async function runHeuristicLinker(comm: {
     : []
 
   const haystack = `${comm.subject ?? ""}\n${comm.body ?? ""}`.toLowerCase()
+  // Only seller-rep deals with a parsed property address are candidates for
+  // address-based heuristic linking. Buyer-rep / unparsed-property deals don't
+  // have an address to match against.
   const deals = await db.deal.findMany({
-    where: { archivedAt: null },
+    where: {
+      archivedAt: null,
+      dealType: "seller_rep",
+      propertyAddress: { not: null },
+    },
     take: 25,
     select: { id: true, propertyAddress: true },
   })
@@ -91,16 +98,17 @@ export async function runHeuristicLinker(comm: {
       reason: "sender_email",
     })),
     deals: deals
-      .filter((deal) => {
-        const address = deal.propertyAddress.toLowerCase()
-        return address.length > 5 && haystack.includes(address)
+      .flatMap((deal) => {
+        // The where clause above guarantees propertyAddress != null, but
+        // Prisma's result type still says `string | null`. Drop any nulls
+        // defensively rather than `!` asserting.
+        const propertyAddress = deal.propertyAddress
+        if (propertyAddress === null) return []
+        const address = propertyAddress.toLowerCase()
+        if (address.length <= 5 || !haystack.includes(address)) return []
+        return [{ id: deal.id, propertyAddress, reason: "property_address" }]
       })
-      .slice(0, 5)
-      .map((deal) => ({
-        id: deal.id,
-        propertyAddress: deal.propertyAddress,
-        reason: "property_address",
-      })),
+      .slice(0, 5),
   }
 }
 

@@ -4,6 +4,7 @@ import { Building2, Clock } from "lucide-react"
 import type { Metadata } from "next"
 
 import {
+  narrowToBoardDeals,
   parsePipelineFilters,
   serializeDealBoard,
 } from "@/lib/pipeline/server/board"
@@ -37,9 +38,14 @@ export default async function DealsPage({
   const filters = parsePipelineFilters(resolvedSearchParams)
   const closedCutoff = new Date(Date.now() - 90 * 86_400_000)
 
-  const deals = await db.deal.findMany({
+  const dealsRaw = await db.deal.findMany({
     where: {
       archivedAt: null,
+      // Board surfaces only seller-rep deals with a parsed property; buyer-rep
+      // and unparsed-property deals get their own surfaces later.
+      dealType: "seller_rep",
+      propertyAddress: { not: null },
+      propertyType: { not: null },
       ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
       ...(filters.source ? { contact: { leadSource: filters.source } } : {}),
       ...(filters.search
@@ -82,6 +88,7 @@ export default async function DealsPage({
     orderBy: [{ stageChangedAt: "desc" }, { updatedAt: "desc" }],
   })
 
+  const deals = narrowToBoardDeals(dealsRaw)
   const board = serializeDealBoard(deals, filters)
   const listCards = board.columns.flatMap((column) => column.cards)
   const activeDeals = listCards.filter((deal) => deal.stage !== "closed")

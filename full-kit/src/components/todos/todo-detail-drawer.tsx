@@ -281,7 +281,7 @@ export function TodoDetailDrawer({
                   <p className="text-sm font-medium">{deal.noteTitle}</p>
                   <p className="text-xs text-muted-foreground inline-flex items-center gap-1">
                     <MapPin className="size-3" />
-                    {deal.propertyAddress}
+                    {deal.propertyAddress ?? "(no specific property)"}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">

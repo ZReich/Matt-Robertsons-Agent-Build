@@ -74,6 +74,11 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
   ])
 
   if (!deal) notFound()
+  // The detail render assumes a parseable property. Buyer-rep deals (no
+  // property yet) and seller-rep deals whose lead inquiry didn't yield a usable
+  // address are not surfaced here yet — they'll get their own UI later. For now
+  // route them to a 404 instead of cluttering this page with null guards.
+  if (!deal.propertyAddress || !deal.propertyType) notFound()
 
   const value = decimalToNumber(deal.value)
   const commissionRate = decimalToNumber(deal.commissionRate) ?? 0.03

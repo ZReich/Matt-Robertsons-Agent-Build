@@ -8,6 +8,7 @@ import {
   validateJsonMutationRequest,
 } from "@/lib/api-route-auth"
 import {
+  narrowToBoardDeals,
   parsePipelineFilters,
   serializeDealBoard,
 } from "@/lib/pipeline/server/board"
@@ -45,9 +46,14 @@ export async function GET(request: NextRequest): Promise<Response> {
   const filters = parsePipelineFilters(request.nextUrl.searchParams)
   const closedCutoff = daysAgo(90)
 
-  const deals = await db.deal.findMany({
+  const dealsRaw = await db.deal.findMany({
     where: {
       archivedAt: null,
+      // Board surfaces only seller-rep deals with a parsed property; buyer-rep
+      // and unparsed-property deals get their own surfaces later.
+      dealType: "seller_rep",
+      propertyAddress: { not: null },
+      propertyType: { not: null },
       ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
       ...(filters.source ? { contact: { leadSource: filters.source } } : {}),
       ...(filters.search
@@ -90,6 +96,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     orderBy: [{ stageChangedAt: "desc" }, { updatedAt: "desc" }],
   })
 
+  const deals = narrowToBoardDeals(dealsRaw)
   return NextResponse.json(serializeDealBoard(deals, filters))
 }
 
