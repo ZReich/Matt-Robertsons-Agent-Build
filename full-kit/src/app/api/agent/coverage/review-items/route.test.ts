@@ -274,6 +274,116 @@ describe("coverage review-items route", () => {
       expect(JSON.stringify(body)).not.toContain(forbidden)
     }
   })
+
+  it("returns pending_mark_done DTOs whose snapshot only contains the documented allowlist", async () => {
+    process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
+    vi.mocked(getSession).mockResolvedValue(session())
+    vi.mocked(listCoverageReviewItems).mockResolvedValue({
+      items: [
+        {
+          id: "review-pmd",
+          communicationId: "comm-pmd",
+          type: "pending_mark_done",
+          status: "open",
+          coarseDate: "2026-04-29",
+          subject: "Status update",
+          senderDomain: "example.com",
+          classification: "signal",
+          queueState: {
+            id: null,
+            status: null,
+            attempts: null,
+            enqueuedAt: null,
+            lockedUntil: null,
+          },
+          scrubState: "unscrubbed",
+          contactState: { contactId: "contact-1", linked: true },
+          actionState: {
+            agentActionId: "action-pmd",
+            actionType: "mark-todo-done",
+            status: "pending",
+            targetEntity: "todo:todo-pmd",
+          },
+          riskScore: 60,
+          reasonCodes: ["pending_mark_done"],
+          reasonKey: "pending_mark_done",
+          recommendedAction: "review_todo_completion",
+          policyVersion: "coverage-review-v1",
+          evidenceSnippets: [],
+          createdAt: "2026-04-29T12:00:00.000Z",
+          pendingMarkDoneSnapshot: {
+            todoId: "todo-pmd",
+            todoTitle: "Follow up on Smith lease",
+            todoCreatedAt: "2026-04-29",
+            todoUpdatedAt: "2026-04-29",
+            sourceCommunicationId: "comm-pmd",
+            reason: "Tenant signed lease.",
+          },
+        },
+      ],
+      pageInfo: { nextCursor: null, limit: 25, sort: "risk_desc" },
+    })
+
+    const response = await GET(request("filter=pending_mark_done"))
+    const body = (await response.json()) as { items: Record<string, unknown>[] }
+
+    const allowedItem = new Set([
+      "id",
+      "communicationId",
+      "type",
+      "status",
+      "coarseDate",
+      "subject",
+      "senderDomain",
+      "classification",
+      "queueState",
+      "scrubState",
+      "contactState",
+      "actionState",
+      "riskScore",
+      "reasonCodes",
+      "reasonKey",
+      "recommendedAction",
+      "policyVersion",
+      "evidenceSnippets",
+      "createdAt",
+      "pendingMarkDoneSnapshot",
+    ])
+    const itemKeys = new Set(Object.keys(body.items[0]))
+    expect(new Set([...itemKeys].filter((k) => !allowedItem.has(k)))).toEqual(
+      new Set()
+    )
+    expect(allowedItem.size).toBe(itemKeys.size)
+
+    const allowedSnapshot = new Set([
+      "todoId",
+      "todoTitle",
+      "todoCreatedAt",
+      "todoUpdatedAt",
+      "sourceCommunicationId",
+      "reason",
+    ])
+    const snapshot = body.items[0].pendingMarkDoneSnapshot as Record<
+      string,
+      unknown
+    >
+    const snapshotKeys = new Set(Object.keys(snapshot))
+    expect(
+      new Set([...snapshotKeys].filter((k) => !allowedSnapshot.has(k)))
+    ).toEqual(new Set())
+    expect(allowedSnapshot.size).toBe(snapshotKeys.size)
+
+    for (const forbidden of [
+      "bodyPreview",
+      "internetMessageId",
+      "graphId",
+      "dealId",
+      "rawData",
+      "senderEmail",
+    ]) {
+      expect(JSON.stringify(body)).not.toContain(forbidden)
+    }
+  })
 })
 
 function request(query: string): Request {
