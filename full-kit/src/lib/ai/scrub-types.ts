@@ -1,4 +1,4 @@
-export const PROMPT_VERSION = "v4"
+export const PROMPT_VERSION = "v5"
 export const PROMPT_RELEASED_AT = "2026-04-28T00:00:00.000Z"
 
 export const TOPIC_TAGS = [
@@ -46,17 +46,21 @@ export const DEAL_STAGES = [
   "closed",
 ] as const
 
+/**
+ * Profile fact taxonomy — fixed by RALPLAN Phase 5 (Relationship Profile
+ * Intelligence Governance). Adding a category requires a corresponding
+ * RALPLAN amendment and a back-fill migration for `contact_profile_facts`.
+ * Buckets like `personal`, `schedule`, `constraint`, `relationship`, and
+ * `other` were retired because they encouraged sensitive-data sprawl that
+ * the wording-class axis already covers.
+ */
 export const PROFILE_FACT_CATEGORIES = [
   "preference",
-  "constraint",
-  "schedule",
-  "personal",
-  "relationship",
   "communication_style",
+  "schedule_constraint",
   "deal_interest",
   "objection",
   "important_date",
-  "other",
 ] as const
 
 export const PROFILE_FACT_WORDING_CLASSES = [

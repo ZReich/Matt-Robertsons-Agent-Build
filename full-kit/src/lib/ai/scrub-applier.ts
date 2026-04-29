@@ -232,7 +232,6 @@ function shouldReviewProfileFact(
   return (
     fact.confidence < 0.85 ||
     fact.wordingClass === "caution" ||
-    fact.category === "personal" ||
     FORBIDDEN_AUTO_FACT_PATTERN.test(fact.fact)
   )
 }
@@ -262,7 +261,6 @@ function shouldAutoSaveProfileFact(
   if (fact.sourceCommunicationId !== communicationId) return false
   if (fact.confidence < 0.85) return false
   if (fact.wordingClass === "caution") return false
-  if (fact.category === "personal") return false
   if (fact.expiresAt && new Date(fact.expiresAt).getTime() <= Date.now()) {
     return false
   }
