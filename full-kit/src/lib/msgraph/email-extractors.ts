@@ -1,3 +1,6 @@
+import { normalizeBuildoutProperty } from "@/lib/buildout/property-normalizer"
+import { parseBuildoutStageTransition } from "@/lib/msgraph/buildout-stage-parser"
+
 export interface ExtractorInput {
   subject: string | null | undefined
   bodyText: string
@@ -14,6 +17,10 @@ export interface InquirerInfo {
 export interface CrexiLeadExtract {
   kind: "new-leads-count" | "inquiry" | "team-note"
   propertyName?: string
+  propertyAddress?: string
+  propertyKey?: string
+  propertyAliases?: string[]
+  propertyAddressMissing?: boolean
   leadCount?: number
   cityOrMarket?: string
   inquirerName?: string
@@ -33,50 +40,90 @@ export function extractCrexiLead(
   const subject = (input.subject ?? "").trim()
   if (!subject) return null
 
+  let result: CrexiLeadExtract | null = null
+
   let m = subject.match(CREXI_COUNT_LEADS)
   if (m) {
-    return {
+    result = {
       kind: "new-leads-count",
       leadCount: Number.parseInt(m[1], 10),
       propertyName: m[2].trim(),
     }
   }
 
-  m = subject.match(CREXI_INQUIRY_SUBJECT)
-  if (m) {
+  if (!result) {
+    m = subject.match(CREXI_INQUIRY_SUBJECT)
+    if (m) {
+      const inquirer = parseInquirerBody(input.bodyText)
+      result = {
+        kind: "inquiry",
+        inquirerName: m[1].trim(),
+        propertyName: m[2].trim(),
+        cityOrMarket: m[3].trim(),
+        ...(inquirer ? { inquirer } : {}),
+      }
+    }
+  }
+
+  if (!result && CREXI_GENERIC_NEW_LEADS.test(subject)) {
     const inquirer = parseInquirerBody(input.bodyText)
-    return {
+    result = {
       kind: "inquiry",
-      inquirerName: m[1].trim(),
-      propertyName: m[2].trim(),
-      cityOrMarket: m[3].trim(),
       ...(inquirer ? { inquirer } : {}),
     }
   }
 
-  if (CREXI_GENERIC_NEW_LEADS.test(subject)) {
-    const inquirer = parseInquirerBody(input.bodyText)
-    return {
-      kind: "inquiry",
-      ...(inquirer ? { inquirer } : {}),
+  if (!result) {
+    m = subject.match(CREXI_TEAM_NOTE)
+    if (m) {
+      result = {
+        kind: "team-note",
+        noteAuthor: m[1].trim(),
+        propertyName: m[2].trim(),
+      }
     }
   }
 
-  m = subject.match(CREXI_TEAM_NOTE)
-  if (m) {
-    return {
-      kind: "team-note",
-      noteAuthor: m[1].trim(),
-      propertyName: m[2].trim(),
-    }
+  if (!result) return null
+
+  // Only inquiry-class kinds get a canonical propertyKey. Aggregate digests
+  // (new-leads-count: "5 new leads found for X") and team-notes do NOT
+  // represent a single specific property inquiry — running the body through
+  // normalizeBuildoutProperty for those kinds was producing junk keys like
+  // "5 new leads last 7 days" off summary text. Skip the normalizer entirely
+  // for non-inquiry kinds to avoid contaminating propertyKey downstream.
+  if (result.kind !== "inquiry") return result
+
+  // Crexi inquiry bodies start with "Regarding listing at <full address>".
+  // Route through normalizeBuildoutProperty for canonical-key derivation —
+  // same single source of truth as the Buildout extractor.
+  const addressMatch = input.bodyText.match(
+    /Regarding listing at\s+(.+?)(?:\r?\n|<|$)/
+  )
+  const addressFromLabel = addressMatch?.[1]?.trim()
+  const normalized = normalizeBuildoutProperty(
+    result.propertyName ?? addressFromLabel ?? "",
+    addressFromLabel ?? input.bodyText
+  )
+  if (normalized) {
+    // Prefer the labeled full line over normalized.propertyAddressRaw
+    // (which is only the regex-extracted street portion).
+    result.propertyAddress = addressFromLabel ?? normalized.propertyAddressRaw
+    result.propertyKey = normalized.normalizedPropertyKey
+    result.propertyAliases = normalized.aliases
+    result.propertyAddressMissing = normalized.addressMissing
   }
 
-  return null
+  return result
 }
 
 export interface LoopNetLeadExtract {
   kind: "inquiry" | "favorited"
   propertyName: string
+  propertyAddress?: string
+  propertyKey?: string
+  propertyAliases?: string[]
+  propertyAddressMissing?: boolean
   inquirer?: InquirerInfo
   viewerName?: string
 }
@@ -93,28 +140,62 @@ export function extractLoopNetLead(
 
   if (LOOPNET_SELF_CONFIRM.test(subject)) return null
 
+  let result: LoopNetLeadExtract | null = null
+
   let m = subject.match(LOOPNET_INQUIRY)
   if (m) {
     const inquirer = parseInquirerBody(input.bodyText)
-    return {
+    result = {
       kind: "inquiry",
       propertyName: m[1].trim(),
       ...(inquirer ? { inquirer } : {}),
     }
   }
 
-  m = subject.match(LOOPNET_FAVORITED)
-  if (m) {
-    const inquirer = parseInquirerBody(input.bodyText)
-    return {
-      kind: "favorited",
-      viewerName: m[1].trim(),
-      propertyName: m[2].trim(),
-      ...(inquirer ? { inquirer } : {}),
+  if (!result) {
+    m = subject.match(LOOPNET_FAVORITED)
+    if (m) {
+      const inquirer = parseInquirerBody(input.bodyText)
+      result = {
+        kind: "favorited",
+        viewerName: m[1].trim(),
+        propertyName: m[2].trim(),
+        ...(inquirer ? { inquirer } : {}),
+      }
     }
   }
 
-  return null
+  if (!result) return null
+
+  // LoopNet "Lead" emails: a line of "${street} | ${city}, ${state} ${zip}"
+  let addressLine: string | null = null
+  const pipeLineMatch = input.bodyText.match(
+    /^([0-9][^\r\n|]*?\s\|\s[A-Z][^\r\n]+?,\s[A-Z]{2}\s\d{5})/m
+  )
+  if (pipeLineMatch) {
+    addressLine = pipeLineMatch[1].trim()
+  } else {
+    // "Favorited" emails — fall back to subject
+    const subjectMatch = subject.match(/favorited\s+(.+)$/i)
+    if (subjectMatch) addressLine = subjectMatch[1].trim()
+  }
+  if (addressLine) {
+    const normalized = normalizeBuildoutProperty(
+      result.propertyName ?? addressLine,
+      addressLine
+    )
+    if (normalized) {
+      // Prefer the matched line ("303 N Broadway | Billings, MT 59101") over
+      // normalized.propertyAddressRaw, which is the regex-extracted street
+      // portion only ("303 N Broadway") — same reason as the Buildout extractor.
+      result.propertyAddress = addressLine
+      result.propertyKey = normalized.normalizedPropertyKey
+      result.propertyAliases = normalized.aliases
+      result.propertyAddressMissing = normalized.addressMissing
+    }
+  }
+
+  return result
 }
 
 export interface BuildoutEventExtract {
@@ -132,10 +213,15 @@ export interface BuildoutEventExtract {
     | "listing-expiration"
   propertyName?: string
   propertyAddress?: string
+  propertyKey?: string
+  propertyAliases?: string[]
+  propertyAddressMissing?: boolean
   inquirer?: InquirerInfo
   viewer?: InquirerInfo
   newStage?: string
   previousStage?: string
+  fromStageRaw?: string
+  toStageRaw?: string
   taskTitle?: string
   taskDueDate?: string
   taskAssignee?: string
@@ -168,106 +254,161 @@ export function extractBuildoutEvent(
   const subject = (input.subject ?? "").trim()
   if (!subject) return null
 
+  let result: BuildoutEventExtract | null = null
+
   let m = subject.match(BUILDOUT_NEW_LEAD)
   if (m) {
     const inquirer = parseBuildoutLeadBody(input.bodyText)
-    return {
+    result = {
       kind: "new-lead",
       propertyName: m[1].trim(),
       ...(inquirer ? { inquirer } : {}),
     }
   }
 
-  m = subject.match(BUILDOUT_INFORMATION_REQUESTED)
-  if (m) {
-    const inquirer = parseBuildoutLeadBody(input.bodyText) ?? {
-      name: m[2].trim(),
-    }
-    return {
-      kind: "information-requested",
-      propertyName: m[1].trim(),
-      inquirer: {
-        ...inquirer,
-        name: inquirer.name ?? m[2].trim(),
-      },
-    }
-  }
-
-  m = subject.match(BUILDOUT_STAGE)
-  if (m) {
-    const stage = parseBuildoutStageBody(input.bodyText)
-    return {
-      kind: "deal-stage-update",
-      propertyName: m[1].trim(),
-      previousStage: stage.previousStage,
-      newStage: stage.newStage,
+  if (!result) {
+    m = subject.match(BUILDOUT_INFORMATION_REQUESTED)
+    if (m) {
+      const inquirer = parseBuildoutLeadBody(input.bodyText) ?? {
+        name: m[2].trim(),
+      }
+      result = {
+        kind: "information-requested",
+        propertyName: m[1].trim(),
+        inquirer: {
+          ...inquirer,
+          name: inquirer.name ?? m[2].trim(),
+        },
+      }
     }
   }
 
-  m = subject.match(BUILDOUT_TASK)
-  if (m) {
-    const task = parseBuildoutTaskBody(input.bodyText)
-    return {
-      kind: "task-assigned",
-      propertyName: task.propertyName ?? m[1]?.trim(),
-      taskTitle: task.taskTitle,
-      taskDueDate: task.taskDueDate,
-      taskAssignee: task.taskAssignee,
+  if (!result) {
+    m = subject.match(BUILDOUT_STAGE)
+    if (m) {
+      const stage = parseBuildoutStageBody(input.bodyText)
+      const transition = parseBuildoutStageTransition(input.bodyText)
+      result = {
+        kind: "deal-stage-update",
+        propertyName: m[1].trim(),
+        previousStage: stage.previousStage,
+        newStage: stage.newStage,
+        ...(transition?.fromStageRaw
+          ? { fromStageRaw: transition.fromStageRaw }
+          : {}),
+        ...(transition?.toStageRaw
+          ? { toStageRaw: transition.toStageRaw }
+          : {}),
+      }
     }
   }
 
-  if (BUILDOUT_CRITICAL.test(subject)) {
-    return {
+  if (!result) {
+    m = subject.match(BUILDOUT_TASK)
+    if (m) {
+      const task = parseBuildoutTaskBody(input.bodyText)
+      result = {
+        kind: "task-assigned",
+        propertyName: task.propertyName ?? m[1]?.trim(),
+        taskTitle: task.taskTitle,
+        taskDueDate: task.taskDueDate,
+        taskAssignee: task.taskAssignee,
+      }
+    }
+  }
+
+  if (!result && BUILDOUT_CRITICAL.test(subject)) {
+    result = {
       kind: "critical-date",
       ...parseBuildoutCriticalDateBody(input.bodyText),
     }
   }
 
-  m = subject.match(BUILDOUT_CA_EXECUTED)
-  if (m) {
-    return { kind: "ca-executed", propertyName: m[1].trim() }
-  }
-
-  m = subject.match(BUILDOUT_DOCUMENT_VIEW)
-  if (m) {
-    return {
-      kind: "document-view",
-      propertyName: m[1].trim(),
-      ...parseBuildoutDocumentViewBody(input.bodyText),
+  if (!result) {
+    m = subject.match(BUILDOUT_CA_EXECUTED)
+    if (m) {
+      result = { kind: "ca-executed", propertyName: m[1].trim() }
     }
   }
 
-  if (BUILDOUT_VOUCHER_APPROVED.test(subject)) {
-    return {
+  if (!result) {
+    m = subject.match(BUILDOUT_DOCUMENT_VIEW)
+    if (m) {
+      result = {
+        kind: "document-view",
+        propertyName: m[1].trim(),
+        ...parseBuildoutDocumentViewBody(input.bodyText),
+      }
+    }
+  }
+
+  if (!result && BUILDOUT_VOUCHER_APPROVED.test(subject)) {
+    result = {
       kind: "voucher-approved",
       ...parseBuildoutVoucherBody(input.bodyText),
     }
   }
 
-  if (BUILDOUT_VOUCHER_DEPOSIT.test(subject)) {
-    return {
+  if (!result && BUILDOUT_VOUCHER_DEPOSIT.test(subject)) {
+    result = {
       kind: "voucher-deposit",
       ...parseBuildoutVoucherBody(input.bodyText),
     }
   }
 
-  if (BUILDOUT_COMMISSION_PAYMENT.test(subject)) {
-    return {
+  if (!result && BUILDOUT_COMMISSION_PAYMENT.test(subject)) {
+    result = {
       kind: "commission-payment",
       ...parseBuildoutVoucherBody(input.bodyText),
     }
   }
 
-  m = subject.match(BUILDOUT_LISTING_EXPIRATION)
-  if (m) {
-    return {
-      kind: "listing-expiration",
-      daysUntilExpiration: Number.parseInt(m[1], 10),
-      propertyName: m[2].trim(),
+  if (!result) {
+    m = subject.match(BUILDOUT_LISTING_EXPIRATION)
+    if (m) {
+      result = {
+        kind: "listing-expiration",
+        daysUntilExpiration: Number.parseInt(m[1], 10),
+        propertyName: m[2].trim(),
+      }
     }
   }
 
-  return null
+  if (!result) return null
+
+  // Only inquiry-class kinds (new-lead, information-requested) get a canonical
+  // propertyKey. Stage updates / document views / CA-executed / task-assigned /
+  // critical-date emails frequently contain unrelated addresses in footers or
+  // signatures (e.g. "1600 Golf Rd" in an email that's actually about Gallatin
+  // Road) — the normalizer was happily picking those up and producing wrong
+  // join keys. Phase 8.4 looks up Deals by propertyName for those kinds, so
+  // suppressing propertyKey here is safe and removes the junk-key hazard.
+  if (result.kind !== "new-lead" && result.kind !== "information-requested") {
+    return result
+  }
+
+  // Extract the labelled "Listing Address" line for high-fidelity address text,
+  // then delegate canonical-key derivation to the existing Buildout normalizer
+  // (single source of truth across lead-derived and Buildout-event Deal joins).
+  const addressMatch = input.bodyText.match(
+    /Listing Address\s+(.+?)(?:\r?\n|<|$)/
+  )
+  const addressFromLabel = addressMatch?.[1]?.trim()
+  const normalized = normalizeBuildoutProperty(
+    result.propertyName ?? addressFromLabel ?? "",
+    addressFromLabel ?? input.bodyText
+  )
+  if (normalized) {
+    // Prefer the labeled full line ("303 North Broadway, Billings, MT 59101")
+    // over normalized.propertyAddressRaw (which is just the regex-extracted
+    // street portion, "303 North Broadway" — no city/state/zip).
+    result.propertyAddress = addressFromLabel ?? normalized.propertyAddressRaw
+    result.propertyKey = normalized.normalizedPropertyKey
+    result.propertyAliases = normalized.aliases
+    result.propertyAddressMissing = normalized.addressMissing
+  }
+
+  return result
 }
 
 function parseBuildoutLeadBody(body: string): InquirerInfo | null {

@@ -7,6 +7,7 @@ import {
   computeBehavioralHints,
   fetchEmailDelta,
   persistMessage,
+  processMessagesConcurrently,
   processOneMessage,
 } from "./emails"
 
@@ -38,6 +39,9 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn(),
+    },
+    agentAction: {
+      create: vi.fn(),
     },
     $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
@@ -633,5 +637,246 @@ describe("processOneMessage contact safety", () => {
         data: expect.objectContaining({ contactId: null }),
       })
     )
+  })
+})
+
+describe("processOneMessage buyer-rep signal hook", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    delete process.env.CONTACT_AUTO_PROMOTION_MODE
+    ;(db.contact.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "contact-broker" },
+    ])
+    ;(db.communication.count as ReturnType<typeof vi.fn>).mockResolvedValue(0)
+    ;(db.communication.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      []
+    )
+    ;(db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+      null
+    )
+    ;(db.$transaction as ReturnType<typeof vi.fn>).mockImplementation((fn) =>
+      fn(db)
+    )
+    ;(db.externalSync.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "sync-br",
+    })
+    ;(db.communication.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "comm-br",
+    })
+    ;(db.externalSync.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    ;(db.communication.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    ;(db.agentAction.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "action-br",
+    })
+  })
+
+  it("proposes a create-deal AgentAction for outbound LOI emails to broker domains", async () => {
+    await processOneMessage(
+      {
+        id: "outbound-loi-1",
+        sentDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-loi-1",
+        subject: "LOI draft for 303 N Broadway",
+        from: {
+          emailAddress: {
+            name: "Matt",
+            address: "matt@naibusinessproperties.com",
+          },
+        },
+        toRecipients: [
+          { emailAddress: { address: "agent@cushwake.com", name: "Agent" } },
+        ],
+        body: {
+          contentType: "text",
+          content: "Attached is the letter of intent for our review.",
+        },
+      },
+      "sentitems",
+      "observe"
+    )
+
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "create-deal",
+        tier: "approve",
+        sourceCommunicationId: "comm-br",
+        payload: expect.objectContaining({
+          contactId: "contact-broker",
+          recipientEmail: "agent@cushwake.com",
+          recipientDisplayName: "Agent",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          stage: "offer",
+          signalType: "loi",
+        }),
+      }),
+    })
+  })
+
+  it("fires when ingest contactId is null but recipient email matches an existing Contact", async () => {
+    // No contact match for the sender — ingest leaves persisted.contactId null.
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+    // Hook fallback lookup for the external recipient finds a Contact.
+    ;(db.contact.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "contact-recipient-match",
+    })
+
+    await processOneMessage(
+      {
+        id: "outbound-loi-2",
+        sentDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-loi-2",
+        subject: "LOI for 500 Main",
+        from: {
+          emailAddress: {
+            name: "Matt",
+            address: "matt@naibusinessproperties.com",
+          },
+        },
+        toRecipients: [
+          {
+            emailAddress: {
+              address: "broker@colliers.com",
+              name: "Broker",
+            },
+          },
+        ],
+        body: {
+          contentType: "text",
+          content: "Attached is the letter of intent for our review.",
+        },
+      },
+      "sentitems",
+      "observe"
+    )
+
+    expect(db.contact.findFirst).toHaveBeenCalledWith({
+      where: {
+        email: { equals: "broker@colliers.com", mode: "insensitive" },
+        archivedAt: null,
+      },
+      select: { id: true },
+    })
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "create-deal",
+        tier: "approve",
+        sourceCommunicationId: "comm-br",
+        payload: expect.objectContaining({
+          contactId: "contact-recipient-match",
+          recipientEmail: "broker@colliers.com",
+          recipientDisplayName: "Broker",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          signalType: "loi",
+        }),
+      }),
+    })
+  })
+
+  it("fires when ingest contactId is null and recipient is brand new (passes recipientEmail through)", async () => {
+    // No contact match for sender — persisted.contactId stays null.
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+    // Recipient lookup also misses — payload carries recipientEmail with
+    // contactId=null. createDealFromAction will auto-create at approval time.
+    ;(db.contact.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await processOneMessage(
+      {
+        id: "outbound-tour-3",
+        sentDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-tour-3",
+        subject: "Tour scheduling for 100 Elm",
+        from: {
+          emailAddress: {
+            name: "Matt",
+            address: "matt@naibusinessproperties.com",
+          },
+        },
+        toRecipients: [
+          {
+            emailAddress: {
+              address: "newbroker@example.com",
+              name: "New Broker",
+            },
+          },
+        ],
+        body: {
+          contentType: "text",
+          content:
+            "Looking to schedule a tour next week — what time slot works for a showing?",
+        },
+      },
+      "sentitems",
+      "observe"
+    )
+
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "create-deal",
+        tier: "approve",
+        sourceCommunicationId: "comm-br",
+        payload: expect.objectContaining({
+          contactId: null,
+          recipientEmail: "newbroker@example.com",
+          recipientDisplayName: "New Broker",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          signalType: "tour",
+        }),
+      }),
+    })
+  })
+})
+
+describe("processMessagesConcurrently", () => {
+  it("calls each item's handler exactly once", async () => {
+    const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    const seen: number[] = []
+    await processMessagesConcurrently(items, 3, async (n) => {
+      seen.push(n)
+    })
+    expect(seen.sort((a, b) => a - b)).toEqual(items)
+  })
+
+  it("respects the concurrency limit", async () => {
+    let inFlight = 0
+    let maxObserved = 0
+    await processMessagesConcurrently(
+      Array.from({ length: 20 }, (_, i) => i),
+      4,
+      async () => {
+        inFlight++
+        if (inFlight > maxObserved) maxObserved = inFlight
+        // Yield to allow other workers to start before we release the slot.
+        await new Promise((r) => setTimeout(r, 5))
+        inFlight--
+      }
+    )
+    expect(maxObserved).toBeLessThanOrEqual(4)
+    expect(maxObserved).toBeGreaterThan(1)
+  })
+
+  it("returns immediately when items is empty", async () => {
+    const handler = vi.fn(async () => {})
+    await processMessagesConcurrently([], 10, handler)
+    expect(handler).not.toHaveBeenCalled()
+  })
+
+  it("clamps limit to items.length when items < limit", async () => {
+    const seen: number[] = []
+    await processMessagesConcurrently([1, 2], 100, async (n) => {
+      seen.push(n)
+    })
+    expect(seen.sort((a, b) => a - b)).toEqual([1, 2])
+  })
+
+  it("propagates the first handler rejection", async () => {
+    await expect(
+      processMessagesConcurrently([1, 2, 3], 2, async (n) => {
+        if (n === 2) throw new Error("boom")
+      })
+    ).rejects.toThrow("boom")
   })
 })

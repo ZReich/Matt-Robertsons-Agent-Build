@@ -1,7 +1,8 @@
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 generator client {
@@ -28,6 +29,27 @@ enum DealStage {
   due_diligence
   closing
   closed
+}
+
+enum DealType {
+  seller_rep
+  buyer_rep
+  tenant_rep
+}
+
+enum DealOutcome {
+  won
+  lost
+  withdrawn
+  expired
+}
+
+enum DealSource {
+  manual
+  lead_derived
+  buildout_event
+  buyer_rep_inferred
+  ai_suggestion
 }
 
 enum CanonicalDealStage {
@@ -209,6 +231,16 @@ enum LeadStatus {
   dropped
 }
 
+enum ClientType {
+  prospect
+  active_listing_client
+  active_buyer_rep_client
+  past_client
+  cooperating_broker
+  service_provider
+  other
+}
+
 enum EmailFilterRuleMode {
   draft
   classification_only
@@ -369,6 +401,7 @@ model Contact {
   leadAt           DateTime?   @map("lead_at")
   leadLastViewedAt DateTime?   @map("lead_last_viewed_at")
   estimatedValue   Decimal?    @map("estimated_value") @db.Decimal(14, 2)
+  clientType       ClientType? @map("client_type")
 
   // Relations
   deals          Deal[]
@@ -389,6 +422,7 @@ model Contact {
   @@index([leadStatus])
   @@index([leadStatus, updatedAt])
   @@index([leadSource, leadStatus, leadLastViewedAt])
+  @@index([clientType])
   @@map("contacts")
 }
 
@@ -422,24 +456,32 @@ model ContactProfileFact {
 
 /// CRE deals — the core pipeline entity
 model Deal {
-  id              String       @id @default(uuid())
-  contactId       String       @map("contact_id")
-  propertyAddress String       @map("property_address")
-  propertyType    PropertyType @map("property_type")
-  squareFeet      Int?         @map("square_feet")
-  stage           DealStage    @default(prospecting)
-  value           Decimal?     @db.Decimal(14, 2)
-  listedDate      DateTime?    @map("listed_date")
-  closingDate     DateTime?    @map("closing_date")
-  keyContacts     Json?        @default("{}") @map("key_contacts") // { role: name }
-  category        Category     @default(business)
-  tags            Json?        @default("[]")
-  notes           String?      @db.Text
-  createdBy       String?      @map("created_by")
-  archivedAt      DateTime?    @map("archived_at")
-  commissionRate  Decimal?     @default(0.03) @map("commission_rate") @db.Decimal(5, 4)
+  id              String        @id @default(uuid())
+  contactId       String        @map("contact_id")
+  propertyAddress String?       @map("property_address")
+  propertyType    PropertyType? @map("property_type")
+  squareFeet      Int?          @map("square_feet")
+  stage           DealStage     @default(prospecting)
+  value           Decimal?      @db.Decimal(14, 2)
+  listedDate      DateTime?     @map("listed_date")
+  closingDate     DateTime?     @map("closing_date")
+  closedAt        DateTime?     @map("closed_at")
+  outcome         DealOutcome?
+  dealType        DealType      @default(seller_rep) @map("deal_type")
+  dealSource      DealSource    @default(manual) @map("deal_source")
+  propertyKey     String?       @map("property_key")
+  propertyAliases Json?         @default("[]") @map("property_aliases")
+  unit            String?
+  searchCriteria  Json?         @map("search_criteria")
+  keyContacts     Json?         @default("{}") @map("key_contacts")
+  category        Category      @default(business)
+  tags            Json?         @default("[]")
+  notes           String?       @db.Text
+  createdBy       String?       @map("created_by")
+  archivedAt      DateTime?     @map("archived_at")
+  commissionRate  Decimal?      @default(0.03) @map("commission_rate") @db.Decimal(5, 4)
   probability     Int?
-  stageChangedAt  DateTime?    @map("stage_changed_at")
+  stageChangedAt  DateTime?     @map("stage_changed_at")
 
   // Relations
   contact        Contact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
@@ -456,6 +498,15 @@ model Deal {
   @@index([stage])
   @@index([propertyType])
   @@index([propertyAddress])
+  /// @prisma-unique-partial: deal_type='seller_rep' AND archived_at IS NULL AND property_key IS NOT NULL
+  /// Partial unique index `deals_property_key_seller_rep_active_uidx` enforces
+  /// this in Postgres (see migration 20260430140000_deals_property_key_unique).
+  /// Prisma's schema DSL can't express partial unique indexes, so this is
+  /// document-only — the constraint is created via raw SQL migration.
+  @@index([propertyKey])
+  @@index([dealType])
+  @@index([dealSource])
+  @@index([closedAt])
   @@index([listedDate])
   @@index([closingDate])
   @@index([stageChangedAt])

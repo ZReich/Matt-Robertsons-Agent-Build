@@ -150,37 +150,58 @@ describe("graphFetch", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
-  it("retries once on 503, then throws if still failing", async () => {
+  it("retries up to 5 times on 503 with exponential backoff, then throws", async () => {
     const { mod } = await loadClientWithTokenManager()
     fetchSpy
       .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
       .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
+      .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
+      .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
+      .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
+      .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
 
     const promise = mod.graphFetch("/users/x")
-    // Attach the rejection assertion BEFORE advancing timers to ensure
-    // the rejection handler is registered synchronously, avoiding
-    // a PromiseRejectionHandledWarning.
     const assertion = expect(promise).rejects.toMatchObject({ status: 503 })
-    await vi.advanceTimersByTimeAsync(3000) // past default 2s fallback
+    // Backoffs: 2s + 4s + 8s + 16s + 32s = 62s total. Advance past that.
+    await vi.advanceTimersByTimeAsync(70_000)
     await assertion
-    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(fetchSpy).toHaveBeenCalledTimes(6) // initial + 5 retries
   })
 
-  it("retries once on network error, then throws a NetworkError GraphError", async () => {
+  it("succeeds when 504 clears on retry 2", async () => {
     const { mod } = await loadClientWithTokenManager()
-    const netErr = new Error("Connection refused")
-    fetchSpy.mockRejectedValueOnce(netErr).mockRejectedValueOnce(netErr)
+    fetchSpy
+      .mockResolvedValueOnce(graphErrorResponse(504, "GatewayTimeout"))
+      .mockResolvedValueOnce(graphErrorResponse(504, "GatewayTimeout"))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
 
     const promise = mod.graphFetch("/users/x")
-    // Register the rejection handler before advancing timers.
+    // First two backoffs: 2s + 4s = 6s.
+    await vi.advanceTimersByTimeAsync(8_000)
+    await expect(promise).resolves.toEqual({ ok: true })
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+  })
+
+  it("retries up to 5 times on network error, then throws a NetworkError GraphError", async () => {
+    const { mod } = await loadClientWithTokenManager()
+    const netErr = new Error("Connection refused")
+    fetchSpy
+      .mockRejectedValueOnce(netErr)
+      .mockRejectedValueOnce(netErr)
+      .mockRejectedValueOnce(netErr)
+      .mockRejectedValueOnce(netErr)
+      .mockRejectedValueOnce(netErr)
+      .mockRejectedValueOnce(netErr)
+
+    const promise = mod.graphFetch("/users/x")
     const assertion = expect(promise).rejects.toMatchObject({
       name: "GraphError",
       status: 0,
       code: "NetworkError",
     })
-    await vi.advanceTimersByTimeAsync(3000) // past default 2s retry sleep
+    await vi.advanceTimersByTimeAsync(70_000)
     await assertion
-    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(fetchSpy).toHaveBeenCalledTimes(6) // initial + 5 retries
   })
 
   it("uses absolute graph.microsoft.com URL verbatim", async () => {

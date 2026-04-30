@@ -42,7 +42,11 @@ export interface ResolvedPerson {
 export interface ResolvedDeal {
   noteTitle: string
   slug: string
-  propertyAddress: string
+  /**
+   * Null for buyer-rep deals (and seller-rep deals with no parseable address
+   * yet) — UI must render a fallback string in that case.
+   */
+  propertyAddress: string | null
   propertyType?: string
   stage: string
   value?: number
@@ -86,7 +90,11 @@ interface PrismaContactContext {
 
 interface PrismaDealContext {
   id: string
-  propertyAddress: string
+  // propertyAddress / propertyType are nullable because buyer-rep deals (and
+  // seller-rep deals whose lead inquiry didn't yield a parseable address)
+  // exist without a concrete property. Todos can be linked to those deals
+  // during the search phase, so the renderer below handles the null case.
+  propertyAddress: string | null
   propertyType?: string | null
   stage: string
   value?: DecimalLike
@@ -290,10 +298,14 @@ export function resolvePrismaTodoContexts(
     }
 
     if (todo.deal) {
+      const propertyAddress = todo.deal.propertyAddress
       context.deal = {
-        noteTitle: todo.deal.propertyAddress,
+        // Buyer-rep deals (and seller-rep deals with no parseable address yet)
+        // surface a placeholder title here so the drawer still has something
+        // to label the deal pill with.
+        noteTitle: propertyAddress ?? "(no specific property)",
         slug: todo.deal.id,
-        propertyAddress: todo.deal.propertyAddress,
+        propertyAddress: propertyAddress,
         propertyType: todo.deal.propertyType
           ? normalizePrismaEnum(todo.deal.propertyType)
           : undefined,

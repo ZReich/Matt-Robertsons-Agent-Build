@@ -211,6 +211,11 @@ describe("coverage review item actions route", () => {
       snoozedUntil: null,
       reviewer: "Zach Reviewer",
     })
+    expect(recordCoverageActionAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outcome: { applied: 1, skipped: 0, unsupported: 0 },
+      })
+    )
   })
 
   it("rejects malformed runId formats before invoking the service", async () => {

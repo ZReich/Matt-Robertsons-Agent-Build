@@ -20,6 +20,8 @@ import type {
 import type { NormalizedSender } from "./sender-normalize"
 
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
+import { proposeBuyerRepDeal } from "@/lib/deals/buyer-rep-action"
+import { classifyBuyerRepSignal } from "@/lib/deals/buyer-rep-detector"
 import {
   CONTACT_AUTO_PROMOTION_POLICY_VERSION,
   evaluateContactAutoPromotion,
@@ -405,6 +407,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   contactCreated: boolean
   leadContactId: string | null
   leadCreated: boolean
+  communicationId: string | null
+  contactId: string | null
 }> {
   const direction = p.folder === "inbox" ? "inbound" : "outbound"
   const storeBody = p.acquisition.bodyDecision === "fetch_body"
@@ -429,6 +433,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       contactCreated: false,
       leadContactId: p.leadContactId,
       leadCreated: false,
+      communicationId: null,
+      contactId: p.contactId,
     }
   }
 
@@ -488,6 +494,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   let resolvedLeadContactId = p.leadContactId
   let resolvedLeadCreated = p.leadCreated
   let resolvedContactCreated = false
+  let resolvedCommunicationId: string | null = null
 
   await db.$transaction(async (tx) => {
     const sync = await tx.externalSync.create({
@@ -536,6 +543,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       },
       select: { id: true },
     })
+    resolvedCommunicationId = comm.id
     await tx.externalSync.update({
       where: { id: sync.id },
       data: { entityId: comm.id },
@@ -594,6 +602,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
     contactCreated: resolvedContactCreated,
     leadContactId: resolvedLeadContactId,
     leadCreated: resolvedLeadCreated,
+    communicationId: resolvedCommunicationId,
+    contactId: resolvedContactId,
   }
 }
 
@@ -1226,6 +1236,62 @@ export async function processOneMessage(
         leadContactId,
         leadCreated,
       })
+
+      // Buyer-rep deal detection on outbound emails. Fires regardless of
+      // whether the row has a contactId yet — for outbound LOIs/tours to
+      // brand-new cooperating brokers we won't have a Contact at ingest
+      // time. The AgentAction carries the recipient email; createDealFromAction
+      // resolves Contact at approval time (find-or-create by email).
+      if (
+        persisted.inserted &&
+        persisted.communicationId &&
+        folder === "sentitems"
+      ) {
+        const recipientDomains = extractRecipientDomains(
+          workingMessage.toRecipients ?? []
+        )
+        const signal = classifyBuyerRepSignal({
+          direction: "outbound",
+          subject: workingMessage.subject ?? "",
+          body: workingMessage.body?.content ?? "",
+          recipientDomains,
+        })
+        if (signal.signalType && signal.proposedStage) {
+          // Try to match the first external recipient to an existing
+          // Contact. If matched, prefer contactId; otherwise pass
+          // recipientEmail through to approval-time resolution.
+          const externalRecipient = pickFirstExternalRecipient(
+            workingMessage.toRecipients ?? [],
+            normalizedSender.address
+          )
+          let buyerRepContactId: string | null = persisted.contactId
+          if (!buyerRepContactId && externalRecipient?.email) {
+            const match = await db.contact.findFirst({
+              where: {
+                email: {
+                  equals: externalRecipient.email,
+                  mode: "insensitive",
+                },
+                archivedAt: null,
+              },
+              select: { id: true },
+            })
+            if (match) buyerRepContactId = match.id
+          }
+          if (buyerRepContactId || externalRecipient?.email) {
+            await proposeBuyerRepDeal({
+              communicationId: persisted.communicationId,
+              contactId: buyerRepContactId,
+              recipientEmail: externalRecipient?.email ?? null,
+              recipientDisplayName: externalRecipient?.displayName ?? null,
+              signalType: signal.signalType,
+              proposedStage: signal.proposedStage,
+              confidence: signal.confidence,
+            })
+          }
+        }
+      }
+
       return {
         classification: classification.classification,
         extractedPlatform: extracted?.platform ?? null,
@@ -1444,56 +1510,63 @@ export async function syncEmails(
     for (const folder of folders) {
       const summary = result.perFolder[folder]
       let finalDeltaLink: string | undefined
+      const concurrency = readSyncConcurrency()
       try {
         for await (const { page } of fetchEmailDelta(folder, sinceIso)) {
-          for (const rawMsg of page.value) {
-            try {
-              const res = await processOneMessage(
-                rawMsg,
-                folder,
-                options.filterRunMode ?? "observe"
-              )
-              summary.classification[res.classification]++
-              if (res.inserted) summary.created++
-              if (res.extractedPlatform === "crexi")
-                summary.platformExtracted.crexiLead++
-              if (res.extractedPlatform === "loopnet")
-                summary.platformExtracted.loopnetLead++
-              if (res.extractedPlatform === "buildout")
-                summary.platformExtracted.buildoutEvent++
-              if (res.contactCreated) contactsCreated++
-              if (res.leadCreated) leadsCreated++
-            } catch (err) {
-              summary.errors.push({
-                graphId: rawMsg.id,
-                message: err instanceof Error ? err.message : String(err),
-                attempts: 3,
-              })
-              await db.externalSync
-                .upsert({
-                  where: {
-                    source_externalId: {
+          await processMessagesConcurrently(
+            page.value,
+            concurrency,
+            async (rawMsg) => {
+              try {
+                const res = await processOneMessage(
+                  rawMsg,
+                  folder,
+                  options.filterRunMode ?? "observe"
+                )
+                summary.classification[res.classification]++
+                if (res.inserted) summary.created++
+                if (res.extractedPlatform === "crexi")
+                  summary.platformExtracted.crexiLead++
+                if (res.extractedPlatform === "loopnet")
+                  summary.platformExtracted.loopnetLead++
+                if (res.extractedPlatform === "buildout")
+                  summary.platformExtracted.buildoutEvent++
+                if (res.contactCreated) contactsCreated++
+                if (res.leadCreated) leadsCreated++
+              } catch (err) {
+                summary.errors.push({
+                  graphId: rawMsg.id,
+                  message: err instanceof Error ? err.message : String(err),
+                  attempts: 3,
+                })
+                await db.externalSync
+                  .upsert({
+                    where: {
+                      source_externalId: {
+                        source: "msgraph-email",
+                        externalId: rawMsg.id,
+                      },
+                    },
+                    create: {
                       source: "msgraph-email",
                       externalId: rawMsg.id,
+                      entityType: "communication",
+                      status: "failed",
+                      errorMsg:
+                        err instanceof Error ? err.message : String(err),
                     },
-                  },
-                  create: {
-                    source: "msgraph-email",
-                    externalId: rawMsg.id,
-                    entityType: "communication",
-                    status: "failed",
-                    errorMsg: err instanceof Error ? err.message : String(err),
-                  },
-                  update: {
-                    status: "failed",
-                    errorMsg: err instanceof Error ? err.message : String(err),
-                  },
-                })
-                .catch(() => {
-                  /* best-effort */
-                })
+                    update: {
+                      status: "failed",
+                      errorMsg:
+                        err instanceof Error ? err.message : String(err),
+                    },
+                  })
+                  .catch(() => {
+                    /* best-effort */
+                  })
+              }
             }
-          }
+          )
           if (page["@odata.deltaLink"]) {
             finalDeltaLink = page["@odata.deltaLink"]
           }
@@ -1532,4 +1605,81 @@ export async function syncEmails(
   } finally {
     await releaseAdvisoryLock()
   }
+}
+
+/**
+ * Process a page of messages with bounded concurrency. Cursor advance still
+ * waits for ALL handlers to settle (per-page Promise.all semantics), so the
+ * delta cursor never moves past in-flight work. Each handler's per-message
+ * try/catch lives in the caller — this helper just orchestrates the pool.
+ *
+ * Default concurrency is 10. Override with MSGRAPH_SYNC_CONCURRENCY=N (set
+ * to 1 to restore strict-sequential behavior for debugging).
+ */
+export async function processMessagesConcurrently<T>(
+  items: readonly T[],
+  limit: number,
+  handler: (item: T) => Promise<void>
+): Promise<void> {
+  if (items.length === 0) return
+  const safeLimit = Math.max(1, Math.min(limit, items.length))
+  let nextIndex = 0
+  const workers = Array.from({ length: safeLimit }, async () => {
+    while (true) {
+      const i = nextIndex++
+      if (i >= items.length) return
+      await handler(items[i])
+    }
+  })
+  await Promise.all(workers)
+}
+
+const SYNC_CONCURRENCY_DEFAULT = 10
+const SYNC_CONCURRENCY_MAX = 25
+
+function readSyncConcurrency(
+  env: Record<string, string | undefined> = process.env
+): number {
+  const raw = env.MSGRAPH_SYNC_CONCURRENCY
+  if (!raw) return SYNC_CONCURRENCY_DEFAULT
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed < 1) return SYNC_CONCURRENCY_DEFAULT
+  return Math.min(parsed, SYNC_CONCURRENCY_MAX)
+}
+
+// Pull recipient domains from a Graph toRecipients array. Returns lower-cased
+// domains, deduped. Used by the buyer-rep detector hook in processOneMessage.
+function extractRecipientDomains(
+  toRecipients: ReadonlyArray<{ emailAddress?: { address?: string } }>
+): string[] {
+  const out = new Set<string>()
+  for (const r of toRecipients ?? []) {
+    const addr = r?.emailAddress?.address?.trim().toLowerCase()
+    if (!addr || !addr.includes("@")) continue
+    const domain = addr.split("@")[1]
+    if (domain) out.add(domain)
+  }
+  return Array.from(out)
+}
+
+// Pick the first non-internal recipient for the buyer-rep hook. Skips
+// addresses sharing the sender's domain (NAI internal traffic). Returns
+// null if every recipient is internal or malformed.
+function pickFirstExternalRecipient(
+  recipients: ReadonlyArray<{
+    emailAddress?: { address?: string; name?: string }
+  }>,
+  senderAddress: string
+): { email: string; displayName: string | null } | null {
+  for (const r of recipients ?? []) {
+    const email = r?.emailAddress?.address?.trim().toLowerCase()
+    if (!email || !email.includes("@")) continue
+    if (isInternalEmail(email, senderAddress)) continue
+    const name = r?.emailAddress?.name?.trim()
+    return {
+      email,
+      displayName: name && name.length > 0 ? name : null,
+    }
+  }
+  return null
 }

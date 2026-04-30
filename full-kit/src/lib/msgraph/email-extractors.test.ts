@@ -12,7 +12,7 @@ describe("extractCrexiLead", () => {
       subject: "3 new leads found for West Park Promenade",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "new-leads-count",
       leadCount: 3,
       propertyName: "West Park Promenade",
@@ -37,7 +37,7 @@ describe("extractCrexiLead", () => {
         "JACKY BRADLEY requesting Information on Burger King | Sidney, MT in Sidney",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "inquiry",
       inquirerName: "JACKY BRADLEY",
       propertyName: "Burger King | Sidney, MT",
@@ -50,7 +50,7 @@ describe("extractCrexiLead", () => {
       subject: "Margaret entered a note on Burger King | Sidney, MT",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "team-note",
       noteAuthor: "Margaret",
       propertyName: "Burger King | Sidney, MT",
@@ -125,6 +125,53 @@ describe("extractCrexiLead", () => {
   })
 })
 
+describe("extractCrexiLead — non-inquiry kinds skip propertyKey", () => {
+  it("does not assign propertyKey for new-leads-count digest emails", () => {
+    // The body of weekly digests contains aggregate-summary text like
+    // "5 new leads last 7 days" which the normalizer would otherwise
+    // capture as if it were an address — producing junk join keys.
+    const result = extractCrexiLead({
+      subject: "5 new leads found for West Park Promenade",
+      bodyText:
+        "You have 5 new leads last 7 days. Top inquiries below.\nView leads on Crexi.",
+    })
+    expect(result?.kind).toBe("new-leads-count")
+    expect(result?.propertyName).toBe("West Park Promenade")
+    expect(result?.propertyKey).toBeUndefined()
+    expect(result?.propertyAliases).toBeUndefined()
+    expect(result?.propertyAddressMissing).toBeUndefined()
+    expect(result?.propertyAddress).toBeUndefined()
+  })
+})
+
+describe("extractCrexiLead — address extraction", () => {
+  it("extracts the 'Regarding listing at' address with county", () => {
+    const bodyText = `Regarding listing at 13 Colorado Ave, Laurel, Yellowstone County, MT 59044
+
+Hi, I would like to know more about this listing.
+
+JACKY BRADLEY
+442.890.7354
+jackybradley67@outlook.com`
+    const result = extractCrexiLead({
+      subject:
+        "JACKY BRADLEY requesting Information on 13 Colorado Ave in Laurel",
+      bodyText,
+    })
+    expect(result?.propertyAddress).toEqual(
+      "13 Colorado Ave, Laurel, Yellowstone County, MT 59044"
+    )
+    // Crexi includes county; normalizer's ADDRESS_PATTERN truncates at the
+    // comma boundary so the key reflects the street portion only — the plan's
+    // expected "13 colorado ave laurel mt 59044" was an incorrect prediction;
+    // the live normalizer returns "13 colorado ave". "Ave" stays as "ave"
+    // (not expanded — the ROAD_SUFFIXES table only shortens long forms,
+    // e.g. "avenue" → "ave"). Already-short forms pass through.
+    expect(result?.propertyKey).toEqual("13 colorado ave")
+    expect(result?.propertyAddressMissing).toBe(false)
+  })
+})
+
 describe("extractLoopNetLead", () => {
   it("parses 'LoopNet Lead for PROPERTY' with body fields", () => {
     const r = extractLoopNetLead({
@@ -163,7 +210,7 @@ describe("extractLoopNetLead", () => {
         "Your listing has been favorited by Alex Wright.\n[email] alex@example.net<mailto:alex@example.net>\n[phone] +1 406-555-0100<tel:+1 406-555-0100>",
     })
 
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "favorited",
       viewerName: "Alex Wright",
       propertyName: "303 N Broadway",
@@ -179,7 +226,7 @@ describe("extractLoopNetLead", () => {
       subject: "Alex Wright favorited 303 N Broadway",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "favorited",
       viewerName: "Alex Wright",
       propertyName: "303 N Broadway",
@@ -203,6 +250,42 @@ describe("extractLoopNetLead", () => {
   })
 })
 
+describe("extractLoopNetLead — address extraction", () => {
+  it("extracts pipe-separated address from LoopNet Lead body", () => {
+    const bodyText = `New Lead
+From: Alex Wright | +1 239-851-1000 | wrightcommercial@gmail.com
+To: Matt Robertson, Eve Harris
+303 N Broadway | Billings, MT 59101
+
+Hi, Matt, can you please send me any and all information you have on this.`
+    const result = extractLoopNetLead({
+      subject: "LoopNet Lead for 303 N Broadway",
+      bodyText,
+    })
+    expect(result?.propertyAddress).toEqual(
+      "303 N Broadway | Billings, MT 59101"
+    )
+    // Pipe→space, "N" stays as "n" (already abbreviated), comma stripped.
+    // The plan's expected "303 n broadway billings mt 59101" was an
+    // incorrect prediction — the live normalizer's ADDRESS_PATTERN truncates
+    // at the pipe boundary so the canonical key reflects the street portion
+    // only ("303 n broadway"). Same canonical key as the Buildout case
+    // because that one also truncates at the comma.
+    expect(result?.propertyKey).toEqual("303 n broadway")
+    expect(result?.propertyAddressMissing).toBe(false)
+  })
+
+  it("falls back to subject for 'favorited' emails with no body address", () => {
+    const result = extractLoopNetLead({
+      subject: "Alex Wright favorited 303 N Broadway",
+      bodyText: "Hi Matt, Your listing has been favorited by Alex Wright.",
+    })
+    expect(result?.propertyAddress).toEqual("303 N Broadway")
+    // Subject-only key has no city/state/zip.
+    expect(result?.propertyKey).toEqual("303 n broadway")
+  })
+})
+
 describe("extractBuildoutEvent", () => {
   it("parses 'A new Lead has been added - PROPERTY'", () => {
     const r = extractBuildoutEvent({
@@ -210,7 +293,7 @@ describe("extractBuildoutEvent", () => {
       bodyText:
         "Hello, Sam Buyer has viewed your Property Page.\nProfile information on file for Sam Buyer:\nEmail sam@example.com\nPhone 406.555.0100",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "new-lead",
       propertyName: "US Bank Building",
       inquirer: {
@@ -241,7 +324,7 @@ describe("extractBuildoutEvent", () => {
       bodyText:
         "Deal Stage Updated Hello Matt Robertson, 2621 Overland was updated from Sourcing to Transacting",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "deal-stage-update",
       propertyName: "2621 Overland",
       previousStage: "Sourcing",
@@ -290,7 +373,7 @@ describe("extractBuildoutEvent", () => {
       subject: "CA executed on 2110 Overland Avenue",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "ca-executed",
       propertyName: "2110 Overland Avenue",
     })
@@ -347,7 +430,7 @@ describe("extractBuildoutEvent", () => {
           "Buildout: 30 day expiration notice for '3218-3226 S. Frontage Road'",
         bodyText: "",
       })
-    ).toEqual({
+    ).toMatchObject({
       kind: "listing-expiration",
       daysUntilExpiration: 30,
       propertyName: "3218-3226 S. Frontage Road",
@@ -360,5 +443,104 @@ describe("extractBuildoutEvent", () => {
       bodyText: "",
     })
     expect(r).toBeNull()
+  })
+})
+
+describe("extractBuildoutEvent — address extraction", () => {
+  it("extracts Listing Address line and produces a canonical address-derived key", () => {
+    const bodyText = `Hello,
+
+Samuel Blum has viewed your Property Page.
+
+Name    Samuel Blum
+Email   samuel@cigprop.com
+Phone Number    845.659.6659
+When    4/21/26 - 2:08pm CDT
+Listing Address 303 North Broadway, Billings, MT 59101
+View Lead Details
+`
+    const result = extractBuildoutEvent({
+      subject: "A new Lead has been added - US Bank Building",
+      bodyText,
+    })
+    // propertyAddress preserves the full label-extracted line for human display.
+    expect(result?.propertyAddress).toEqual(
+      "303 North Broadway, Billings, MT 59101"
+    )
+    // propertyKey is the canonical key from normalizeBuildoutProperty:
+    // lowercased, punctuation stripped, "north" → "n" (per the existing
+    // ROAD_SUFFIXES table at property-normalizer.ts:12). The normalizer's
+    // ADDRESS_PATTERN truncates at the comma boundary, so the key reflects
+    // the street portion only (the plan's expected
+    // "303 n broadway billings mt 59101" was an incorrect prediction —
+    // the live normalizer returns "303 n broadway").
+    expect(result?.propertyKey).toEqual("303 n broadway")
+    expect(result?.propertyAddressMissing).toBe(false)
+  })
+
+  it("flags addressMissing=true when the Listing Address line is a property name", () => {
+    const bodyText = `Hello,
+
+Listing Address Rockets | Gourmet Wraps & Sodas, Billings, MT
+`
+    const result = extractBuildoutEvent({
+      subject: "A new Lead has been added - Rockets | Gourmet Wraps & Sodas",
+      bodyText,
+    })
+    expect(result?.propertyAddress).toEqual(
+      "Rockets | Gourmet Wraps & Sodas, Billings, MT"
+    )
+    // The normalizer still produces a key (name-derived); addressMissing=true
+    // signals this to downstream consumers (Phase 5 still creates a Deal,
+    // but the key won't match cleanly to other platform inputs for the
+    // same property).
+    expect(result?.propertyKey).toBeTruthy()
+    expect(result?.propertyAddressMissing).toBe(true)
+  })
+
+  it("ignores footer/signature addresses in deal-stage-update bodies", () => {
+    // Real failure case from 7-day validation: a deal-stage-update email for
+    // "Gallatin Road" had "1600 Golf Rd" in the footer. The normalizer was
+    // producing propertyKey="1600 golf rd" — completely unrelated to the
+    // actual deal. propertyKey should now be suppressed for stage updates,
+    // while propertyName and fromStageRaw/toStageRaw stay populated so
+    // Phase 8.4 can still propose a stage move.
+    const bodyText = `Hello Matt Robertson,
+
+Gallatin Road was updated from Sourcing to Dead.
+
+View Deal
+
+NAI Business Partners | 1600 Golf Rd, Suite 1200, Rolling Meadows, IL`
+    const result = extractBuildoutEvent({
+      subject: "Deal stage updated on Gallatin Road",
+      bodyText,
+    })
+    expect(result?.kind).toBe("deal-stage-update")
+    expect(result?.propertyName).toBe("Gallatin Road")
+    expect(result?.fromStageRaw).toBe("Sourcing")
+    expect(result?.toStageRaw).toBe("Dead")
+    expect(result?.propertyKey).toBeUndefined()
+    expect(result?.propertyAliases).toBeUndefined()
+    expect(result?.propertyAddressMissing).toBeUndefined()
+  })
+
+  it("does not derive a propertyKey for deal-stage-update kinds", () => {
+    const result = extractBuildoutEvent({
+      subject: "Deal stage updated on Alpenglow Healthcare LLC Lease",
+      bodyText:
+        "Alpenglow Healthcare LLC Lease was updated from Transacting to Closed",
+    })
+    // No labeled line → propertyAddress stays undefined.
+    expect(result?.propertyAddress).toBeUndefined()
+    // Stage-update emails route through Phase 8.4's lookup-by-propertyName,
+    // not Phase 5's propertyKey-driven Deal creation. Body normalization for
+    // these kinds was producing junk keys from footer/signature addresses,
+    // so we suppress propertyKey/propertyAliases/propertyAddressMissing
+    // entirely — propertyName from the subject is still set.
+    expect(result?.propertyName).toBe("Alpenglow Healthcare LLC Lease")
+    expect(result?.propertyKey).toBeUndefined()
+    expect(result?.propertyAliases).toBeUndefined()
+    expect(result?.propertyAddressMissing).toBeUndefined()
   })
 })

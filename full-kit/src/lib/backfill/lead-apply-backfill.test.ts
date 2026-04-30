@@ -1,10 +1,41 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { proposeStageMoveFromBuildoutEmail } from "@/lib/deals/buildout-stage-action"
+import { upsertDealForLead } from "@/lib/deals/lead-to-deal"
+
 import { runLeadApplyBackfill } from "./lead-apply-backfill"
+
+vi.mock("@/lib/deals/lead-to-deal", () => ({
+  upsertDealForLead: vi.fn(async () => ({ dealId: null, created: false })),
+}))
+
+vi.mock("@/lib/deals/buildout-stage-action", () => ({
+  proposeStageMoveFromBuildoutEmail: vi.fn(async () => ({
+    created: true,
+    actionId: "action-1",
+  })),
+}))
+
+const upsertDealForLeadMock = upsertDealForLead as unknown as ReturnType<
+  typeof vi.fn
+>
+
+const proposeStageMoveMock =
+  proposeStageMoveFromBuildoutEmail as unknown as ReturnType<typeof vi.fn>
 
 describe("lead-apply-backfill", () => {
   beforeEach(() => {
     delete process.env.CONTACT_AUTO_PROMOTION_MODE
+    upsertDealForLeadMock.mockClear()
+    upsertDealForLeadMock.mockImplementation(async () => ({
+      dealId: null,
+      created: false,
+    }))
+    proposeStageMoveMock.mockClear()
+    proposeStageMoveMock.mockImplementation(async () => ({
+      created: true,
+      actionId: "action-1",
+    }))
   })
 
   it("dry-runs confirmed signal extractor-email rows without writes", async () => {
@@ -509,6 +540,143 @@ describe("lead-apply-backfill", () => {
         client: makeClient({ rows: [], contacts: [] }) as never,
       })
     ).rejects.toThrow("limit must be <= 100")
+  })
+
+  it("calls upsertDealForLead with extracted propertyKey when creating a Buildout lead Contact", async () => {
+    const client = makeClient({
+      rows: [
+        leadRow({
+          id: "comm-bld-1",
+          subject:
+            "303 North Broadway - Information Requested by Shae Nielsen",
+          body: "Listing Address 303 North Broadway, Billings, MT 59101\nProfile information on file for Shae Nielsen: Email shae@example.com Phone 406.555.0100",
+          metadata: {
+            classification: "signal",
+            source: "buildout-lead",
+            from: { address: "support@buildout.com" },
+          },
+        }),
+      ],
+      contacts: [],
+    })
+
+    await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-apply" },
+      client: client as never,
+    })
+
+    expect(upsertDealForLeadMock).toHaveBeenCalledTimes(1)
+    expect(upsertDealForLeadMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contactId: "contact-created",
+        communicationId: "comm-bld-1",
+        propertySource: "buildout",
+        propertyKey: expect.stringContaining("broadway"),
+      })
+    )
+  })
+
+  it("creates a Deal when an already-promoted Contact emits an inquiry-class lead", async () => {
+    // Auto-promoted-at-ingest path: Buildout new-lead arrives, processOneMessage
+    // creates the Contact and stamps row.contactId. lead-apply backfill then
+    // sees outcome=already_lead and used to skip silently — never firing the
+    // Phase 5 Deal upsert. This test pins the third-call-site behavior.
+    const client = makeClient({
+      rows: [
+        leadRow({
+          id: "comm-already-lead-1",
+          subject: "A new Lead has been added - 119 N Broadway",
+          body: "Listing Address 119 N Broadway, Billings, MT 59101\nProfile information on file for Sam Buyer: Email sam@example.com Phone 406.555.0100",
+          metadata: {
+            classification: "signal",
+            source: "buildout-lead",
+            from: { address: "support@buildout.com" },
+          },
+          contactId: "contact-already-promoted",
+        }),
+      ],
+      contacts: [
+        contact({
+          id: "contact-already-promoted",
+          email: "sam@example.com",
+          deals: 0,
+          leadSource: "buildout",
+        }),
+      ],
+    })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-already-lead" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({ already_lead: 1 })
+    expect(upsertDealForLeadMock).toHaveBeenCalledTimes(1)
+    expect(upsertDealForLeadMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contactId: "contact-already-promoted",
+        communicationId: "comm-already-lead-1",
+        propertySource: "buildout",
+        propertyKey: expect.stringContaining("broadway"),
+      })
+    )
+  })
+
+  it("proposes a Buildout stage move action for deal-stage-update rows", async () => {
+    const stageRow = {
+      id: "comm-stage-1",
+      subject: "Deal stage updated on 303 N Broadway",
+      body: "The deal stage was updated from Marketing to Showings.\nGood luck!",
+      metadata: {
+        classification: "signal",
+        source: "buildout-notification",
+        tier1Rule: "buildout-notification",
+        from: { address: "no-reply@buildout.com" },
+      },
+      date: new Date("2026-04-25T14:00:00Z"),
+      contactId: null,
+    }
+    const client = makeClient({ rows: [stageRow], contacts: [] })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-stage" },
+      client: client as never,
+    })
+
+    expect(proposeStageMoveMock).toHaveBeenCalledTimes(1)
+    expect(proposeStageMoveMock).toHaveBeenCalledWith({
+      communicationId: "comm-stage-1",
+      propertyName: "303 N Broadway",
+      fromStageRaw: "Marketing",
+      toStageRaw: "Showings",
+    })
+    expect(result.byOutcome).toMatchObject({
+      proposed_buildout_stage_move: 1,
+    })
+  })
+
+  it("does not propose a Buildout stage move during dry-run", async () => {
+    const stageRow = {
+      id: "comm-stage-2",
+      subject: "Deal stage updated on 303 N Broadway",
+      body: "The deal stage was updated from Marketing to Showings.",
+      metadata: {
+        classification: "signal",
+        source: "buildout-notification",
+        tier1Rule: "buildout-notification",
+        from: { address: "no-reply@buildout.com" },
+      },
+      date: new Date("2026-04-25T14:00:00Z"),
+      contactId: null,
+    }
+    const client = makeClient({ rows: [stageRow], contacts: [] })
+
+    await runLeadApplyBackfill({
+      request: { dryRun: true, limit: 25, runId: "run-stage-dry" },
+      client: client as never,
+    })
+
+    expect(proposeStageMoveMock).not.toHaveBeenCalled()
   })
 
   it("reports race-lost when communication contact changes before update", async () => {

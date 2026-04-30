@@ -2,6 +2,11 @@ import type { AgentAction, Prisma } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 
+import {
+  createDealFromAction,
+  moveDealStageFromAction,
+  updateDealFromAction,
+} from "./agent-actions-deal"
 import { AI_FEEDBACK_SOURCE_TYPES } from "./feedback-source-types"
 
 export class AgentActionReviewError extends Error {
@@ -72,21 +77,24 @@ export async function approveAgentAction({
     )
   }
 
-  if (
-    action.actionType !== "create-todo" &&
-    action.actionType !== "mark-todo-done"
-  ) {
-    throw new AgentActionReviewError(
-      "unsupported action type",
-      400,
-      "unsupported_action_type"
-    )
+  switch (action.actionType) {
+    case "create-todo":
+      return createTodoFromAction(action, reviewer)
+    case "mark-todo-done":
+      return markTodoDoneFromAction(action, reviewer)
+    case "move-deal-stage":
+      return moveDealStageFromAction(action, reviewer)
+    case "update-deal":
+      return updateDealFromAction(action, reviewer)
+    case "create-deal":
+      return createDealFromAction(action, reviewer)
+    default:
+      throw new AgentActionReviewError(
+        `unsupported action type: ${action.actionType}`,
+        400,
+        "unsupported_action_type"
+      )
   }
-
-  if (action.actionType === "mark-todo-done") {
-    return markTodoDoneFromAction(action, reviewer)
-  }
-  return createTodoFromAction(action, reviewer)
 }
 
 export async function rejectAgentAction({

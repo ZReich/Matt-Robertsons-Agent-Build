@@ -3,6 +3,7 @@ import Link from "next/link"
 import type { DealStage, LeadStatus } from "@prisma/client"
 
 import {
+  narrowToBoardDeals,
   serializeDealBoard,
   serializeLeadBoard,
 } from "@/lib/pipeline/server/board"
@@ -17,9 +18,13 @@ export async function PipelineSnapshot({
   board: "deals" | "leads"
 }) {
   if (board === "deals") {
-    const deals = await db.deal.findMany({
+    const dealsRaw = await db.deal.findMany({
       where: {
         archivedAt: null,
+        // Snapshot surfaces only seller-rep deals with a parsed property.
+        dealType: "seller_rep",
+        propertyAddress: { not: null },
+        propertyType: { not: null },
         stage: { in: ["offer", "under_contract", "closing"] },
       },
       include: {
@@ -30,6 +35,7 @@ export async function PipelineSnapshot({
       orderBy: [{ stageChangedAt: "desc" }, { updatedAt: "desc" }],
       take: 24,
     })
+    const deals = narrowToBoardDeals(dealsRaw)
     const snapshot = serializeDealBoard(deals).columns.filter((column) =>
       (["offer", "under_contract", "closing"] as DealStage[]).includes(
         column.id
