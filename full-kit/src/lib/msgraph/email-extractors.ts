@@ -1,3 +1,5 @@
+import { normalizeBuildoutProperty } from "@/lib/buildout/property-normalizer"
+
 export interface ExtractorInput {
   subject: string | null | undefined
   bodyText: string
@@ -132,6 +134,9 @@ export interface BuildoutEventExtract {
     | "listing-expiration"
   propertyName?: string
   propertyAddress?: string
+  propertyKey?: string
+  propertyAliases?: string[]
+  propertyAddressMissing?: boolean
   inquirer?: InquirerInfo
   viewer?: InquirerInfo
   newStage?: string
@@ -168,106 +173,143 @@ export function extractBuildoutEvent(
   const subject = (input.subject ?? "").trim()
   if (!subject) return null
 
+  let result: BuildoutEventExtract | null = null
+
   let m = subject.match(BUILDOUT_NEW_LEAD)
   if (m) {
     const inquirer = parseBuildoutLeadBody(input.bodyText)
-    return {
+    result = {
       kind: "new-lead",
       propertyName: m[1].trim(),
       ...(inquirer ? { inquirer } : {}),
     }
   }
 
-  m = subject.match(BUILDOUT_INFORMATION_REQUESTED)
-  if (m) {
-    const inquirer = parseBuildoutLeadBody(input.bodyText) ?? {
-      name: m[2].trim(),
-    }
-    return {
-      kind: "information-requested",
-      propertyName: m[1].trim(),
-      inquirer: {
-        ...inquirer,
-        name: inquirer.name ?? m[2].trim(),
-      },
-    }
-  }
-
-  m = subject.match(BUILDOUT_STAGE)
-  if (m) {
-    const stage = parseBuildoutStageBody(input.bodyText)
-    return {
-      kind: "deal-stage-update",
-      propertyName: m[1].trim(),
-      previousStage: stage.previousStage,
-      newStage: stage.newStage,
+  if (!result) {
+    m = subject.match(BUILDOUT_INFORMATION_REQUESTED)
+    if (m) {
+      const inquirer = parseBuildoutLeadBody(input.bodyText) ?? {
+        name: m[2].trim(),
+      }
+      result = {
+        kind: "information-requested",
+        propertyName: m[1].trim(),
+        inquirer: {
+          ...inquirer,
+          name: inquirer.name ?? m[2].trim(),
+        },
+      }
     }
   }
 
-  m = subject.match(BUILDOUT_TASK)
-  if (m) {
-    const task = parseBuildoutTaskBody(input.bodyText)
-    return {
-      kind: "task-assigned",
-      propertyName: task.propertyName ?? m[1]?.trim(),
-      taskTitle: task.taskTitle,
-      taskDueDate: task.taskDueDate,
-      taskAssignee: task.taskAssignee,
+  if (!result) {
+    m = subject.match(BUILDOUT_STAGE)
+    if (m) {
+      const stage = parseBuildoutStageBody(input.bodyText)
+      result = {
+        kind: "deal-stage-update",
+        propertyName: m[1].trim(),
+        previousStage: stage.previousStage,
+        newStage: stage.newStage,
+      }
     }
   }
 
-  if (BUILDOUT_CRITICAL.test(subject)) {
-    return {
+  if (!result) {
+    m = subject.match(BUILDOUT_TASK)
+    if (m) {
+      const task = parseBuildoutTaskBody(input.bodyText)
+      result = {
+        kind: "task-assigned",
+        propertyName: task.propertyName ?? m[1]?.trim(),
+        taskTitle: task.taskTitle,
+        taskDueDate: task.taskDueDate,
+        taskAssignee: task.taskAssignee,
+      }
+    }
+  }
+
+  if (!result && BUILDOUT_CRITICAL.test(subject)) {
+    result = {
       kind: "critical-date",
       ...parseBuildoutCriticalDateBody(input.bodyText),
     }
   }
 
-  m = subject.match(BUILDOUT_CA_EXECUTED)
-  if (m) {
-    return { kind: "ca-executed", propertyName: m[1].trim() }
-  }
-
-  m = subject.match(BUILDOUT_DOCUMENT_VIEW)
-  if (m) {
-    return {
-      kind: "document-view",
-      propertyName: m[1].trim(),
-      ...parseBuildoutDocumentViewBody(input.bodyText),
+  if (!result) {
+    m = subject.match(BUILDOUT_CA_EXECUTED)
+    if (m) {
+      result = { kind: "ca-executed", propertyName: m[1].trim() }
     }
   }
 
-  if (BUILDOUT_VOUCHER_APPROVED.test(subject)) {
-    return {
+  if (!result) {
+    m = subject.match(BUILDOUT_DOCUMENT_VIEW)
+    if (m) {
+      result = {
+        kind: "document-view",
+        propertyName: m[1].trim(),
+        ...parseBuildoutDocumentViewBody(input.bodyText),
+      }
+    }
+  }
+
+  if (!result && BUILDOUT_VOUCHER_APPROVED.test(subject)) {
+    result = {
       kind: "voucher-approved",
       ...parseBuildoutVoucherBody(input.bodyText),
     }
   }
 
-  if (BUILDOUT_VOUCHER_DEPOSIT.test(subject)) {
-    return {
+  if (!result && BUILDOUT_VOUCHER_DEPOSIT.test(subject)) {
+    result = {
       kind: "voucher-deposit",
       ...parseBuildoutVoucherBody(input.bodyText),
     }
   }
 
-  if (BUILDOUT_COMMISSION_PAYMENT.test(subject)) {
-    return {
+  if (!result && BUILDOUT_COMMISSION_PAYMENT.test(subject)) {
+    result = {
       kind: "commission-payment",
       ...parseBuildoutVoucherBody(input.bodyText),
     }
   }
 
-  m = subject.match(BUILDOUT_LISTING_EXPIRATION)
-  if (m) {
-    return {
-      kind: "listing-expiration",
-      daysUntilExpiration: Number.parseInt(m[1], 10),
-      propertyName: m[2].trim(),
+  if (!result) {
+    m = subject.match(BUILDOUT_LISTING_EXPIRATION)
+    if (m) {
+      result = {
+        kind: "listing-expiration",
+        daysUntilExpiration: Number.parseInt(m[1], 10),
+        propertyName: m[2].trim(),
+      }
     }
   }
 
-  return null
+  if (!result) return null
+
+  // Extract the labelled "Listing Address" line for high-fidelity address text,
+  // then delegate canonical-key derivation to the existing Buildout normalizer
+  // (single source of truth across lead-derived and Buildout-event Deal joins).
+  const addressMatch = input.bodyText.match(
+    /Listing Address\s+(.+?)(?:\r?\n|<|$)/
+  )
+  const addressFromLabel = addressMatch?.[1]?.trim()
+  const normalized = normalizeBuildoutProperty(
+    result.propertyName ?? addressFromLabel ?? "",
+    addressFromLabel ?? input.bodyText
+  )
+  if (normalized) {
+    // Prefer the labeled full line ("303 North Broadway, Billings, MT 59101")
+    // over normalized.propertyAddressRaw (which is just the regex-extracted
+    // street portion, "303 North Broadway" — no city/state/zip).
+    result.propertyAddress = addressFromLabel ?? normalized.propertyAddressRaw
+    result.propertyKey = normalized.normalizedPropertyKey
+    result.propertyAliases = normalized.aliases
+    result.propertyAddressMissing = normalized.addressMissing
+  }
+
+  return result
 }
 
 function parseBuildoutLeadBody(body: string): InquirerInfo | null {
