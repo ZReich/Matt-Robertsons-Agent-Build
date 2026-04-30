@@ -1,5 +1,6 @@
 import type { AgentAction, DealStage, DealOutcome } from "@prisma/client"
 
+import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 import { db } from "@/lib/prisma"
 
 import { AgentActionReviewError } from "./agent-actions"
@@ -68,6 +69,13 @@ export async function moveDealStageFromAction(
       executedAt: new Date(),
     },
   })
+
+  const dealAfter = await db.deal.findUnique({
+    where: { id: payload.dealId },
+    select: { contactId: true },
+  })
+  if (dealAfter) await syncContactRoleFromDeals(dealAfter.contactId)
+
   return { status: "executed", todoId: payload.dealId, actionId: action.id }
 }
 

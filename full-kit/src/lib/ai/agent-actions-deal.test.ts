@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 import { db } from "@/lib/prisma"
 
 import {
@@ -19,6 +20,10 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
+vi.mock("@/lib/contacts/sync-contact-role", () => ({
+  syncContactRoleFromDeals: vi.fn(),
+}))
+
 const dealFindUnique = db.deal.findUnique as unknown as ReturnType<
   typeof vi.fn
 >
@@ -31,10 +36,12 @@ describe("moveDealStageFromAction", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("transitions stage and stamps stageChangedAt", async () => {
-    dealFindUnique.mockResolvedValue({
-      id: "deal-1",
-      stage: "offer",
-    })
+    dealFindUnique
+      .mockResolvedValueOnce({
+        id: "deal-1",
+        stage: "offer",
+      })
+      .mockResolvedValueOnce({ contactId: "contact-7" })
     dealUpdate.mockResolvedValue({})
     agentActionUpdate.mockResolvedValue({})
 
@@ -59,6 +66,7 @@ describe("moveDealStageFromAction", () => {
         stageChangedAt: expect.any(Date),
       }),
     })
+    expect(syncContactRoleFromDeals).toHaveBeenCalledWith("contact-7")
   })
 
   it("rejects when fromStage doesn't match current stage (concurrency safety)", async () => {
@@ -85,7 +93,9 @@ describe("moveDealStageFromAction", () => {
   })
 
   it("stamps closedAt and outcome when transitioning to closed", async () => {
-    dealFindUnique.mockResolvedValue({ id: "deal-1", stage: "closing" })
+    dealFindUnique
+      .mockResolvedValueOnce({ id: "deal-1", stage: "closing" })
+      .mockResolvedValueOnce({ contactId: "contact-9" })
     dealUpdate.mockResolvedValue({})
     agentActionUpdate.mockResolvedValue({})
 
