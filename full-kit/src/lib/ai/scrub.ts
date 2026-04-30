@@ -18,6 +18,7 @@ import {
   loadScopedMemory,
   runHeuristicLinker,
 } from "./scrub-linker"
+import { SCRUB_TOOL } from "./scrub-prompt"
 import { scrubWithConfiguredProvider } from "./scrub-provider"
 import { claimScrubQueueRows, markScrubQueueFailed } from "./scrub-queue"
 import { PROMPT_VERSION } from "./scrub-types"
@@ -147,6 +148,69 @@ function renderPerEmailPrompt({
     null,
     2
   )
+}
+
+/**
+ * Build the {perEmailPrompt, globalMemory} pair the real scrub provider would
+ * be called with for a single Communication, plus the JSON Schema for the
+ * record_email_scrub tool. Pure read-only — does NOT claim the queue row, log
+ * api calls, or write anything. Used by the offline validation harness
+ * (scripts/scrub-export.mjs) so an operator-driven Claude Code session can
+ * produce review JSONL at $0 API spend before committing to bulk API spend.
+ *
+ * Parity with scrubOne: this MUST stay aligned with the input-construction
+ * block in scrubOne (load comm, runHeuristicLinker, the five Promise.all
+ * loaders, renderPerEmailPrompt). If scrubOne starts injecting a new context
+ * field, mirror it here too or the offline path will see a stale prompt.
+ */
+export async function buildPromptInputs(communicationId: string): Promise<{
+  perEmailPrompt: string
+  globalMemory: string
+  scrubToolSchema: unknown
+  promptVersion: string
+}> {
+  const comm = await db.communication.findUnique({
+    where: { id: communicationId },
+    select: {
+      id: true,
+      subject: true,
+      body: true,
+      date: true,
+      metadata: true,
+      conversationId: true,
+      direction: true,
+      contactId: true,
+      dealId: true,
+    },
+  })
+  if (!comm) {
+    throw new Error(
+      `buildPromptInputs: communication ${communicationId} not found`
+    )
+  }
+
+  const matches = await runHeuristicLinker(comm)
+  const [globalMemory, scopedMemory, threadContext, openTodos] =
+    await Promise.all([
+      loadGlobalMemoryBlock(),
+      loadScopedMemory(matches),
+      loadRecentThread(comm),
+      loadOpenTodoCandidates(comm, matches),
+    ])
+  const perEmailPrompt = renderPerEmailPrompt({
+    comm,
+    matches,
+    openTodos,
+    scopedMemory,
+    threadContext,
+  })
+
+  return {
+    perEmailPrompt,
+    globalMemory,
+    scrubToolSchema: SCRUB_TOOL.input_schema,
+    promptVersion: PROMPT_VERSION,
+  }
 }
 
 type ScrubOneResult = {
