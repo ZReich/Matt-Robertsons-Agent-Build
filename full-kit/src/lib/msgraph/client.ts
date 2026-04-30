@@ -53,7 +53,11 @@ export async function graphFetch<T>(
   return doGraphFetch<T>(path, options, 0)
 }
 
-const MAX_TRANSIENT_RETRIES = 3
+// 5 retries with 2s/4s/8s/16s/32s exponential backoff = up to 62s total
+// patience before failing. Graph delta endpoints with heavy $select fields
+// (especially internetMessageHeaders) routinely need this much grace on
+// the FIRST request against a large mailbox window.
+const MAX_TRANSIENT_RETRIES = 5
 const MAX_AUTH_RETRIES = 1
 
 async function doGraphFetch<T>(

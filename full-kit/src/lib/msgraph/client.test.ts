@@ -150,9 +150,11 @@ describe("graphFetch", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
-  it("retries up to 3 times on 503 with exponential backoff, then throws", async () => {
+  it("retries up to 5 times on 503 with exponential backoff, then throws", async () => {
     const { mod } = await loadClientWithTokenManager()
     fetchSpy
+      .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
+      .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
       .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
       .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
       .mockResolvedValueOnce(graphErrorResponse(503, "ServiceUnavailable"))
@@ -160,10 +162,10 @@ describe("graphFetch", () => {
 
     const promise = mod.graphFetch("/users/x")
     const assertion = expect(promise).rejects.toMatchObject({ status: 503 })
-    // Backoffs: 2s + 4s + 8s = 14s total. Advance past that.
-    await vi.advanceTimersByTimeAsync(20_000)
+    // Backoffs: 2s + 4s + 8s + 16s + 32s = 62s total. Advance past that.
+    await vi.advanceTimersByTimeAsync(70_000)
     await assertion
-    expect(fetchSpy).toHaveBeenCalledTimes(4) // initial + 3 retries
+    expect(fetchSpy).toHaveBeenCalledTimes(6) // initial + 5 retries
   })
 
   it("succeeds when 504 clears on retry 2", async () => {
@@ -180,10 +182,12 @@ describe("graphFetch", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(3)
   })
 
-  it("retries up to 3 times on network error, then throws a NetworkError GraphError", async () => {
+  it("retries up to 5 times on network error, then throws a NetworkError GraphError", async () => {
     const { mod } = await loadClientWithTokenManager()
     const netErr = new Error("Connection refused")
     fetchSpy
+      .mockRejectedValueOnce(netErr)
+      .mockRejectedValueOnce(netErr)
       .mockRejectedValueOnce(netErr)
       .mockRejectedValueOnce(netErr)
       .mockRejectedValueOnce(netErr)
@@ -195,9 +199,9 @@ describe("graphFetch", () => {
       status: 0,
       code: "NetworkError",
     })
-    await vi.advanceTimersByTimeAsync(20_000)
+    await vi.advanceTimersByTimeAsync(70_000)
     await assertion
-    expect(fetchSpy).toHaveBeenCalledTimes(4) // initial + 3 retries
+    expect(fetchSpy).toHaveBeenCalledTimes(6) // initial + 5 retries
   })
 
   it("uses absolute graph.microsoft.com URL verbatim", async () => {
