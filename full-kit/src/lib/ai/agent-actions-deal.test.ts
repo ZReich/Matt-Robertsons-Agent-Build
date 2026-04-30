@@ -4,6 +4,7 @@ import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 import { db } from "@/lib/prisma"
 
 import {
+  createDealFromAction,
   moveDealStageFromAction,
   updateDealFromAction,
 } from "./agent-actions-deal"
@@ -13,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
     deal: {
       findUnique: vi.fn(),
       update: vi.fn(),
+      create: vi.fn(),
     },
     agentAction: {
       update: vi.fn(),
@@ -28,6 +30,7 @@ const dealFindUnique = db.deal.findUnique as unknown as ReturnType<
   typeof vi.fn
 >
 const dealUpdate = db.deal.update as unknown as ReturnType<typeof vi.fn>
+const dealCreate = db.deal.create as unknown as ReturnType<typeof vi.fn>
 const agentActionUpdate = db.agentAction.update as unknown as ReturnType<
   typeof vi.fn
 >
@@ -172,5 +175,41 @@ describe("updateDealFromAction", () => {
         "matt@nai.test"
       )
     ).rejects.toThrow(/forbidden field/i)
+  })
+})
+
+describe("createDealFromAction", () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it("creates a buyer-rep Deal", async () => {
+    dealCreate.mockResolvedValue({ id: "deal-new" })
+    agentActionUpdate.mockResolvedValue({})
+
+    const result = await createDealFromAction(
+      {
+        id: "action-1",
+        actionType: "create-deal",
+        payload: {
+          contactId: "contact-1",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          stage: "showings",
+          signalType: "tour",
+          reason: "...",
+        },
+      },
+      "matt@nai.test"
+    )
+    expect(result.status).toEqual("executed")
+    expect(dealCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        contactId: "contact-1",
+        dealType: "buyer_rep",
+        dealSource: "buyer_rep_inferred",
+        stage: "showings",
+      }),
+      select: { id: true },
+    })
+    expect(syncContactRoleFromDeals).toHaveBeenCalledWith("contact-1")
   })
 })

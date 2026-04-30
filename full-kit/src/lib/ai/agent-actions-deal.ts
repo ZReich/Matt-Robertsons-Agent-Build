@@ -32,6 +32,22 @@ type UpdateDealPayload = {
   reason: string
 }
 
+type CreateDealPayload = {
+  contactId: string
+  dealType: "seller_rep" | "buyer_rep" | "tenant_rep"
+  dealSource:
+    | "lead_derived"
+    | "buyer_rep_inferred"
+    | "buildout_event"
+    | "ai_suggestion"
+    | "manual"
+  stage: DealStage
+  propertyKey?: string
+  propertyAddress?: string
+  searchCriteria?: Record<string, unknown>
+  reason: string
+}
+
 export async function moveDealStageFromAction(
   action: Pick<AgentAction, "id" | "actionType" | "payload">,
   reviewer: string
@@ -117,4 +133,32 @@ export async function updateDealFromAction(
     },
   })
   return { status: "executed", todoId: payload.dealId, actionId: action.id }
+}
+
+export async function createDealFromAction(
+  action: Pick<AgentAction, "id" | "actionType" | "payload">,
+  reviewer: string
+): Promise<AgentActionReviewResult> {
+  const payload = action.payload as CreateDealPayload
+  const deal = await db.deal.create({
+    data: {
+      contactId: payload.contactId,
+      dealType: payload.dealType,
+      dealSource: payload.dealSource,
+      stage: payload.stage,
+      propertyKey: payload.propertyKey,
+      propertyAddress: payload.propertyAddress,
+      searchCriteria: payload.searchCriteria as never,
+    },
+    select: { id: true },
+  })
+  await db.agentAction.update({
+    where: { id: action.id },
+    data: {
+      status: "executed",
+      executedAt: new Date(),
+    },
+  })
+  await syncContactRoleFromDeals(payload.contactId)
+  return { status: "executed", todoId: deal.id, actionId: action.id }
 }

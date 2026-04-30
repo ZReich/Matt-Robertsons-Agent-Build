@@ -3,6 +3,7 @@ import type { AgentAction, Prisma } from "@prisma/client"
 import { db } from "@/lib/prisma"
 
 import {
+  createDealFromAction,
   moveDealStageFromAction,
   updateDealFromAction,
 } from "./agent-actions-deal"
@@ -85,6 +86,8 @@ export async function approveAgentAction({
       return moveDealStageFromAction(action, reviewer)
     case "update-deal":
       return updateDealFromAction(action, reviewer)
+    case "create-deal":
+      return createDealFromAction(action, reviewer)
     default:
       throw new AgentActionReviewError(
         `unsupported action type: ${action.actionType}`,
