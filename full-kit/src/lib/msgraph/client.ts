@@ -60,6 +60,27 @@ export async function graphFetch<T>(
 const MAX_TRANSIENT_RETRIES = 5
 const MAX_AUTH_RETRIES = 1
 
+// Per-request timeout. fetch() has no built-in timeout, so a hung Graph
+// connection would otherwise block forever. 120s is comfortably longer
+// than any reasonable Graph response while short enough to fail loudly
+// and let the retry budget fire on a hang. Override with
+// MSGRAPH_FETCH_TIMEOUT_MS for stress-testing.
+const FETCH_TIMEOUT_DEFAULT_MS = 120_000
+const FETCH_TIMEOUT_MIN_MS = 5_000
+const FETCH_TIMEOUT_MAX_MS = 600_000
+
+function readGraphFetchTimeoutMs(
+  env: Record<string, string | undefined> = process.env
+): number {
+  const raw = env.MSGRAPH_FETCH_TIMEOUT_MS
+  if (!raw) return FETCH_TIMEOUT_DEFAULT_MS
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed < FETCH_TIMEOUT_MIN_MS) {
+    return FETCH_TIMEOUT_DEFAULT_MS
+  }
+  return Math.min(parsed, FETCH_TIMEOUT_MAX_MS)
+}
+
 async function doGraphFetch<T>(
   path: string,
   options: GraphFetchOptions,
@@ -105,14 +126,24 @@ async function doGraphFetch<T>(
   }
 
   let res: Response
+  // Per-request timeout so we fail loudly when Graph silently hangs (the
+  // delta endpoint with heavy $select can sometimes hold a connection open
+  // for several minutes without producing data). The retry budget then
+  // re-issues with backoff, giving Graph fresh opportunities to respond.
+  const controller = new AbortController()
+  const timeoutMs = readGraphFetchTimeoutMs()
+  const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs)
   try {
     res = await fetch(url.toString(), {
       method: options.method ?? "GET",
       headers,
       body,
+      signal: controller.signal,
     })
   } catch (networkErr) {
-    // Network failure: exponential backoff up to MAX_TRANSIENT_RETRIES.
+    clearTimeout(timeoutHandle)
+    // Network failure (including AbortError from the timeout above):
+    // exponential backoff up to MAX_TRANSIENT_RETRIES.
     if (attempt < MAX_TRANSIENT_RETRIES) {
       await sleep(backoffDelay(attempt))
       return doGraphFetch<T>(path, options, attempt + 1)
@@ -124,6 +155,7 @@ async function doGraphFetch<T>(
       networkErr instanceof Error ? networkErr.message : String(networkErr)
     )
   }
+  clearTimeout(timeoutHandle)
 
   if (res.ok) {
     try {
