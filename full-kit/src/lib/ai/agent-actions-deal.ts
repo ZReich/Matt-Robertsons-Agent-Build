@@ -33,7 +33,9 @@ type UpdateDealPayload = {
 }
 
 type CreateDealPayload = {
-  contactId: string
+  contactId?: string | null
+  recipientEmail?: string | null
+  recipientDisplayName?: string | null
   dealType: "seller_rep" | "buyer_rep" | "tenant_rep"
   dealSource:
     | "lead_derived"
@@ -140,9 +142,41 @@ export async function createDealFromAction(
   reviewer: string
 ): Promise<AgentActionReviewResult> {
   const payload = action.payload as CreateDealPayload
+  let contactId = payload.contactId ?? null
+  if (!contactId) {
+    if (!payload.recipientEmail) {
+      throw new AgentActionReviewError(
+        "create-deal payload requires contactId or recipientEmail",
+        400
+      )
+    }
+    const email = payload.recipientEmail.toLowerCase()
+    const existing = await db.contact.findFirst({
+      where: {
+        email: { equals: email, mode: "insensitive" },
+        archivedAt: null,
+      },
+      select: { id: true },
+    })
+    if (existing) {
+      contactId = existing.id
+    } else {
+      const created = await db.contact.create({
+        data: {
+          name: payload.recipientDisplayName?.trim() || email,
+          email,
+          category: "business",
+          tags: ["auto-created-from-buyer-rep-action"],
+          createdBy: "agent-action-create-deal",
+        },
+        select: { id: true },
+      })
+      contactId = created.id
+    }
+  }
   const deal = await db.deal.create({
     data: {
-      contactId: payload.contactId,
+      contactId,
       dealType: payload.dealType,
       dealSource: payload.dealSource,
       stage: payload.stage,
@@ -159,6 +193,6 @@ export async function createDealFromAction(
       executedAt: new Date(),
     },
   })
-  await syncContactRoleFromDeals(payload.contactId)
+  await syncContactRoleFromDeals(contactId)
   return { status: "executed", todoId: deal.id, actionId: action.id }
 }

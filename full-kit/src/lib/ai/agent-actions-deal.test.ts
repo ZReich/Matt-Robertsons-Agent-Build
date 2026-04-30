@@ -19,6 +19,10 @@ vi.mock("@/lib/prisma", () => ({
     agentAction: {
       update: vi.fn(),
     },
+    contact: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
   },
 }))
 
@@ -34,6 +38,10 @@ const dealCreate = db.deal.create as unknown as ReturnType<typeof vi.fn>
 const agentActionUpdate = db.agentAction.update as unknown as ReturnType<
   typeof vi.fn
 >
+const contactFindFirst = db.contact.findFirst as unknown as ReturnType<
+  typeof vi.fn
+>
+const contactCreate = db.contact.create as unknown as ReturnType<typeof vi.fn>
 
 describe("moveDealStageFromAction", () => {
   beforeEach(() => vi.clearAllMocks())
@@ -181,7 +189,7 @@ describe("updateDealFromAction", () => {
 describe("createDealFromAction", () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it("creates a buyer-rep Deal", async () => {
+  it("creates a buyer-rep Deal when payload has contactId", async () => {
     dealCreate.mockResolvedValue({ id: "deal-new" })
     agentActionUpdate.mockResolvedValue({})
 
@@ -210,6 +218,150 @@ describe("createDealFromAction", () => {
       }),
       select: { id: true },
     })
+    expect(contactFindFirst).not.toHaveBeenCalled()
+    expect(contactCreate).not.toHaveBeenCalled()
     expect(syncContactRoleFromDeals).toHaveBeenCalledWith("contact-1")
+  })
+
+  it("creates Deal AND finds existing Contact when payload has recipientEmail matching an existing Contact", async () => {
+    contactFindFirst.mockResolvedValue({ id: "contact-existing" })
+    dealCreate.mockResolvedValue({ id: "deal-new" })
+    agentActionUpdate.mockResolvedValue({})
+
+    const result = await createDealFromAction(
+      {
+        id: "action-2",
+        actionType: "create-deal",
+        payload: {
+          contactId: null,
+          recipientEmail: "Agent@CushWake.com",
+          recipientDisplayName: "Agent",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          stage: "offer",
+          signalType: "loi",
+          reason: "...",
+        },
+      },
+      "matt@nai.test"
+    )
+    expect(result.status).toEqual("executed")
+    expect(contactFindFirst).toHaveBeenCalledWith({
+      where: {
+        email: { equals: "agent@cushwake.com", mode: "insensitive" },
+        archivedAt: null,
+      },
+      select: { id: true },
+    })
+    expect(contactCreate).not.toHaveBeenCalled()
+    expect(dealCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        contactId: "contact-existing",
+        dealType: "buyer_rep",
+        dealSource: "buyer_rep_inferred",
+        stage: "offer",
+      }),
+      select: { id: true },
+    })
+    expect(syncContactRoleFromDeals).toHaveBeenCalledWith("contact-existing")
+  })
+
+  it("creates Deal AND auto-creates Contact when payload has recipientEmail with no match", async () => {
+    contactFindFirst.mockResolvedValue(null)
+    contactCreate.mockResolvedValue({ id: "contact-auto" })
+    dealCreate.mockResolvedValue({ id: "deal-new" })
+    agentActionUpdate.mockResolvedValue({})
+
+    const result = await createDealFromAction(
+      {
+        id: "action-3",
+        actionType: "create-deal",
+        payload: {
+          contactId: null,
+          recipientEmail: "newbroker@example.com",
+          recipientDisplayName: "New Broker",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          stage: "showings",
+          signalType: "tour",
+          reason: "...",
+        },
+      },
+      "matt@nai.test"
+    )
+    expect(result.status).toEqual("executed")
+    expect(contactCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        name: "New Broker",
+        email: "newbroker@example.com",
+        category: "business",
+        tags: ["auto-created-from-buyer-rep-action"],
+        createdBy: "agent-action-create-deal",
+      }),
+      select: { id: true },
+    })
+    expect(dealCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        contactId: "contact-auto",
+        dealType: "buyer_rep",
+        dealSource: "buyer_rep_inferred",
+        stage: "showings",
+      }),
+      select: { id: true },
+    })
+    expect(syncContactRoleFromDeals).toHaveBeenCalledWith("contact-auto")
+  })
+
+  it("falls back to email when display name is missing while auto-creating Contact", async () => {
+    contactFindFirst.mockResolvedValue(null)
+    contactCreate.mockResolvedValue({ id: "contact-auto-2" })
+    dealCreate.mockResolvedValue({ id: "deal-new" })
+    agentActionUpdate.mockResolvedValue({})
+
+    await createDealFromAction(
+      {
+        id: "action-4",
+        actionType: "create-deal",
+        payload: {
+          contactId: null,
+          recipientEmail: "noname@example.com",
+          recipientDisplayName: null,
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          stage: "showings",
+          reason: "...",
+        },
+      },
+      "matt@nai.test"
+    )
+    expect(contactCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        name: "noname@example.com",
+        email: "noname@example.com",
+      }),
+      select: { id: true },
+    })
+  })
+
+  it("throws when neither contactId nor recipientEmail is provided", async () => {
+    await expect(
+      createDealFromAction(
+        {
+          id: "action-5",
+          actionType: "create-deal",
+          payload: {
+            contactId: null,
+            recipientEmail: null,
+            dealType: "buyer_rep",
+            dealSource: "buyer_rep_inferred",
+            stage: "showings",
+            reason: "...",
+          },
+        },
+        "matt@nai.test"
+      )
+    ).rejects.toThrow(/contactId or recipientEmail/i)
+    expect(dealCreate).not.toHaveBeenCalled()
+    expect(contactCreate).not.toHaveBeenCalled()
   })
 })
