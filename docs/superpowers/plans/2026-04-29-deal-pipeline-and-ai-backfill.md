@@ -635,7 +635,7 @@ Append to `email-extractors.test.ts`:
 
 ```typescript
 describe("extractBuildoutEvent — address extraction", () => {
-  it("extracts Listing Address from a real lead body", () => {
+  it("extracts Listing Address line and produces a canonical address-derived key", () => {
     const body = `Hello,
 
 Samuel Blum has viewed your Property Page.
@@ -652,11 +652,16 @@ View Lead Details
       body,
       from: { address: "support@buildout.com" },
     })
+    // propertyAddress preserves the full label-extracted line for human display.
     expect(result?.propertyAddress).toEqual("303 North Broadway, Billings, MT 59101")
-    expect(result?.propertyKey).toEqual("303 north broadway billings mt 59101")
+    // propertyKey is the canonical key from normalizeBuildoutProperty:
+    // lowercased, punctuation stripped, "north" → "n" (per the existing
+    // ROAD_SUFFIXES table at property-normalizer.ts:12).
+    expect(result?.propertyKey).toEqual("303 n broadway billings mt 59101")
+    expect(result?.propertyAddressMissing).toBe(false)
   })
 
-  it("falls back to fallbackName when address line is a property name", () => {
+  it("flags addressMissing=true when the Listing Address line is a property name", () => {
     const body = `Hello,
 
 Listing Address Rockets | Gourmet Wraps & Sodas, Billings, MT
@@ -669,20 +674,28 @@ Listing Address Rockets | Gourmet Wraps & Sodas, Billings, MT
     expect(result?.propertyAddress).toEqual(
       "Rockets | Gourmet Wraps & Sodas, Billings, MT"
     )
-    expect(result?.propertyKey).toBeNull()
-    expect(result?.propertyFallbackName).toEqual(
-      "rockets gourmet wraps sodas billings mt"
-    )
+    // The normalizer still produces a key (name-derived); addressMissing=true
+    // signals this to downstream consumers (Phase 5 still creates a Deal,
+    // but the key won't match cleanly to other platform inputs for the
+    // same property).
+    expect(result?.propertyKey).toBeTruthy()
+    expect(result?.propertyAddressMissing).toBe(true)
   })
 
-  it("returns null propertyAddress when no Listing Address line present", () => {
+  it("derives a name-only key when the email has no Listing Address line", () => {
     const result = extractBuildoutEvent({
       subject: "Deal stage updated on Alpenglow Healthcare LLC Lease",
       body: "Alpenglow Healthcare LLC Lease was updated from Transacting to Closed",
       from: { address: "support@buildout.com" },
     })
+    // No labeled line → propertyAddress stays undefined.
     expect(result?.propertyAddress).toBeUndefined()
-    expect(result?.propertyKey).toBeUndefined()
+    // propertyName from the subject still feeds the normalizer, so a
+    // name-derived key comes back. addressMissing=true marks it.
+    // (Stage-update emails route through Phase 8's lookup-by-existing-deal,
+    // not Phase 5's deal-creation flow, so this key being set is fine.)
+    expect(result?.propertyKey).toBeTruthy()
+    expect(result?.propertyAddressMissing).toBe(true)
   })
 })
 ```
@@ -713,14 +726,26 @@ const normalized = normalizeBuildoutProperty(
   addressFromLabel ?? body
 )
 if (normalized) {
-  result.propertyAddress = normalized.propertyAddressRaw ?? addressFromLabel
+  // Prefer the labeled full line ("303 North Broadway, Billings, MT 59101")
+  // over normalized.propertyAddressRaw (which is just the regex-extracted
+  // street portion, "303 North Broadway" — no city/state/zip).
+  result.propertyAddress = addressFromLabel ?? normalized.propertyAddressRaw
   result.propertyKey = normalized.normalizedPropertyKey
   result.propertyAliases = normalized.aliases
   result.propertyAddressMissing = normalized.addressMissing
 }
 ```
 
-Where `result` is whatever the function already builds. Add `propertyAddress`, `propertyKey`, `propertyFallbackName` to the return-type interface near the top of the file.
+Where `result` is whatever the function already builds. Add the following fields to the function's return-type interface near the top of the file:
+
+```typescript
+propertyAddress?: string
+propertyKey?: string
+propertyAliases?: string[]
+propertyAddressMissing?: boolean
+```
+
+(There is no `propertyFallbackName` field — the original plan specified one for an early design that has since been replaced. `addressMissing=true` is the equivalent signal.)
 
 - [ ] **Step 4: Run tests (expect pass)**
 
@@ -758,8 +783,12 @@ jackybradley67@outlook.com`
     expect(result?.propertyAddress).toEqual(
       "13 Colorado Ave, Laurel, Yellowstone County, MT 59044"
     )
-    // Crexi includes county; normalizer strips it → matches no-county form
-    expect(result?.propertyKey).toEqual("13 colorado avenue laurel mt 59044")
+    // Crexi includes county; normalizer's COUNTY_PATTERN strips it.
+    // "Ave" stays as "ave" (not expanded — the ROAD_SUFFIXES table only
+    // shortens long forms, e.g. "avenue" → "ave"). Already-short forms
+    // pass through.
+    expect(result?.propertyKey).toEqual("13 colorado ave laurel mt 59044")
+    expect(result?.propertyAddressMissing).toBe(false)
   })
 })
 ```
@@ -781,7 +810,10 @@ const normalized = normalizeBuildoutProperty(
   addressFromLabel ?? body
 )
 if (normalized) {
-  result.propertyAddress = normalized.propertyAddressRaw ?? addressFromLabel
+  // Prefer the labeled full line ("303 North Broadway, Billings, MT 59101")
+  // over normalized.propertyAddressRaw (which is just the regex-extracted
+  // street portion, "303 North Broadway" — no city/state/zip).
+  result.propertyAddress = addressFromLabel ?? normalized.propertyAddressRaw
   result.propertyKey = normalized.normalizedPropertyKey
   result.propertyAliases = normalized.aliases
   result.propertyAddressMissing = normalized.addressMissing
@@ -821,7 +853,10 @@ Hi, Matt, can you please send me any and all information you have on this.`
       from: { address: "leads@loopnet.com" },
     })
     expect(result?.propertyAddress).toEqual("303 N Broadway | Billings, MT 59101")
-    expect(result?.propertyKey).toEqual("303 north broadway billings mt 59101")
+    // Pipe→space, "N" stays as "n" (already abbreviated), comma stripped.
+    // Same canonical key as the Buildout test above for the same property.
+    expect(result?.propertyKey).toEqual("303 n broadway billings mt 59101")
+    expect(result?.propertyAddressMissing).toBe(false)
   })
 
   it("falls back to subject for 'favorited' emails with no body address", () => {
@@ -831,7 +866,9 @@ Hi, Matt, can you please send me any and all information you have on this.`
       from: { address: "no-reply@loopnet.com" },
     })
     expect(result?.propertyAddress).toEqual("303 N Broadway")
-    expect(result?.propertyKey).toEqual("303 north broadway")
+    // Subject-only key is a prefix of the body-derived key — no city/state/zip
+    // because the subject doesn't carry them.
+    expect(result?.propertyKey).toEqual("303 n broadway")
   })
 })
 ```
@@ -864,7 +901,10 @@ if (addressLine) {
     addressLine
   )
   if (normalized) {
-    result.propertyAddress = normalized.propertyAddressRaw ?? addressLine
+    // Prefer the matched line ("303 N Broadway | Billings, MT 59101") over
+    // normalized.propertyAddressRaw, which is the regex-extracted street
+    // portion only ("303 N Broadway") — same reason as the Buildout extractor.
+    result.propertyAddress = addressLine
     result.propertyKey = normalized.normalizedPropertyKey
     result.propertyAliases = normalized.aliases
     result.propertyAddressMissing = normalized.addressMissing
@@ -2988,8 +3028,6 @@ main()
   })
   .finally(() => db.$disconnect())
 ```
-
-If the existing scrub-applier doesn't accept `modelUsed` and `usage` as parameters, audit `src/lib/ai/scrub-applier.ts` and either extend the signature (with defaults) or add a new lower-level helper that the scrub-import script calls directly.
 
 - [ ] **Step 1: Save script, commit**
 
