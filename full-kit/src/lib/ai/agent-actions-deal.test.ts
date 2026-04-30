@@ -19,16 +19,24 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
+const dealFindUnique = db.deal.findUnique as unknown as ReturnType<
+  typeof vi.fn
+>
+const dealUpdate = db.deal.update as unknown as ReturnType<typeof vi.fn>
+const agentActionUpdate = db.agentAction.update as unknown as ReturnType<
+  typeof vi.fn
+>
+
 describe("moveDealStageFromAction", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("transitions stage and stamps stageChangedAt", async () => {
-    db.deal.findUnique.mockResolvedValue({
+    dealFindUnique.mockResolvedValue({
       id: "deal-1",
       stage: "offer",
     })
-    db.deal.update.mockResolvedValue({})
-    db.agentAction.update.mockResolvedValue({})
+    dealUpdate.mockResolvedValue({})
+    agentActionUpdate.mockResolvedValue({})
 
     const result = await moveDealStageFromAction(
       {
@@ -54,7 +62,7 @@ describe("moveDealStageFromAction", () => {
   })
 
   it("rejects when fromStage doesn't match current stage (concurrency safety)", async () => {
-    db.deal.findUnique.mockResolvedValue({
+    dealFindUnique.mockResolvedValue({
       id: "deal-1",
       stage: "under_contract",
     })
@@ -77,9 +85,9 @@ describe("moveDealStageFromAction", () => {
   })
 
   it("stamps closedAt and outcome when transitioning to closed", async () => {
-    db.deal.findUnique.mockResolvedValue({ id: "deal-1", stage: "closing" })
-    db.deal.update.mockResolvedValue({})
-    db.agentAction.update.mockResolvedValue({})
+    dealFindUnique.mockResolvedValue({ id: "deal-1", stage: "closing" })
+    dealUpdate.mockResolvedValue({})
+    agentActionUpdate.mockResolvedValue({})
 
     await moveDealStageFromAction(
       {
@@ -110,9 +118,9 @@ describe("updateDealFromAction", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("applies allowed field updates", async () => {
-    db.deal.findUnique.mockResolvedValue({ id: "deal-1" })
-    db.deal.update.mockResolvedValue({})
-    db.agentAction.update.mockResolvedValue({})
+    dealFindUnique.mockResolvedValue({ id: "deal-1" })
+    dealUpdate.mockResolvedValue({})
+    agentActionUpdate.mockResolvedValue({})
 
     await updateDealFromAction(
       {
@@ -139,7 +147,7 @@ describe("updateDealFromAction", () => {
   })
 
   it("rejects updates to forbidden fields (id, contactId)", async () => {
-    db.deal.findUnique.mockResolvedValue({ id: "deal-1" })
+    dealFindUnique.mockResolvedValue({ id: "deal-1" })
     await expect(
       updateDealFromAction(
         {
