@@ -576,6 +576,52 @@ describe("lead-apply-backfill", () => {
     )
   })
 
+  it("creates a Deal when an already-promoted Contact emits an inquiry-class lead", async () => {
+    // Auto-promoted-at-ingest path: Buildout new-lead arrives, processOneMessage
+    // creates the Contact and stamps row.contactId. lead-apply backfill then
+    // sees outcome=already_lead and used to skip silently — never firing the
+    // Phase 5 Deal upsert. This test pins the third-call-site behavior.
+    const client = makeClient({
+      rows: [
+        leadRow({
+          id: "comm-already-lead-1",
+          subject: "A new Lead has been added - 119 N Broadway",
+          body: "Listing Address 119 N Broadway, Billings, MT 59101\nProfile information on file for Sam Buyer: Email sam@example.com Phone 406.555.0100",
+          metadata: {
+            classification: "signal",
+            source: "buildout-lead",
+            from: { address: "support@buildout.com" },
+          },
+          contactId: "contact-already-promoted",
+        }),
+      ],
+      contacts: [
+        contact({
+          id: "contact-already-promoted",
+          email: "sam@example.com",
+          deals: 0,
+          leadSource: "buildout",
+        }),
+      ],
+    })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-already-lead" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({ already_lead: 1 })
+    expect(upsertDealForLeadMock).toHaveBeenCalledTimes(1)
+    expect(upsertDealForLeadMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contactId: "contact-already-promoted",
+        communicationId: "comm-already-lead-1",
+        propertySource: "buildout",
+        propertyKey: expect.stringContaining("broadway"),
+      })
+    )
+  })
+
   it("proposes a Buildout stage move action for deal-stage-update rows", async () => {
     const stageRow = {
       id: "comm-stage-1",

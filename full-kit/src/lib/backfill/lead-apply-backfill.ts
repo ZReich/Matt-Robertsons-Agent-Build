@@ -380,6 +380,26 @@ async function applyRow(
       planned,
       extracted ? { platform: extracted.platform, extracted } : {}
     )
+    // Phase 5's upsertDealForLead hook fires from createLeadContact and
+    // linkExistingContact. Auto-promoted contacts (Buildout new-lead path
+    // inside processOneMessage) skip both — they hit "already_lead" here
+    // because row.contactId was set during ingest. Without this third call
+    // site, the inquiry-class lead never produces a Deal.
+    if (
+      planned === "already_lead" &&
+      extracted &&
+      row.contactId &&
+      isInquiryClassLead(extracted) &&
+      (extracted.propertyKey || extracted.propertyAddress)
+    ) {
+      await upsertDealForLead({
+        contactId: row.contactId,
+        communicationId: row.id,
+        propertyKey: extracted.propertyKey ?? null,
+        propertyAddress: extracted.propertyAddress ?? null,
+        propertySource: extracted.platform,
+      })
+    }
     return
   }
   if (!extracted) {
@@ -1241,6 +1261,18 @@ function shouldAutoCreateLeadContact(extracted: ExtractedLead): boolean {
     extracted.platform === "buildout" &&
     (extracted.kind === "new-lead" ||
       extracted.kind === "information-requested")
+  )
+}
+
+// Whether this extractor result represents a real single-property inquiry —
+// the only kinds where propertyKey is reliable enough to drive Deal creation.
+// Excludes aggregate digests (Crexi new-leads-count), stage-update events,
+// document views, etc., where propertyKey is either junk or absent.
+function isInquiryClassLead(extracted: ExtractedLead): boolean {
+  return (
+    extracted.kind === "inquiry" ||
+    extracted.kind === "new-lead" ||
+    extracted.kind === "information-requested"
   )
 }
 
