@@ -7,6 +7,7 @@ import {
   hasRealAttachmentEvidenceFromMetadata,
   readContactAutoPromotionMode,
 } from "@/lib/contact-auto-promotion-policy"
+import { proposeStageMoveFromBuildoutEmail } from "@/lib/deals/buildout-stage-action"
 import { upsertDealForLead } from "@/lib/deals/lead-to-deal"
 import {
   extractBuildoutEvent,
@@ -47,6 +48,7 @@ export type LeadApplyOutcome =
   | "skipped_existing_contact"
   | "skipped_ambiguous_contact"
   | "skipped_race_lost"
+  | "proposed_buildout_stage_move"
 
 export type LeadApplySample = {
   communicationId: string
@@ -193,9 +195,50 @@ export async function runLeadApplyBackfill({
         client
       )
     }
+    await proposeBuildoutStageMoves(rows, result)
     return result
   } finally {
     await releaseAdvisoryLock(client)
+  }
+}
+
+async function proposeBuildoutStageMoves(
+  rows: CommunicationRow[],
+  result: LeadApplyBackfillResult
+): Promise<void> {
+  for (const row of rows) {
+    const tier1Rule = metadataString(row.metadata, "tier1Rule")
+    if (
+      tier1Rule !== "buildout-support" &&
+      tier1Rule !== "buildout-notification"
+    ) {
+      continue
+    }
+    const extracted = extractBuildoutEvent({
+      subject: row.subject,
+      bodyText: row.body ?? "",
+    })
+    if (
+      !extracted ||
+      extracted.kind !== "deal-stage-update" ||
+      !extracted.fromStageRaw ||
+      !extracted.toStageRaw ||
+      !extracted.propertyName
+    ) {
+      continue
+    }
+    const proposal = await proposeStageMoveFromBuildoutEmail({
+      communicationId: row.id,
+      propertyName: extracted.propertyName,
+      fromStageRaw: extracted.fromStageRaw,
+      toStageRaw: extracted.toStageRaw,
+    })
+    if (proposal.created) {
+      record(result, row, "proposed_buildout_stage_move", {
+        platform: "buildout",
+        extractedKind: extracted.kind,
+      })
+    }
   }
 }
 

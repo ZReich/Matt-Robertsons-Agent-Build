@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { proposeStageMoveFromBuildoutEmail } from "@/lib/deals/buildout-stage-action"
 import { upsertDealForLead } from "@/lib/deals/lead-to-deal"
 
 import { runLeadApplyBackfill } from "./lead-apply-backfill"
@@ -8,9 +9,19 @@ vi.mock("@/lib/deals/lead-to-deal", () => ({
   upsertDealForLead: vi.fn(async () => ({ dealId: null, created: false })),
 }))
 
+vi.mock("@/lib/deals/buildout-stage-action", () => ({
+  proposeStageMoveFromBuildoutEmail: vi.fn(async () => ({
+    created: true,
+    actionId: "action-1",
+  })),
+}))
+
 const upsertDealForLeadMock = upsertDealForLead as unknown as ReturnType<
   typeof vi.fn
 >
+
+const proposeStageMoveMock =
+  proposeStageMoveFromBuildoutEmail as unknown as ReturnType<typeof vi.fn>
 
 describe("lead-apply-backfill", () => {
   beforeEach(() => {
@@ -19,6 +30,11 @@ describe("lead-apply-backfill", () => {
     upsertDealForLeadMock.mockImplementation(async () => ({
       dealId: null,
       created: false,
+    }))
+    proposeStageMoveMock.mockClear()
+    proposeStageMoveMock.mockImplementation(async () => ({
+      created: true,
+      actionId: "action-1",
     }))
   })
 
@@ -558,6 +574,63 @@ describe("lead-apply-backfill", () => {
         propertyKey: expect.stringContaining("broadway"),
       })
     )
+  })
+
+  it("proposes a Buildout stage move action for deal-stage-update rows", async () => {
+    const stageRow = {
+      id: "comm-stage-1",
+      subject: "Deal stage updated on 303 N Broadway",
+      body: "The deal stage was updated from Marketing to Showings.\nGood luck!",
+      metadata: {
+        classification: "signal",
+        source: "buildout-notification",
+        tier1Rule: "buildout-notification",
+        from: { address: "no-reply@buildout.com" },
+      },
+      date: new Date("2026-04-25T14:00:00Z"),
+      contactId: null,
+    }
+    const client = makeClient({ rows: [stageRow], contacts: [] })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-stage" },
+      client: client as never,
+    })
+
+    expect(proposeStageMoveMock).toHaveBeenCalledTimes(1)
+    expect(proposeStageMoveMock).toHaveBeenCalledWith({
+      communicationId: "comm-stage-1",
+      propertyName: "303 N Broadway",
+      fromStageRaw: "Marketing",
+      toStageRaw: "Showings",
+    })
+    expect(result.byOutcome).toMatchObject({
+      proposed_buildout_stage_move: 1,
+    })
+  })
+
+  it("does not propose a Buildout stage move during dry-run", async () => {
+    const stageRow = {
+      id: "comm-stage-2",
+      subject: "Deal stage updated on 303 N Broadway",
+      body: "The deal stage was updated from Marketing to Showings.",
+      metadata: {
+        classification: "signal",
+        source: "buildout-notification",
+        tier1Rule: "buildout-notification",
+        from: { address: "no-reply@buildout.com" },
+      },
+      date: new Date("2026-04-25T14:00:00Z"),
+      contactId: null,
+    }
+    const client = makeClient({ rows: [stageRow], contacts: [] })
+
+    await runLeadApplyBackfill({
+      request: { dryRun: true, limit: 25, runId: "run-stage-dry" },
+      client: client as never,
+    })
+
+    expect(proposeStageMoveMock).not.toHaveBeenCalled()
   })
 
   it("reports race-lost when communication contact changes before update", async () => {
