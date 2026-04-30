@@ -703,10 +703,127 @@ describe("processOneMessage buyer-rep signal hook", () => {
         sourceCommunicationId: "comm-br",
         payload: expect.objectContaining({
           contactId: "contact-broker",
+          recipientEmail: "agent@cushwake.com",
+          recipientDisplayName: "Agent",
           dealType: "buyer_rep",
           dealSource: "buyer_rep_inferred",
           stage: "offer",
           signalType: "loi",
+        }),
+      }),
+    })
+  })
+
+  it("fires when ingest contactId is null but recipient email matches an existing Contact", async () => {
+    // No contact match for the sender — ingest leaves persisted.contactId null.
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+    // Hook fallback lookup for the external recipient finds a Contact.
+    ;(db.contact.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "contact-recipient-match",
+    })
+
+    await processOneMessage(
+      {
+        id: "outbound-loi-2",
+        sentDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-loi-2",
+        subject: "LOI for 500 Main",
+        from: {
+          emailAddress: {
+            name: "Matt",
+            address: "matt@naibusinessproperties.com",
+          },
+        },
+        toRecipients: [
+          {
+            emailAddress: {
+              address: "broker@colliers.com",
+              name: "Broker",
+            },
+          },
+        ],
+        body: {
+          contentType: "text",
+          content: "Attached is the letter of intent for our review.",
+        },
+      },
+      "sentitems",
+      "observe"
+    )
+
+    expect(db.contact.findFirst).toHaveBeenCalledWith({
+      where: {
+        email: { equals: "broker@colliers.com", mode: "insensitive" },
+        archivedAt: null,
+      },
+      select: { id: true },
+    })
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "create-deal",
+        tier: "approve",
+        sourceCommunicationId: "comm-br",
+        payload: expect.objectContaining({
+          contactId: "contact-recipient-match",
+          recipientEmail: "broker@colliers.com",
+          recipientDisplayName: "Broker",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          signalType: "loi",
+        }),
+      }),
+    })
+  })
+
+  it("fires when ingest contactId is null and recipient is brand new (passes recipientEmail through)", async () => {
+    // No contact match for sender — persisted.contactId stays null.
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([])
+    // Recipient lookup also misses — payload carries recipientEmail with
+    // contactId=null. createDealFromAction will auto-create at approval time.
+    ;(db.contact.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await processOneMessage(
+      {
+        id: "outbound-tour-3",
+        sentDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-tour-3",
+        subject: "Tour scheduling for 100 Elm",
+        from: {
+          emailAddress: {
+            name: "Matt",
+            address: "matt@naibusinessproperties.com",
+          },
+        },
+        toRecipients: [
+          {
+            emailAddress: {
+              address: "newbroker@example.com",
+              name: "New Broker",
+            },
+          },
+        ],
+        body: {
+          contentType: "text",
+          content:
+            "Looking to schedule a tour next week — what time slot works for a showing?",
+        },
+      },
+      "sentitems",
+      "observe"
+    )
+
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "create-deal",
+        tier: "approve",
+        sourceCommunicationId: "comm-br",
+        payload: expect.objectContaining({
+          contactId: null,
+          recipientEmail: "newbroker@example.com",
+          recipientDisplayName: "New Broker",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          signalType: "tour",
         }),
       }),
     })

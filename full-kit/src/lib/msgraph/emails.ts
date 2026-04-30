@@ -1237,13 +1237,14 @@ export async function processOneMessage(
         leadCreated,
       })
 
-      // Buyer-rep deal detection — only outbound emails to a linked contact.
-      // Detector is pure; if a tour or LOI signal fires, propose a create-deal
-      // AgentAction at the approval tier.
+      // Buyer-rep deal detection on outbound emails. Fires regardless of
+      // whether the row has a contactId yet — for outbound LOIs/tours to
+      // brand-new cooperating brokers we won't have a Contact at ingest
+      // time. The AgentAction carries the recipient email; createDealFromAction
+      // resolves Contact at approval time (find-or-create by email).
       if (
         persisted.inserted &&
         persisted.communicationId &&
-        persisted.contactId &&
         folder === "sentitems"
       ) {
         const recipientDomains = extractRecipientDomains(
@@ -1256,13 +1257,38 @@ export async function processOneMessage(
           recipientDomains,
         })
         if (signal.signalType && signal.proposedStage) {
-          await proposeBuyerRepDeal({
-            communicationId: persisted.communicationId,
-            contactId: persisted.contactId,
-            signalType: signal.signalType,
-            proposedStage: signal.proposedStage,
-            confidence: signal.confidence,
-          })
+          // Try to match the first external recipient to an existing
+          // Contact. If matched, prefer contactId; otherwise pass
+          // recipientEmail through to approval-time resolution.
+          const externalRecipient = pickFirstExternalRecipient(
+            workingMessage.toRecipients ?? [],
+            normalizedSender.address
+          )
+          let buyerRepContactId: string | null = persisted.contactId
+          if (!buyerRepContactId && externalRecipient?.email) {
+            const match = await db.contact.findFirst({
+              where: {
+                email: {
+                  equals: externalRecipient.email,
+                  mode: "insensitive",
+                },
+                archivedAt: null,
+              },
+              select: { id: true },
+            })
+            if (match) buyerRepContactId = match.id
+          }
+          if (buyerRepContactId || externalRecipient?.email) {
+            await proposeBuyerRepDeal({
+              communicationId: persisted.communicationId,
+              contactId: buyerRepContactId,
+              recipientEmail: externalRecipient?.email ?? null,
+              recipientDisplayName: externalRecipient?.displayName ?? null,
+              signalType: signal.signalType,
+              proposedStage: signal.proposedStage,
+              confidence: signal.confidence,
+            })
+          }
         }
       }
 
@@ -1634,4 +1660,26 @@ function extractRecipientDomains(
     if (domain) out.add(domain)
   }
   return Array.from(out)
+}
+
+// Pick the first non-internal recipient for the buyer-rep hook. Skips
+// addresses sharing the sender's domain (NAI internal traffic). Returns
+// null if every recipient is internal or malformed.
+function pickFirstExternalRecipient(
+  recipients: ReadonlyArray<{
+    emailAddress?: { address?: string; name?: string }
+  }>,
+  senderAddress: string
+): { email: string; displayName: string | null } | null {
+  for (const r of recipients ?? []) {
+    const email = r?.emailAddress?.address?.trim().toLowerCase()
+    if (!email || !email.includes("@")) continue
+    if (isInternalEmail(email, senderAddress)) continue
+    const name = r?.emailAddress?.name?.trim()
+    return {
+      email,
+      displayName: name && name.length > 0 ? name : null,
+    }
+  }
+  return null
 }
