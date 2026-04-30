@@ -231,6 +231,16 @@ enum LeadStatus {
   dropped
 }
 
+enum ClientType {
+  prospect
+  active_listing_client
+  active_buyer_rep_client
+  past_client
+  cooperating_broker
+  service_provider
+  other
+}
+
 enum EmailFilterRuleMode {
   draft
   classification_only
@@ -391,6 +401,7 @@ model Contact {
   leadAt           DateTime?   @map("lead_at")
   leadLastViewedAt DateTime?   @map("lead_last_viewed_at")
   estimatedValue   Decimal?    @map("estimated_value") @db.Decimal(14, 2)
+  clientType       ClientType? @map("client_type")
 
   // Relations
   deals          Deal[]
@@ -411,6 +422,7 @@ model Contact {
   @@index([leadStatus])
   @@index([leadStatus, updatedAt])
   @@index([leadSource, leadStatus, leadLastViewedAt])
+  @@index([clientType])
   @@map("contacts")
 }
 
