@@ -125,6 +125,25 @@ describe("extractCrexiLead", () => {
   })
 })
 
+describe("extractCrexiLead — non-inquiry kinds skip propertyKey", () => {
+  it("does not assign propertyKey for new-leads-count digest emails", () => {
+    // The body of weekly digests contains aggregate-summary text like
+    // "5 new leads last 7 days" which the normalizer would otherwise
+    // capture as if it were an address — producing junk join keys.
+    const result = extractCrexiLead({
+      subject: "5 new leads found for West Park Promenade",
+      bodyText:
+        "You have 5 new leads last 7 days. Top inquiries below.\nView leads on Crexi.",
+    })
+    expect(result?.kind).toBe("new-leads-count")
+    expect(result?.propertyName).toBe("West Park Promenade")
+    expect(result?.propertyKey).toBeUndefined()
+    expect(result?.propertyAliases).toBeUndefined()
+    expect(result?.propertyAddressMissing).toBeUndefined()
+    expect(result?.propertyAddress).toBeUndefined()
+  })
+})
+
 describe("extractCrexiLead — address extraction", () => {
   it("extracts the 'Regarding listing at' address with county", () => {
     const bodyText = `Regarding listing at 13 Colorado Ave, Laurel, Yellowstone County, MT 59044
@@ -479,7 +498,34 @@ Listing Address Rockets | Gourmet Wraps & Sodas, Billings, MT
     expect(result?.propertyAddressMissing).toBe(true)
   })
 
-  it("derives a name-only key when the email has no Listing Address line", () => {
+  it("ignores footer/signature addresses in deal-stage-update bodies", () => {
+    // Real failure case from 7-day validation: a deal-stage-update email for
+    // "Gallatin Road" had "1600 Golf Rd" in the footer. The normalizer was
+    // producing propertyKey="1600 golf rd" — completely unrelated to the
+    // actual deal. propertyKey should now be suppressed for stage updates,
+    // while propertyName and fromStageRaw/toStageRaw stay populated so
+    // Phase 8.4 can still propose a stage move.
+    const bodyText = `Hello Matt Robertson,
+
+Gallatin Road was updated from Sourcing to Dead.
+
+View Deal
+
+NAI Business Partners | 1600 Golf Rd, Suite 1200, Rolling Meadows, IL`
+    const result = extractBuildoutEvent({
+      subject: "Deal stage updated on Gallatin Road",
+      bodyText,
+    })
+    expect(result?.kind).toBe("deal-stage-update")
+    expect(result?.propertyName).toBe("Gallatin Road")
+    expect(result?.fromStageRaw).toBe("Sourcing")
+    expect(result?.toStageRaw).toBe("Dead")
+    expect(result?.propertyKey).toBeUndefined()
+    expect(result?.propertyAliases).toBeUndefined()
+    expect(result?.propertyAddressMissing).toBeUndefined()
+  })
+
+  it("does not derive a propertyKey for deal-stage-update kinds", () => {
     const result = extractBuildoutEvent({
       subject: "Deal stage updated on Alpenglow Healthcare LLC Lease",
       bodyText:
@@ -487,11 +533,14 @@ Listing Address Rockets | Gourmet Wraps & Sodas, Billings, MT
     })
     // No labeled line → propertyAddress stays undefined.
     expect(result?.propertyAddress).toBeUndefined()
-    // propertyName from the subject still feeds the normalizer, so a
-    // name-derived key comes back. addressMissing=true marks it.
-    // (Stage-update emails route through Phase 8's lookup-by-existing-deal,
-    // not Phase 5's deal-creation flow, so this key being set is fine.)
-    expect(result?.propertyKey).toBeTruthy()
-    expect(result?.propertyAddressMissing).toBe(true)
+    // Stage-update emails route through Phase 8.4's lookup-by-propertyName,
+    // not Phase 5's propertyKey-driven Deal creation. Body normalization for
+    // these kinds was producing junk keys from footer/signature addresses,
+    // so we suppress propertyKey/propertyAliases/propertyAddressMissing
+    // entirely — propertyName from the subject is still set.
+    expect(result?.propertyName).toBe("Alpenglow Healthcare LLC Lease")
+    expect(result?.propertyKey).toBeUndefined()
+    expect(result?.propertyAliases).toBeUndefined()
+    expect(result?.propertyAddressMissing).toBeUndefined()
   })
 })

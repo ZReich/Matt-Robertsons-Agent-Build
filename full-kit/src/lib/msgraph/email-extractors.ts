@@ -86,6 +86,14 @@ export function extractCrexiLead(
 
   if (!result) return null
 
+  // Only inquiry-class kinds get a canonical propertyKey. Aggregate digests
+  // (new-leads-count: "5 new leads found for X") and team-notes do NOT
+  // represent a single specific property inquiry — running the body through
+  // normalizeBuildoutProperty for those kinds was producing junk keys like
+  // "5 new leads last 7 days" off summary text. Skip the normalizer entirely
+  // for non-inquiry kinds to avoid contaminating propertyKey downstream.
+  if (result.kind !== "inquiry") return result
+
   // Crexi inquiry bodies start with "Regarding listing at <full address>".
   // Route through normalizeBuildoutProperty for canonical-key derivation —
   // same single source of truth as the Buildout extractor.
@@ -367,6 +375,17 @@ export function extractBuildoutEvent(
   }
 
   if (!result) return null
+
+  // Only inquiry-class kinds (new-lead, information-requested) get a canonical
+  // propertyKey. Stage updates / document views / CA-executed / task-assigned /
+  // critical-date emails frequently contain unrelated addresses in footers or
+  // signatures (e.g. "1600 Golf Rd" in an email that's actually about Gallatin
+  // Road) — the normalizer was happily picking those up and producing wrong
+  // join keys. Phase 8.4 looks up Deals by propertyName for those kinds, so
+  // suppressing propertyKey here is safe and removes the junk-key hazard.
+  if (result.kind !== "new-lead" && result.kind !== "information-requested") {
+    return result
+  }
 
   // Extract the labelled "Listing Address" line for high-fidelity address text,
   // then delegate canonical-key derivation to the existing Buildout normalizer
