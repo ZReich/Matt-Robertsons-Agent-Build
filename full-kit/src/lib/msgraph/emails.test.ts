@@ -7,6 +7,7 @@ import {
   computeBehavioralHints,
   fetchEmailDelta,
   persistMessage,
+  processMessagesConcurrently,
   processOneMessage,
 } from "./emails"
 
@@ -709,5 +710,56 @@ describe("processOneMessage buyer-rep signal hook", () => {
         }),
       }),
     })
+  })
+})
+
+describe("processMessagesConcurrently", () => {
+  it("calls each item's handler exactly once", async () => {
+    const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    const seen: number[] = []
+    await processMessagesConcurrently(items, 3, async (n) => {
+      seen.push(n)
+    })
+    expect(seen.sort((a, b) => a - b)).toEqual(items)
+  })
+
+  it("respects the concurrency limit", async () => {
+    let inFlight = 0
+    let maxObserved = 0
+    await processMessagesConcurrently(
+      Array.from({ length: 20 }, (_, i) => i),
+      4,
+      async () => {
+        inFlight++
+        if (inFlight > maxObserved) maxObserved = inFlight
+        // Yield to allow other workers to start before we release the slot.
+        await new Promise((r) => setTimeout(r, 5))
+        inFlight--
+      }
+    )
+    expect(maxObserved).toBeLessThanOrEqual(4)
+    expect(maxObserved).toBeGreaterThan(1)
+  })
+
+  it("returns immediately when items is empty", async () => {
+    const handler = vi.fn(async () => {})
+    await processMessagesConcurrently([], 10, handler)
+    expect(handler).not.toHaveBeenCalled()
+  })
+
+  it("clamps limit to items.length when items < limit", async () => {
+    const seen: number[] = []
+    await processMessagesConcurrently([1, 2], 100, async (n) => {
+      seen.push(n)
+    })
+    expect(seen.sort((a, b) => a - b)).toEqual([1, 2])
+  })
+
+  it("propagates the first handler rejection", async () => {
+    await expect(
+      processMessagesConcurrently([1, 2, 3], 2, async (n) => {
+        if (n === 2) throw new Error("boom")
+      })
+    ).rejects.toThrow("boom")
   })
 })

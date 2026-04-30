@@ -1484,56 +1484,63 @@ export async function syncEmails(
     for (const folder of folders) {
       const summary = result.perFolder[folder]
       let finalDeltaLink: string | undefined
+      const concurrency = readSyncConcurrency()
       try {
         for await (const { page } of fetchEmailDelta(folder, sinceIso)) {
-          for (const rawMsg of page.value) {
-            try {
-              const res = await processOneMessage(
-                rawMsg,
-                folder,
-                options.filterRunMode ?? "observe"
-              )
-              summary.classification[res.classification]++
-              if (res.inserted) summary.created++
-              if (res.extractedPlatform === "crexi")
-                summary.platformExtracted.crexiLead++
-              if (res.extractedPlatform === "loopnet")
-                summary.platformExtracted.loopnetLead++
-              if (res.extractedPlatform === "buildout")
-                summary.platformExtracted.buildoutEvent++
-              if (res.contactCreated) contactsCreated++
-              if (res.leadCreated) leadsCreated++
-            } catch (err) {
-              summary.errors.push({
-                graphId: rawMsg.id,
-                message: err instanceof Error ? err.message : String(err),
-                attempts: 3,
-              })
-              await db.externalSync
-                .upsert({
-                  where: {
-                    source_externalId: {
+          await processMessagesConcurrently(
+            page.value,
+            concurrency,
+            async (rawMsg) => {
+              try {
+                const res = await processOneMessage(
+                  rawMsg,
+                  folder,
+                  options.filterRunMode ?? "observe"
+                )
+                summary.classification[res.classification]++
+                if (res.inserted) summary.created++
+                if (res.extractedPlatform === "crexi")
+                  summary.platformExtracted.crexiLead++
+                if (res.extractedPlatform === "loopnet")
+                  summary.platformExtracted.loopnetLead++
+                if (res.extractedPlatform === "buildout")
+                  summary.platformExtracted.buildoutEvent++
+                if (res.contactCreated) contactsCreated++
+                if (res.leadCreated) leadsCreated++
+              } catch (err) {
+                summary.errors.push({
+                  graphId: rawMsg.id,
+                  message: err instanceof Error ? err.message : String(err),
+                  attempts: 3,
+                })
+                await db.externalSync
+                  .upsert({
+                    where: {
+                      source_externalId: {
+                        source: "msgraph-email",
+                        externalId: rawMsg.id,
+                      },
+                    },
+                    create: {
                       source: "msgraph-email",
                       externalId: rawMsg.id,
+                      entityType: "communication",
+                      status: "failed",
+                      errorMsg:
+                        err instanceof Error ? err.message : String(err),
                     },
-                  },
-                  create: {
-                    source: "msgraph-email",
-                    externalId: rawMsg.id,
-                    entityType: "communication",
-                    status: "failed",
-                    errorMsg: err instanceof Error ? err.message : String(err),
-                  },
-                  update: {
-                    status: "failed",
-                    errorMsg: err instanceof Error ? err.message : String(err),
-                  },
-                })
-                .catch(() => {
-                  /* best-effort */
-                })
+                    update: {
+                      status: "failed",
+                      errorMsg:
+                        err instanceof Error ? err.message : String(err),
+                    },
+                  })
+                  .catch(() => {
+                    /* best-effort */
+                  })
+              }
             }
-          }
+          )
           if (page["@odata.deltaLink"]) {
             finalDeltaLink = page["@odata.deltaLink"]
           }
@@ -1572,6 +1579,46 @@ export async function syncEmails(
   } finally {
     await releaseAdvisoryLock()
   }
+}
+
+/**
+ * Process a page of messages with bounded concurrency. Cursor advance still
+ * waits for ALL handlers to settle (per-page Promise.all semantics), so the
+ * delta cursor never moves past in-flight work. Each handler's per-message
+ * try/catch lives in the caller — this helper just orchestrates the pool.
+ *
+ * Default concurrency is 10. Override with MSGRAPH_SYNC_CONCURRENCY=N (set
+ * to 1 to restore strict-sequential behavior for debugging).
+ */
+export async function processMessagesConcurrently<T>(
+  items: readonly T[],
+  limit: number,
+  handler: (item: T) => Promise<void>
+): Promise<void> {
+  if (items.length === 0) return
+  const safeLimit = Math.max(1, Math.min(limit, items.length))
+  let nextIndex = 0
+  const workers = Array.from({ length: safeLimit }, async () => {
+    while (true) {
+      const i = nextIndex++
+      if (i >= items.length) return
+      await handler(items[i])
+    }
+  })
+  await Promise.all(workers)
+}
+
+const SYNC_CONCURRENCY_DEFAULT = 10
+const SYNC_CONCURRENCY_MAX = 25
+
+function readSyncConcurrency(
+  env: Record<string, string | undefined> = process.env
+): number {
+  const raw = env.MSGRAPH_SYNC_CONCURRENCY
+  if (!raw) return SYNC_CONCURRENCY_DEFAULT
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed < 1) return SYNC_CONCURRENCY_DEFAULT
+  return Math.min(parsed, SYNC_CONCURRENCY_MAX)
 }
 
 // Pull recipient domains from a Graph toRecipients array. Returns lower-cased
