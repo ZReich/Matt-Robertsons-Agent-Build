@@ -198,3 +198,49 @@ describe("stale deal policy", () => {
     })
   })
 })
+
+describe("normalizeBuildoutProperty — cross-platform parity", () => {
+  it("Buildout 'Listing Address' line and LoopNet pipe format produce the same key", () => {
+    const buildoutBody =
+      "Hello,\n\nName Samuel Blum\nListing Address 303 North Broadway, Billings, MT 59101\nView Lead Details"
+    const loopnetBody =
+      "New Lead\nFrom: Alex Wright\n303 N Broadway | Billings, MT 59101"
+    const buildout = normalizeBuildoutProperty("US Bank Building", buildoutBody)
+    const loopnet = normalizeBuildoutProperty("303 N Broadway", loopnetBody)
+    expect(buildout?.normalizedPropertyKey).toEqual(loopnet?.normalizedPropertyKey)
+  })
+
+  it("Crexi 'Regarding listing at' with county strips county and matches no-county form", () => {
+    const withCounty = normalizeBuildoutProperty(
+      "Montana Paint Building",
+      "Regarding listing at 2610 Montana Ave, Billings, Yellowstone County, MT 59101"
+    )
+    const without = normalizeBuildoutProperty(
+      "Montana Paint Building",
+      "2610 Montana Ave, Billings, MT 59101"
+    )
+    expect(withCounty?.normalizedPropertyKey).toEqual(without?.normalizedPropertyKey)
+  })
+
+  it("LoopNet 'favorited' subject-only path produces a key that prefixes the full body-derived key", () => {
+    const subjectOnly = normalizeBuildoutProperty("303 N Broadway", "")
+    const full = normalizeBuildoutProperty(
+      "303 N Broadway",
+      "303 N Broadway | Billings, MT 59101"
+    )
+    expect(subjectOnly).not.toBeNull()
+    expect(full).not.toBeNull()
+    expect(
+      full!.normalizedPropertyKey.startsWith(subjectOnly!.normalizedPropertyKey)
+    ).toBe(true)
+  })
+
+  it("returns addressMissing=true when the input is a property name only", () => {
+    const result = normalizeBuildoutProperty(
+      "Rockets | Gourmet Wraps & Sodas",
+      "Listing Address Rockets | Gourmet Wraps & Sodas, Billings, MT"
+    )
+    expect(result?.addressMissing).toBe(true)
+    expect(result?.normalizedPropertyKey).toBeTruthy()
+  })
+})
