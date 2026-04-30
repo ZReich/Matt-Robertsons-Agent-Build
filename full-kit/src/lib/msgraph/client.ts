@@ -50,13 +50,16 @@ export async function graphFetch<T>(
   path: string,
   options: GraphFetchOptions = {}
 ): Promise<T> {
-  return doGraphFetch<T>(path, options, /*isRetry*/ false)
+  return doGraphFetch<T>(path, options, 0)
 }
+
+const MAX_TRANSIENT_RETRIES = 3
+const MAX_AUTH_RETRIES = 1
 
 async function doGraphFetch<T>(
   path: string,
   options: GraphFetchOptions,
-  isRetry: boolean
+  attempt: number
 ): Promise<T> {
   const tm = activeTokenManager()
   const token = await tm.getAccessToken()
@@ -105,10 +108,10 @@ async function doGraphFetch<T>(
       body,
     })
   } catch (networkErr) {
-    // Network failure: retry once, then give up.
-    if (!isRetry) {
-      await sleep(RETRY_AFTER_DEFAULT_MS)
-      return doGraphFetch<T>(path, options, /*isRetry*/ true)
+    // Network failure: exponential backoff up to MAX_TRANSIENT_RETRIES.
+    if (attempt < MAX_TRANSIENT_RETRIES) {
+      await sleep(backoffDelay(attempt))
+      return doGraphFetch<T>(path, options, attempt + 1)
     }
     throw new GraphError(
       0,
@@ -136,9 +139,9 @@ async function doGraphFetch<T>(
   }
 
   // --- error handling ---
-  if (res.status === 401 && !isRetry) {
+  if (res.status === 401 && attempt < MAX_AUTH_RETRIES) {
     tm.invalidate()
-    return doGraphFetch<T>(path, options, /*isRetry*/ true)
+    return doGraphFetch<T>(path, options, attempt + 1)
   }
 
   if (res.status === 403) {
@@ -147,18 +150,27 @@ async function doGraphFetch<T>(
 
   if (
     (res.status === 429 || res.status === 503 || res.status === 504) &&
-    !isRetry
+    attempt < MAX_TRANSIENT_RETRIES
   ) {
-    const waitMs = parseRetryAfter(
+    // Honor Retry-After when Graph sends one (typical for 429), else
+    // exponential backoff. 504s on delta endpoints rarely include a
+    // Retry-After but often clear after 5–15s.
+    const headerWaitMs = parseRetryAfter(
       res.headers.get("Retry-After"),
-      RETRY_AFTER_DEFAULT_MS,
+      0,
       RETRY_AFTER_MAX_MS
     )
+    const waitMs = headerWaitMs > 0 ? headerWaitMs : backoffDelay(attempt)
     await sleep(waitMs)
-    return doGraphFetch<T>(path, options, /*isRetry*/ true)
+    return doGraphFetch<T>(path, options, attempt + 1)
   }
 
   throw await buildGraphError(res, path)
+}
+
+function backoffDelay(attempt: number): number {
+  const delay = RETRY_AFTER_DEFAULT_MS * Math.pow(2, attempt)
+  return Math.min(delay, RETRY_AFTER_MAX_MS)
 }
 
 async function buildGraphError(
