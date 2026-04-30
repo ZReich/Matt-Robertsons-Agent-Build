@@ -1,4 +1,5 @@
 import { normalizeBuildoutProperty } from "@/lib/buildout/property-normalizer"
+import { parseBuildoutStageTransition } from "@/lib/msgraph/buildout-stage-parser"
 
 export interface ExtractorInput {
   subject: string | null | undefined
@@ -173,6 +174,8 @@ export interface BuildoutEventExtract {
   viewer?: InquirerInfo
   newStage?: string
   previousStage?: string
+  fromStageRaw?: string
+  toStageRaw?: string
   taskTitle?: string
   taskDueDate?: string
   taskAssignee?: string
@@ -238,11 +241,18 @@ export function extractBuildoutEvent(
     m = subject.match(BUILDOUT_STAGE)
     if (m) {
       const stage = parseBuildoutStageBody(input.bodyText)
+      const transition = parseBuildoutStageTransition(input.bodyText)
       result = {
         kind: "deal-stage-update",
         propertyName: m[1].trim(),
         previousStage: stage.previousStage,
         newStage: stage.newStage,
+        ...(transition?.fromStageRaw
+          ? { fromStageRaw: transition.fromStageRaw }
+          : {}),
+        ...(transition?.toStageRaw
+          ? { toStageRaw: transition.toStageRaw }
+          : {}),
       }
     }
   }
