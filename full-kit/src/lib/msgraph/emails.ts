@@ -20,6 +20,8 @@ import type {
 import type { NormalizedSender } from "./sender-normalize"
 
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
+import { proposeBuyerRepDeal } from "@/lib/deals/buyer-rep-action"
+import { classifyBuyerRepSignal } from "@/lib/deals/buyer-rep-detector"
 import {
   CONTACT_AUTO_PROMOTION_POLICY_VERSION,
   evaluateContactAutoPromotion,
@@ -405,6 +407,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   contactCreated: boolean
   leadContactId: string | null
   leadCreated: boolean
+  communicationId: string | null
+  contactId: string | null
 }> {
   const direction = p.folder === "inbox" ? "inbound" : "outbound"
   const storeBody = p.acquisition.bodyDecision === "fetch_body"
@@ -429,6 +433,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       contactCreated: false,
       leadContactId: p.leadContactId,
       leadCreated: false,
+      communicationId: null,
+      contactId: p.contactId,
     }
   }
 
@@ -488,6 +494,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   let resolvedLeadContactId = p.leadContactId
   let resolvedLeadCreated = p.leadCreated
   let resolvedContactCreated = false
+  let resolvedCommunicationId: string | null = null
 
   await db.$transaction(async (tx) => {
     const sync = await tx.externalSync.create({
@@ -536,6 +543,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       },
       select: { id: true },
     })
+    resolvedCommunicationId = comm.id
     await tx.externalSync.update({
       where: { id: sync.id },
       data: { entityId: comm.id },
@@ -594,6 +602,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
     contactCreated: resolvedContactCreated,
     leadContactId: resolvedLeadContactId,
     leadCreated: resolvedLeadCreated,
+    communicationId: resolvedCommunicationId,
+    contactId: resolvedContactId,
   }
 }
 
@@ -1226,6 +1236,36 @@ export async function processOneMessage(
         leadContactId,
         leadCreated,
       })
+
+      // Buyer-rep deal detection — only outbound emails to a linked contact.
+      // Detector is pure; if a tour or LOI signal fires, propose a create-deal
+      // AgentAction at the approval tier.
+      if (
+        persisted.inserted &&
+        persisted.communicationId &&
+        persisted.contactId &&
+        folder === "sentitems"
+      ) {
+        const recipientDomains = extractRecipientDomains(
+          workingMessage.toRecipients ?? []
+        )
+        const signal = classifyBuyerRepSignal({
+          direction: "outbound",
+          subject: workingMessage.subject ?? "",
+          body: workingMessage.body?.content ?? "",
+          recipientDomains,
+        })
+        if (signal.signalType && signal.proposedStage) {
+          await proposeBuyerRepDeal({
+            communicationId: persisted.communicationId,
+            contactId: persisted.contactId,
+            signalType: signal.signalType,
+            proposedStage: signal.proposedStage,
+            confidence: signal.confidence,
+          })
+        }
+      }
+
       return {
         classification: classification.classification,
         extractedPlatform: extracted?.platform ?? null,
@@ -1532,4 +1572,19 @@ export async function syncEmails(
   } finally {
     await releaseAdvisoryLock()
   }
+}
+
+// Pull recipient domains from a Graph toRecipients array. Returns lower-cased
+// domains, deduped. Used by the buyer-rep detector hook in processOneMessage.
+function extractRecipientDomains(
+  toRecipients: ReadonlyArray<{ emailAddress?: { address?: string } }>
+): string[] {
+  const out = new Set<string>()
+  for (const r of toRecipients ?? []) {
+    const addr = r?.emailAddress?.address?.trim().toLowerCase()
+    if (!addr || !addr.includes("@")) continue
+    const domain = addr.split("@")[1]
+    if (domain) out.add(domain)
+  }
+  return Array.from(out)
 }

@@ -39,6 +39,9 @@ vi.mock("@/lib/prisma", () => ({
       findMany: vi.fn(),
       update: vi.fn(),
     },
+    agentAction: {
+      create: vi.fn(),
+    },
     $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
     $transaction: vi.fn(),
@@ -633,5 +636,78 @@ describe("processOneMessage contact safety", () => {
         data: expect.objectContaining({ contactId: null }),
       })
     )
+  })
+})
+
+describe("processOneMessage buyer-rep signal hook", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    delete process.env.CONTACT_AUTO_PROMOTION_MODE
+    ;(db.contact.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "contact-broker" },
+    ])
+    ;(db.communication.count as ReturnType<typeof vi.fn>).mockResolvedValue(0)
+    ;(db.communication.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      []
+    )
+    ;(db.externalSync.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
+      null
+    )
+    ;(db.$transaction as ReturnType<typeof vi.fn>).mockImplementation((fn) =>
+      fn(db)
+    )
+    ;(db.externalSync.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "sync-br",
+    })
+    ;(db.communication.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "comm-br",
+    })
+    ;(db.externalSync.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    ;(db.communication.update as ReturnType<typeof vi.fn>).mockResolvedValue({})
+    ;(db.agentAction.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "action-br",
+    })
+  })
+
+  it("proposes a create-deal AgentAction for outbound LOI emails to broker domains", async () => {
+    await processOneMessage(
+      {
+        id: "outbound-loi-1",
+        sentDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-loi-1",
+        subject: "LOI draft for 303 N Broadway",
+        from: {
+          emailAddress: {
+            name: "Matt",
+            address: "matt@naibusinessproperties.com",
+          },
+        },
+        toRecipients: [
+          { emailAddress: { address: "agent@cushwake.com", name: "Agent" } },
+        ],
+        body: {
+          contentType: "text",
+          content: "Attached is the letter of intent for our review.",
+        },
+      },
+      "sentitems",
+      "observe"
+    )
+
+    expect(db.agentAction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actionType: "create-deal",
+        tier: "approve",
+        sourceCommunicationId: "comm-br",
+        payload: expect.objectContaining({
+          contactId: "contact-broker",
+          dealType: "buyer_rep",
+          dealSource: "buyer_rep_inferred",
+          stage: "offer",
+          signalType: "loi",
+        }),
+      }),
+    })
   })
 })
