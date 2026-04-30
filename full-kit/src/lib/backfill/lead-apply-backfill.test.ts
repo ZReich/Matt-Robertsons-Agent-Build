@@ -1,10 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { upsertDealForLead } from "@/lib/deals/lead-to-deal"
+
 import { runLeadApplyBackfill } from "./lead-apply-backfill"
+
+vi.mock("@/lib/deals/lead-to-deal", () => ({
+  upsertDealForLead: vi.fn(async () => ({ dealId: null, created: false })),
+}))
+
+const upsertDealForLeadMock = upsertDealForLead as unknown as ReturnType<
+  typeof vi.fn
+>
 
 describe("lead-apply-backfill", () => {
   beforeEach(() => {
     delete process.env.CONTACT_AUTO_PROMOTION_MODE
+    upsertDealForLeadMock.mockClear()
+    upsertDealForLeadMock.mockImplementation(async () => ({
+      dealId: null,
+      created: false,
+    }))
   })
 
   it("dry-runs confirmed signal extractor-email rows without writes", async () => {
@@ -509,6 +524,40 @@ describe("lead-apply-backfill", () => {
         client: makeClient({ rows: [], contacts: [] }) as never,
       })
     ).rejects.toThrow("limit must be <= 100")
+  })
+
+  it("calls upsertDealForLead with extracted propertyKey when creating a Buildout lead Contact", async () => {
+    const client = makeClient({
+      rows: [
+        leadRow({
+          id: "comm-bld-1",
+          subject:
+            "303 North Broadway - Information Requested by Shae Nielsen",
+          body: "Listing Address 303 North Broadway, Billings, MT 59101\nProfile information on file for Shae Nielsen: Email shae@example.com Phone 406.555.0100",
+          metadata: {
+            classification: "signal",
+            source: "buildout-lead",
+            from: { address: "support@buildout.com" },
+          },
+        }),
+      ],
+      contacts: [],
+    })
+
+    await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-apply" },
+      client: client as never,
+    })
+
+    expect(upsertDealForLeadMock).toHaveBeenCalledTimes(1)
+    expect(upsertDealForLeadMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contactId: "contact-created",
+        communicationId: "comm-bld-1",
+        propertySource: "buildout",
+        propertyKey: expect.stringContaining("broadway"),
+      })
+    )
   })
 
   it("reports race-lost when communication contact changes before update", async () => {

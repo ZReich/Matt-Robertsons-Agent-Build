@@ -7,6 +7,7 @@ import {
   hasRealAttachmentEvidenceFromMetadata,
   readContactAutoPromotionMode,
 } from "@/lib/contact-auto-promotion-policy"
+import { upsertDealForLead } from "@/lib/deals/lead-to-deal"
 import {
   extractBuildoutEvent,
   extractCrexiLead,
@@ -94,6 +95,10 @@ type ExtractedLead = {
   leadSource: LeadSource
   kind: string
   inquirer: InquirerInfo & { email: string }
+  propertyKey?: string
+  propertyAddress?: string
+  propertyAliases?: string[]
+  propertyAddressMissing?: boolean
 }
 
 type SenderCandidate = {
@@ -518,7 +523,7 @@ async function createLeadContact(
   result: LeadApplyBackfillResult,
   client: DbLike
 ): Promise<void> {
-  await client.$transaction(async (tx) => {
+  const linkedContactId = await client.$transaction(async (tx) => {
     await tx.$executeRaw`
       SELECT pg_advisory_xact_lock(hashtext(${"platform-lead-email:" + extracted.inquirer.email}))
     `
@@ -535,7 +540,7 @@ async function createLeadContact(
         platform: extracted.platform,
         extracted,
       })
-      return
+      return null
     }
     const duplicate = duplicates[0] ?? null
     if (duplicate) {
@@ -567,7 +572,7 @@ async function createLeadContact(
           extracted,
           contactId: duplicate.id,
         })
-        return
+        return null
       }
       result.communicationLinked += 1
       record(result, row, "linked_existing_contact", {
@@ -575,7 +580,7 @@ async function createLeadContact(
         extracted,
         contactId: duplicate.id,
       })
-      return
+      return duplicate.id
     }
 
     const [currentCommunication] = await tx.$queryRaw<
@@ -592,7 +597,7 @@ async function createLeadContact(
         extracted,
         contactId: currentCommunication?.contactId ?? null,
       })
-      return
+      return null
     }
 
     const contact = await tx.contact.create({
@@ -643,7 +648,7 @@ async function createLeadContact(
         extracted,
         contactId: contact.id,
       })
-      return
+      return null
     }
     result.createdLeadContacts += 1
     result.communicationLinked += 1
@@ -652,7 +657,24 @@ async function createLeadContact(
       extracted,
       contactId: contact.id,
     })
+    return contact.id
   })
+
+  // After the contact is linked to the communication, propagate to a Deal if
+  // the extractor surfaced a propertyKey. The function is a no-op when
+  // propertyKey is null (e.g., named-only addresses or non-property events).
+  if (
+    linkedContactId &&
+    (extracted.propertyKey || extracted.propertyAddress)
+  ) {
+    await upsertDealForLead({
+      contactId: linkedContactId,
+      communicationId: row.id,
+      propertyKey: extracted.propertyKey ?? null,
+      propertyAddress: extracted.propertyAddress ?? null,
+      propertySource: extracted.platform,
+    })
+  }
 }
 
 async function createSenderContact(
@@ -825,7 +847,7 @@ async function linkExistingContact(
   result: LeadApplyBackfillResult,
   client: DbLike
 ): Promise<void> {
-  await client.$transaction(async (tx) => {
+  const linked = await client.$transaction(async (tx) => {
     const update = await tx.communication.updateMany({
       where: {
         id: row.id,
@@ -854,7 +876,7 @@ async function linkExistingContact(
         extracted,
         contactId,
       })
-      return
+      return false
     }
     result.communicationLinked += 1
     record(result, row, "linked_existing_contact", {
@@ -862,7 +884,22 @@ async function linkExistingContact(
       extracted,
       contactId,
     })
+    return true
   })
+
+  // When an existing Contact gets linked to a Crexi/LoopNet/Buildout lead
+  // communication, the same propertyKey-driven Deal upsert should fire so the
+  // Communication.dealId is populated and the Contact's role lifecycle reflects
+  // active listing involvement.
+  if (linked && (extracted.propertyKey || extracted.propertyAddress)) {
+    await upsertDealForLead({
+      contactId,
+      communicationId: row.id,
+      propertyKey: extracted.propertyKey ?? null,
+      propertyAddress: extracted.propertyAddress ?? null,
+      propertySource: extracted.platform,
+    })
+  }
 }
 
 async function linkExistingSenderContact(
@@ -1113,6 +1150,10 @@ function extractLead(row: CommunicationRow): ExtractedLead | null {
       ...extracted.inquirer,
       email: extracted.inquirer.email.trim().toLowerCase(),
     },
+    propertyKey: extracted.propertyKey,
+    propertyAddress: extracted.propertyAddress,
+    propertyAliases: extracted.propertyAliases,
+    propertyAddressMissing: extracted.propertyAddressMissing,
   }
 }
 
