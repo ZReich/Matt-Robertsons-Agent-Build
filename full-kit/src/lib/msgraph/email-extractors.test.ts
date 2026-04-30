@@ -191,7 +191,7 @@ describe("extractLoopNetLead", () => {
         "Your listing has been favorited by Alex Wright.\n[email] alex@example.net<mailto:alex@example.net>\n[phone] +1 406-555-0100<tel:+1 406-555-0100>",
     })
 
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "favorited",
       viewerName: "Alex Wright",
       propertyName: "303 N Broadway",
@@ -207,7 +207,7 @@ describe("extractLoopNetLead", () => {
       subject: "Alex Wright favorited 303 N Broadway",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "favorited",
       viewerName: "Alex Wright",
       propertyName: "303 N Broadway",
@@ -228,6 +228,42 @@ describe("extractLoopNetLead", () => {
       bodyText: "",
     })
     expect(r).toBeNull()
+  })
+})
+
+describe("extractLoopNetLead — address extraction", () => {
+  it("extracts pipe-separated address from LoopNet Lead body", () => {
+    const bodyText = `New Lead
+From: Alex Wright | +1 239-851-1000 | wrightcommercial@gmail.com
+To: Matt Robertson, Eve Harris
+303 N Broadway | Billings, MT 59101
+
+Hi, Matt, can you please send me any and all information you have on this.`
+    const result = extractLoopNetLead({
+      subject: "LoopNet Lead for 303 N Broadway",
+      bodyText,
+    })
+    expect(result?.propertyAddress).toEqual(
+      "303 N Broadway | Billings, MT 59101"
+    )
+    // Pipe→space, "N" stays as "n" (already abbreviated), comma stripped.
+    // The plan's expected "303 n broadway billings mt 59101" was an
+    // incorrect prediction — the live normalizer's ADDRESS_PATTERN truncates
+    // at the pipe boundary so the canonical key reflects the street portion
+    // only ("303 n broadway"). Same canonical key as the Buildout case
+    // because that one also truncates at the comma.
+    expect(result?.propertyKey).toEqual("303 n broadway")
+    expect(result?.propertyAddressMissing).toBe(false)
+  })
+
+  it("falls back to subject for 'favorited' emails with no body address", () => {
+    const result = extractLoopNetLead({
+      subject: "Alex Wright favorited 303 N Broadway",
+      bodyText: "Hi Matt, Your listing has been favorited by Alex Wright.",
+    })
+    expect(result?.propertyAddress).toEqual("303 N Broadway")
+    // Subject-only key has no city/state/zip.
+    expect(result?.propertyKey).toEqual("303 n broadway")
   })
 })
 

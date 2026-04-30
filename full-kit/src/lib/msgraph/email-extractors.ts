@@ -112,6 +112,10 @@ export function extractCrexiLead(
 export interface LoopNetLeadExtract {
   kind: "inquiry" | "favorited"
   propertyName: string
+  propertyAddress?: string
+  propertyKey?: string
+  propertyAliases?: string[]
+  propertyAddressMissing?: boolean
   inquirer?: InquirerInfo
   viewerName?: string
 }
@@ -128,28 +132,62 @@ export function extractLoopNetLead(
 
   if (LOOPNET_SELF_CONFIRM.test(subject)) return null
 
+  let result: LoopNetLeadExtract | null = null
+
   let m = subject.match(LOOPNET_INQUIRY)
   if (m) {
     const inquirer = parseInquirerBody(input.bodyText)
-    return {
+    result = {
       kind: "inquiry",
       propertyName: m[1].trim(),
       ...(inquirer ? { inquirer } : {}),
     }
   }
 
-  m = subject.match(LOOPNET_FAVORITED)
-  if (m) {
-    const inquirer = parseInquirerBody(input.bodyText)
-    return {
-      kind: "favorited",
-      viewerName: m[1].trim(),
-      propertyName: m[2].trim(),
-      ...(inquirer ? { inquirer } : {}),
+  if (!result) {
+    m = subject.match(LOOPNET_FAVORITED)
+    if (m) {
+      const inquirer = parseInquirerBody(input.bodyText)
+      result = {
+        kind: "favorited",
+        viewerName: m[1].trim(),
+        propertyName: m[2].trim(),
+        ...(inquirer ? { inquirer } : {}),
+      }
     }
   }
 
-  return null
+  if (!result) return null
+
+  // LoopNet "Lead" emails: a line of "${street} | ${city}, ${state} ${zip}"
+  let addressLine: string | null = null
+  const pipeLineMatch = input.bodyText.match(
+    /^([0-9][^\r\n|]*?\s\|\s[A-Z][^\r\n]+?,\s[A-Z]{2}\s\d{5})/m
+  )
+  if (pipeLineMatch) {
+    addressLine = pipeLineMatch[1].trim()
+  } else {
+    // "Favorited" emails — fall back to subject
+    const subjectMatch = subject.match(/favorited\s+(.+)$/i)
+    if (subjectMatch) addressLine = subjectMatch[1].trim()
+  }
+  if (addressLine) {
+    const normalized = normalizeBuildoutProperty(
+      result.propertyName ?? addressLine,
+      addressLine
+    )
+    if (normalized) {
+      // Prefer the matched line ("303 N Broadway | Billings, MT 59101") over
+      // normalized.propertyAddressRaw, which is the regex-extracted street
+      // portion only ("303 N Broadway") — same reason as the Buildout extractor.
+      result.propertyAddress = addressLine
+      result.propertyKey = normalized.normalizedPropertyKey
+      result.propertyAliases = normalized.aliases
+      result.propertyAddressMissing = normalized.addressMissing
+    }
+  }
+
+  return result
 }
 
 export interface BuildoutEventExtract {
