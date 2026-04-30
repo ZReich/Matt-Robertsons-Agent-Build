@@ -16,6 +16,10 @@ export interface InquirerInfo {
 export interface CrexiLeadExtract {
   kind: "new-leads-count" | "inquiry" | "team-note"
   propertyName?: string
+  propertyAddress?: string
+  propertyKey?: string
+  propertyAliases?: string[]
+  propertyAddressMissing?: boolean
   leadCount?: number
   cityOrMarket?: string
   inquirerName?: string
@@ -35,45 +39,73 @@ export function extractCrexiLead(
   const subject = (input.subject ?? "").trim()
   if (!subject) return null
 
+  let result: CrexiLeadExtract | null = null
+
   let m = subject.match(CREXI_COUNT_LEADS)
   if (m) {
-    return {
+    result = {
       kind: "new-leads-count",
       leadCount: Number.parseInt(m[1], 10),
       propertyName: m[2].trim(),
     }
   }
 
-  m = subject.match(CREXI_INQUIRY_SUBJECT)
-  if (m) {
+  if (!result) {
+    m = subject.match(CREXI_INQUIRY_SUBJECT)
+    if (m) {
+      const inquirer = parseInquirerBody(input.bodyText)
+      result = {
+        kind: "inquiry",
+        inquirerName: m[1].trim(),
+        propertyName: m[2].trim(),
+        cityOrMarket: m[3].trim(),
+        ...(inquirer ? { inquirer } : {}),
+      }
+    }
+  }
+
+  if (!result && CREXI_GENERIC_NEW_LEADS.test(subject)) {
     const inquirer = parseInquirerBody(input.bodyText)
-    return {
+    result = {
       kind: "inquiry",
-      inquirerName: m[1].trim(),
-      propertyName: m[2].trim(),
-      cityOrMarket: m[3].trim(),
       ...(inquirer ? { inquirer } : {}),
     }
   }
 
-  if (CREXI_GENERIC_NEW_LEADS.test(subject)) {
-    const inquirer = parseInquirerBody(input.bodyText)
-    return {
-      kind: "inquiry",
-      ...(inquirer ? { inquirer } : {}),
+  if (!result) {
+    m = subject.match(CREXI_TEAM_NOTE)
+    if (m) {
+      result = {
+        kind: "team-note",
+        noteAuthor: m[1].trim(),
+        propertyName: m[2].trim(),
+      }
     }
   }
 
-  m = subject.match(CREXI_TEAM_NOTE)
-  if (m) {
-    return {
-      kind: "team-note",
-      noteAuthor: m[1].trim(),
-      propertyName: m[2].trim(),
-    }
+  if (!result) return null
+
+  // Crexi inquiry bodies start with "Regarding listing at <full address>".
+  // Route through normalizeBuildoutProperty for canonical-key derivation —
+  // same single source of truth as the Buildout extractor.
+  const addressMatch = input.bodyText.match(
+    /Regarding listing at\s+(.+?)(?:\r?\n|<|$)/
+  )
+  const addressFromLabel = addressMatch?.[1]?.trim()
+  const normalized = normalizeBuildoutProperty(
+    result.propertyName ?? addressFromLabel ?? "",
+    addressFromLabel ?? input.bodyText
+  )
+  if (normalized) {
+    // Prefer the labeled full line over normalized.propertyAddressRaw
+    // (which is only the regex-extracted street portion).
+    result.propertyAddress = addressFromLabel ?? normalized.propertyAddressRaw
+    result.propertyKey = normalized.normalizedPropertyKey
+    result.propertyAliases = normalized.aliases
+    result.propertyAddressMissing = normalized.addressMissing
   }
 
-  return null
+  return result
 }
 
 export interface LoopNetLeadExtract {

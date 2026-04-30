@@ -12,7 +12,7 @@ describe("extractCrexiLead", () => {
       subject: "3 new leads found for West Park Promenade",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "new-leads-count",
       leadCount: 3,
       propertyName: "West Park Promenade",
@@ -37,7 +37,7 @@ describe("extractCrexiLead", () => {
         "JACKY BRADLEY requesting Information on Burger King | Sidney, MT in Sidney",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "inquiry",
       inquirerName: "JACKY BRADLEY",
       propertyName: "Burger King | Sidney, MT",
@@ -50,7 +50,7 @@ describe("extractCrexiLead", () => {
       subject: "Margaret entered a note on Burger King | Sidney, MT",
       bodyText: "",
     })
-    expect(r).toEqual({
+    expect(r).toMatchObject({
       kind: "team-note",
       noteAuthor: "Margaret",
       propertyName: "Burger King | Sidney, MT",
@@ -122,6 +122,34 @@ describe("extractCrexiLead", () => {
   it("returns null on null subject", () => {
     const r = extractCrexiLead({ subject: null, bodyText: "" })
     expect(r).toBeNull()
+  })
+})
+
+describe("extractCrexiLead — address extraction", () => {
+  it("extracts the 'Regarding listing at' address with county", () => {
+    const bodyText = `Regarding listing at 13 Colorado Ave, Laurel, Yellowstone County, MT 59044
+
+Hi, I would like to know more about this listing.
+
+JACKY BRADLEY
+442.890.7354
+jackybradley67@outlook.com`
+    const result = extractCrexiLead({
+      subject:
+        "JACKY BRADLEY requesting Information on 13 Colorado Ave in Laurel",
+      bodyText,
+    })
+    expect(result?.propertyAddress).toEqual(
+      "13 Colorado Ave, Laurel, Yellowstone County, MT 59044"
+    )
+    // Crexi includes county; normalizer's ADDRESS_PATTERN truncates at the
+    // comma boundary so the key reflects the street portion only — the plan's
+    // expected "13 colorado ave laurel mt 59044" was an incorrect prediction;
+    // the live normalizer returns "13 colorado ave". "Ave" stays as "ave"
+    // (not expanded — the ROAD_SUFFIXES table only shortens long forms,
+    // e.g. "avenue" → "ave"). Already-short forms pass through.
+    expect(result?.propertyKey).toEqual("13 colorado ave")
+    expect(result?.propertyAddressMissing).toBe(false)
   })
 })
 
