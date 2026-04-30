@@ -7,6 +7,7 @@ import type { ChangePasswordFormType } from "../../../types"
 
 import { ChangePasswordSchema } from "../_schemas/chnage-password-schema"
 
+import { toast } from "@/hooks/use-toast"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -30,7 +31,40 @@ export function ChangePasswordForm() {
 
   const { isSubmitting } = form.formState
 
-  async function onSubmit(_data: ChangePasswordFormType) {}
+  async function onSubmit(data: ChangePasswordFormType) {
+    if (data.newPassword !== data.confirmPassword) {
+      form.setError("confirmPassword", {
+        message: "New password and confirmation do not match.",
+      })
+      return
+    }
+
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      const payload = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(payload?.message ?? "Failed to update password.")
+      }
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed.",
+      })
+      form.reset()
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Could not update password",
+        description: error instanceof Error ? error.message : undefined,
+      })
+    }
+  }
 
   return (
     <Form {...form}>
