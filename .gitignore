@@ -70,3 +70,4 @@ full-kit/recon-output/recon-senders.json
 # Local runtime and audit export artifacts
 full-kit/.next-*.log
 full-kit/exports/
+.codex-runtime/
