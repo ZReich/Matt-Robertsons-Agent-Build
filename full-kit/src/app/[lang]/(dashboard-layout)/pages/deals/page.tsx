@@ -41,11 +41,11 @@ export default async function DealsPage({
   const dealsRaw = await db.deal.findMany({
     where: {
       archivedAt: null,
-      // Board surfaces only seller-rep deals with a parsed property; buyer-rep
-      // and unparsed-property deals get their own surfaces later.
+      // Board surfaces seller-rep deals with at least an address; buyer-rep
+      // gets its own surface later. propertyType is allowed to be null while
+      // we wait on Buildout API integration to backfill it.
       dealType: "seller_rep",
       propertyAddress: { not: null },
-      propertyType: { not: null },
       ...(filters.propertyType ? { propertyType: filters.propertyType } : {}),
       ...(filters.source ? { contact: { leadSource: filters.source } } : {}),
       ...(filters.search
@@ -159,7 +159,9 @@ export default async function DealsPage({
                           </p>
                           <div className="flex flex-wrap items-center gap-2">
                             <Badge className="border-0 bg-muted text-xs capitalize text-foreground">
-                              {deal.propertyType.replace(/_/g, " ")}
+                              {deal.propertyType
+                                ? deal.propertyType.replace(/_/g, " ")
+                                : "Type pending"}
                             </Badge>
                             {deal.ageInStageDays !== null ? (
                               <span className="flex items-center gap-1 text-xs text-muted-foreground">

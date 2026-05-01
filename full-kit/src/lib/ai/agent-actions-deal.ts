@@ -55,44 +55,47 @@ export async function moveDealStageFromAction(
   reviewer: string
 ): Promise<AgentActionReviewResult> {
   const payload = action.payload as MoveStagePayload
-  const deal = await db.deal.findUnique({
-    where: { id: payload.dealId },
-    select: { id: true, stage: true },
-  })
-  if (!deal) {
-    throw new AgentActionReviewError(`deal ${payload.dealId} not found`, 404)
-  }
-  if (deal.stage !== payload.fromStage) {
-    throw new AgentActionReviewError(
-      `stage mismatch: deal is currently ${deal.stage}, action expected ${payload.fromStage}`,
-      409,
-      "stage_mismatch"
+
+  await db.$transaction(async (tx) => {
+    const deal = await tx.deal.findUnique({
+      where: { id: payload.dealId },
+      select: { id: true, stage: true, contactId: true },
+    })
+    if (!deal) {
+      throw new AgentActionReviewError(`deal ${payload.dealId} not found`, 404)
+    }
+    if (deal.stage !== payload.fromStage) {
+      throw new AgentActionReviewError(
+        `stage mismatch: deal is currently ${deal.stage}, action expected ${payload.fromStage}`,
+        409,
+        "stage_mismatch"
+      )
+    }
+
+    const data: Record<string, unknown> = {
+      stage: payload.toStage,
+      stageChangedAt: new Date(),
+    }
+    if (payload.toStage === "closed") {
+      data.closedAt = new Date()
+      if (payload.outcome) data.outcome = payload.outcome
+    }
+
+    await tx.deal.update({ where: { id: payload.dealId }, data })
+    await tx.agentAction.update({
+      where: { id: action.id },
+      data: { status: "executed", executedAt: new Date() },
+    })
+    await syncContactRoleFromDeals(
+      deal.contactId,
+      {
+        trigger: "deal_stage_change",
+        dealId: payload.dealId,
+        sourceAgentActionId: action.id,
+      },
+      tx
     )
-  }
-
-  const data: Record<string, unknown> = {
-    stage: payload.toStage,
-    stageChangedAt: new Date(),
-  }
-  if (payload.toStage === "closed") {
-    data.closedAt = new Date()
-    if (payload.outcome) data.outcome = payload.outcome
-  }
-
-  await db.deal.update({ where: { id: payload.dealId }, data })
-  await db.agentAction.update({
-    where: { id: action.id },
-    data: {
-      status: "executed",
-      executedAt: new Date(),
-    },
   })
-
-  const dealAfter = await db.deal.findUnique({
-    where: { id: payload.dealId },
-    select: { contactId: true },
-  })
-  if (dealAfter) await syncContactRoleFromDeals(dealAfter.contactId)
 
   return { status: "executed", todoId: payload.dealId, actionId: action.id }
 }

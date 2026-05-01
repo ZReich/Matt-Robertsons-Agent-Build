@@ -9,8 +9,8 @@ import {
   updateDealFromAction,
 } from "./agent-actions-deal"
 
-vi.mock("@/lib/prisma", () => ({
-  db: {
+vi.mock("@/lib/prisma", () => {
+  const dbMock = {
     deal: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -23,8 +23,18 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: vi.fn(),
       create: vi.fn(),
     },
-  },
-}))
+  }
+  return {
+    db: {
+      ...dbMock,
+      // $transaction passes the same db mock as the tx client so existing
+      // tests that mock `db.deal.findUnique` apply transparently.
+      $transaction: vi.fn(
+        async (fn: (tx: typeof dbMock) => Promise<unknown>) => fn(dbMock)
+      ),
+    },
+  }
+})
 
 vi.mock("@/lib/contacts/sync-contact-role", () => ({
   syncContactRoleFromDeals: vi.fn(),
@@ -47,12 +57,11 @@ describe("moveDealStageFromAction", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("transitions stage and stamps stageChangedAt", async () => {
-    dealFindUnique
-      .mockResolvedValueOnce({
-        id: "deal-1",
-        stage: "offer",
-      })
-      .mockResolvedValueOnce({ contactId: "contact-7" })
+    dealFindUnique.mockResolvedValueOnce({
+      id: "deal-1",
+      stage: "offer",
+      contactId: "contact-7",
+    })
     dealUpdate.mockResolvedValue({})
     agentActionUpdate.mockResolvedValue({})
 
@@ -77,7 +86,15 @@ describe("moveDealStageFromAction", () => {
         stageChangedAt: expect.any(Date),
       }),
     })
-    expect(syncContactRoleFromDeals).toHaveBeenCalledWith("contact-7")
+    expect(syncContactRoleFromDeals).toHaveBeenCalledWith(
+      "contact-7",
+      expect.objectContaining({
+        trigger: "deal_stage_change",
+        dealId: "deal-1",
+        sourceAgentActionId: "action-1",
+      }),
+      expect.anything()
+    )
   })
 
   it("rejects when fromStage doesn't match current stage (concurrency safety)", async () => {

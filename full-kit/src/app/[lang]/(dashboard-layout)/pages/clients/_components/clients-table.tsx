@@ -13,6 +13,8 @@ import { ArrowUpDown, ChevronDown, ChevronUp, Search } from "lucide-react"
 
 import type { ColumnDef, SortingState } from "@tanstack/react-table"
 
+import type { ClientType } from "@prisma/client"
+
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
@@ -25,7 +27,7 @@ import {
 } from "@/components/ui/table"
 
 export interface ClientRow {
-  slug: string
+  id: string
   name: string
   company: string
   email: string
@@ -33,6 +35,17 @@ export interface ClientRow {
   role: string
   activeDeals: number
   tags: string[]
+  clientType: ClientType | null
+}
+
+const CLIENT_TYPE_LABEL: Record<ClientType, string> = {
+  prospect: "Prospect",
+  active_listing_client: "Listing client",
+  active_buyer_rep_client: "Buyer-rep client",
+  past_client: "Past client",
+  cooperating_broker: "Cooperating broker",
+  service_provider: "Service provider",
+  other: "Other",
 }
 
 interface ClientsTableProps {
@@ -105,6 +118,19 @@ export function ClientsTable({ clients }: ClientsTableProps) {
             {(getValue() as string) || "—"}
           </span>
         ),
+      },
+      {
+        accessorKey: "clientType",
+        header: "Type",
+        cell: ({ getValue }) => {
+          const value = getValue() as ClientType | null
+          if (!value) return <span className="text-sm text-muted-foreground">—</span>
+          return (
+            <Badge variant="outline" className="text-xs">
+              {CLIENT_TYPE_LABEL[value]}
+            </Badge>
+          )
+        },
       },
       {
         accessorKey: "activeDeals",
@@ -206,7 +232,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                   key={row.id}
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() =>
-                    router.push(`/${lang}/pages/clients/${row.original.slug}`)
+                    router.push(`/${lang}/pages/contacts/${row.original.id}`)
                   }
                 >
                   {row.getVisibleCells().map((cell) => (

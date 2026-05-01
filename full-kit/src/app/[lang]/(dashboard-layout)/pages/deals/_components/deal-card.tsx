@@ -35,7 +35,9 @@ export function DealCard({ card }: { card: DealCardData }) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary" className="capitalize">
-              {card.propertyType.replace(/_/g, " ")}
+              {card.propertyType
+                ? card.propertyType.replace(/_/g, " ")
+                : "Type pending"}
             </Badge>
             <Badge variant="outline">{card.probability}%</Badge>
             {card.ageInStageDays !== null ? (
