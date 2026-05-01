@@ -167,6 +167,10 @@ export async function runLeadApplyBackfill({
     ...[...extractedById.values()].map((item) => item.inquirer.email),
     ...[...senderCandidateById.values()].map((item) => item.email),
   ])
+  const candidatesByDedupeKey = await loadPlatformLeadCandidatesByDedupeKey(
+    client,
+    [...extractedById.values()].map(platformLeadCandidateDedupeKey)
+  )
 
   if (dryRun) {
     for (const row of rows) {
@@ -175,6 +179,7 @@ export async function runLeadApplyBackfill({
         extractedById.get(row.id),
         senderCandidateById.get(row.id),
         contactsByEmail,
+        candidatesByDedupeKey,
         result
       )
     }
@@ -191,6 +196,7 @@ export async function runLeadApplyBackfill({
         extractedById.get(row.id),
         senderCandidateById.get(row.id),
         contactsByEmail,
+        candidatesByDedupeKey,
         result,
         client
       )
@@ -271,6 +277,7 @@ function planRow(
   extracted: ExtractedLead | undefined,
   senderCandidate: SenderCandidate | undefined,
   contactsByEmail: Map<string, ContactLookup[]>,
+  candidatesByDedupeKey: Map<string, { id: string; status: string }>,
   result: LeadApplyBackfillResult
 ): LeadApplyOutcome {
   const classification = metadataString(row.metadata, "classification")
@@ -307,7 +314,10 @@ function planRow(
     })
   }
   if (!contact) {
-    if (shouldAutoCreateLeadContact(extracted)) {
+    const existingCandidate = candidatesByDedupeKey.get(
+      platformLeadCandidateDedupeKey(extracted)
+    )
+    if (shouldAutoCreateLeadContact(extracted) && !existingCandidate) {
       return record(result, row, "would_create_lead_contact", {
         platform,
         extracted,
@@ -358,6 +368,7 @@ async function applyRow(
   extracted: ExtractedLead | undefined,
   senderCandidate: SenderCandidate | undefined,
   contactsByEmail: Map<string, ContactLookup[]>,
+  candidatesByDedupeKey: Map<string, { id: string; status: string }>,
   result: LeadApplyBackfillResult,
   client: DbLike
 ): Promise<void> {
@@ -366,6 +377,7 @@ async function applyRow(
     extracted,
     senderCandidate,
     contactsByEmail,
+    candidatesByDedupeKey,
     emptyResult(result.runId, true)
   )
   if (
@@ -1017,11 +1029,7 @@ async function upsertContactPromotionCandidate(
   extracted: ExtractedLead,
   runId: string
 ): Promise<{ created: boolean }> {
-  const dedupeKey = [
-    "platform-lead",
-    extracted.platform,
-    extracted.inquirer.email.trim().toLowerCase(),
-  ].join(":")
+  const dedupeKey = platformLeadCandidateDedupeKey(extracted)
   const existing = await tx.contactPromotionCandidate.findUnique({
     where: { dedupeKey },
     select: { id: true, metadata: true, status: true },
@@ -1257,11 +1265,28 @@ function platformToLeadSource(platform: LeadDiagnosticPlatform): LeadSource {
 }
 
 function shouldAutoCreateLeadContact(extracted: ExtractedLead): boolean {
-  return (
+  if (
     extracted.platform === "buildout" &&
     (extracted.kind === "new-lead" ||
       extracted.kind === "information-requested")
-  )
+  ) {
+    return true
+  }
+  if (
+    (extracted.platform === "loopnet" || extracted.platform === "crexi") &&
+    extracted.kind === "inquiry"
+  ) {
+    return true
+  }
+  return false
+}
+
+function platformLeadCandidateDedupeKey(extracted: ExtractedLead): string {
+  return [
+    "platform-lead",
+    extracted.platform,
+    extracted.inquirer.email.trim().toLowerCase(),
+  ].join(":")
 }
 
 // Whether this extractor result represents a real single-property inquiry —
@@ -1320,6 +1345,26 @@ async function loadContactsByEmail(
     const matches = map.get(key) ?? []
     matches.push(contact)
     map.set(key, matches)
+  }
+  return map
+}
+
+async function loadPlatformLeadCandidatesByDedupeKey(
+  client: DbLike,
+  dedupeKeys: string[]
+): Promise<Map<string, { id: string; status: string }>> {
+  const uniqueKeys = [...new Set(dedupeKeys)]
+  if (uniqueKeys.length === 0) return new Map()
+  const candidates = await client.contactPromotionCandidate.findMany({
+    where: { dedupeKey: { in: uniqueKeys } },
+    select: { id: true, dedupeKey: true, status: true },
+  })
+  const map = new Map<string, { id: string; status: string }>()
+  for (const candidate of candidates) {
+    map.set(candidate.dedupeKey, {
+      id: candidate.id,
+      status: candidate.status,
+    })
   }
   return map
 }

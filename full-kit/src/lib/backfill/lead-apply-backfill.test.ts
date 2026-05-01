@@ -50,14 +50,15 @@ describe("lead-apply-backfill", () => {
     })
 
     expect(result.byOutcome).toMatchObject({
-      would_create_contact_candidate: 1,
+      would_create_lead_contact: 1,
     })
+    expect(client.contact.create).not.toHaveBeenCalled()
     expect(client.contactPromotionCandidate.create).not.toHaveBeenCalled()
     expect(client.communication.updateMany).not.toHaveBeenCalled()
     expect(client.$queryRaw).not.toHaveBeenCalled()
   })
 
-  it("applies candidate creation without creating or linking a Contact", async () => {
+  it("auto-creates a lead Contact for LoopNet inquiries without an existing candidate", async () => {
     const client = makeClient({ rows: [leadRow()], contacts: [] })
 
     const result = await runLeadApplyBackfill({
@@ -65,25 +66,54 @@ describe("lead-apply-backfill", () => {
       client: client as never,
     })
 
-    expect(result.byOutcome).toMatchObject({ created_contact_candidate: 1 })
-    expect(result.createdLeadContacts).toBe(0)
-    expect(result.createdContactCandidates).toBe(1)
-    expect(result.communicationLinked).toBe(0)
-    expect(client.$queryRaw).toHaveBeenCalledTimes(2)
-    expect(client.$transaction).toHaveBeenCalledTimes(1)
-    expect(client.contactPromotionCandidate.create).toHaveBeenCalledWith(
+    expect(result.byOutcome).toMatchObject({ created_lead_contact: 1 })
+    expect(result.createdLeadContacts).toBe(1)
+    expect(result.createdContactCandidates).toBe(0)
+    expect(result.communicationLinked).toBe(1)
+    expect(client.contact.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          normalizedEmail: "dana@example.com",
-          sourcePlatform: "loopnet",
-          communicationId: "comm-1",
-          metadata: expect.objectContaining({
-            communicationIds: ["comm-1"],
-          }),
+          email: "dana@example.com",
+          leadSource: "loopnet",
+          leadStatus: "new",
         }),
       })
     )
-    expect(client.communication.updateMany).not.toHaveBeenCalled()
+    expect(client.contactPromotionCandidate.create).not.toHaveBeenCalled()
+    expect(client.communication.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          contactId: "contact-created",
+        }),
+      })
+    )
+  })
+
+  it("routes LoopNet inquiries with an existing candidate through the candidate-update path", async () => {
+    // Regression guard: even though shouldAutoCreateLeadContact returns true
+    // for LoopNet inquiries, the presence of a ContactPromotionCandidate row
+    // for the same dedupeKey means the candidate-update path must own this
+    // communication so the existing candidate isn't orphaned.
+    const client = makeClient({
+      rows: [leadRow({ id: "comm-existing-cand" })],
+      contacts: [],
+      existingCandidate: {
+        id: "candidate-1",
+        status: "pending",
+        metadata: { firstCommunicationId: "comm-prior" },
+      },
+    })
+
+    const result = await runLeadApplyBackfill({
+      request: { dryRun: false, limit: 25, runId: "run-apply" },
+      client: client as never,
+    })
+
+    expect(result.byOutcome).toMatchObject({ updated_contact_candidate: 1 })
+    expect(result.createdLeadContacts).toBe(0)
+    expect(client.contact.create).not.toHaveBeenCalled()
+    expect(client.contactPromotionCandidate.create).not.toHaveBeenCalled()
+    expect(client.contactPromotionCandidate.update).toHaveBeenCalled()
   })
 
   it("dry-runs unknown non-platform signal senders as contact candidates", async () => {
@@ -819,6 +849,19 @@ function makeClient({
     },
     contactPromotionCandidate: {
       findUnique: vi.fn(async () => existingCandidate),
+      findMany: vi.fn(async () => {
+        const c = existingCandidate as
+          | { id: string; status: string; dedupeKey?: string }
+          | null
+        if (!c) return []
+        return [
+          {
+            id: c.id,
+            status: c.status,
+            dedupeKey: c.dedupeKey ?? "platform-lead:loopnet:dana@example.com",
+          },
+        ]
+      }),
       create: vi.fn(async () => ({ id: "candidate-1" })),
       update: vi.fn(async () => ({ id: "candidate-1" })),
     },
