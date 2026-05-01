@@ -32,17 +32,22 @@ type CandidateActionsProps = {
   candidateId: string
   contacts: ContactChoice[]
   preferredContactId?: string | null
+  hasMatchingContact: boolean
 }
 
 export function CandidateActions({
   candidateId,
   contacts,
   preferredContactId,
+  hasMatchingContact,
 }: CandidateActionsProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  // Only pre-select when there's an actual matching Contact. Otherwise leave
+  // the dropdown empty so an arbitrary alphabetical-first contact isn't
+  // mistaken for a system suggestion.
   const [contactId, setContactId] = useState(
-    preferredContactId ?? contacts[0]?.id ?? ""
+    hasMatchingContact ? (preferredContactId ?? "") : ""
   )
   const [reason, setReason] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -123,33 +128,42 @@ export function CandidateActions({
         </Button>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-        <Select value={contactId} onValueChange={setContactId}>
-          <SelectTrigger aria-label="Contact to link">
-            <SelectValue placeholder="Choose an existing Contact" />
-          </SelectTrigger>
-          <SelectContent>
-            {contactOptions.map((contact) => (
-              <SelectItem key={contact.id} value={contact.id}>
-                {contact.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={isPending || !contactId}
-          onClick={() =>
-            runAction("approve_link_contact", {
-              contactId,
-              reason: "Linked from candidate review.",
-            })
-          }
-        >
-          <LinkIcon className="me-2 size-4" />
-          Link Contact
-        </Button>
+      <div className="grid gap-2">
+        {!hasMatchingContact ? (
+          <p className="text-xs text-muted-foreground">
+            No existing Contact matches this email or phone. Use{" "}
+            <span className="font-medium">Approve Contact</span> to create a
+            new one, or pick an existing Contact below to link to.
+          </p>
+        ) : null}
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <Select value={contactId} onValueChange={setContactId}>
+            <SelectTrigger aria-label="Contact to link">
+              <SelectValue placeholder="Choose an existing Contact" />
+            </SelectTrigger>
+            <SelectContent>
+              {contactOptions.map((contact) => (
+                <SelectItem key={contact.id} value={contact.id}>
+                  {contact.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isPending || !contactId}
+            onClick={() =>
+              runAction("approve_link_contact", {
+                contactId,
+                reason: "Linked from candidate review.",
+              })
+            }
+          >
+            <LinkIcon className="me-2 size-4" />
+            Link Contact
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-2">

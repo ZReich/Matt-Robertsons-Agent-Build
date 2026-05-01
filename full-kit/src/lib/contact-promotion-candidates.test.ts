@@ -373,6 +373,9 @@ function makeClient({
         { id: "comm-1", contactId: null, metadata: { source: "original" } },
         { id: "comm-2", contactId: null, metadata: { source: "original" } },
       ]),
+      findUnique: vi.fn(async () => ({
+        date: new Date("2026-04-25T12:00:00Z"),
+      })),
       updateMany: vi.fn(async () => ({ count: 1 })),
     },
   }
