@@ -105,7 +105,7 @@ export type DealBoardInput = {
   id: string
   stage: DealStage
   propertyAddress: string
-  propertyType: PropertyType
+  propertyType: PropertyType | null
   value: Decimalish
   commissionRate?: Decimalish
   probability?: number | null
@@ -139,7 +139,7 @@ export type DealCard = {
   id: string
   stage: DealStage
   propertyAddress: string
-  propertyType: PropertyType
+  propertyType: PropertyType | null
   clientName: string | null
   clientCompany: string | null
   leadSource: LeadSource | null
@@ -188,17 +188,14 @@ function includesText(value: string | null | undefined, query: string) {
 }
 
 /**
- * Narrow a Prisma Deal-shaped row array (where propertyAddress / propertyType
- * are typed `string | null` / `PropertyType | null` because the columns are
- * nullable in the schema) down to the `DealBoardInput` shape the board
- * serializer expects (non-null on both fields).
+ * Narrow a Prisma Deal-shaped row array down to the `DealBoardInput` shape the
+ * board serializer expects. Drops rows with a null `propertyAddress` (the
+ * board has nothing to render for them); `propertyType` may be null and is
+ * surfaced as "Type pending" in the UI until backfill from Buildout fills it
+ * in.
  *
- * Callers MUST pair this with a `where: { propertyAddress: { not: null },
- * propertyType: { not: null }, dealType: "seller_rep" }` filter on the
- * underlying findMany — Prisma doesn't narrow the result type from those
- * `where` clauses, so this helper exists purely to make TS happy without
- * widening the consumer types. Rows that slip through with nulls are dropped
- * defensively.
+ * Callers should pair this with a `where: { propertyAddress: { not: null },
+ * dealType: "seller_rep" }` filter on the underlying findMany.
  */
 export function narrowToBoardDeals<
   T extends {
@@ -208,16 +205,13 @@ export function narrowToBoardDeals<
 >(
   deals: T[]
 ): Array<
-  Omit<T, "propertyAddress" | "propertyType"> & {
+  Omit<T, "propertyAddress"> & {
     propertyAddress: string
-    propertyType: PropertyType
   }
 > {
   return deals.filter(
-    (
-      deal
-    ): deal is T & { propertyAddress: string; propertyType: PropertyType } =>
-      deal.propertyAddress !== null && deal.propertyType !== null
+    (deal): deal is T & { propertyAddress: string } =>
+      deal.propertyAddress !== null
   )
 }
 

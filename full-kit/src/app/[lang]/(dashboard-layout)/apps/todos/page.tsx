@@ -1,4 +1,5 @@
-import { ListTodo } from "lucide-react"
+import Link from "next/link"
+import { ArrowRight, Bot, ListTodo } from "lucide-react"
 
 import type {
   ClientMeta,
@@ -10,10 +11,13 @@ import type {
 import type { Metadata } from "next"
 import type { TodoStatusFilter } from "./_components/todo-list"
 
+import { getPendingTodoSuggestions } from "@/lib/dashboard/queries"
 import { listPrismaTodoNotesWithContexts } from "@/lib/todos/prisma-todo-notes"
 import { listNotes } from "@/lib/vault"
 import { resolveAllTodoContexts } from "@/lib/vault/resolve-context"
 
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { TodoList } from "./_components/todo-list"
 
 export const metadata: Metadata = {
@@ -41,6 +45,7 @@ export default async function TodosPage({
     contactNotes,
     dealNotes,
     commNotes,
+    pendingTodoSuggestions,
   ] = await Promise.all([
     listNotes<TodoMeta>("todos"),
     listPrismaTodoNotesWithContexts(),
@@ -48,6 +53,7 @@ export default async function TodosPage({
     listNotes<ContactMeta>("contacts"),
     listNotes<DealMeta>("clients"), // deals live under clients/
     listNotes<CommunicationMeta>("communications"),
+    getPendingTodoSuggestions(),
   ])
   const allTodoNotes = [...todoNotes, ...prismaTodoData.notes]
 
@@ -83,6 +89,36 @@ export default async function TodosPage({
           </p>
         </div>
       </div>
+
+      {pendingTodoSuggestions.total > 0 && (
+        <Card className="border-l-4 border-l-blue-500 bg-blue-500/5 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-600">
+                <Bot className="size-5" />
+              </div>
+              <div>
+                <p className="font-semibold">
+                  {pendingTodoSuggestions.total} AI suggestion
+                  {pendingTodoSuggestions.total !== 1 ? "s" : ""} waiting in the
+                  Agent Queue
+                </p>
+                <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                  {pendingTodoSuggestions.top
+                    .slice(0, 3)
+                    .map((suggestion) => suggestion.title)
+                    .join(" • ")}
+                </p>
+              </div>
+            </div>
+            <Button size="sm" asChild className="shrink-0">
+              <Link href={`/${lang}/pages/agent`}>
+                Open Agent Queue <ArrowRight className="ms-1 size-3.5" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      )}
 
       <TodoList
         notes={allTodoNotes}

@@ -30,8 +30,21 @@ export default async function AgentPage({ params }: AgentPageProps) {
     return <AgentAccessDenied lang={lang} email={session?.user?.email} />
   }
 
+  // Action types that we use AgentAction for caching/audit, not for
+  // surfacing in the actionable agent activity log. Excluding them keeps
+  // the 100-row recent-activity feed focused on things the reviewer might
+  // want to inspect, not deterministic cache rows that flush several at a
+  // time when summarizers regenerate.
+  const CACHE_ACTION_TYPES_TO_HIDE = [
+    "summarize-thread",
+    "summarize-contact",
+    "set-client-type",
+  ]
   const [actions, memory, coverage] = await Promise.all([
     db.agentAction.findMany({
+      where: {
+        actionType: { notIn: CACHE_ACTION_TYPES_TO_HIDE },
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
       select: {

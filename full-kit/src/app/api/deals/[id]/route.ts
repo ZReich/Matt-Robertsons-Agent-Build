@@ -2,6 +2,11 @@ import { NextResponse } from "next/server"
 
 import type { DealStage } from "@prisma/client"
 
+import {
+  requireApiUser,
+  validateJsonMutationRequest,
+} from "@/lib/api-route-auth"
+import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 import { DEAL_STAGES } from "@/lib/pipeline/stage-probability"
 import { db } from "@/lib/prisma"
 
@@ -16,6 +21,11 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> {
+  const unauthorized = await requireApiUser()
+  if (unauthorized) return unauthorized
+  const csrfRejection = validateJsonMutationRequest(request)
+  if (csrfRejection) return csrfRejection
+
   const { id } = await params
 
   let body: Record<string, unknown>
@@ -24,13 +34,6 @@ export async function PATCH(
   } catch {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 })
   }
-
-  const existing = await db.deal.findUnique({
-    where: { id },
-    select: { id: true, stage: true },
-  })
-  if (!existing)
-    return NextResponse.json({ error: "not found" }, { status: 404 })
 
   const data: Record<string, unknown> = {}
 
@@ -42,7 +45,6 @@ export async function PATCH(
       return NextResponse.json({ error: "invalid stage" }, { status: 400 })
     }
     data.stage = body.stage
-    if (body.stage !== existing.stage) data.stageChangedAt = new Date()
   }
 
   if (body.probability !== undefined) {
@@ -93,6 +95,65 @@ export async function PATCH(
     data.value = value
   }
 
-  const deal = await db.deal.update({ where: { id }, data })
-  return NextResponse.json({ ok: true, deal })
+  const result = await db.$transaction(async (tx) => {
+    // Read the deal's current stage inside the transaction so concurrent
+    // PATCH requests can't race on the close-detection logic.
+    const existing = await tx.deal.findUnique({
+      where: { id },
+      select: { id: true, stage: true, contactId: true },
+    })
+    if (!existing) {
+      return { ok: false as const, status: 404, error: "not found" }
+    }
+
+    const finalData: Record<string, unknown> = { ...data }
+    const stageChanged =
+      data.stage !== undefined && data.stage !== existing.stage
+    if (stageChanged) finalData.stageChangedAt = new Date()
+
+    const deal = await tx.deal.update({ where: { id }, data: finalData })
+
+    // Recompute clientType from the contact's full deal history. Captures
+    // close → past_client, re-open → active_*, and everything in between.
+    const promotion = stageChanged
+      ? await syncContactRoleFromDeals(
+          existing.contactId,
+          { trigger: "deal_stage_change", dealId: id },
+          tx
+        )
+      : null
+
+    // If the human just applied a stage change, any pending AI proposal to
+    // move this deal's stage is now stale. Resolve them so the review queue
+    // doesn't show perpetual pending proposals against a deal whose stage
+    // is already reconciled.
+    if (stageChanged) {
+      await tx.agentAction.updateMany({
+        where: {
+          actionType: "move-deal-stage",
+          status: "pending",
+          targetEntity: `deal:${id}`,
+        },
+        data: {
+          status: "executed",
+          executedAt: new Date(),
+          feedback: `Reconciled: human applied stage change to "${data.stage}" via PATCH.`,
+        },
+      })
+    }
+
+    return { ok: true as const, deal, promotion }
+  })
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error },
+      { status: result.status }
+    )
+  }
+  return NextResponse.json({
+    ok: true,
+    deal: result.deal,
+    promotion: result.promotion,
+  })
 }

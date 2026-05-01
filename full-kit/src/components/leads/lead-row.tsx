@@ -6,6 +6,7 @@ import { ChevronRight, MessagesSquare } from "lucide-react"
 
 import type { LeadSource, LeadStatus } from "@prisma/client"
 
+import { Badge } from "@/components/ui/badge"
 import { SourceBadge } from "./source-badge"
 import { StatusChip } from "./status-chip"
 
@@ -24,6 +25,10 @@ export interface LeadRowData {
   activityCount: number
   latestTouchAt: string | null
   isUnread: boolean
+  /** "lead" → already a Contact row, click → /pages/leads/<id>.
+   *  "candidate" → still a pending ContactPromotionCandidate, click →
+   *  /pages/contact-candidates for review. */
+  kind?: "lead" | "candidate"
 }
 
 interface LeadRowProps {
@@ -42,10 +47,15 @@ function formatDate(value: string): string {
 export function LeadRow({ lead }: LeadRowProps) {
   const params = useParams()
   const lang = (params?.lang as string) ?? "en"
+  const kind = lead.kind ?? "lead"
+  const href =
+    kind === "candidate"
+      ? `/${lang}/pages/contact-candidates`
+      : `/${lang}/pages/leads/${lead.id}`
 
   return (
     <Link
-      href={`/${lang}/pages/leads/${lead.id}`}
+      href={href}
       className="block border-b border-border px-4 py-3 transition-colors hover:bg-muted/30"
     >
       <div className="grid grid-cols-[16px_minmax(0,1.1fr)_minmax(220px,1fr)_minmax(150px,auto)_16px] items-start gap-3">
@@ -90,7 +100,13 @@ export function LeadRow({ lead }: LeadRowProps) {
         <div className="flex min-w-[150px] flex-col items-end gap-2">
           <div className="flex flex-wrap justify-end gap-2">
             <SourceBadge source={lead.leadSource} />
-            <StatusChip status={lead.leadStatus} />
+            {kind === "candidate" ? (
+              <Badge variant="outline" className="text-xs">
+                Pending review
+              </Badge>
+            ) : (
+              <StatusChip status={lead.leadStatus} />
+            )}
           </div>
           <span className="whitespace-nowrap text-right text-xs text-muted-foreground">
             {lead.latestTouchAt

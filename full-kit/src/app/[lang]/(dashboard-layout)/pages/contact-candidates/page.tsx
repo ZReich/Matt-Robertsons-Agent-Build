@@ -1,16 +1,18 @@
 import Link from "next/link"
-import { ShieldAlert, ShieldCheck } from "lucide-react"
+import { ExternalLink, ShieldAlert, ShieldCheck } from "lucide-react"
 
 import type { CandidateReviewRow } from "@/lib/contact-promotion-candidates"
 import type { ContactPromotionCandidateStatus } from "@prisma/client"
 import type { Metadata } from "next"
 
 import { getSession } from "@/lib/auth"
+import { getOutlookDeeplinkForSource } from "@/lib/communications/outlook-deeplink"
 import { listContactPromotionCandidates } from "@/lib/contact-promotion-candidates"
 import { db } from "@/lib/prisma"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { CandidateThreadSummary } from "@/components/contact-candidates/thread-summary"
 import { CandidateActions } from "./_components/candidate-actions"
 import { ContactCandidateSignOutButton } from "./_components/sign-out-button"
 import {
@@ -71,6 +73,48 @@ export default async function ContactCandidatesPage({
     }),
   ])
 
+  // Batch-load any cached thread summaries for the visible candidates so
+  // the page can pre-fill the summary panel without a per-row LLM call.
+  const summaryActions =
+    candidates.length > 0
+      ? await db.agentAction.findMany({
+          where: {
+            actionType: "summarize-thread",
+            status: "executed",
+            feedback: null,
+            targetEntity: {
+              in: candidates.map((c) => `thread:${c.id}`),
+            },
+          },
+          orderBy: { executedAt: "desc" },
+          select: {
+            targetEntity: true,
+            payload: true,
+            executedAt: true,
+            createdAt: true,
+          },
+        })
+      : []
+  // Keep one summary per candidate (most-recent wins, since prior rows are
+  // marked superseded by the writer but defense-in-depth here too).
+  const summaryByCandidate = new Map<
+    string,
+    { summary: string; generatedAt: string; modelUsed: string }
+  >()
+  for (const action of summaryActions) {
+    if (!action.targetEntity) continue
+    const candidateId = action.targetEntity.replace(/^thread:/, "")
+    if (summaryByCandidate.has(candidateId)) continue
+    const payload = action.payload as Record<string, unknown> | null
+    if (!payload || typeof payload.summary !== "string") continue
+    summaryByCandidate.set(candidateId, {
+      summary: payload.summary,
+      generatedAt: (action.executedAt ?? action.createdAt).toISOString(),
+      modelUsed:
+        typeof payload.modelUsed === "string" ? payload.modelUsed : "unknown",
+    })
+  }
+
   return (
     <section className="container grid gap-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -128,6 +172,7 @@ export default async function ContactCandidatesPage({
               key={candidate.id}
               candidate={candidate}
               contacts={contacts}
+              cachedThreadSummary={summaryByCandidate.get(candidate.id) ?? null}
             />
           ))}
         </div>
@@ -182,6 +227,7 @@ function ContactCandidateAccessDenied({
 function CandidateCard({
   candidate,
   contacts,
+  cachedThreadSummary,
 }: {
   candidate: CandidateReviewRow
   contacts: Array<{
@@ -190,6 +236,9 @@ function CandidateCard({
     company: string | null
     email: string | null
   }>
+  cachedThreadSummary:
+    | { summary: string; generatedAt: string; modelUsed: string }
+    | null
 }) {
   const preferredContactId =
     candidate.suggestedContactId ??
@@ -203,7 +252,7 @@ function CandidateCard({
   return (
     <article className="rounded-md border bg-background p-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
-        <div className="grid gap-3">
+        <div className="grid min-w-0 gap-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 className="truncate text-base font-semibold">
@@ -249,58 +298,36 @@ function CandidateCard({
           </dl>
 
           {candidate.message ? (
-            <blockquote className="rounded-md border-l-4 bg-muted/40 px-3 py-2 text-sm">
+            <blockquote className="overflow-hidden whitespace-pre-wrap break-words rounded-md border-l-4 bg-muted/40 px-3 py-2 text-sm">
               {candidate.message}
             </blockquote>
           ) : null}
 
           {candidate.communication ? (
-            <div className="rounded-md border bg-muted/20 p-3 text-sm">
-              <div className="flex flex-wrap justify-between gap-2">
-                <p className="font-medium">
-                  {candidate.communication.subject ?? "Related communication"}
-                </p>
-                <span className="text-xs text-muted-foreground">
-                  {formatDate(candidate.communication.date)}
-                </span>
-              </div>
-              <p className="mt-1 line-clamp-3 text-muted-foreground">
-                {candidate.communication.body}
-              </p>
-              <p className="mt-2 break-all text-xs text-muted-foreground">
-                Communication ID: {candidate.communication.id}
-              </p>
+            <div className="overflow-hidden rounded-md border bg-muted/20 p-3 text-sm">
+              {renderEvidenceRow(candidate.communication)}
             </div>
           ) : null}
 
           {candidate.evidenceCommunications.length > 1 ? (
-            <div className="rounded-md border p-3 text-sm">
+            <div className="overflow-hidden rounded-md border p-3 text-sm">
               <p className="font-medium">Evidence communications</p>
-              <div className="mt-2 grid gap-2">
-                {candidate.evidenceCommunications.map((communication) => (
-                  <div
-                    key={communication.id}
-                    className="grid gap-1 border-b pb-2 last:border-b-0 last:pb-0"
-                  >
-                    <div className="flex flex-wrap justify-between gap-2">
-                      <span className="truncate">
-                        {communication.subject ?? communication.id}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(communication.date)}
-                      </span>
-                    </div>
-                    <span className="break-all text-xs text-muted-foreground">
-                      {communication.id}
-                    </span>
-                  </div>
-                ))}
+              <div className="mt-2">
+                <CandidateThreadSummary
+                  candidateId={candidate.id}
+                  initialSummary={cachedThreadSummary}
+                />
+              </div>
+              <div className="mt-3 grid gap-2">
+                {candidate.evidenceCommunications.map((communication) =>
+                  renderEvidenceRow(communication)
+                )}
               </div>
             </div>
           ) : null}
         </div>
 
-        <aside className="grid content-start gap-3">
+        <aside className="grid content-start gap-3 lg:sticky lg:top-4 lg:self-start">
           {candidate.status === "approved" || candidate.status === "merged" ? (
             <p className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
               Approved Contact: {candidate.approvedContactId}
@@ -310,16 +337,17 @@ function CandidateCard({
               candidateId={candidate.id}
               contacts={contactChoices}
               preferredContactId={preferredContactId}
+              hasMatchingContact={candidate.matchingContacts.length > 0}
             />
           )}
-          <div className="rounded-md border bg-muted/20 p-3">
-            <p className="text-xs font-medium uppercase text-muted-foreground">
+          <details className="rounded-md border bg-muted/20 p-3">
+            <summary className="cursor-pointer text-xs font-medium uppercase text-muted-foreground">
               Raw evidence metadata
-            </p>
+            </summary>
             <pre className="mt-2 max-h-52 overflow-auto whitespace-pre-wrap break-words text-xs">
               {metadataToString(candidate.metadata)}
             </pre>
-          </div>
+          </details>
         </aside>
       </div>
     </article>
@@ -373,6 +401,66 @@ function formatDate(value: Date): string {
     minute: "2-digit",
   })
 }
+
+function renderEvidenceRow(
+  communication: CandidateReviewRow["evidenceCommunications"][number]
+) {
+  // Use the established source-system gate (Communication.createdBy) so
+  // future non-msgraph email importers don't accidentally inherit Outlook
+  // deeplinks. resolve-context.test.ts pins this contract.
+  const deeplink = getOutlookDeeplinkForSource(
+    communication.externalMessageId,
+    communication.createdBy
+  )
+  const snippet = bodySnippet(communication.body)
+  const title = communication.subject?.trim() || "(no subject)"
+
+  return (
+    <div
+      key={communication.id}
+      className="grid gap-1 border-b pb-2 last:border-b-0 last:pb-0"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        {deeplink ? (
+          <a
+            href={deeplink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-w-0 max-w-full items-center gap-1 truncate font-medium text-blue-600 hover:underline"
+          >
+            <span className="truncate">{title}</span>
+            <ExternalLink className="size-3 shrink-0 opacity-70" />
+          </a>
+        ) : (
+          <span className="truncate font-medium">{title}</span>
+        )}
+        <span className="shrink-0 text-xs text-muted-foreground">
+          {formatDate(communication.date)}
+        </span>
+      </div>
+      {snippet ? (
+        <p className="line-clamp-2 break-words text-xs text-muted-foreground">
+          {snippet}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+// Inbound emails can have noisy boilerplate at the top (header lines, mailto
+// links, image src URLs). Strip the worst of it for the snippet so the user
+// sees something readable in the 2-line preview.
+function bodySnippet(body: string | null | undefined): string | null {
+  if (!body) return null
+  const cleaned = body
+    .replace(/<https?:\/\/[^>]+>/g, "")
+    .replace(/\[(?:cid|image)[^\]]*\]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  if (cleaned.length === 0) return null
+  return cleaned.length > 280 ? cleaned.slice(0, 280) + "…" : cleaned
+}
+
 
 function metadataToString(value: unknown): string {
   return JSON.stringify(value ?? {}, null, 2)

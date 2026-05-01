@@ -12,7 +12,10 @@ vi.mock("@/lib/auth", () => ({ getSession: vi.fn() }))
 vi.mock("@/lib/prisma", () => ({
   db: {
     communication: { findMany: vi.fn() },
-    scrubQueue: { upsert: vi.fn() },
+    scrubQueue: {
+      create: vi.fn(),
+      updateMany: vi.fn(),
+    },
   },
 }))
 
@@ -38,7 +41,8 @@ describe("AI suggestions process route", () => {
     process.env.AGENT_ACTION_REVIEWER_EMAILS = "zach@example.com"
     vi.mocked(getSession).mockReset()
     vi.mocked(db.communication.findMany).mockReset()
-    vi.mocked(db.scrubQueue.upsert).mockReset()
+    vi.mocked(db.scrubQueue.create).mockReset()
+    vi.mocked(db.scrubQueue.updateMany).mockReset()
     vi.mocked(assertWithinScrubBudget).mockReset()
     vi.mocked(scrubEmailBatch).mockReset()
     vi.mocked(getSession).mockResolvedValue(session())
@@ -71,7 +75,8 @@ describe("AI suggestions process route", () => {
     expect(response.status).toBe(403)
     expect(await response.json()).toMatchObject({ error: "invalid origin" })
     expect(db.communication.findMany).not.toHaveBeenCalled()
-    expect(db.scrubQueue.upsert).not.toHaveBeenCalled()
+    expect(db.scrubQueue.create).not.toHaveBeenCalled()
+    expect(db.scrubQueue.updateMany).not.toHaveBeenCalled()
   })
 
   it("rejects non-JSON process requests", async () => {
@@ -84,7 +89,8 @@ describe("AI suggestions process route", () => {
       error: "invalid content type",
     })
     expect(db.communication.findMany).not.toHaveBeenCalled()
-    expect(db.scrubQueue.upsert).not.toHaveBeenCalled()
+    expect(db.scrubQueue.create).not.toHaveBeenCalled()
+    expect(db.scrubQueue.updateMany).not.toHaveBeenCalled()
   })
 
   it("rejects authenticated users who are not agent reviewers", async () => {
@@ -98,7 +104,8 @@ describe("AI suggestions process route", () => {
     expect(response.status).toBe(403)
     expect(await response.json()).toMatchObject({ error: "forbidden" })
     expect(db.communication.findMany).not.toHaveBeenCalled()
-    expect(db.scrubQueue.upsert).not.toHaveBeenCalled()
+    expect(db.scrubQueue.create).not.toHaveBeenCalled()
+    expect(db.scrubQueue.updateMany).not.toHaveBeenCalled()
   })
 
   it("requires explicit confirmation before reprocessing older scrub output", async () => {
@@ -119,7 +126,8 @@ describe("AI suggestions process route", () => {
       code: "reprocess_requires_confirmation",
       currentPromptVersion: "old",
     })
-    expect(db.scrubQueue.upsert).not.toHaveBeenCalled()
+    expect(db.scrubQueue.create).not.toHaveBeenCalled()
+    expect(db.scrubQueue.updateMany).not.toHaveBeenCalled()
   })
 
   it("validates all communications before enqueueing any work", async () => {
@@ -141,7 +149,8 @@ describe("AI suggestions process route", () => {
       code: "reprocess_requires_confirmation",
     })
     expect(assertWithinScrubBudget).not.toHaveBeenCalled()
-    expect(db.scrubQueue.upsert).not.toHaveBeenCalled()
+    expect(db.scrubQueue.create).not.toHaveBeenCalled()
+    expect(db.scrubQueue.updateMany).not.toHaveBeenCalled()
   })
 
   it("returns 429 when the scrub budget is exhausted", async () => {
@@ -161,7 +170,8 @@ describe("AI suggestions process route", () => {
     expect(await response.json()).toMatchObject({
       code: "scrub_budget_exceeded",
     })
-    expect(db.scrubQueue.upsert).not.toHaveBeenCalled()
+    expect(db.scrubQueue.create).not.toHaveBeenCalled()
+    expect(db.scrubQueue.updateMany).not.toHaveBeenCalled()
   })
 
   it("enqueues unprocessed communications after auth and budget checks", async () => {
@@ -173,7 +183,7 @@ describe("AI suggestions process route", () => {
         scrubQueue: { status: "pending" },
       } as never,
     ])
-    vi.mocked(db.scrubQueue.upsert).mockResolvedValue({
+    vi.mocked(db.scrubQueue.create).mockResolvedValue({
       id: "queue-1",
     } as never)
 
@@ -194,16 +204,8 @@ describe("AI suggestions process route", () => {
       communicationIds: ["comm-1"],
     })
     expect(assertWithinScrubBudget).toHaveBeenCalledTimes(1)
-    expect(db.scrubQueue.upsert).toHaveBeenCalledWith({
-      where: { communicationId: "comm-1" },
-      create: { communicationId: "comm-1", status: "pending" },
-      update: {
-        status: "pending",
-        attempts: 0,
-        lockedUntil: null,
-        leaseToken: null,
-        lastError: null,
-      },
+    expect(db.scrubQueue.create).toHaveBeenCalledWith({
+      data: { communicationId: "comm-1", status: "pending" },
     })
   })
 })

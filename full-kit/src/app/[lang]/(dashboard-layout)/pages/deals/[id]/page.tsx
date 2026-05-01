@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
 import {
@@ -7,16 +8,20 @@ import {
   Clock,
   DollarSign,
   FileText,
+  Mail,
   MapPin,
   MessageSquare,
+  Phone,
   Ruler,
   User,
+  Users,
 } from "lucide-react"
 
 import type { Metadata } from "next"
 
 import { getAiSuggestionState } from "@/lib/ai/suggestions"
 import { getAttachmentSummary } from "@/lib/communications/attachment-types"
+import { findRelatedLeadsForDeal } from "@/lib/deals/related-leads"
 import { DEAL_STAGE_LABELS } from "@/lib/pipeline/stage-probability"
 import { computeWeightedCommission } from "@/lib/pipeline/weighted-commission"
 import { db } from "@/lib/prisma"
@@ -59,7 +64,7 @@ export const dynamic = "force-dynamic"
 export default async function DealDetailPage({ params }: DealDetailPageProps) {
   const { id, lang } = await params
 
-  const [deal, aiSuggestions] = await Promise.all([
+  const [deal, aiSuggestions, relatedLeads] = await Promise.all([
     db.deal.findUnique({
       where: { id },
       include: {
@@ -71,14 +76,15 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
       },
     }),
     getAiSuggestionState({ entityType: "deal", entityId: id }),
+    findRelatedLeadsForDeal(id),
   ])
 
   if (!deal) notFound()
-  // The detail render assumes a parseable property. Buyer-rep deals (no
-  // property yet) and seller-rep deals whose lead inquiry didn't yield a usable
-  // address are not surfaced here yet — they'll get their own UI later. For now
-  // route them to a 404 instead of cluttering this page with null guards.
-  if (!deal.propertyAddress || !deal.propertyType) notFound()
+  // The detail render needs at least a property address. Buyer-rep deals (no
+  // property yet) get routed elsewhere. propertyType may be null while we
+  // wait on Buildout API integration to backfill it; the UI shows
+  // "Type pending" in that case.
+  if (!deal.propertyAddress) notFound()
 
   const value = decimalToNumber(deal.value)
   const commissionRate = decimalToNumber(deal.commissionRate) ?? 0.03
@@ -111,7 +117,9 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
               {DEAL_STAGE_LABELS[deal.stage]}
             </Badge>
             <Badge variant="outline" className="capitalize">
-              {deal.propertyType.replace(/_/g, " ")}
+              {deal.propertyType
+                ? deal.propertyType.replace(/_/g, " ")
+                : "Type pending"}
             </Badge>
             <Badge variant="outline">
               {value !== null ? formatCurrency(value) : "-"}
@@ -136,6 +144,9 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
       <Tabs defaultValue="overview">
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="inquirers">
+            Inquirers ({relatedLeads.length})
+          </TabsTrigger>
           <TabsTrigger value="comms">
             Communications ({deal.communications.length})
           </TabsTrigger>
@@ -166,7 +177,9 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
               </div>
               <div className="flex items-center gap-2 capitalize">
                 <Building2 className="size-4 text-muted-foreground" />
-                {deal.propertyType.replace(/_/g, " ")}
+                {deal.propertyType
+                  ? deal.propertyType.replace(/_/g, " ")
+                  : "Type pending"}
               </div>
               {deal.squareFeet ? (
                 <div className="flex items-center gap-2">
@@ -237,6 +250,79 @@ export default async function DealDetailPage({ params }: DealDetailPageProps) {
           <div className="sm:col-span-2">
             <LeadAISuggestions state={aiSuggestions} lang={lang} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="inquirers" className="mt-4 space-y-3">
+          {relatedLeads.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No leads have inquired about this property yet.
+            </p>
+          ) : (
+            <div className="grid gap-2">
+              {relatedLeads.map((lead) => (
+                <Link
+                  key={lead.contactId ?? `candidate:${lead.candidateId}`}
+                  href={
+                    lead.kind === "lead"
+                      ? `/${lang}/pages/leads/${lead.contactId}`
+                      : `/${lang}/pages/contact-candidates`
+                  }
+                  className="block rounded-md border bg-card p-3 transition-shadow hover:shadow-sm"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Users className="size-4 text-muted-foreground" />
+                        <span className="truncate font-medium">
+                          {lead.name}
+                        </span>
+                        {lead.leadSource ? (
+                          <Badge
+                            variant="secondary"
+                            className="text-xs capitalize"
+                          >
+                            {lead.leadSource}
+                          </Badge>
+                        ) : null}
+                        {lead.kind === "candidate" ? (
+                          <Badge variant="outline" className="text-xs">
+                            Pending review
+                          </Badge>
+                        ) : null}
+                        {lead.inquiryCount > 1 ? (
+                          <Badge variant="outline" className="text-xs">
+                            {lead.inquiryCount} inquiries
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                        {lead.email ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Mail className="size-3" />
+                            {lead.email}
+                          </span>
+                        ) : null}
+                        {lead.phone ? (
+                          <span className="inline-flex items-center gap-1">
+                            <Phone className="size-3" />
+                            {lead.phone}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {format(lead.lastInquiryAt, "MMM d, yyyy")}
+                    </span>
+                  </div>
+                  {lead.mostRecentSubject ? (
+                    <p className="mt-2 truncate text-sm">
+                      {lead.mostRecentSubject}
+                    </p>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="comms" className="mt-4 space-y-3">

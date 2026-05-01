@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { format, isBefore, startOfDay } from "date-fns"
 import { ArrowRight, Check, User, X } from "lucide-react"
 
+import type { PendingTodoSuggestion } from "@/lib/dashboard/queries"
 import type { TodoResolvedContext } from "@/lib/vault/resolve-context"
 import type { TodoMeta, VaultNote } from "@/lib/vault/shared"
 
@@ -23,6 +24,8 @@ type TodoNote = VaultNote<TodoMeta>
 interface TodosWidgetProps {
   proposedTodos: TodoNote[]
   urgentTodos: TodoNote[]
+  pendingSuggestions: PendingTodoSuggestion[]
+  pendingSuggestionsTotal: number
   contexts: Record<string, TodoResolvedContext>
   lang: string
 }
@@ -30,6 +33,8 @@ interface TodosWidgetProps {
 export function TodosWidget({
   proposedTodos,
   urgentTodos,
+  pendingSuggestions,
+  pendingSuggestionsTotal,
   contexts,
   lang,
 }: TodosWidgetProps) {
@@ -40,7 +45,11 @@ export function TodosWidget({
   const [isPending, startTransition] = useTransition()
   const todayStart = startOfDay(new Date())
   const visibleProposedTodos = proposedTodos.slice(0, 3)
+  const visiblePendingSuggestions = pendingSuggestions.slice(0, 3)
   const hasProposedTodos = proposedTodos.length > 0
+  const hasPendingSuggestions = pendingSuggestionsTotal > 0
+  const showReviewSection = hasProposedTodos || hasPendingSuggestions
+  const totalNeedsReview = proposedTodos.length + pendingSuggestionsTotal
   const hasUrgentTodos = urgentTodos.length > 0
 
   function handleSelect(todo: TodoNote) {
@@ -72,7 +81,7 @@ export function TodosWidget({
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 space-y-4">
-          {hasProposedTodos && (
+          {showReviewSection && (
             <section
               id="dashboard-todos-review"
               tabIndex={-1}
@@ -84,7 +93,7 @@ export function TodosWidget({
                   Needs review
                 </h3>
                 <span className="text-xs text-muted-foreground">
-                  {proposedTodos.length} pending
+                  {totalNeedsReview} pending
                 </span>
               </div>
               <div className="space-y-2.5">
@@ -124,20 +133,47 @@ export function TodosWidget({
                     </div>
                   </div>
                 ))}
+                {visiblePendingSuggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    className="rounded-md border bg-blue-500/5 p-2.5"
+                  >
+                    <p className="text-sm font-medium leading-tight">
+                      {suggestion.title}
+                    </p>
+                    <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                      {getSuggestionSubtitle(suggestion)}
+                    </p>
+                    <div className="mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2"
+                        asChild
+                      >
+                        <Link href={`/${lang}/pages/agent`}>
+                          <ArrowRight className="me-1 size-3" />
+                          Review in Agent Queue
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              {proposedTodos.length > visibleProposedTodos.length && (
+              {(proposedTodos.length > visibleProposedTodos.length ||
+                pendingSuggestionsTotal > visiblePendingSuggestions.length) && (
                 <Link
-                  href={`/${lang}/apps/todos?status=proposed`}
+                  href={`/${lang}/pages/agent`}
                   className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
                 >
-                  View all {proposedTodos.length} pending
+                  View all {totalNeedsReview} pending
                   <ArrowRight className="size-3" />
                 </Link>
               )}
             </section>
           )}
 
-          {hasProposedTodos && <div className="border-t" />}
+          {showReviewSection && <div className="border-t" />}
 
           <section aria-label="Urgent todos">
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -238,6 +274,14 @@ function getTodoContextLabel(
   if (todo.meta.contact) return normalizeEntityRef(todo.meta.contact)
   if (todo.meta.deal) return normalizeEntityRef(todo.meta.deal)
   return todo.content.trim().split("\n")[0] || "No additional context"
+}
+
+function getSuggestionSubtitle(suggestion: PendingTodoSuggestion) {
+  const parts: string[] = []
+  if (suggestion.contactName) parts.push(suggestion.contactName)
+  if (suggestion.dueHint) parts.push(`due ${suggestion.dueHint}`)
+  if (parts.length > 0) return parts.join(" • ")
+  return suggestion.summary
 }
 
 function parseTodoDate(value: string) {

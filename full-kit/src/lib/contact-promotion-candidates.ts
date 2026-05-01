@@ -98,11 +98,13 @@ const CONTACT_SELECT = {
 
 const COMMUNICATION_SELECT = {
   id: true,
+  channel: true,
   subject: true,
   body: true,
   date: true,
   direction: true,
   contactId: true,
+  createdBy: true,
   externalMessageId: true,
   conversationId: true,
   metadata: true,
@@ -307,6 +309,12 @@ async function approveCreateContact(
     })
   }
 
+  // leadAt should reflect when the lead actually originated (the date of
+  // the inquiry email), not when the candidate row happened to be created
+  // by an ingest script. We look up the linked Communication's date when
+  // available, falling back to firstSeenAt only if the comm is missing.
+  const inquiryDate = await resolveInquiryDate(tx, candidate)
+
   const contact = await tx.contact.create({
     data: {
       name:
@@ -324,7 +332,7 @@ async function approveCreateContact(
       createdBy: "candidate-review",
       leadSource: leadSourceFromCandidate(candidate),
       leadStatus: "new",
-      leadAt: candidate.firstSeenAt,
+      leadAt: inquiryDate,
       leadLastViewedAt: context.now,
     },
     select: CONTACT_SELECT,
@@ -530,6 +538,18 @@ async function linkEvidenceCommunications(
       )
     }
   }
+}
+
+async function resolveInquiryDate(
+  tx: CandidateTransaction,
+  candidate: CandidateRow
+): Promise<Date> {
+  if (!candidate.communicationId) return candidate.firstSeenAt
+  const comm = await tx.communication.findUnique({
+    where: { id: candidate.communicationId },
+    select: { date: true },
+  })
+  return comm?.date ?? candidate.firstSeenAt
 }
 
 async function findMatchingContacts(

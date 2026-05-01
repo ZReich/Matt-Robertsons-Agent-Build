@@ -1,7 +1,12 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
 import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Building2,
   Calendar,
+  ExternalLink,
   Mail,
   MapPin,
   MessageSquare,
@@ -10,21 +15,21 @@ import {
   User,
 } from "lucide-react"
 
-import type { CommunicationMeta, MeetingMeta } from "@/lib/vault"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
+import { readCachedSummary } from "@/lib/ai/contact-summarizer"
 import { getAiSuggestionState } from "@/lib/ai/suggestions"
+import { getOutlookDeeplinkForSource } from "@/lib/communications/outlook-deeplink"
+import { DEAL_STAGES } from "@/lib/pipeline/stage-probability"
 import { db } from "@/lib/prisma"
-import { matchTranscriptsToMeetings } from "@/lib/transcript-matching"
-import { listNotes, normalizeEntityRef } from "@/lib/vault"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ActivityTimeline } from "@/components/activity/activity-timeline"
+import { ContactArcSummary } from "@/components/contacts/contact-arc-summary"
 import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 
 interface ContactDetailPageProps {
@@ -44,14 +49,6 @@ export async function generateMetadata({
   }
 }
 
-const CHANNEL_ICONS: Record<string, ReactNode> = {
-  email: <Mail className="size-4 text-blue-500" />,
-  call: <Phone className="size-4 text-green-500" />,
-  text: <MessageSquare className="size-4 text-violet-500" />,
-  whatsapp: <Smartphone className="size-4 text-teal-500" />,
-  meeting: <Calendar className="size-4 text-amber-500" />,
-}
-
 // Always render from the live DB; never statically pre-render.
 export const dynamic = "force-dynamic"
 
@@ -60,50 +57,101 @@ export default async function ContactDetailPage({
 }: ContactDetailPageProps) {
   const { id, lang } = await params
 
-  const [contact, profileFacts, meetingNotes, commNotes, aiSuggestions] =
-    await Promise.all([
-      db.contact.findUnique({ where: { id } }),
-      db.contactProfileFact.findMany({
-        where: {
-          contactId: id,
-          status: "active",
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+  const COMM_LIMIT = 200
+  const [
+    contact,
+    profileFacts,
+    contactComms,
+    totalCommCount,
+    contactMeetingAttendees,
+    deals,
+    aiSuggestions,
+    cachedArcSummary,
+  ] = await Promise.all([
+    db.contact.findUnique({ where: { id } }),
+    db.contactProfileFact.findMany({
+      where: {
+        contactId: id,
+        status: "active",
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      orderBy: [{ category: "asc" }, { lastSeenAt: "desc" }],
+    }),
+    db.communication.findMany({
+      where: { contactId: id, archivedAt: null },
+      orderBy: { date: "desc" },
+      take: COMM_LIMIT,
+      select: {
+        id: true,
+        channel: true,
+        subject: true,
+        date: true,
+        direction: true,
+        createdBy: true,
+        externalMessageId: true,
+        deal: { select: { id: true, propertyAddress: true } },
+      },
+    }),
+    db.communication.count({
+      where: { contactId: id, archivedAt: null },
+    }),
+    db.meetingAttendee.findMany({
+      where: { contactId: id, meeting: { archivedAt: null } },
+      orderBy: { meeting: { date: "desc" } },
+      select: {
+        meeting: {
+          select: {
+            id: true,
+            title: true,
+            date: true,
+            location: true,
+          },
         },
-        orderBy: [{ category: "asc" }, { lastSeenAt: "desc" }],
-      }),
-      listNotes<MeetingMeta>("meetings"),
-      listNotes<CommunicationMeta>("communications"),
-      getAiSuggestionState({ entityType: "contact", entityId: id }),
-    ])
+      },
+    }),
+    db.deal.findMany({
+      where: { contactId: id, archivedAt: null },
+      // We sort in JS by canonical pipeline order; Prisma `stage: asc` would
+      // sort lexically (e.g., "closed" before "marketing") which is wrong.
+      orderBy: { stageChangedAt: "desc" },
+      select: {
+        id: true,
+        propertyAddress: true,
+        stage: true,
+        dealType: true,
+        stageChangedAt: true,
+      },
+    }),
+    getAiSuggestionState({ entityType: "contact", entityId: id }),
+    readCachedSummary(id),
+  ])
 
   if (!contact) notFound()
 
-  const contactMeetings = meetingNotes
-    .filter((m) => normalizeEntityRef(m.meta.contact ?? "") === contact.name)
-    .sort(
-      (a, b) =>
-        new Date(a.meta.date).getTime() - new Date(b.meta.date).getTime()
-    )
-
-  const contactComms = commNotes
-    .filter((c) => normalizeEntityRef(c.meta.contact ?? "") === contact.name)
-    .sort(
-      (a, b) =>
-        new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
-    )
-
-  // Auto-match Plaud call transcripts to meetings
-  const transcriptMatches = matchTranscriptsToMeetings(
-    contactComms,
-    contactMeetings
-  )
+  const contactMeetings = contactMeetingAttendees
+    .map((row) => row.meeting)
+    .filter((m): m is NonNullable<typeof m> => m !== null)
 
   const now = new Date()
-  const upcomingMeetings = contactMeetings.filter(
-    (m) => new Date(m.meta.date) >= now
-  )
+  const upcomingMeetings = contactMeetings.filter((m) => m.date >= now)
 
-  const totalActivity = contactComms.length + contactMeetings.length
+  // Sort deals by canonical pipeline-stage order (prospecting → closed),
+  // breaking ties with most-recent stage change first. Prisma can't sort by
+  // enum order natively.
+  const stageRank = new Map<string, number>(
+    DEAL_STAGES.map((stage, idx) => [stage, idx])
+  )
+  const orderedDeals = [...deals].sort((a, b) => {
+    const rankA = stageRank.get(a.stage) ?? DEAL_STAGES.length
+    const rankB = stageRank.get(b.stage) ?? DEAL_STAGES.length
+    if (rankA !== rankB) return rankA - rankB
+    const tA = a.stageChangedAt?.getTime() ?? 0
+    const tB = b.stageChangedAt?.getTime() ?? 0
+    return tB - tA
+  })
+
+  const totalActivity = totalCommCount + contactMeetings.length
+  const commsTruncated = totalCommCount > contactComms.length
 
   return (
     <section className="container max-w-3xl grid gap-6 p-6">
@@ -137,6 +185,21 @@ export default async function ContactDetailPage({
       </div>
 
       <Separator />
+
+      <ContactArcSummary
+        contactId={contact.id}
+        initialSummary={
+          cachedArcSummary
+            ? {
+                contactId: cachedArcSummary.contactId,
+                summary: cachedArcSummary.summary,
+                generatedAt: cachedArcSummary.generatedAt.toISOString(),
+                modelUsed: cachedArcSummary.modelUsed,
+                fromCache: true,
+              }
+            : null
+        }
+      />
 
       <Tabs defaultValue="overview">
         <TabsList>
@@ -218,6 +281,33 @@ export default async function ContactDetailPage({
             </Card>
           )}
 
+          {orderedDeals.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Deals ({orderedDeals.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {orderedDeals.map((d) => (
+                  <Link
+                    key={d.id}
+                    href={`/${lang}/pages/deals/${d.id}`}
+                    className="flex items-center gap-2 text-sm hover:underline"
+                  >
+                    <Building2 className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1 truncate">
+                      {d.propertyAddress ?? "(no address)"}
+                    </span>
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {d.stage.replace(/_/g, " ")}
+                    </Badge>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           {upcomingMeetings.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
@@ -227,10 +317,10 @@ export default async function ContactDetailPage({
               </CardHeader>
               <CardContent className="space-y-2">
                 {upcomingMeetings.slice(0, 3).map((m) => (
-                  <div key={m.path} className="flex justify-between text-sm">
-                    <span className="font-medium">{m.meta.title}</span>
+                  <div key={m.id} className="flex justify-between text-sm">
+                    <span className="font-medium">{m.title}</span>
                     <span className="text-muted-foreground">
-                      {format(new Date(m.meta.date), "MMM d, h:mm a")}
+                      {format(m.date, "MMM d, h:mm a")}
                     </span>
                   </div>
                 ))}
@@ -246,39 +336,35 @@ export default async function ContactDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {contactComms.slice(0, 3).map((c) => (
-                  <div key={c.path} className="flex items-center gap-3 text-sm">
-                    <span className="shrink-0">
-                      {CHANNEL_ICONS[c.meta.channel] ?? (
-                        <MessageSquare className="size-4 text-muted-foreground" />
-                      )}
-                    </span>
-                    <span className="flex-1 truncate">
-                      {c.meta.subject ?? c.meta.channel}
-                    </span>
-                    <span className="text-muted-foreground shrink-0">
-                      {format(new Date(c.meta.date), "MMM d")}
-                    </span>
-                  </div>
-                ))}
+                {contactComms.slice(0, 5).map((c) =>
+                  renderCommRow(c, lang)
+                )}
               </CardContent>
             </Card>
           )}
         </TabsContent>
 
-        {/* Activity Tab — unified timeline */}
+        {/* Activity Tab — Prisma-backed chronological feed */}
         <TabsContent value="activity" className="mt-4">
           {totalActivity === 0 ? (
             <p className="text-muted-foreground text-sm py-4">
               No activity recorded for this contact yet.
             </p>
           ) : (
-            <ActivityTimeline
-              communications={contactComms}
-              meetings={contactMeetings}
-              todos={[]}
-              transcriptMatches={transcriptMatches}
-            />
+            <Card>
+              <CardContent className="space-y-1 p-4">
+                {commsTruncated ? (
+                  <p className="mb-2 rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                    Showing latest {contactComms.length} communications of{" "}
+                    {totalCommCount} total. Older communications are not
+                    rendered.
+                  </p>
+                ) : null}
+                {buildActivityFeed(contactComms, contactMeetings).map(
+                  (event) => renderActivityEvent(event, lang)
+                )}
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 
@@ -326,4 +412,135 @@ function profileFactEvidence(metadata: unknown): string | null {
   return typeof evidence === "string" && evidence.trim()
     ? evidence.trim()
     : null
+}
+
+type CommRow = {
+  id: string
+  channel: string
+  subject: string | null
+  date: Date
+  direction: "inbound" | "outbound" | null
+  createdBy: string | null
+  externalMessageId: string | null
+  deal: { id: string; propertyAddress: string | null } | null
+}
+
+type MeetingRow = {
+  id: string
+  title: string
+  date: Date
+  location: string | null
+}
+
+type ActivityEvent =
+  | { kind: "comm"; date: Date; comm: CommRow }
+  | { kind: "meeting"; date: Date; meeting: MeetingRow }
+
+function buildActivityFeed(
+  comms: CommRow[],
+  meetings: MeetingRow[]
+): ActivityEvent[] {
+  const events: ActivityEvent[] = [
+    ...comms.map((comm) => ({ kind: "comm" as const, date: comm.date, comm })),
+    ...meetings.map((meeting) => ({
+      kind: "meeting" as const,
+      date: meeting.date,
+      meeting,
+    })),
+  ]
+  // Sort by date desc with id tiebreaker so render order is stable across
+  // re-renders when two events share a millisecond.
+  events.sort((a, b) => {
+    const dt = b.date.getTime() - a.date.getTime()
+    if (dt !== 0) return dt
+    const idA = a.kind === "comm" ? a.comm.id : a.meeting.id
+    const idB = b.kind === "comm" ? b.comm.id : b.meeting.id
+    return idA.localeCompare(idB)
+  })
+  return events
+}
+
+function channelIcon(channel: string): ReactNode {
+  switch (channel) {
+    case "email":
+      return <Mail className="size-4 text-blue-500" />
+    case "call":
+    case "voice":
+      return <Phone className="size-4 text-green-500" />
+    case "text":
+    case "sms":
+      return <MessageSquare className="size-4 text-violet-500" />
+    case "whatsapp":
+      return <Smartphone className="size-4 text-teal-500" />
+    case "meeting":
+      return <Calendar className="size-4 text-amber-500" />
+    default:
+      return <MessageSquare className="size-4 text-muted-foreground" />
+  }
+}
+
+function renderCommRow(c: CommRow, lang: string): ReactNode {
+  const deeplink = getOutlookDeeplinkForSource(c.externalMessageId, c.createdBy)
+  const subject = c.subject?.trim() || `(${c.channel})`
+  return (
+    <div key={c.id} className="flex items-center gap-2 text-sm">
+      <span className="shrink-0">{channelIcon(c.channel)}</span>
+      {c.direction === "inbound" ? (
+        <ArrowDownLeft className="size-3 shrink-0 text-muted-foreground" />
+      ) : c.direction === "outbound" ? (
+        <ArrowUpRight className="size-3 shrink-0 text-muted-foreground" />
+      ) : null}
+      {deeplink ? (
+        <a
+          href={deeplink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 truncate text-blue-600 hover:underline"
+        >
+          {subject}
+          <ExternalLink className="ms-1 inline size-3 opacity-70" />
+        </a>
+      ) : (
+        <span className="flex-1 truncate">{subject}</span>
+      )}
+      {c.deal ? (
+        <Link
+          href={`/${lang}/pages/deals/${c.deal.id}`}
+          className="shrink-0 text-xs text-muted-foreground hover:underline"
+        >
+          {c.deal.propertyAddress ?? "deal"}
+        </Link>
+      ) : null}
+      <span className="shrink-0 text-xs text-muted-foreground">
+        {format(c.date, "MMM d, yyyy")}
+      </span>
+    </div>
+  )
+}
+
+function renderActivityEvent(event: ActivityEvent, lang: string): ReactNode {
+  if (event.kind === "comm") {
+    return (
+      <div key={`comm:${event.comm.id}`} className="border-b py-2 last:border-b-0">
+        {renderCommRow(event.comm, lang)}
+      </div>
+    )
+  }
+  return (
+    <div
+      key={`meeting:${event.meeting.id}`}
+      className="flex items-center gap-2 border-b py-2 text-sm last:border-b-0"
+    >
+      <Calendar className="size-4 shrink-0 text-amber-500" />
+      <span className="flex-1 truncate font-medium">{event.meeting.title}</span>
+      {event.meeting.location ? (
+        <span className="shrink-0 text-xs text-muted-foreground">
+          {event.meeting.location}
+        </span>
+      ) : null}
+      <span className="shrink-0 text-xs text-muted-foreground">
+        {format(event.meeting.date, "MMM d, yyyy h:mm a")}
+      </span>
+    </div>
+  )
 }
