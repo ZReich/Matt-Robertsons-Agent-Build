@@ -99,6 +99,21 @@ export interface MissedFollowupsSummary {
   top: MissedFollowup[]
 }
 
+export interface PendingTodoSuggestion {
+  id: string
+  title: string
+  summary: string
+  priority: "low" | "medium" | "high" | "urgent" | null
+  contactName: string | null
+  dueHint: string | null
+  createdAt: Date
+}
+
+export interface PendingTodoSuggestions {
+  total: number
+  top: PendingTodoSuggestion[]
+}
+
 export interface DashboardData {
   pipeline: PipelineSnapshot
   todayMeetings: VaultNote<MeetingMeta>[]
@@ -109,6 +124,7 @@ export interface DashboardData {
   recentComms: RecentCommunication[]
   newLeads: NewLeadsSummary
   missedFollowups: MissedFollowupsSummary
+  pendingTodoSuggestions: PendingTodoSuggestions
 }
 
 export {
@@ -325,6 +341,95 @@ export async function getMissedFollowups(now = new Date()) {
   return { total: all.length, top: all.slice(0, 5) }
 }
 
+const getPendingTodoSuggestionsImpl = unstable_cache(
+  async (): Promise<PendingTodoSuggestions> => {
+    const [total, rows] = await Promise.all([
+      db.agentAction.count({
+        where: { actionType: "create-todo", status: "pending" },
+      }),
+      db.agentAction.findMany({
+        where: { actionType: "create-todo", status: "pending" },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          summary: true,
+          payload: true,
+          createdAt: true,
+        },
+      }),
+    ])
+
+    const contactIds = rows
+      .map((row) => extractContactIdFromPayload(row.payload))
+      .filter((id): id is string => id != null)
+    const contactMap =
+      contactIds.length > 0
+        ? new Map(
+            (
+              await db.contact.findMany({
+                where: { id: { in: contactIds } },
+                select: { id: true, name: true },
+              })
+            ).map((contact) => [contact.id, contact.name])
+          )
+        : new Map<string, string>()
+
+    const top: PendingTodoSuggestion[] = rows.map((row) => {
+      const payload = (row.payload ?? {}) as Record<string, unknown>
+      const title =
+        typeof payload.title === "string" && payload.title.trim().length > 0
+          ? payload.title
+          : row.summary
+      const priority = normalizePriority(payload.priority)
+      const dueHint =
+        typeof payload.dueHint === "string" && payload.dueHint.trim().length > 0
+          ? payload.dueHint
+          : null
+      const contactId = extractContactIdFromPayload(payload)
+      const contactName = contactId ? (contactMap.get(contactId) ?? null) : null
+
+      return {
+        id: row.id,
+        title,
+        summary: row.summary,
+        priority,
+        contactName,
+        dueHint,
+        createdAt: row.createdAt,
+      }
+    })
+
+    return { total, top }
+  },
+  ["dashboard-pending-todo-suggestions"],
+  { tags: [DASHBOARD_DATA_TAG] }
+)
+
+export async function getPendingTodoSuggestions(): Promise<PendingTodoSuggestions> {
+  return getPendingTodoSuggestionsImpl()
+}
+
+function extractContactIdFromPayload(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null
+  const value = (payload as Record<string, unknown>).contactId
+  return typeof value === "string" && value.length > 0 ? value : null
+}
+
+function normalizePriority(
+  value: unknown
+): "low" | "medium" | "high" | "urgent" | null {
+  if (
+    value === "low" ||
+    value === "medium" ||
+    value === "high" ||
+    value === "urgent"
+  ) {
+    return value
+  }
+  return null
+}
+
 export async function getDashboardData(
   now = new Date()
 ): Promise<DashboardData> {
@@ -339,6 +444,7 @@ export async function getDashboardData(
     recentComms,
     newLeads,
     missedFollowups,
+    pendingTodoSuggestions,
   ] = await Promise.all([
     listNotes<DealMeta>("clients"),
     listNotes<TodoMeta>("todos"),
@@ -350,6 +456,7 @@ export async function getDashboardData(
     getRecentCommunications(),
     getNewLeads(),
     getMissedFollowups(now),
+    getPendingTodoSuggestions(),
   ])
   const allTodoNotes = [...todoNotes, ...prismaTodoData.notes]
 
@@ -383,6 +490,7 @@ export async function getDashboardData(
     recentComms,
     newLeads,
     missedFollowups,
+    pendingTodoSuggestions,
   }
 }
 

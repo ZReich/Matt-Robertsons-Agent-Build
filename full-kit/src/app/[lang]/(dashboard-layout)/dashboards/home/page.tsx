@@ -72,8 +72,15 @@ export default async function HomePage({ params }: HomePageProps) {
       </div>
 
       <AIApprovalBanner
-        count={data.proposedTodos.length}
-        titles={data.proposedTodos.slice(0, 3).map((todo) => todo.meta.title)}
+        proposedCount={data.proposedTodos.length}
+        proposedTitles={data.proposedTodos
+          .slice(0, 3)
+          .map((todo) => todo.meta.title)}
+        agentSuggestionCount={data.pendingTodoSuggestions.total}
+        agentSuggestionTitles={data.pendingTodoSuggestions.top
+          .slice(0, 3)
+          .map((suggestion) => suggestion.title)}
+        agentQueueHref={`/${lang}/pages/agent`}
       />
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -175,6 +182,8 @@ export default async function HomePage({ params }: HomePageProps) {
         <TodosWidget
           proposedTodos={data.proposedTodos}
           urgentTodos={data.urgentTodos}
+          pendingSuggestions={data.pendingTodoSuggestions.top}
+          pendingSuggestionsTotal={data.pendingTodoSuggestions.total}
           contexts={data.todoContexts}
           lang={lang}
         />

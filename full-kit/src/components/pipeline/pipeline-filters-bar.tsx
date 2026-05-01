@@ -97,7 +97,7 @@ export function PipelineFiltersBar({
           <option value="crexi">Crexi</option>
           <option value="loopnet">LoopNet</option>
           <option value="buildout">Buildout</option>
-          <option value="email_cold">Email</option>
+          <option value="email_cold">Email cold</option>
           <option value="referral">Referral</option>
         </select>
         {showPropertyType ? (

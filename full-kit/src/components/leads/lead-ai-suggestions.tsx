@@ -65,30 +65,30 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
     state.queue.failed
   const snoozedCount = actions.filter((action) => action.isSnoozed).length
   const staleCount = actions.filter((action) => action.isStale).length
+  // Show "Process now" whenever there's anything to scrub for this entity —
+  // either communications that haven't been queued yet, OR communications
+  // that are queued/in-flight (the endpoint will skip-the-line process them).
+  // Previously gated on `notQueued > 0` only, which hid the button as soon
+  // as the global queue had absorbed the entity's comms.
   const canProcess =
-    state.entityType === "contact" &&
-    state.queue.pending === 0 &&
-    state.queue.inFlight === 0 &&
-    state.queue.notQueued > 0
+    (state.entityType === "contact" || state.entityType === "deal") &&
+    (state.queue.notQueued > 0 ||
+      state.queue.pending > 0 ||
+      state.queue.inFlight > 0 ||
+      state.queue.failed > 0)
 
   async function processSuggestions() {
     setIsProcessing(true)
     try {
-      const response = await fetch("/api/ai-suggestions/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          entityType: state.entityType,
-          entityId: state.entityId,
-        }),
-      })
-      const result = (await response.json().catch(() => ({}))) as {
-        error?: string
-        code?: string
-        enqueued?: number
-        succeeded?: number
+      // First attempt: do not auto-confirm reprocess. If the server says
+      // some comms have stale scrub output and need reprocess confirmation,
+      // we accept on the user's behalf — they explicitly clicked the
+      // button, which IS the confirmation — and retry once.
+      let result = await callProcess(false)
+      if (result.code === "reprocess_requires_confirmation") {
+        result = await callProcess(true)
       }
-      if (!response.ok) {
+      if (!result.ok) {
         toast.error(result.error ?? "AI processing failed", {
           description: result.code,
         })
@@ -96,9 +96,10 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
       }
       const enqueued = result.enqueued ?? 0
       const succeeded = result.succeeded ?? 0
+      const noun = state.entityType === "deal" ? "deal" : "contact"
       if (enqueued === 0) {
         toast.success("Already up to date", {
-          description: "No new emails to process for this contact.",
+          description: `No new emails to process for this ${noun}.`,
         })
       } else {
         toast.success("AI processing started", {
@@ -113,6 +114,25 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  async function callProcess(confirmReprocess: boolean) {
+    const response = await fetch("/api/ai-suggestions/process", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        entityType: state.entityType,
+        entityId: state.entityId,
+        confirmReprocess,
+      }),
+    })
+    const body = (await response.json().catch(() => ({}))) as {
+      error?: string
+      code?: string
+      enqueued?: number
+      succeeded?: number
+    }
+    return { ok: response.ok, ...body }
   }
 
   async function handleAction(
@@ -202,13 +222,15 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
               <Clock className="size-4 text-muted-foreground" />
             )}
             {scrubbedCount > 0
-              ? "No pending suggestions"
-              : "Waiting for processing"}
+              ? "No actions need review"
+              : "No suggestions yet"}
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
             {scrubbedCount > 0
-              ? "Reviewed AI suggestions will appear in the Agent page history."
-              : "Use the Agent review queue after processing creates a suggestion."}
+              ? `${scrubbedCount} email${scrubbedCount === 1 ? "" : "s"} processed — nothing here is waiting on you. New suggestions show up here as they're generated.`
+              : canProcess
+                ? "Click Process with AI above to scan recent communications and surface action proposals here."
+                : "AI suggestions for this contact will appear here once relevant communications are processed."}
           </p>
         </div>
       ) : (

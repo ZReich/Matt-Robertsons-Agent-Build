@@ -36,12 +36,19 @@ export async function POST(request: Request): Promise<Response> {
     entityId?: unknown
     confirmReprocess?: unknown
   }
-  if (body.entityType !== "contact" || typeof body.entityId !== "string") {
+  if (
+    (body.entityType !== "contact" && body.entityType !== "deal") ||
+    typeof body.entityId !== "string"
+  ) {
     return NextResponse.json({ error: "invalid entity" }, { status: 400 })
   }
 
+  const where =
+    body.entityType === "deal"
+      ? { dealId: body.entityId }
+      : { contactId: body.entityId }
   const communications = await db.communication.findMany({
-    where: { contactId: body.entityId },
+    where,
     orderBy: { date: "desc" },
     take: 50,
     select: {
@@ -99,11 +106,33 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
+  // Race-safe enqueue: between the SELECT above and this loop, a row could
+  // have flipped from "failed"/"done" → "pending"/"in_flight" (a worker
+  // re-claimed it, a cron requeued it). Unconditional upsert would stomp
+  // the new lease and let two workers double-scrub the same comm. So we:
+  //   1) Try to create a brand-new row (race-loses → unique-constraint error).
+  //   2) On constraint violation, conditionally requeue ONLY if the row is
+  //      still in "failed" or "done" — leaves "pending"/"in_flight" alone.
   for (const communicationId of toEnqueue) {
-    await db.scrubQueue.upsert({
-      where: { communicationId },
-      create: { communicationId, status: "pending" },
-      update: {
+    try {
+      await db.scrubQueue.create({
+        data: { communicationId, status: "pending" },
+      })
+      enqueued += 1
+      continue
+    } catch (error) {
+      const code =
+        error && typeof error === "object" && "code" in error
+          ? (error as { code: unknown }).code
+          : null
+      if (code !== "P2002") throw error // not a unique-constraint violation
+    }
+    const updated = await db.scrubQueue.updateMany({
+      where: {
+        communicationId,
+        status: { in: ["failed", "done"] },
+      },
+      data: {
         status: "pending",
         attempts: 0,
         lockedUntil: null,
@@ -111,7 +140,13 @@ export async function POST(request: Request): Promise<Response> {
         lastError: null,
       },
     })
-    enqueued += 1
+    if (updated.count > 0) {
+      enqueued += 1
+    } else {
+      // Row was claimed by a worker between our SELECT and this update; it
+      // will get processed without our help. Don't stomp.
+      pending += 1
+    }
   }
 
   // Scope the synchronous batch to the communications we just enqueued for
