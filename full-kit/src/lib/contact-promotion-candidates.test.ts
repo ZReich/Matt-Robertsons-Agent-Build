@@ -1,11 +1,31 @@
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
+vi.mock("./contact-promotion-auto-reply", () => ({
+  maybeFireAutoReplyForApprovedLead: vi.fn(async () => ({
+    status: "skipped",
+    reason: "no-property-key",
+  })),
+}))
+
+import { maybeFireAutoReplyForApprovedLead } from "./contact-promotion-auto-reply"
 import {
   listContactPromotionCandidates,
   reviewContactPromotionCandidate,
 } from "./contact-promotion-candidates"
 
+const autoReplyMock = maybeFireAutoReplyForApprovedLead as unknown as ReturnType<
+  typeof vi.fn
+>
+
 describe("contact promotion candidate review", () => {
+  beforeEach(() => {
+    autoReplyMock.mockClear()
+    autoReplyMock.mockResolvedValue({
+      status: "skipped",
+      reason: "no-property-key",
+    })
+  })
+
   it("dedupes repeated evidence communication IDs for the review UI", async () => {
     const row = candidate({
       communicationId: "comm-1",
@@ -250,6 +270,72 @@ describe("contact promotion candidate review", () => {
         }),
       })
     )
+  })
+
+  it("fires the Phase E auto-reply hook after a fresh approval", async () => {
+    const client = makeClient({ candidate: candidate() })
+
+    await reviewContactPromotionCandidate({
+      id: "candidate-1",
+      action: "approve_create_contact",
+      now: now(),
+      client: client as never,
+    })
+
+    expect(autoReplyMock).toHaveBeenCalledTimes(1)
+    expect(autoReplyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        communicationId: "comm-1",
+        contactId: "contact-created",
+      })
+    )
+  })
+
+  it("does not fire the Phase E auto-reply hook on idempotent approval replays", async () => {
+    const client = makeClient({
+      candidate: candidate({
+        status: "approved",
+        approvedContactId: "contact-created",
+      }),
+      contact: existingContact({ id: "contact-created" }),
+    })
+
+    await reviewContactPromotionCandidate({
+      id: "candidate-1",
+      action: "approve_create_contact",
+      now: now(),
+      client: client as never,
+    })
+
+    expect(autoReplyMock).not.toHaveBeenCalled()
+  })
+
+  it("does not fire the Phase E auto-reply hook on non-approval actions", async () => {
+    const client = makeClient({ candidate: candidate() })
+
+    await reviewContactPromotionCandidate({
+      id: "candidate-1",
+      action: "reject",
+      now: now(),
+      client: client as never,
+    })
+
+    expect(autoReplyMock).not.toHaveBeenCalled()
+  })
+
+  it("survives auto-reply hook errors so the approval still returns successfully", async () => {
+    autoReplyMock.mockRejectedValueOnce(new Error("boom"))
+    const client = makeClient({ candidate: candidate() })
+
+    const result = await reviewContactPromotionCandidate({
+      id: "candidate-1",
+      action: "approve_create_contact",
+      now: now(),
+      client: client as never,
+    })
+
+    expect(result.contact?.id).toBe("contact-created")
+    expect(autoReplyMock).toHaveBeenCalledTimes(1)
   })
 
   it("refuses to auto-pick when multiple active Contacts share the candidate email", async () => {

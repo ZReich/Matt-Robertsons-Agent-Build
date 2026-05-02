@@ -7,6 +7,8 @@ import type {
 
 import { db } from "@/lib/prisma"
 
+import { maybeFireAutoReplyForApprovedLead } from "./contact-promotion-auto-reply"
+
 type CandidateClient = Pick<
   PrismaClient,
   "$transaction" | "communication" | "contact" | "contactPromotionCandidate"
@@ -211,7 +213,7 @@ export async function reviewContactPromotionCandidate({
   now = new Date(),
   client = db,
 }: CandidateActionInput) {
-  return client.$transaction(async (tx) => {
+  const result = await client.$transaction(async (tx) => {
     await tx.$queryRaw`
       SELECT id
       FROM "contact_promotion_candidates"
@@ -273,6 +275,38 @@ export async function reviewContactPromotionCandidate({
 
     throw new CandidateReviewError("unsupported action", 400)
   })
+
+  // Phase E (2026-05-02 deal-pipeline-automation plan):
+  // After the candidate-approval transaction has committed, fire the
+  // auto-reply hook in fire-and-forget fashion. The hook itself wraps in
+  // try/catch and never throws, but we ALSO wrap here as belt-and-suspenders
+  // so any future regression in the hook cannot break the approve API
+  // response. Only fires for fresh approvals (skipped for idempotent replays).
+  const trigger = (result as { autoReplyTrigger?: AutoReplyTrigger })
+    .autoReplyTrigger
+  if (trigger && !result.idempotent) {
+    try {
+      const hookResult = await maybeFireAutoReplyForApprovedLead(trigger)
+      if (hookResult.status === "errored") {
+        console.warn(
+          `[contact-promotion] auto-reply hook errored: ${hookResult.error}`
+        )
+      }
+    } catch (err) {
+      console.warn(
+        `[contact-promotion] auto-reply hook threw: ${err instanceof Error ? err.message : String(err)}`
+      )
+    }
+  }
+
+  return result
+}
+
+type AutoReplyTrigger = {
+  communicationId: string | null | undefined
+  contactId: string
+  contactEmail: string | null | undefined
+  contactName: string | null | undefined
 }
 
 async function lockCandidateIdentity(
@@ -346,7 +380,17 @@ async function approveCreateContact(
     contactCreated: true,
   })
 
-  return { candidate: updated, contact, idempotent: false }
+  return {
+    candidate: updated,
+    contact,
+    idempotent: false,
+    autoReplyTrigger: {
+      communicationId: candidate.communicationId,
+      contactId: contact.id,
+      contactEmail: contact.email,
+      contactName: contact.name,
+    },
+  }
 }
 
 async function approveLinkContact(
@@ -382,7 +426,17 @@ async function approveLinkContact(
     contactCreated: false,
   })
 
-  return { candidate: updated, contact, idempotent: false }
+  return {
+    candidate: updated,
+    contact,
+    idempotent: false,
+    autoReplyTrigger: {
+      communicationId: candidate.communicationId,
+      contactId: contact.id,
+      contactEmail: contact.email,
+      contactName: contact.name,
+    },
+  }
 }
 
 async function markCandidate(
