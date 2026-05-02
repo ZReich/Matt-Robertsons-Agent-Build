@@ -20,6 +20,7 @@ import type {
 import type { NormalizedSender } from "./sender-normalize"
 
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
+import { processBuildoutStageUpdate } from "@/lib/deals/buildout-stage-action"
 import { proposeBuyerRepDeal } from "@/lib/deals/buyer-rep-action"
 import { classifyBuyerRepSignal } from "@/lib/deals/buyer-rep-detector"
 import {
@@ -1289,6 +1290,31 @@ export async function processOneMessage(
               confidence: signal.confidence,
             })
           }
+        }
+      }
+
+      // Phase B: Buildout deal-stage update — fully deterministic, auto-execute.
+      // Runs only on freshly-persisted inbound rows whose extractor flagged a
+      // deal-stage-update. The processor itself is idempotent; if anything in
+      // it throws we log + continue (don't poison the ingest pipeline).
+      if (
+        persisted.inserted &&
+        persisted.communicationId &&
+        folder === "inbox" &&
+        extracted &&
+        "kind" in extracted &&
+        extracted.kind === "deal-stage-update"
+      ) {
+        try {
+          await processBuildoutStageUpdate(persisted.communicationId)
+        } catch (err) {
+          // Swallow: we'll catch this on the next sweep run. Logging at warn
+          // tier so it surfaces but doesn't block the ingest cursor.
+          console.warn(
+            "[buildout-stage] live-ingest processor failed",
+            persisted.communicationId,
+            err instanceof Error ? err.message : err
+          )
         }
       }
 

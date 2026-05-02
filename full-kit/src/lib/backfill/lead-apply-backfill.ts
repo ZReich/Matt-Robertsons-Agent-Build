@@ -235,9 +235,6 @@ async function proposeBuildoutStageMoves(
     }
     const proposal = await proposeStageMoveFromBuildoutEmail({
       communicationId: row.id,
-      propertyName: extracted.propertyName,
-      fromStageRaw: extracted.fromStageRaw,
-      toStageRaw: extracted.toStageRaw,
     })
     if (proposal.created) {
       record(result, row, "proposed_buildout_stage_move", {

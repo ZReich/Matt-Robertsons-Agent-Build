@@ -13,6 +13,7 @@ vi.mock("@/lib/deals/buildout-stage-action", () => ({
   proposeStageMoveFromBuildoutEmail: vi.fn(async () => ({
     created: true,
     actionId: "action-1",
+    status: "executed",
   })),
 }))
 
@@ -35,6 +36,7 @@ describe("lead-apply-backfill", () => {
     proposeStageMoveMock.mockImplementation(async () => ({
       created: true,
       actionId: "action-1",
+      status: "executed",
     }))
   })
 
@@ -676,9 +678,6 @@ describe("lead-apply-backfill", () => {
     expect(proposeStageMoveMock).toHaveBeenCalledTimes(1)
     expect(proposeStageMoveMock).toHaveBeenCalledWith({
       communicationId: "comm-stage-1",
-      propertyName: "303 N Broadway",
-      fromStageRaw: "Marketing",
-      toStageRaw: "Showings",
     })
     expect(result.byOutcome).toMatchObject({
       proposed_buildout_stage_move: 1,
