@@ -17,15 +17,19 @@ import { GET } from "./route"
 
 const SECRET = "test-cron-secret-1234567890abcdef"
 const ORIGINAL_ENV = process.env.DAILY_LISTINGS_CRON_SECRET
+const ORIGINAL_VERCEL_CRON = process.env.CRON_SECRET
 
 beforeEach(() => {
   process.env.DAILY_LISTINGS_CRON_SECRET = SECRET
+  delete process.env.CRON_SECRET
   processUnprocessedDailyListings.mockReset()
   setLastDailyListingsSweep.mockReset()
 })
 
 afterEach(() => {
   process.env.DAILY_LISTINGS_CRON_SECRET = ORIGINAL_ENV
+  if (ORIGINAL_VERCEL_CRON === undefined) delete process.env.CRON_SECRET
+  else process.env.CRON_SECRET = ORIGINAL_VERCEL_CRON
 })
 
 function makeReq(headers: Record<string, string> = {}): Request {
@@ -51,11 +55,25 @@ describe("GET /api/cron/daily-listings", () => {
     expect(processUnprocessedDailyListings).not.toHaveBeenCalled()
   })
 
-  it("returns 503 when the cron secret env var is not configured", async () => {
+  it("returns 503 when neither cron secret env var is configured", async () => {
     delete process.env.DAILY_LISTINGS_CRON_SECRET
+    delete process.env.CRON_SECRET
     const res = await GET(makeReq({ Authorization: `Bearer ${SECRET}` }))
     expect(res.status).toBe(503)
     expect(processUnprocessedDailyListings).not.toHaveBeenCalled()
+  })
+
+  it("falls back to Vercel-injected CRON_SECRET when DAILY_LISTINGS_CRON_SECRET is unset", async () => {
+    delete process.env.DAILY_LISTINGS_CRON_SECRET
+    process.env.CRON_SECRET = SECRET
+    processUnprocessedDailyListings.mockResolvedValueOnce({
+      candidates: 0,
+      processed: 0,
+      results: [],
+    })
+    const res = await GET(makeReq({ Authorization: `Bearer ${SECRET}` }))
+    expect(res.status).toBe(200)
+    expect(processUnprocessedDailyListings).toHaveBeenCalledOnce()
   })
 
   it("runs the sweep and persists last-run state on success", async () => {

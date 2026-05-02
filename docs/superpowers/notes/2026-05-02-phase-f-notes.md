@@ -115,7 +115,7 @@ Screenshot of settings page with the new line: not saved to disk; the line is ca
 
 ## Things punted / open
 
-- **`CRON_SECRET` injection.** Vercel injects `Authorization: Bearer <CRON_SECRET>` automatically only when the env var is exactly named `CRON_SECRET`. Our route reads `DAILY_LISTINGS_CRON_SECRET`. When Matt deploys, he should either (a) set both env vars to the same value, or (b) rename our env var to `CRON_SECRET`. Documented in this notes file. Not exercised end-to-end because hosting is out of scope this batch.
+- **`CRON_SECRET` injection.** Vercel injects `Authorization: Bearer <CRON_SECRET>` automatically only when the env var is exactly named `CRON_SECRET`. Resolved in code-quality follow-up (commit below): the route now reads `DAILY_LISTINGS_CRON_SECRET || CRON_SECRET`, so Vercel's auto-injection works without renaming. New test asserts the fallback path returns 200 when only `CRON_SECRET` is set. Not exercised end-to-end because hosting is out of scope this batch.
 - **No cron-fired-end-to-end test.** Per spec: "you do NOT need to actually verify the cron firing — just verify the endpoint accepts a cron-originated request locally." Done via the curl-equivalent above.
 - **Schedule overshoot in winter.** As above — 8am MST instead of 9am during the ~4-month winter window. Acceptable given Matt's morning workflow.
 - **No retry / backoff.** A processor throw returns 500. Vercel cron will not retry. If we see real-world flakes, add a small in-route retry loop (3 attempts, exponential backoff). Not warranted yet.
