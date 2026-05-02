@@ -29,6 +29,16 @@ export type ProcessBuildoutStageUpdateResult =
       expectedFromStage: DealStage
     }
   | { status: "comm-not-found" }
+  | { status: "non-buildout-source"; observedSource: string | null }
+
+/**
+ * The classification source value `email-filter.ts` stamps on
+ * `Communication.metadata.source` when an inbound message comes from
+ * Buildout's notification senders with one of the allowlisted subjects.
+ * Used as a defense-in-depth gate so subject/body matching alone can't
+ * trigger a stage move on a forged or misclassified row.
+ */
+export const BUILDOUT_EVENT_METADATA_SOURCE = "buildout-event"
 
 type CommSlim = {
   id: string
@@ -70,6 +80,23 @@ export async function processBuildoutStageUpdate(
     | undefined
   if (previousStamp) {
     return { status: "already-processed", previous: previousStamp }
+  }
+
+  // 0. Defense-in-depth source check. The live ingest path only stamps
+  //    metadata.source = "buildout-event" when email-filter.ts has already
+  //    confirmed the sender is support@buildout.com /
+  //    no-reply-notification@buildout.com with an allowlisted subject. Without
+  //    this check, the sweep + single-row API endpoints would happily process
+  //    any Communication whose subject regex matched, which is exactly what a
+  //    forged / misclassified row would look like.
+  const observedSource =
+    typeof meta.source === "string" ? (meta.source as string) : null
+  if (observedSource !== BUILDOUT_EVENT_METADATA_SOURCE) {
+    await stampSkip(comm.id, meta, {
+      skippedReason: "non-buildout-source",
+      observedSource,
+    })
+    return { status: "non-buildout-source", observedSource }
   }
 
   // 1. Sensitive filter (subject + body) — bail and stamp so we don't re-scan.
@@ -323,12 +350,22 @@ export async function processUnprocessedBuildoutStageUpdates(
   // `startsWith`-style match gets us close enough; the processor itself
   // re-validates via extractBuildoutEvent so false positives at this stage
   // are no-ops (status: "not-a-stage-update").
+  //
+  // Defense-in-depth: also restrict to Communications whose metadata.source
+  // is `buildout-event` (stamped by email-filter.ts only after the sender +
+  // subject upstream check passed). Subject-pattern matches without that
+  // source tag are filtered at the processor level too, but skipping the
+  // fetch keeps forged/misclassified rows from showing up in sweep telemetry.
   const candidates = await db.communication.findMany({
     where: {
       direction: "inbound",
       date: { gte: since },
       archivedAt: null,
       subject: { startsWith: "Deal stage updated", mode: "insensitive" },
+      metadata: {
+        path: ["source"],
+        equals: BUILDOUT_EVENT_METADATA_SOURCE,
+      },
     },
     select: { id: true, metadata: true },
     orderBy: { date: "desc" },

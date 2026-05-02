@@ -65,7 +65,7 @@ function commRow(overrides: Record<string, unknown> = {}) {
     body: STAGE_BODY_MARKETING_TO_SHOWINGS,
     metadata: {
       classification: "signal",
-      source: "buildout-notification",
+      source: "buildout-event",
       tier1Rule: "buildout-notification",
     },
     ...overrides,
@@ -306,6 +306,50 @@ describe("processBuildoutStageUpdate", () => {
     expect(dbAny.agentAction.create).not.toHaveBeenCalled()
     expect(dbAny.deal.update).not.toHaveBeenCalled()
     expect(dbAny.communication.update).not.toHaveBeenCalled()
+  })
+
+  it("returns non-buildout-source when metadata.source != buildout-event (defense in depth)", async () => {
+    // Subject + body match the Buildout deal-stage pattern, but the upstream
+    // filter never tagged this as a buildout-event source. Could be a forged
+    // or misclassified inbound row. We must NOT process it.
+    dbAny.communication.findUnique.mockResolvedValue(
+      commRow({
+        metadata: {
+          classification: "signal",
+          source: "matt-outbound",
+          tier1Rule: "sent-items",
+        },
+      })
+    )
+
+    const result = await processBuildoutStageUpdate("comm-1")
+
+    expect(result.status).toBe("non-buildout-source")
+    expect(dbAny.deal.findFirst).not.toHaveBeenCalled()
+    expect(dbAny.agentAction.create).not.toHaveBeenCalled()
+    expect(dbAny.deal.update).not.toHaveBeenCalled()
+    // Idempotency-stamps so re-runs short-circuit on the already-processed
+    // path rather than hitting the source check again.
+    expect(dbAny.communication.update).toHaveBeenCalled()
+    const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
+      .buildoutStageUpdate
+    expect(stamped.skippedReason).toBe("non-buildout-source")
+    expect(stamped.observedSource).toBe("matt-outbound")
+  })
+
+  it("returns non-buildout-source when metadata is missing entirely", async () => {
+    dbAny.communication.findUnique.mockResolvedValue(
+      commRow({ metadata: null })
+    )
+
+    const result = await processBuildoutStageUpdate("comm-1")
+
+    expect(result.status).toBe("non-buildout-source")
+    expect(dbAny.deal.findFirst).not.toHaveBeenCalled()
+    expect(dbAny.agentAction.create).not.toHaveBeenCalled()
+    const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
+      .buildoutStageUpdate
+    expect(stamped.skippedReason).toBe("non-buildout-source")
   })
 
   it("returns comm-not-found when Communication does not exist", async () => {
