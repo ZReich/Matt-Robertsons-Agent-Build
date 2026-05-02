@@ -70,6 +70,9 @@ The Mail.Send Graph permission is still ungranted on the Azure app registration 
 - **AgentAction audit row for "auto-fired".** We log to console on `errored` but don't write an `AgentAction` row when the hook fires. If we later want a per-fire audit trail in the activity feed, that's a small follow-up — add `db.agentAction.create({ kind: "auto_reply_drafted", ... })` after the PendingReply persists. Not in the spec for Phase E, so skipped.
 - **Per-Contact rate limit.** Daily Listings has a `dailyMatchPerContactCap`; new-lead replies don't have an equivalent. Probably unnecessary because (a) approvals are 1:1 with candidates, (b) candidates are deduped by email + platform, but worth re-checking after we see real volume.
 
-## Commit
+## Commits
 
-(SHA captured below at commit time.)
+| SHA | Subject |
+|---|---|
+| `d64e0c5` | feat(leads): auto-fire PendingReply after candidate approval (Phase E) |
+| `db2a12f` | docs(phase-e): notes from auto-fire-after-approve implementation |
