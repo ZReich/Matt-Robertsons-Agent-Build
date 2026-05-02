@@ -73,6 +73,7 @@ export async function maybeFireAutoReplyForApprovedLead(
 
     const property = await db.property.findFirst({
       where: { propertyKey, archivedAt: null },
+      orderBy: [{ unit: { sort: "asc", nulls: "first" } }, { createdAt: "asc" }],
       select: { id: true },
     })
     if (!property) {
@@ -80,7 +81,13 @@ export async function maybeFireAutoReplyForApprovedLead(
     }
 
     // Idempotency: if there's already a PendingReply for this exact
-    // (trigger, contact, property) tuple, don't duplicate.
+    // (trigger, contact, property) tuple, don't duplicate. NOTE: this is
+    // application-only dedupe — under heavily concurrent re-fires (very
+    // unlikely path; the candidate-approval tx's advisory lock + idempotent
+    // flag already gate practical races) two PendingReply rows could still
+    // race in. The durable fix is a partial unique index on
+    // (triggerCommunicationId, contactId, propertyId); deferred to a future
+    // migration batch.
     const existing = await db.pendingReply.findFirst({
       where: {
         triggerCommunicationId: comm.id,

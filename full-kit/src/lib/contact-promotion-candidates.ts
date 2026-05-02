@@ -278,10 +278,13 @@ export async function reviewContactPromotionCandidate({
 
   // Phase E (2026-05-02 deal-pipeline-automation plan):
   // After the candidate-approval transaction has committed, fire the
-  // auto-reply hook in fire-and-forget fashion. The hook itself wraps in
-  // try/catch and never throws, but we ALSO wrap here as belt-and-suspenders
-  // so any future regression in the hook cannot break the approve API
-  // response. Only fires for fresh approvals (skipped for idempotent replays).
+  // auto-reply hook. We deliberately await it so the API response doesn't
+  // return until the PendingReply has landed (latency cost ~6-10s driven by
+  // DeepSeek; acceptable for a deliberate human action). The hook itself
+  // wraps in try/catch and never throws, but we ALSO wrap here as
+  // belt-and-suspenders so any future regression in the hook cannot break
+  // the approve API response. Only fires for fresh approvals (skipped for
+  // idempotent replays).
   const trigger = (result as { autoReplyTrigger?: AutoReplyTrigger })
     .autoReplyTrigger
   if (trigger && !result.idempotent) {
