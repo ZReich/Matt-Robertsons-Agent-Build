@@ -178,3 +178,111 @@ Fix:
 
 - `pnpm exec tsc --noEmit --pretty false` — clean (exit 0)
 - `pnpm test` — 777/777 passing (was 775; +2 new tests for the source check)
+
+## Code-quality follow-ups (2026-05-02, post-spec-review code-quality pass)
+
+External code-quality reviewer flagged 2 IMPORTANT findings + 9 NITs. The two
+IMPORTANT findings are addressed below. The 9 NITs (#3–11) are explicitly
+deferred at the user's request to a separate cleanup pass.
+
+### Finding 1 (IMPORTANT) — concurrent-execution race produced duplicate executed AgentActions
+
+The pre-tx `previousStamp` short-circuit read `comm.metadata` outside any
+transaction, and the tx never re-read or locked the Communication before
+stamping. Two concurrent callers (live ingest + manual sweep, or two sweep
+retries on overlapping schedules) could both:
+
+1. read `previousStamp = undefined` from their pre-tx fetches,
+2. enter their own `db.$transaction`,
+3. both create `move-deal-stage` AgentActions with `status="executed"`,
+4. both update the Deal stage,
+5. both stamp the Communication.
+
+End state: the Deal sees one effective stage move, but the audit log has
+**two** executed AgentActions claiming the same move.
+
+**Fix mechanism:** Added a Postgres advisory transaction lock keyed on the
+Communication id at the very top of the tx, plus an in-tx re-read of
+`metadata.buildoutStageUpdate`:
+
+```ts
+return await db.$transaction(async (tx) => {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${comm.id}))`
+  const fresh = await tx.communication.findUnique({
+    where: { id: comm.id },
+    select: { metadata: true },
+  })
+  const freshMeta = (fresh?.metadata ?? {}) as Record<string, unknown>
+  if (freshMeta.buildoutStageUpdate) {
+    return { status: "already-processed", previous: ... } as const
+  }
+  // ...rest of tx body, using freshMeta as the base for stamp merging
+})
+```
+
+Both racing callers serialize on the advisory lock; the loser wakes up after
+the winner commits, sees the stamp via the in-tx re-read, and returns
+`already-processed` without writing anything. The pre-tx `previousStamp`
+short-circuit is preserved as a cheap fast-path for the common case.
+
+`freshMeta` is also now what gets spread into the final stamp write (and
+into the in-tx `stampSkip` calls for `deal-not-found` / `stage-divergence`),
+so any unrelated concurrent metadata writes between the pre-tx read and the
+tx commit aren't clobbered. (This also addresses NIT #5 about meta
+clobbering, as a free side-effect.)
+
+The pre-tx checks (sensitive filter, source check, parser, stage-collapse
+guard) intentionally stay outside the tx — they don't write to the Deal or
+AgentAction tables (only idempotency stamps) and cheap short-circuits there
+keep the tx scope minimal.
+
+**Tests added** (4):
+
+- `acquires a pg advisory lock inside the transaction before mutating`
+- `re-reads metadata inside the tx and short-circuits when a concurrent run already stamped`
+- `preserves concurrent metadata writes by spreading freshMeta into the stamp`
+- `sequential back-to-back invocations: second call returns already-processed`
+
+The first three exercise the lock-and-re-read path with mocked
+`findUnique` returning different values for the pre-tx and in-tx reads; the
+fourth uses an in-memory metadata shim where `communication.update` writes
+through to the same store `findUnique` reads from, simulating a real
+sequential idempotency round-trip.
+
+### Finding 2 (IMPORTANT) — stage-collapse mapping created no-op executed AgentActions
+
+`Sourcing` and `Evaluating` both map to `prospecting` in
+`buildout-stage-parser.ts`. A "Sourcing → Evaluating" Buildout email parsed
+to `fromStage = toStage = "prospecting"`. If the deal was at `prospecting`,
+the divergence guard (`deal.stage !== fromStage`) passed and the processor
+wrote a no-op `move-deal-stage` AgentAction + bumped `stageChangedAt`. That
+polluted the audit log with executed actions that didn't actually move the
+deal anywhere.
+
+**Fix:** Added a stage-collapse guard right after `fromStage` and `toStage`
+are resolved (after the parser block, before the propertyKey lookup). If
+`fromStage === toStage`, stamp idempotency with
+`skippedReason: "stage-collapsed"` and return the new discriminated-result
+variant `{ status: "stage-collapsed", stage, fromStageRaw, toStageRaw,
+collapsedTo }`. The new status was added to
+`ProcessBuildoutStageUpdateResult`, and the sweep helper's `byStatus`
+aggregation picks it up automatically because it's keyed off `result.status`.
+
+**Tests added** (2):
+
+- `returns stage-collapsed and writes no AgentAction / no Deal update for Sourcing → Evaluating`
+- `does not collapse genuine moves like Marketing → Showings` (regression guard)
+
+### Deferred NITs (#3–11)
+
+Per the user's explicit instruction, the 9 NITs flagged by the reviewer are
+deferred to a separate cleanup pass and intentionally not addressed here.
+NIT #5 (meta clobbering on the in-tx stamp write) was incidentally resolved
+by the Finding 1 fix because using `freshMeta` for the stamp base is the
+correct merge behavior regardless.
+
+### Gates after code-quality follow-up
+
+- `pnpm exec tsc --noEmit --pretty false` — clean (exit 0)
+- `pnpm test` — 783/783 passing (was 777; +6 new tests: 4 for the race fix,
+  2 for the stage-collapse fix)

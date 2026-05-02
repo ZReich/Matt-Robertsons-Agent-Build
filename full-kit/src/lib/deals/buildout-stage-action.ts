@@ -30,6 +30,13 @@ export type ProcessBuildoutStageUpdateResult =
     }
   | { status: "comm-not-found" }
   | { status: "non-buildout-source"; observedSource: string | null }
+  | {
+      status: "stage-collapsed"
+      stage: DealStage
+      fromStageRaw: string
+      toStageRaw: string
+      collapsedTo: DealStage
+    }
 
 /**
  * The classification source value `email-filter.ts` stamps on
@@ -137,6 +144,30 @@ export async function processBuildoutStageUpdate(
     }
   }
 
+  // 3.5 Stage-collapse guard. Some Buildout labels collapse to the same
+  // internal DealStage — e.g. Sourcing and Evaluating both map to
+  // `prospecting`. A "Sourcing → Evaluating" Buildout email would, without
+  // this guard, parse as `fromStage == toStage == prospecting` and (assuming
+  // the deal is at prospecting) create a no-op `move-deal-stage` AgentAction
+  // that just bumps `stageChangedAt`. That pollutes the audit log with
+  // executed actions that didn't actually move the deal anywhere. Stamp
+  // idempotency and bail before the tx so re-runs no-op too.
+  if (fromStage === toStage) {
+    await stampSkip(comm.id, meta, {
+      skippedReason: "stage-collapsed",
+      collapsedTo: fromStage,
+      fromStageRaw,
+      toStageRaw,
+    })
+    return {
+      status: "stage-collapsed",
+      stage: fromStage,
+      fromStageRaw,
+      toStageRaw,
+      collapsedTo: fromStage,
+    } as const
+  }
+
   // 4. Resolve canonical propertyKey from extractor result.
   //    Pass an empty body — the body of these emails contains the transition
   //    phrase ("was updated from X to Y") which `firstAddress` then mistakes
@@ -150,6 +181,40 @@ export async function processBuildoutStageUpdate(
   // 5+6+7+8 inside a single tx so partial failures never leave the AgentAction
   // and Deal out of sync.
   return await db.$transaction(async (tx) => {
+    // Acquire a Postgres advisory transaction lock keyed on the
+    // Communication id. Two concurrent callers (live ingest + manual sweep,
+    // or two sweep retries) racing on the same row will serialize here:
+    // whichever wins enters first, runs the in-tx metadata re-read, sees no
+    // stamp, mutates Deal+AgentAction, stamps. The loser blocks until the
+    // first commits, then re-reads the in-tx metadata, sees the stamp, and
+    // returns `already-processed` without writing anything. Without this,
+    // the pre-tx `previousStamp` short-circuit alone allows two callers to
+    // both observe `previousStamp = undefined` and both create executed
+    // AgentActions for the same move.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${comm.id}))`
+
+    // In-tx re-read. The pre-tx read happens before we hold the lock, so a
+    // concurrent caller may have stamped between then and now. Re-read
+    // inside the locked tx and short-circuit if so. We also use this fresh
+    // metadata as the base for the eventual stamp write so any concurrent
+    // unrelated metadata updates aren't clobbered (the pre-tx `meta` would
+    // be stale).
+    const fresh = (await tx.communication.findUnique({
+      where: { id: comm.id },
+      select: { metadata: true },
+    })) as { metadata: unknown } | null
+    const freshMeta =
+      ((fresh?.metadata as Record<string, unknown> | null) ?? {}) as Record<
+        string,
+        unknown
+      >
+    if (freshMeta.buildoutStageUpdate) {
+      return {
+        status: "already-processed",
+        previous: freshMeta.buildoutStageUpdate as Record<string, unknown>,
+      } as const
+    }
+
     const deal = (await tx.deal.findFirst({
       where: {
         propertyKey,
@@ -162,7 +227,7 @@ export async function processBuildoutStageUpdate(
     if (!deal) {
       await stampSkip(
         comm.id,
-        meta,
+        freshMeta,
         {
           skippedReason: "deal-not-found",
           propertyKey,
@@ -177,7 +242,7 @@ export async function processBuildoutStageUpdate(
     if (deal.stage !== fromStage) {
       await stampSkip(
         comm.id,
-        meta,
+        freshMeta,
         {
           skippedReason: "stage-divergence",
           dealId: deal.id,
@@ -259,7 +324,7 @@ export async function processBuildoutStageUpdate(
       where: { id: comm.id },
       data: {
         metadata: {
-          ...meta,
+          ...freshMeta,
           buildoutStageUpdate: stamp,
         } as unknown as Prisma.InputJsonValue,
       },
