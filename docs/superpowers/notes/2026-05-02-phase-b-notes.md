@@ -124,3 +124,57 @@ To be created in the next step. The change set is staged across these files:
 - `full-kit/src/lib/backfill/lead-apply-backfill.test.ts` (mock signature)
 - `full-kit/src/app/api/buildout/process-stage-updates/route.ts` (new endpoint)
 - `docs/superpowers/notes/2026-05-02-phase-b-notes.md` (this file)
+
+## Spec-review follow-ups (2026-05-02, post-Phase-B)
+
+External spec-review pass surfaced two real gaps. Both fixed in follow-up commits:
+
+### Gap 1 — Sender / source check missing on non-ingest paths
+
+The live ingest path is safe because `email-filter.ts` only routes Buildout
+notifications to the processor when the sender + subject pre-checks already
+fired. But the sweep query and the single-row API call relied on subject
+regex alone — a forged or misclassified inbound row with the right subject
+would have been processed.
+
+Fix:
+- `processBuildoutStageUpdate` now performs a defense-in-depth check on
+  `comm.metadata.source === "buildout-event"` (the value `email-filter.ts`
+  stamps after its sender + subject allowlist passes). Mismatch returns the
+  new discriminated variant `{ status: "non-buildout-source", observedSource }`
+  and writes a `skippedReason: "non-buildout-source"` idempotency stamp so
+  re-runs short-circuit on `already-processed` instead of re-evaluating.
+- `processUnprocessedBuildoutStageUpdates` (the sweep query) now also
+  filters at the DB layer with
+  `metadata.path: ["source"], equals: "buildout-event"`, so non-Buildout rows
+  never appear as candidates.
+- New tests cover the failure mode the reviewer described: a Communication
+  with the matching subject regex but `metadata.source !== "buildout-event"`
+  (and a separate case for missing metadata entirely) returns
+  `non-buildout-source` and writes the stamp.
+- Pre-existing test fixtures had `source: "buildout-notification"` (a typo —
+  the actual upstream value is `"buildout-event"`); fixture updated to
+  reflect what `email-filter.ts` actually emits.
+
+### Gap 2 — Auth posture on the sweep route weaker than spec
+
+The route used `requireApiUser` (any authenticated user). The spec called for
+mirroring `auto-approve-pending`, which uses `requireAgentReviewer` (reviewer
+allowlist). This route can mutate Deal stages and write executed
+AgentActions, so the stricter posture is correct.
+
+Fix:
+- Swapped `requireApiUser` for `requireAgentReviewer` and switched the
+  request-validation helpers from `validateJsonMutationRequest` to the
+  explicit `assertSameOriginRequest` + `assertJsonRequest` pair, with the
+  whole handler wrapped in a `try/catch (ReviewerAuthError)` block that maps
+  the auth error to a JSON response with the right status (matches
+  `auto-approve-pending` exactly).
+- No existing route-level tests to update (per the original notes file the
+  route still has no peer test; the processor + sweep helper carry the
+  coverage).
+
+### Gates after follow-up
+
+- `pnpm exec tsc --noEmit --pretty false` — clean (exit 0)
+- `pnpm test` — 777/777 passing (was 775; +2 new tests for the source check)
