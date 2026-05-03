@@ -228,8 +228,12 @@ const PDF_FALLBACK_MAX_BYTES = 32 * 1024 * 1024
  * extraction lands on the cheapest payload. Filters:
  *   - `contentType === "application/pdf"` (case-insensitive, since Graph
  *     sometimes returns mixed case).
- *   - `attachmentType === "file"` (skip itemAttachment / referenceAttachment
- *     — those don't carry `contentBytes`).
+ *   - `attachmentType !== "item" && attachmentType !== "reference"` (skip
+ *     Outlook-specific non-file types — "item" is an embedded message,
+ *     "reference" is a OneDrive link, neither carries `contentBytes`).
+ *     Pre-126b65f Communications have `attachmentType: undefined`; we treat
+ *     that as "probably a file" — the magic-byte sniff in the PDF extractor
+ *     enforces the actual PDF contract.
  *   - `size <= PDF_FALLBACK_MAX_BYTES` (skip oversize before download).
  *   - `isInline !== true` (inline attachments are almost always email
  *     signatures, not lease PDFs — and shipping a sig graphic to Claude
@@ -241,7 +245,11 @@ function selectPdfFallbackCandidates(
   return attachments
     .filter((a) => {
       if (a.isInline === true) return false
-      if (a.attachmentType !== "file") return false
+      // Pre-126b65f Communications stored attachmentType as undefined on the JSON
+      // shape. Treat undefined as "probably a file" — the magic-byte sniff in the
+      // PDF extractor enforces the actual PDF contract. Only reject Outlook-specific
+      // non-file types ("item" = embedded message, "reference" = OneDrive link).
+      if (a.attachmentType === "item" || a.attachmentType === "reference") return false
       if (typeof a.contentType !== "string") return false
       if (a.contentType.toLowerCase() !== "application/pdf") return false
       if (typeof a.size !== "number") return false
@@ -581,6 +589,13 @@ export async function processCommunicationForLease(
           bodyExcerpt,
         })
         if (pdfOutcome.ok) {
+          // C1: apply the same confidence gate as the body extractor. A PDF
+          // result below the threshold is not authoritative — treat it as a
+          // recoverable failure and continue to the next PDF candidate.
+          if (pdfOutcome.result.confidence < settings.leaseExtractorMinConfidence) {
+            pdfFailureReason = "low_confidence"
+            continue
+          }
           extraction = pdfOutcome.result
           pdfFailureReason = null
           break

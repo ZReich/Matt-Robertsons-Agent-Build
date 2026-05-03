@@ -1928,4 +1928,135 @@ describe("processCommunicationForLease — PDF fallback", () => {
     const args = calls2[0]![0] as { bodyExcerpt?: string }
     expect(args.bodyExcerpt?.length).toBe(500)
   })
+
+  // -------------------------------------------------------------------------
+  // C1: confidence gate applied to PDF extractor results
+  // -------------------------------------------------------------------------
+
+  it("C1: PDF returns ok with confidence below threshold → skips that PDF; no-next-PDF → low_confidence", async () => {
+    // Single PDF candidate; the PDF extractor returns ok but with confidence
+    // 0.4 which is below the 0.6 default. The orchestrator should NOT accept
+    // this result — it should fall through and stamp low_confidence because
+    // there are no more PDF candidates to try.
+    const commId = seedCommunication({
+      externalMessageId: "msg-c1-fail",
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-lowconf", size: 10_000 })],
+      },
+    })
+
+    const pdfFn = vi.fn(async () => ({
+      ok: true as const,
+      result: { ...VALID_LEASE_EXTRACTION, confidence: 0.4 },
+      modelUsed: "claude-haiku-4-5-20251001",
+    }))
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    // PDF was called but its low-confidence result was rejected.
+    expect(pdfFn).toHaveBeenCalledTimes(1)
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("low_confidence")
+
+    // No LeaseRecord created.
+    expect(STATE.current.leaseRecords.size).toBe(0)
+
+    // Metadata stamp records the low_confidence failure.
+    const comm = STATE.current.communications.get(commId)!
+    const attempt = (comm.metadata as Record<string, unknown>)
+      .leaseExtractionAttempt as Record<string, unknown>
+    expect(attempt.pdfAttempted).toBe(true)
+    expect(attempt.pdfFailureReason).toBe("low_confidence")
+  })
+
+  it("C1: PDF returns ok with confidence at/above threshold → accepted and LeaseRecord created", async () => {
+    // PDF extractor returns confidence 0.7 — above the 0.6 threshold.
+    // The orchestrator should accept this result and proceed to upsert.
+    const commId = seedCommunication({
+      externalMessageId: "msg-c1-pass",
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-goodconf", size: 10_000 })],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = vi.fn(async () => ({
+      ok: true as const,
+      result: { ...VALID_LEASE_EXTRACTION, confidence: 0.7 },
+      modelUsed: "claude-haiku-4-5-20251001",
+    }))
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(pdfFn).toHaveBeenCalledTimes(1)
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    expect(out.leaseRecordId).toMatch(/^lease-/)
+    expect(STATE.current.leaseRecords.size).toBe(1)
+  })
+
+  // -------------------------------------------------------------------------
+  // I1: legacy undefined attachmentType is included in PDF candidate filter
+  // -------------------------------------------------------------------------
+
+  it("I1: attachment with attachmentType=undefined (legacy ingest) is included as a PDF candidate", async () => {
+    // Pre-126b65f Communications have attachmentType: undefined on their JSON
+    // shape. The loosened filter (not "item" && not "reference") should accept
+    // these so the PDF fallback works on the 2016-2018 backfill.
+    const commId = seedCommunication({
+      externalMessageId: "msg-i1-legacy",
+      metadata: {
+        attachments: [
+          // Simulate a legacy row — omit attachmentType entirely so it
+          // deserialises as undefined inside readAttachmentsFromMetadata.
+          {
+            id: "legacy-att",
+            name: "legacy-att.pdf",
+            size: 8_000,
+            contentType: "application/pdf",
+            isInline: false,
+            // attachmentType intentionally omitted → undefined
+          },
+        ],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    // The legacy attachment was not filtered out — PDF extractor was called
+    // and its result was accepted, producing a LeaseRecord.
+    expect(pdfFn).toHaveBeenCalledTimes(1)
+    expect(dlFn).toHaveBeenCalledWith("msg-i1-legacy", "legacy-att")
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    expect(STATE.current.leaseRecords.size).toBe(1)
+  })
 })
