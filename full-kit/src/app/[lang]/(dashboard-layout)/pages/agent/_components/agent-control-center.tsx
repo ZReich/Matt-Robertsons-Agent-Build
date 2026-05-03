@@ -26,6 +26,10 @@ export interface AgentActionView {
   dedupedToTodoId: string | null
   createdAt: string
   executedAt: string | null
+  // Subset of `payload` we render against. Kept loosely typed because the
+  // payload shape varies by actionType — the badge condition narrows on
+  // signalType for the buyer-rep / LOI case.
+  payload: { signalType?: string } | null
   sourceCommunication?: {
     id: string
     subject: string | null

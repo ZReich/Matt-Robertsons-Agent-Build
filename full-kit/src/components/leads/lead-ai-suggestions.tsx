@@ -267,7 +267,17 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          {visibleActions.slice(0, 3).map((action) => (
+          {visibleActions.slice(0, 3).map((action) => {
+            // Narrow "High confidence" pill the same way agent-queue does
+            // (B5): Phase D writes tier="auto" only for create-deal LOI
+            // proposals. Other future producers of tier="auto" must NOT
+            // inherit the pill silently.
+            const payload = (action.payload ?? {}) as { signalType?: string }
+            const showHighConfidencePill =
+              action.tier === "auto" &&
+              action.actionType === "create-deal" &&
+              payload.signalType === "loi"
+            return (
             <div
               key={action.id}
               className="rounded-md border border-border bg-background p-3"
@@ -279,7 +289,7 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
                     {formatActionType(action.actionType)}
                   </div>
                 </div>
-                {action.tier === "auto" ? (
+                {showHighConfidencePill ? (
                   <span
                     className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
                     data-testid="high-confidence-pill"
@@ -380,7 +390,8 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
                 </Button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
