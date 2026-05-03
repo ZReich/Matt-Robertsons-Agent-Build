@@ -12,6 +12,15 @@ import {
   reviewContactPromotionCandidate,
 } from "@/lib/contact-promotion-candidates"
 
+// Phase E auto-reply hook in reviewContactPromotionCandidate is awaited (so
+// the API response reflects the real PendingReply state). The hook makes a
+// DeepSeek round-trip (documented at 6-10s) plus DB writes. Vercel's hobby
+// plan defaults to a 10s function timeout, which puts approval requests
+// right at the wall: a slow DeepSeek call would surface as a 504 to the UI
+// even though state is correct. Bump to 60s so the hook has comfortable
+// headroom and Mail.Send latency can be added later without revisiting.
+export const maxDuration = 60
+
 const ACTIONS = new Set([
   "approve_create_contact",
   "approve_link_contact",
