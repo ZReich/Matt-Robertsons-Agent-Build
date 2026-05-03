@@ -1,12 +1,23 @@
 import "server-only"
 
+import { promises as fs } from "node:fs"
+import path from "node:path"
+
+import type Anthropic from "@anthropic-ai/sdk"
+
 import { db } from "@/lib/prisma"
 
+import { createAnthropicClient } from "./claude"
 import {
   type ClosedDealClassificationKind,
   type LeaseExtraction,
   type LeaseExtractorInput,
 } from "./lease-types"
+import {
+  logScrubApiCall,
+  type ScrubApiOutcome,
+  type ScrubApiUsage,
+} from "./scrub-api-log"
 import { containsRawSensitiveData } from "./sensitive-filter"
 
 /**
@@ -323,21 +334,240 @@ export function resolveExtractorModel(): string {
 }
 
 /**
- * Stub for the actual provider call. Returns `null` until the prompt is
- * wired in. When implemented, this should:
- *   1. Build the Anthropic Messages API payload using the prompt MD as
- *      the system message and `LeaseExtractorInput` as the user content.
- *   2. POST to `https://api.anthropic.com/v1/messages` with
- *      `resolveExtractorModel()`.
- *   3. Parse the tool_use block and pass through `validateLeaseExtraction`.
+ * Claude Haiku 4.5 published pricing (2026):
+ *   input  ~$1.00 / 1M tokens
+ *   output ~$5.00 / 1M tokens
+ *   cache reads  ~$0.10 / 1M tokens
+ *   cache writes ~$1.25 / 1M tokens (5m ephemeral)
  *
- * TODO: WIRE PROMPT — see lease-extractor.prompt.md
+ * Mirrors the breakdown in `scrub-api-log.ts` so the extractor and the
+ * scrub pipeline produce comparable per-call USD numbers.
+ */
+const HAIKU_INPUT_PER_M_USD = 1.0
+const HAIKU_OUTPUT_PER_M_USD = 5.0
+const HAIKU_CACHE_READ_PER_M_USD = 0.1
+const HAIKU_CACHE_WRITE_PER_M_USD = 1.25
+
+/**
+ * Cost estimate for a single Haiku extractor call. Colocated here (not
+ * in `scrub-api-log.ts`) because the extractor pricing is identical to
+ * the scrub pricing today but may diverge if Anthropic changes Haiku
+ * pricing or we route the extractor to a different model — keeping the
+ * pricing local to the extractor avoids cross-module surprises.
+ */
+export function estimateExtractorUsd(usage: ScrubApiUsage): number {
+  const cacheReadTokens = usage.cacheReadTokens ?? 0
+  const cacheWriteTokens = usage.cacheWriteTokens ?? 0
+  const uncachedInputTokens = Math.max(0, usage.tokensIn - cacheReadTokens)
+  return (
+    (uncachedInputTokens / 1_000_000) * HAIKU_INPUT_PER_M_USD +
+    (cacheReadTokens / 1_000_000) * HAIKU_CACHE_READ_PER_M_USD +
+    (cacheWriteTokens / 1_000_000) * HAIKU_CACHE_WRITE_PER_M_USD +
+    (usage.tokensOut / 1_000_000) * HAIKU_OUTPUT_PER_M_USD
+  )
+}
+
+/**
+ * Anthropic tool-use schema for the structured extraction. Forces the
+ * model to emit a single JSON object that matches `LeaseExtraction` (the
+ * validator in this file does the actual narrowing).
+ *
+ * `tool_choice` (set on the request) pins the model to this tool —
+ * Haiku will not free-text its way out of the schema.
+ *
+ * Note on the `["string", "null"]` union type: the Anthropic SDK's
+ * `Tool.InputSchema` is loosely typed (`properties?: unknown`), so the
+ * draft-2020-12 array-of-types form passes through to the wire format
+ * unchanged. The model handles it natively. If a future SDK rejects
+ * this form, switch to `anyOf: [{type: "string"}, {type: "null"}]`.
+ */
+const EXTRACT_TOOL = {
+  name: "extract_lease",
+  description: "Emit the structured lease/sale extraction.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      contactName: { type: "string" },
+      contactEmail: { type: ["string", "null"] },
+      propertyAddress: { type: ["string", "null"] },
+      closeDate: { type: ["string", "null"] },
+      leaseStartDate: { type: ["string", "null"] },
+      leaseEndDate: { type: ["string", "null"] },
+      leaseTermMonths: { type: ["integer", "null"] },
+      rentAmount: { type: ["number", "null"] },
+      rentPeriod: {
+        type: ["string", "null"],
+        enum: ["monthly", "annual", null],
+      },
+      mattRepresented: {
+        type: ["string", "null"],
+        enum: ["owner", "tenant", "both", null],
+      },
+      dealKind: { type: "string", enum: ["lease", "sale"] },
+      confidence: { type: "number" },
+      reasoning: { type: "string" },
+    },
+    required: ["contactName", "dealKind", "confidence", "reasoning"],
+  },
+} as const
+
+/**
+ * Extractor system prompt body. In production, loaded from disk on
+ * first read and cached for the lifetime of the process — the file is
+ * part of the deployed bundle and never changes between requests.
+ *
+ * In non-production (dev) mode the cache is bypassed so edits to
+ * `lease-extractor.prompt.md` take effect without a server restart.
+ * Mirrors the pattern in `closed-deal-classifier.ts`.
+ */
+let EXTRACTOR_PROMPT_CACHE: string | null = null
+async function loadPromptBody(): Promise<string> {
+  if (process.env.NODE_ENV === "production" && EXTRACTOR_PROMPT_CACHE !== null) {
+    return EXTRACTOR_PROMPT_CACHE
+  }
+  const promptPath = path.join(
+    process.cwd(),
+    "src",
+    "lib",
+    "ai",
+    "lease-extractor.prompt.md"
+  )
+  const text = await fs.readFile(promptPath, "utf8")
+  if (process.env.NODE_ENV === "production") EXTRACTOR_PROMPT_CACHE = text
+  return text
+}
+
+/**
+ * Telemetry-write wrapper. Always swallows errors so a failed insert
+ * never propagates to the caller — under-counting spend is strictly
+ * preferred over losing a successful extraction result.
+ */
+async function writeExtractorLog({
+  modelUsed,
+  usage,
+  outcome,
+}: {
+  modelUsed: string
+  usage: ScrubApiUsage
+  outcome: Extract<
+    ScrubApiOutcome,
+    "extractor-ok" | "extractor-validation-failed" | "extractor-provider-error"
+  >
+}): Promise<void> {
+  try {
+    await logScrubApiCall({
+      promptVersion: LEASE_EXTRACTOR_VERSION,
+      modelUsed,
+      usage,
+      outcome,
+      estimatedUsdOverride: estimateExtractorUsd(usage),
+    })
+  } catch (err) {
+    console.error("[extractor] failed to write ScrubApiCall row:", err)
+  }
+}
+
+/**
+ * Provider call: send the LeaseExtractorInput to Claude Haiku via the
+ * Anthropic SDK with tool-use forced for `extract_lease`.
+ *
+ * - Returns the raw `tool_use.input` block (untyped). The caller
+ *   (`runLeaseExtraction`) runs `validateLeaseExtraction` to narrow.
+ * - Returns `null` when the response carries no `tool_use` block —
+ *   shouldn't happen with `tool_choice: {type: "tool", ...}` but we
+ *   defend anyway because Anthropic occasionally returns a stop-reason
+ *   like `max_tokens` with a partial tool_use that we treat as a
+ *   validation failure rather than a hard error.
+ * - Logs every call to `ScrubApiCall` with the appropriate
+ *   `extractor-*` outcome and a Haiku-priced USD estimate. Logging
+ *   failure is non-fatal (telemetry under-count > losing the result).
+ * - Re-raises provider errors after logging — caller maps them to
+ *   `provider_error` in the outcome union.
+ *
+ * Retries: relies on the Anthropic SDK's built-in maxRetries (default
+ * 2 for v0.30+; we run v0.91 which keeps that default). The scrub
+ * pipeline runs its own retry loop in `scrubWithClaude` because it has
+ * to coordinate with a circuit breaker; the extractor doesn't, so the
+ * SDK's built-in is the right level of resilience.
  */
 export async function callExtractor(
-  _input: LeaseExtractorInput
+  input: LeaseExtractorInput
 ): Promise<unknown | null> {
-  // TODO: WIRE PROMPT — see lease-extractor.prompt.md
-  return null
+  const model = resolveExtractorModel()
+  const promptBody = await loadPromptBody()
+
+  const userContent =
+    `SUBJECT:\n${input.subject}\n\n` +
+    `BODY:\n${input.body}\n\n` +
+    `CLASSIFICATION: ${input.classification}\n` +
+    `SIGNALS: ${JSON.stringify(input.signals)}`
+
+  const client = createAnthropicClient()
+
+  let response: Awaited<ReturnType<typeof client.messages.create>>
+  try {
+    response = await client.messages.create({
+      model,
+      max_tokens: 1024,
+      temperature: 0,
+      system: [
+        {
+          type: "text",
+          text: promptBody,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      tools: [EXTRACT_TOOL as unknown as Anthropic.Messages.Tool],
+      tool_choice: { type: "tool", name: "extract_lease" },
+      messages: [{ role: "user", content: userContent }],
+    })
+  } catch (err) {
+    void writeExtractorLog({
+      modelUsed: model,
+      usage: { tokensIn: 0, tokensOut: 0 },
+      outcome: "extractor-provider-error",
+    })
+    throw err
+  }
+
+  // Narrow the streaming-vs-message union before we touch usage/content.
+  // `messages.create` without `stream: true` always returns a Message
+  // here, but the SDK's overload doesn't fully encode that.
+  const message = response as Anthropic.Messages.Message
+  const usage: ScrubApiUsage = {
+    tokensIn: message.usage?.input_tokens ?? 0,
+    tokensOut: message.usage?.output_tokens ?? 0,
+    cacheReadTokens:
+      (message.usage as { cache_read_input_tokens?: number } | undefined)
+        ?.cache_read_input_tokens ?? 0,
+    cacheWriteTokens:
+      (message.usage as { cache_creation_input_tokens?: number } | undefined)
+        ?.cache_creation_input_tokens ?? 0,
+  }
+  const modelUsed = message.model ?? model
+
+  const toolUse = message.content?.find(
+    (block) => block.type === "tool_use" && block.name === "extract_lease"
+  )
+
+  if (!toolUse || toolUse.type !== "tool_use") {
+    // No usable structured output — log as validation-failed and let
+    // the caller see `null`.
+    void writeExtractorLog({
+      modelUsed,
+      usage,
+      outcome: "extractor-validation-failed",
+    })
+    return null
+  }
+
+  void writeExtractorLog({
+    modelUsed,
+    usage,
+    outcome: "extractor-ok",
+  })
+
+  return toolUse.input
 }
 
 /**
