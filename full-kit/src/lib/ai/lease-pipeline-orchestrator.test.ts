@@ -149,6 +149,10 @@ const { STATE, dbMock } = vi.hoisted(() => {
   function makeTxClient(state: DbStateH) {
     return {
       communication: {
+        findUnique: async ({ where }: { where: { id: string } }) => {
+          const row = state.communications.get(where.id)
+          return row ? deepCloneH(row) : null
+        },
         update: async ({
           where,
           data,
@@ -1124,6 +1128,67 @@ describe("processCommunicationForLease — contact name validation", () => {
     const meta = comm.metadata as Record<string, unknown>
     const attempt = meta.leaseExtractionAttempt as Record<string, unknown>
     expect(attempt.failedReason).toBe("unusable_contact_name")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — concurrent metadata writers (C1)
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — preserves concurrent metadata writes", () => {
+  it("does not clobber metadata keys written by other workers (e.g. scrub-applier)", async () => {
+    // Seed a Communication with metadata.scrub already populated (as if
+    // scrub-applier had written before the orchestrator fired). This is
+    // the input snapshot the outer `comm.metadata` would have captured.
+    const commId = seedCommunication({
+      metadata: {
+        scrub: { existingResult: "preserved" },
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    // Simulate a CONCURRENT scrub-applier write that lands DURING the
+    // orchestrator's extractor call (between txn-1 and txn-2). If the
+    // orchestrator re-reads metadata inside each txn (C1 fix), this key
+    // survives. If it merges against the stale outer snapshot, this key
+    // would be wiped by the txn-2 metadata write.
+    const extractorWithRaceWrite = vi.fn(async (..._args: unknown[]) => {
+      const row = STATE.current.communications.get(commId)!
+      const meta = (row.metadata as Record<string, unknown>) ?? {}
+      row.metadata = {
+        ...meta,
+        scrub: {
+          ...(meta.scrub as Record<string, unknown> | undefined),
+          raceWriteFromScrubApplier: "must_survive",
+        },
+      }
+      return {
+        ok: true as const,
+        result: VALID_LEASE_EXTRACTION,
+        modelUsed: "claude-haiku-4-5-20251001",
+      }
+    })
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorWithRaceWrite,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+
+    const comm = STATE.current.communications.get(commId)!
+    const meta = comm.metadata as Record<string, unknown>
+    const scrub = meta.scrub as Record<string, unknown>
+    // Original outer-snapshot key — preserved through all merges.
+    expect(scrub.existingResult).toBe("preserved")
+    // Race-write key landing between txn-1 and txn-2 — must survive
+    // txn-2's metadata write because the orchestrator re-reads metadata
+    // inside the txn (C1 fix).
+    expect(scrub.raceWriteFromScrubApplier).toBe("must_survive")
+    expect(meta.closedDealClassification).toBeDefined()
+    expect(meta.leaseExtractionAttempt).toBeDefined()
   })
 })
 

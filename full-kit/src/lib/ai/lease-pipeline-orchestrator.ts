@@ -275,11 +275,20 @@ export async function processCommunicationForLease(
   // txn-1: durably stamp the classifier outcome. Use the txn even though
   // it's a single write so the post-commit visibility semantics are
   // identical to txn-2 below.
+  //
+  // C1 fix: re-read metadata INSIDE the txn (not against the outer
+  // `comm.metadata` snapshot) so that any concurrent metadata writers —
+  // notably scrub-applier — don't get clobbered by our merge. The pattern
+  // mirrors scrub-applier.ts:69-78.
   await db.$transaction(async (tx) => {
+    const fresh = await tx.communication.findUnique({
+      where: { id: communicationId },
+      select: { metadata: true },
+    })
     await tx.communication.update({
       where: { id: communicationId },
       data: {
-        metadata: mergeMetadata(comm.metadata, {
+        metadata: mergeMetadata(fresh?.metadata, {
           closedDealClassification: classificationStamp,
         }),
       },
@@ -301,10 +310,14 @@ export async function processCommunicationForLease(
     // Preserve any pre-existing unrelated metadata. Single-write txn
     // because the classifier-stamp is already durable from txn-1.
     await db.$transaction(async (tx) => {
+      const fresh = await tx.communication.findUnique({
+        where: { id: communicationId },
+        select: { metadata: true },
+      })
       await tx.communication.update({
         where: { id: communicationId },
         data: {
-          metadata: mergeMetadata(comm.metadata, {
+          metadata: mergeMetadata(fresh?.metadata, {
             closedDealClassification: classificationStamp,
             leaseExtractionAttempt: {
               version: LEASE_EXTRACTOR_VERSION,
@@ -326,10 +339,14 @@ export async function processCommunicationForLease(
   const extraction = extractorOutcome.result
   if (extraction.confidence < settings.leaseExtractorMinConfidence) {
     await db.$transaction(async (tx) => {
+      const fresh = await tx.communication.findUnique({
+        where: { id: communicationId },
+        select: { metadata: true },
+      })
       await tx.communication.update({
         where: { id: communicationId },
         data: {
-          metadata: mergeMetadata(comm.metadata, {
+          metadata: mergeMetadata(fresh?.metadata, {
             closedDealClassification: classificationStamp,
             leaseExtractionAttempt: {
               version: LEASE_EXTRACTOR_VERSION,
@@ -354,10 +371,14 @@ export async function processCommunicationForLease(
   const trimmedContactEmail = extraction.contactEmail?.trim() ?? ""
   if (!isUsableContactName(trimmedContactName) && trimmedContactEmail.length === 0) {
     await db.$transaction(async (tx) => {
+      const fresh = await tx.communication.findUnique({
+        where: { id: communicationId },
+        select: { metadata: true },
+      })
       await tx.communication.update({
         where: { id: communicationId },
         data: {
-          metadata: mergeMetadata(comm.metadata, {
+          metadata: mergeMetadata(fresh?.metadata, {
             closedDealClassification: classificationStamp,
             leaseExtractionAttempt: {
               version: LEASE_EXTRACTOR_VERSION,
@@ -385,11 +406,18 @@ export async function processCommunicationForLease(
   const persisted = await db.$transaction(async (tx) => {
     // Stamp the successful extraction attempt inside the same txn as the
     // LeaseRecord create — so a downstream crash rolls back BOTH the stamp
-    // and the half-built LeaseRecord state together.
+    // and the half-built LeaseRecord state together. Re-read metadata
+    // INSIDE this txn (C1) so any concurrent metadata write — notably
+    // scrub-applier's `metadata.scrub` write — is preserved through our
+    // merge instead of being clobbered by the stale outer snapshot.
+    const fresh = await tx.communication.findUnique({
+      where: { id: communicationId },
+      select: { metadata: true },
+    })
     await tx.communication.update({
       where: { id: communicationId },
       data: {
-        metadata: mergeMetadata(comm.metadata, {
+        metadata: mergeMetadata(fresh?.metadata, {
           closedDealClassification: classificationStamp,
           leaseExtractionAttempt: {
             version: LEASE_EXTRACTOR_VERSION,
