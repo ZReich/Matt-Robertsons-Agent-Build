@@ -148,6 +148,20 @@ const { STATE, dbMock } = vi.hoisted(() => {
 
   function makeTxClient(state: DbStateH) {
     return {
+      communication: {
+        update: async ({
+          where,
+          data,
+        }: {
+          where: { id: string }
+          data: Record<string, unknown>
+        }) => {
+          const row = state.communications.get(where.id)
+          if (!row) throw new Error(`communication not found: ${where.id}`)
+          Object.assign(row, data)
+          return deepCloneH(row)
+        },
+      },
       contact: {
         findFirst: async ({
           where,
@@ -657,6 +671,78 @@ describe("processCommunicationForLease — close today, start tomorrow", () => {
     if (!out.ok) throw new Error("expected ok")
     const contact = STATE.current.contacts.get(out.contactId)!
     expect(contact.clientType).toBe("active_listing_client")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — atomicity of the two-transaction split
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — atomicity", () => {
+  it("classifier-stamp from txn-1 persists when LeaseRecord create throws in txn-2", async () => {
+    const commId = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    // Force tx.leaseRecord.create to throw on the FIRST invocation only,
+    // so that we trigger the rollback inside txn-2. The classifier-stamp
+    // write in txn-1 must remain durable.
+    const originalLeaseCreate = (
+      dbMock as unknown as {
+        $transaction: (fn: (tx: unknown) => Promise<unknown>) => Promise<unknown>
+      }
+    )
+    // We patch by intercepting the makeTxClient via a wrapped $transaction.
+    // Easier: monkey-patch the $transaction temporarily to inject a tx
+    // whose leaseRecord.create throws.
+    const realTxn = dbMock.$transaction
+    let firstTxnDone = false
+    dbMock.$transaction = (async <T>(
+      fn: (tx: unknown) => Promise<T>
+    ): Promise<T> => {
+      return realTxn(async (tx: unknown) => {
+        const t = tx as { leaseRecord?: { create?: (...args: unknown[]) => unknown } }
+        if (firstTxnDone && t.leaseRecord?.create) {
+          // Second txn (the persistence one): make leaseRecord.create throw.
+          t.leaseRecord.create = async () => {
+            throw new Error("simulated DB failure inside txn-2")
+          }
+        }
+        const out = await fn(tx as Parameters<typeof fn>[0])
+        firstTxnDone = true
+        return out
+      })
+    }) as typeof dbMock.$transaction
+
+    try {
+      await expect(
+        processCommunicationForLease(commId, {
+          runClosedDealClassifierFn: classifierStub(),
+          runLeaseExtractionFn: extractorStub(),
+          now: new Date("2026-01-20T00:00:00Z"),
+          settings: { leaseExtractorMinConfidence: 0.6 },
+        })
+      ).rejects.toThrow("simulated DB failure inside txn-2")
+
+      // The classifier-stamp from txn-1 SHOULD be persisted (txn-1 closed
+      // cleanly before the AI call).
+      const comm = STATE.current.communications.get(commId)!
+      const meta = comm.metadata as Record<string, unknown>
+      const stamp = meta.closedDealClassification as Record<string, unknown>
+      expect(stamp).toBeDefined()
+      expect(stamp.version).toBe(CLOSED_DEAL_CLASSIFIER_VERSION)
+
+      // The leaseExtractionAttempt stamp + LeaseRecord side effects all
+      // happened INSIDE txn-2 which rolled back, so neither should be
+      // visible. (Our in-memory mock doesn't model transactional rollback,
+      // but the leaseRecord.create throw means no LeaseRecord was created
+      // and the leaseExtractionAttempt stamp write happened BEFORE the
+      // throw so in a real DB it would be rolled back too. We still assert
+      // that no LeaseRecord exists — the load-bearing post-condition.)
+      expect(STATE.current.leaseRecords.size).toBe(0)
+    } finally {
+      dbMock.$transaction = realTxn
+      void originalLeaseCreate
+    }
   })
 })
 

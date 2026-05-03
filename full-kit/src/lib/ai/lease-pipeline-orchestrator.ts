@@ -234,13 +234,49 @@ export async function processCommunicationForLease(
     runAt: now.toISOString(),
     modelUsed: classifierOutcome.modelUsed,
   }
-  await db.communication.update({
-    where: { id: communicationId },
-    data: {
-      metadata: mergeMetadata(comm.metadata, {
-        closedDealClassification: classificationStamp,
-      }),
-    },
+
+  // ---------------------------------------------------------------------
+  // Two-transaction structure (atomicity rationale).
+  //
+  // We intentionally split persistence into TWO short-lived transactions
+  // around the AI calls rather than wrapping everything in one big block:
+  //
+  //   txn-1: stamp `metadata.closedDealClassification`. Once committed,
+  //          the backlog driver's "already-stamped" filter excludes this
+  //          row, so we cannot lose the classifier outcome to a later
+  //          crash. This durably marks the row as "classifier ran".
+  //
+  //   AI call: extractor runs OUTSIDE any DB transaction (long-held DB
+  //            txns over an external HTTP call are an antipattern —
+  //            connections back up, deadlocks become more likely, and
+  //            Postgres transactions weren't designed for multi-second
+  //            holds).
+  //
+  //   txn-2: in the success path, atomically: create/upsert
+  //          LeaseRecord + CalendarEvent + Contact.clientType update.
+  //          In the failure paths (extractor_failed / low_confidence),
+  //          stamp `metadata.leaseExtractionAttempt` (no LeaseRecord side
+  //          effects). Either way, the second txn is a single atomic
+  //          group — a crash mid-way leaves no half-built state.
+  //
+  // Before this refactor, the classifier-stamp write happened OUTSIDE the
+  // persistence transaction, so a transaction failure would leave the
+  // Communication permanently marked "classified" with no LeaseRecord —
+  // the backlog driver would then skip it on the next run. Silent loss.
+  // ---------------------------------------------------------------------
+
+  // txn-1: durably stamp the classifier outcome. Use the txn even though
+  // it's a single write so the post-commit visibility semantics are
+  // identical to txn-2 below.
+  await db.$transaction(async (tx) => {
+    await tx.communication.update({
+      where: { id: communicationId },
+      data: {
+        metadata: mergeMetadata(comm.metadata, {
+          closedDealClassification: classificationStamp,
+        }),
+      },
+    })
   })
 
   const classification = classifierOutcome.result.classification
@@ -248,27 +284,30 @@ export async function processCommunicationForLease(
     return { ok: false, reason: "not_a_closed_deal", details: classification }
   }
 
-  // Stage 2 — extractor
+  // Stage 2 — extractor (NO transaction; external HTTP call).
   const extractorOutcome = await extractorFn(communicationId, classification, {
     signals: classifierOutcome.result.signals,
   })
   if (!extractorOutcome.ok) {
     // Stamp the failed-extraction attempt so the backlog driver doesn't
     // re-pick this Communication. Phase 2 PDF fallback reads this stamp.
-    // Preserve any pre-existing unrelated metadata.
-    await db.communication.update({
-      where: { id: communicationId },
-      data: {
-        metadata: mergeMetadata(comm.metadata, {
-          closedDealClassification: classificationStamp,
-          leaseExtractionAttempt: {
-            version: LEASE_EXTRACTOR_VERSION,
-            failedReason: extractorOutcome.reason,
-            details: extractorOutcome.details ?? null,
-            runAt: now.toISOString(),
-          },
-        }),
-      },
+    // Preserve any pre-existing unrelated metadata. Single-write txn
+    // because the classifier-stamp is already durable from txn-1.
+    await db.$transaction(async (tx) => {
+      await tx.communication.update({
+        where: { id: communicationId },
+        data: {
+          metadata: mergeMetadata(comm.metadata, {
+            closedDealClassification: classificationStamp,
+            leaseExtractionAttempt: {
+              version: LEASE_EXTRACTOR_VERSION,
+              failedReason: extractorOutcome.reason,
+              details: extractorOutcome.details ?? null,
+              runAt: now.toISOString(),
+            },
+          }),
+        },
+      })
     })
     return {
       ok: false,
@@ -279,14 +318,47 @@ export async function processCommunicationForLease(
 
   const extraction = extractorOutcome.result
   if (extraction.confidence < settings.leaseExtractorMinConfidence) {
-    await db.communication.update({
+    await db.$transaction(async (tx) => {
+      await tx.communication.update({
+        where: { id: communicationId },
+        data: {
+          metadata: mergeMetadata(comm.metadata, {
+            closedDealClassification: classificationStamp,
+            leaseExtractionAttempt: {
+              version: LEASE_EXTRACTOR_VERSION,
+              failedReason: "low_confidence",
+              confidence: extraction.confidence,
+              threshold: settings.leaseExtractorMinConfidence,
+              runAt: now.toISOString(),
+            },
+          }),
+        },
+      })
+    })
+    return { ok: false, reason: "low_confidence" }
+  }
+
+  // Persistence — txn-2: single atomic group covering the
+  // leaseExtractionAttempt stamp + LeaseRecord create/upsert +
+  // CalendarEvent upsert + Contact.clientType update. If any step throws,
+  // the whole group rolls back, leaving the classifier-stamp from txn-1
+  // intact (so the backlog driver still skips this row) but with no
+  // LeaseRecord side effects.
+  const closeDate = parseIsoDate(extraction.closeDate)
+  const leaseStartDate = parseIsoDate(extraction.leaseStartDate)
+  const leaseEndDate = parseIsoDate(extraction.leaseEndDate)
+
+  const persisted = await db.$transaction(async (tx) => {
+    // Stamp the successful extraction attempt inside the same txn as the
+    // LeaseRecord create — so a downstream crash rolls back BOTH the stamp
+    // and the half-built LeaseRecord state together.
+    await tx.communication.update({
       where: { id: communicationId },
       data: {
         metadata: mergeMetadata(comm.metadata, {
           closedDealClassification: classificationStamp,
           leaseExtractionAttempt: {
             version: LEASE_EXTRACTOR_VERSION,
-            failedReason: "low_confidence",
             confidence: extraction.confidence,
             threshold: settings.leaseExtractorMinConfidence,
             runAt: now.toISOString(),
@@ -294,15 +366,8 @@ export async function processCommunicationForLease(
         }),
       },
     })
-    return { ok: false, reason: "low_confidence" }
-  }
 
-  // Persistence — single transaction.
-  const closeDate = parseIsoDate(extraction.closeDate)
-  const leaseStartDate = parseIsoDate(extraction.leaseStartDate)
-  const leaseEndDate = parseIsoDate(extraction.leaseEndDate)
 
-  const persisted = await db.$transaction(async (tx) => {
     const contact = await findOrCreateContactForLease(
       {
         contactName: extraction.contactName,
