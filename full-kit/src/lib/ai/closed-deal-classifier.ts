@@ -25,7 +25,7 @@ import { containsRawSensitiveData } from "./sensitive-filter"
  * LeaseRecord row.
  */
 
-export const CLOSED_DEAL_CLASSIFIER_VERSION = "2026-05-02.1"
+export const CLOSED_DEAL_CLASSIFIER_VERSION = "2026-05-02.2"
 
 /** Discriminated outcome of a `runClosedDealClassifier()` invocation. */
 export type ClosedDealClassifierOutcome =
