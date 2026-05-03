@@ -1132,6 +1132,74 @@ describe("processCommunicationForLease — contact name validation", () => {
 })
 
 // ---------------------------------------------------------------------------
+// processCommunicationForLease — P2002 race on LeaseRecord create (I2)
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — P2002 race on create", () => {
+  it("converts a P2002 from leaseRecord.create into a re-find + update", async () => {
+    const commId = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    // Pre-seed a "winning" LeaseRecord that will be returned by the
+    // re-find after the synthetic P2002. We need it to match the
+    // orchestrator's where clause (contactId+propertyId+leaseStartDate).
+    // We can't know contact.id ahead of time, so instead we hook
+    // tx.leaseRecord.create to throw P2002 on its FIRST call AND
+    // simultaneously insert a winning row, then succeed normally on
+    // subsequent calls.
+    const realTxn = dbMock.$transaction
+    let createCalls = 0
+    dbMock.$transaction = (async <T>(
+      fn: (tx: unknown) => Promise<T>
+    ): Promise<T> => {
+      return realTxn(async (tx: unknown) => {
+        const t = tx as {
+          leaseRecord?: {
+            create?: (...args: unknown[]) => unknown
+            findFirst?: (...args: unknown[]) => unknown
+          }
+        }
+        if (t.leaseRecord?.create) {
+          const realCreate = t.leaseRecord.create
+          t.leaseRecord.create = async (args: unknown) => {
+            createCalls += 1
+            if (createCalls === 1) {
+              // Simulate a concurrent winner: insert the row that the
+              // re-find will see, then throw P2002 to mimic Postgres'
+              // unique-violation behavior.
+              await realCreate(args)
+              const { Prisma } = await import("@prisma/client")
+              throw new Prisma.PrismaClientKnownRequestError(
+                "Unique constraint failed on the fields: (`contact_id`,`property_id`,`lease_start_date`)",
+                { code: "P2002", clientVersion: "test" }
+              )
+            }
+            return realCreate(args)
+          }
+        }
+        return fn(tx as Parameters<typeof fn>[0])
+      })
+    }) as typeof dbMock.$transaction
+
+    try {
+      const out = await processCommunicationForLease(commId, {
+        runClosedDealClassifierFn: classifierStub(),
+        runLeaseExtractionFn: extractorStub(),
+        now: new Date("2026-01-20T00:00:00Z"),
+        settings: { leaseExtractorMinConfidence: 0.6 },
+      })
+
+      expect(out.ok).toBe(true)
+      // Exactly ONE LeaseRecord landed — the orchestrator caught P2002
+      // and pivoted to update on the winning row.
+      expect(STATE.current.leaseRecords.size).toBe(1)
+    } finally {
+      dbMock.$transaction = realTxn
+    }
+  })
+})
+
+// ---------------------------------------------------------------------------
 // processCommunicationForLease — concurrent metadata writers (C1)
 // ---------------------------------------------------------------------------
 

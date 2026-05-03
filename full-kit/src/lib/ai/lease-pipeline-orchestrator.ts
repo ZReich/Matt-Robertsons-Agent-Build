@@ -494,11 +494,43 @@ export async function processCommunicationForLease(
       })
       leaseRecordId = updated.id
     } else {
-      const created = await tx.leaseRecord.create({
-        data: leaseData,
-        select: { id: true },
-      })
-      leaseRecordId = created.id
+      // I2: catch a P2002 from the partial unique indexes. Two concurrent
+      // orchestrator invocations can both pass the metadata short-circuit
+      // (txn-1 stamp races), both run AI calls, both find no existing
+      // LeaseRecord, and both reach create — the second one then violates
+      // the dedupe index. Convert that to a re-find + update so the
+      // eventual state is correct regardless of which call won the race.
+      try {
+        const created = await tx.leaseRecord.create({
+          data: leaseData,
+          select: { id: true },
+        })
+        leaseRecordId = created.id
+      } catch (err) {
+        if (
+          err instanceof PrismaNS.PrismaClientKnownRequestError &&
+          err.code === "P2002"
+        ) {
+          const refound = await tx.leaseRecord.findFirst({
+            where,
+            select: { id: true },
+          })
+          if (!refound) {
+            // Should be impossible — a P2002 means another row matching
+            // our key just landed; barring a delete in between, findFirst
+            // must see it. Re-throw so the failure is observable.
+            throw err
+          }
+          const updated = await tx.leaseRecord.update({
+            where: { id: refound.id },
+            data: leaseData,
+            select: { id: true },
+          })
+          leaseRecordId = updated.id
+        } else {
+          throw err
+        }
+      }
     }
 
     // Calendar event for lease renewal — only if there's a future end date.
@@ -534,11 +566,35 @@ export async function processCommunicationForLease(
         })
         calendarEventId = updated.id
       } else {
-        const created = await tx.calendarEvent.create({
-          data: eventData,
-          select: { id: true },
-        })
-        calendarEventId = created.id
+        // I2: same P2002 handling as the LeaseRecord create — the
+        // (lease_record_id, event_kind) partial unique can fire under a
+        // concurrent-orchestrator race.
+        try {
+          const created = await tx.calendarEvent.create({
+            data: eventData,
+            select: { id: true },
+          })
+          calendarEventId = created.id
+        } catch (err) {
+          if (
+            err instanceof PrismaNS.PrismaClientKnownRequestError &&
+            err.code === "P2002"
+          ) {
+            const refound = await tx.calendarEvent.findFirst({
+              where: { leaseRecordId, eventKind: "lease_renewal" },
+              select: { id: true },
+            })
+            if (!refound) throw err
+            const updated = await tx.calendarEvent.update({
+              where: { id: refound.id },
+              data: eventData,
+              select: { id: true },
+            })
+            calendarEventId = updated.id
+          } else {
+            throw err
+          }
+        }
       }
     }
 
