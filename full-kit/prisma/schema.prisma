@@ -153,6 +153,19 @@ enum PropertyType {
   other
 }
 
+enum PropertyStatus {
+  active
+  under_contract
+  closed
+  archived
+}
+
+enum PendingReplyStatus {
+  pending
+  approved
+  dismissed
+}
+
 enum CommunicationChannel {
   email
   call
@@ -213,6 +226,10 @@ enum QueueStatus {
   in_flight
   done
   failed
+  /// Communication tripped the sensitive-content filter (financial keywords,
+  /// SSN/routing/card patterns) and was deliberately skipped from AI scrub.
+  /// The original email is unaffected; only the AI enrichment is bypassed.
+  skipped_sensitive
 }
 
 enum LeadSource {
@@ -402,6 +419,10 @@ model Contact {
   leadLastViewedAt DateTime?   @map("lead_last_viewed_at")
   estimatedValue   Decimal?    @map("estimated_value") @db.Decimal(14, 2)
   clientType       ClientType? @map("client_type")
+  /// Buyer/tenant search criteria for matching against the Property catalog.
+  /// Shape: { propertyTypes: PropertyType[], minSqft?: number, maxSqft?: number,
+  ///          locations: string[], maxPrice?: number, minPrice?: number, notes?: string }
+  searchCriteria   Json?       @map("search_criteria")
 
   // Relations
   deals          Deal[]
@@ -410,6 +431,9 @@ model Contact {
   todos          Todo[]
   agentMemories  AgentMemory[]
   profileFacts   ContactProfileFact[]
+  pendingReplies PendingReply[]               @relation("PendingReplyContact")
+  leaseRecords   LeaseRecord[]
+  calendarEvents CalendarEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -482,14 +506,27 @@ model Deal {
   commissionRate  Decimal?      @default(0.03) @map("commission_rate") @db.Decimal(5, 4)
   probability     Int?
   stageChangedAt  DateTime?     @map("stage_changed_at")
+  /// Optional FK back to the Property catalog. Lets a Deal denormalize-link
+  /// to the canonical Property record when the catalog has it. Existing
+  /// embedded propertyAddress/propertyType/squareFeet remain authoritative
+  /// while the catalog is being seeded.
+  propertyId      String?       @map("property_id")
+  /// Buildout's internal deal ID. Set when a Deal is ingested from a
+  /// Buildout export CSV. Unique so re-running the ingest is idempotent —
+  /// re-runs UPSERT by this key. Null for AI-detected and manually-created
+  /// deals.
+  buildoutDealId  String?       @unique @map("buildout_deal_id")
 
   // Relations
   contact        Contact         @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  property       Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   documents      DealDocument[]
   communications Communication[]
   meetings       Meeting[]
   todos          Todo[]
   agentMemories  AgentMemory[]
+  leaseRecords   LeaseRecord[]
+  calendarEvents CalendarEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -510,6 +547,7 @@ model Deal {
   @@index([listedDate])
   @@index([closingDate])
   @@index([stageChangedAt])
+  @@index([propertyId])
   @@map("deals")
 }
 
@@ -573,6 +611,9 @@ model Communication {
   todos                   Todo[]
   scrubQueue              ScrubQueue?
   operationalEmailReviews OperationalEmailReview[]
+  triggeredPendingReplies PendingReply[]            @relation("PendingReplyTrigger")
+  approvedFromPendingReply PendingReply[]           @relation("PendingReplyApproved")
+  sourceLeaseRecords      LeaseRecord[]             @relation("LeaseRecordSourceComm")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -693,6 +734,100 @@ model BuildoutProperty {
   @@unique([normalizedPropertyKey, unitOrSuite])
   @@index([matchedDealId])
   @@map("buildout_properties")
+}
+
+/// Catalog of properties Matt is listing or has listed. Distinct from `Deal`
+/// in that a Property can exist without any inquiry/deal yet. Genevieve's
+/// spreadsheet of active/under-contract/closed listings is the seed source.
+/// `propertyKey` is the normalized address used to join with Deal.propertyKey
+/// and inbound lead emails.
+model Property {
+  id                  String         @id @default(uuid())
+  name                String?
+  address             String
+  unit                String?
+  city                String?
+  state               String?
+  zip                 String?
+  propertyKey         String         @map("property_key")
+  propertyType        PropertyType?  @map("property_type")
+  status              PropertyStatus @default(active)
+  squareFeet          Int?           @map("square_feet")
+  occupiedSquareFeet  Int?           @map("occupied_square_feet")
+  listPrice           Decimal?       @map("list_price") @db.Decimal(14, 2)
+  capRate             Decimal?       @map("cap_rate") @db.Decimal(7, 4)
+  listingUrl          String?        @map("listing_url")
+  flyerUrl            String?        @map("flyer_url")
+  description         String?        @db.Text
+  highlights          Json?          @default("[]")
+  tags                Json?          @default("[]")
+  source              String?        // "buildout", "loopnet", "crexi", "manual", "csv_import"
+  externalId          String?        @map("external_id")
+  notes               String?        @db.Text
+  createdBy           String?        @map("created_by")
+  archivedAt          DateTime?      @map("archived_at")
+  listedAt            DateTime?      @map("listed_at")
+  underContractAt     DateTime?      @map("under_contract_at")
+  closedAt            DateTime?      @map("closed_at")
+
+  deals          Deal[]
+  pendingReplies PendingReply[]
+  leaseRecords   LeaseRecord[]
+  calendarEvents CalendarEvent[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([propertyKey, unit])
+  @@index([status])
+  @@index([propertyType])
+  @@index([propertyKey])
+  @@index([archivedAt])
+  @@map("properties")
+}
+
+/// Auto-generated draft email replies awaiting human review.
+/// Created when an inbound lead inquiry matches a Property in our catalog.
+/// `status="pending"` is reviewable; "approved" means Matt accepted; "dismissed"
+/// means the auto-draft was rejected. We deliberately do NOT send mail from
+/// this model — the Communication row with direction="outbound" is created
+/// only after human approval, so this is a safe scaffold for the real send-
+/// mail wiring later.
+model PendingReply {
+  id                      String             @id @default(uuid())
+  triggerCommunicationId  String?            @map("trigger_communication_id")
+  contactId               String?            @map("contact_id")
+  propertyId              String?            @map("property_id")
+  draftSubject            String             @map("draft_subject")
+  draftBody               String             @db.Text @map("draft_body")
+  reasoning               String?            @db.Text
+  suggestedProperties     Json?              @default("[]") @map("suggested_properties")
+  modelUsed               String?            @map("model_used")
+  status                  PendingReplyStatus @default(pending)
+  approvedAt              DateTime?          @map("approved_at")
+  approvedBy              String?            @map("approved_by")
+  dismissedAt             DateTime?          @map("dismissed_at")
+  dismissReason           String?            @map("dismiss_reason")
+  approvedCommunicationId String?            @map("approved_communication_id")
+  /// Optional FK back to the LeaseRecord that triggered this re-engagement
+  /// draft. Lets the UI on the LeaseRecord detail surface its renewal-
+  /// outreach history. Null for non-renewal drafts.
+  leaseRecordId           String?            @map("lease_record_id")
+
+  property              Property?      @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  contact               Contact?       @relation("PendingReplyContact", fields: [contactId], references: [id], onDelete: SetNull)
+  triggerCommunication  Communication? @relation("PendingReplyTrigger", fields: [triggerCommunicationId], references: [id], onDelete: SetNull)
+  approvedCommunication Communication? @relation("PendingReplyApproved", fields: [approvedCommunicationId], references: [id], onDelete: SetNull)
+  leaseRecord           LeaseRecord?   @relation("LeaseRenewalReply", fields: [leaseRecordId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([contactId])
+  @@index([propertyId])
+  @@index([triggerCommunicationId])
+  @@map("pending_replies")
 }
 
 model BuildoutEvent {
@@ -1336,4 +1471,101 @@ model IntegrationCredential {
   updatedAt DateTime @updatedAt
 
   @@map("integration_credentials")
+}
+
+/// LeaseRecord — one row per closed lease (or sale) extracted from email.
+/// Drives the renewal-alert pipeline. Created by the lease-extractor AI
+/// pass; never edited by hand except via the UI's correction flow.
+///
+/// `leaseEndDate` is the trigger for the renewal-alert sweep: the daily
+/// cron looks for records where leaseEndDate is approaching (configurable
+/// lookahead, default 6 months) and creates a Todo + CalendarEvent + auto-
+/// drafted re-engagement PendingReply.
+///
+/// For sales (not leases), leaseEndDate is null but closeDate is populated.
+/// Sales rows still drive Contact.clientType updates and the Christmas-
+/// mailer cohort but don't trigger renewal alerts.
+model LeaseRecord {
+  id                    String         @id @default(uuid())
+  contactId             String         @map("contact_id")
+  propertyId            String?        @map("property_id")
+  dealId                String?        @map("deal_id")
+  sourceCommunicationId String?        @map("source_communication_id")
+  closeDate             DateTime?      @map("close_date")
+  leaseStartDate        DateTime?      @map("lease_start_date")
+  leaseEndDate          DateTime?      @map("lease_end_date")
+  leaseTermMonths       Int?           @map("lease_term_months")
+  rentAmount            Decimal?       @map("rent_amount") @db.Decimal(14, 2)
+  rentPeriod            String?        @map("rent_period")
+  /// Which side of the deal Matt represented. Drives the re-engagement
+  /// language (different pitch for owner-side vs tenant-side).
+  mattRepresented       String?        @map("matt_represented")
+  /// Sale vs lease vs unknown. Sales never trigger renewal alerts; they
+  /// just feed Contact.clientType + Christmas-mailer cohort.
+  dealKind              String         @default("lease") @map("deal_kind")
+  /// Confidence score 0.0-1.0 from the AI extraction. Below 0.6 surfaces
+  /// to a human-review queue rather than auto-creating side effects.
+  extractionConfidence  Decimal        @default(0.0) @map("extraction_confidence") @db.Decimal(5, 4)
+  status                String         @default("active")
+  notes                 String?        @db.Text
+  metadata              Json?          @default("{}")
+
+  contact               Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  property              Property?      @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  deal                  Deal?          @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  sourceCommunication   Communication? @relation("LeaseRecordSourceComm", fields: [sourceCommunicationId], references: [id], onDelete: SetNull)
+  calendarEvents        CalendarEvent[]
+  renewalReplies        PendingReply[] @relation("LeaseRenewalReply")
+
+  createdBy             String?        @map("created_by")
+  archivedAt            DateTime?      @map("archived_at")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+
+  @@index([contactId])
+  @@index([leaseEndDate])
+  @@index([status])
+  @@index([closeDate])
+  @@index([propertyId])
+  @@index([dealId])
+  @@map("lease_records")
+}
+
+/// CalendarEvent — system-generated calendar entries (lease renewals,
+/// follow-ups, anniversaries). Distinct from `Meeting` which represents
+/// actual scheduled interactions with attendees. The Calendar UI merges
+/// both into a unified view.
+model CalendarEvent {
+  id              String       @id @default(uuid())
+  title           String
+  description     String?      @db.Text
+  startDate       DateTime     @map("start_date")
+  endDate         DateTime?    @map("end_date")
+  allDay          Boolean      @default(true) @map("all_day")
+  /// Type of automated event — drives icon + color in the UI.
+  /// Examples: "lease_renewal", "follow_up", "anniversary", "tax_deadline".
+  eventKind       String       @map("event_kind")
+  contactId       String?      @map("contact_id")
+  dealId          String?      @map("deal_id")
+  propertyId      String?      @map("property_id")
+  leaseRecordId   String?      @map("lease_record_id")
+  /// "system" for AI-generated, "manual" for hand-added.
+  source          String       @default("system")
+  status          String       @default("upcoming")
+
+  contact         Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal            Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  property        Property?    @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  leaseRecord     LeaseRecord? @relation(fields: [leaseRecordId], references: [id], onDelete: SetNull)
+
+  createdBy       String?      @map("created_by")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@index([startDate])
+  @@index([eventKind])
+  @@index([leaseRecordId])
+  @@index([contactId])
+  @@index([dealId])
+  @@map("calendar_events")
 }
