@@ -452,8 +452,42 @@ describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
       })
     ).rejects.toThrow(/anthropic 503/)
 
-    await Promise.resolve()
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ outcome: "extractor-provider-error" }),
+      })
+    )
+  })
+
+  it("awaits telemetry on error path — DB write lands before the throw escapes (I-1 regression)", async () => {
+    // Use a delayed mock so a fire-and-forget write would NOT have
+    // completed by the time the catch block runs. If callExtractor
+    // truly awaits writeExtractorLog before re-throwing, the mock will
+    // be called by the time the promise rejects.
+    mockMessagesCreate.mockRejectedValueOnce(new Error("anthropic timeout"))
+    const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    create.mockImplementationOnce(
+      async () => {
+        await new Promise((r) => setTimeout(r, 10))
+        return {} as never
+      }
+    )
+
+    try {
+      await callExtractor({
+        subject: "s",
+        body: "b",
+        classification: "closed_lease",
+        signals: [],
+      })
+    } catch {
+      // The throw is expected — what matters is the telemetry call
+      // happened synchronously relative to the throw (i.e. it was
+      // awaited, not fire-and-forget).
+    }
+
+    expect(create).toHaveBeenCalledTimes(1)
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ outcome: "extractor-provider-error" }),

@@ -522,7 +522,7 @@ export async function callExtractor(
       messages: [{ role: "user", content: userContent }],
     })
   } catch (err) {
-    void writeExtractorLog({
+    await writeExtractorLog({
       modelUsed: model,
       usage: { tokensIn: 0, tokensOut: 0 },
       outcome: "extractor-provider-error",
@@ -553,7 +553,7 @@ export async function callExtractor(
   if (!toolUse || toolUse.type !== "tool_use") {
     // No usable structured output — log as validation-failed and let
     // the caller see `null`.
-    void writeExtractorLog({
+    await writeExtractorLog({
       modelUsed,
       usage,
       outcome: "extractor-validation-failed",
@@ -561,7 +561,7 @@ export async function callExtractor(
     return null
   }
 
-  void writeExtractorLog({
+  await writeExtractorLog({
     modelUsed,
     usage,
     outcome: "extractor-ok",
