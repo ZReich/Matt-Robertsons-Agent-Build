@@ -140,6 +140,14 @@ const DEEPSEEK_INPUT_PER_M_USD = 0.14
 const DEEPSEEK_OUTPUT_PER_M_USD = 0.28
 
 /**
+ * Audit I5: per-attempt timeout for the DeepSeek HTTP call. DeepSeek's
+ * observed failure mode under load is TCP-accept-but-no-response, which
+ * would otherwise freeze the backlog driver indefinitely. With one retry,
+ * worst case is ~60s plus any Retry-After backoff between attempts.
+ */
+const CLASSIFIER_FETCH_TIMEOUT_MS = 30_000
+
+/**
  * Cost estimate for a single DeepSeek classifier call. Colocated with
  * the wiring (not in `scrub-api-log.ts`) because the pricing model is
  * provider-specific and we don't want to entangle it with the Haiku
@@ -281,13 +289,49 @@ export async function callClassifier(
   // One-shot retry: if the first response is 429 or 5xx, wait and try
   // once more. After the second attempt we either return success or
   // throw the most recent failure.
+  //
+  // Audit I5: each attempt is bounded by a 30s AbortController timeout.
+  // A hanging DeepSeek connection (TCP-accept-but-no-response, observed
+  // pattern under load) would otherwise freeze the backlog driver
+  // indefinitely. Worst case: 2 attempts × 30s = ~60s plus any
+  // Retry-After backoff between them. If both attempts time out we throw
+  // a "timeout"-tagged provider error.
   let response: Response | null = null
+  let lastTimeoutError: Error | null = null
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    response = await fetch(url, {
-      method: "POST",
-      headers,
-      body: requestBody,
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(
+      () => controller.abort(),
+      CLASSIFIER_FETCH_TIMEOUT_MS
+    )
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: requestBody,
+        signal: controller.signal,
+      })
+    } catch (err) {
+      // AbortError or other network failure. Treat as retryable on
+      // attempt 0 (fall through to backoff), and as terminal on attempt 1.
+      const isAbort =
+        err instanceof Error &&
+        (err.name === "AbortError" || /aborted/i.test(err.message))
+      lastTimeoutError = err instanceof Error ? err : new Error(String(err))
+      if (attempt === 1) {
+        if (isAbort) {
+          throw new Error(
+            `classifier provider failed (timeout): no response within ${CLASSIFIER_FETCH_TIMEOUT_MS}ms`
+          )
+        }
+        throw lastTimeoutError
+      }
+      // Attempt 0 timed out / failed — wait the base backoff and retry.
+      await sleep(1000)
+      continue
+    } finally {
+      clearTimeout(timeout)
+    }
     const isRetryable =
       response.status === 429 || (response.status >= 500 && response.status < 600)
     if (!isRetryable || attempt === 1) break
@@ -296,7 +340,13 @@ export async function callClassifier(
   }
 
   if (!response) {
-    // Defensive — the loop above always assigns at least once.
+    // Both attempts failed without a response — the catch above already
+    // threw on attempt 1, but defense in depth.
+    if (lastTimeoutError) {
+      throw new Error(
+        `classifier provider failed (timeout): no response within ${CLASSIFIER_FETCH_TIMEOUT_MS}ms`
+      )
+    }
     throw new Error("classifier provider failed: no response")
   }
 

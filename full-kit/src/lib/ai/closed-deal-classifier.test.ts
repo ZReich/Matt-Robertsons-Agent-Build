@@ -372,6 +372,26 @@ describe("callClassifier (DeepSeek wiring)", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it("converts AbortError on both attempts into a timeout-tagged provider error (I5)", async () => {
+    // Simulate the abort path by having fetch immediately reject with an
+    // AbortError BOTH attempts. That's exactly what the in-process
+    // 30s-timer would synthesize against a hanging DeepSeek connection,
+    // without us having to actually wait 30 seconds. The classifier's
+    // attempt-0 catch falls through to the 1s backoff and retries; the
+    // attempt-1 catch throws the timeout-tagged error we assert on.
+    const fetchMock = vi.fn(async (_url: string, _init: RequestInit) => {
+      const err = new Error("The operation was aborted")
+      err.name = "AbortError"
+      throw err
+    })
+    vi.stubGlobal("fetch", fetchMock)
+
+    await expect(callClassifier("subj", "body")).rejects.toThrow(/timeout/i)
+    // Two attempts: attempt 0 throws + falls through to backoff, then
+    // attempt 1 throws and surfaces the timeout-tagged error.
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it("logs a ScrubApiCall row on success with classifier outcome and tokens", async () => {
     mockFetchOnce(
       buildOkResponse(
