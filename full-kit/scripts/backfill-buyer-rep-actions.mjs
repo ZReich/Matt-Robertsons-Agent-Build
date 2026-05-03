@@ -98,11 +98,24 @@ async function main() {
     examined: 0,
     matched: 0,
     actionCreated: 0,
+    // Phase D step 3 outcome breakdown:
+    //   autoTierCount: LOI proposals with matching-filename attachment
+    //   loggedAuditOnly: tenant_rep_search log_only audit rows (no dedupe)
+    // Both counters are subsets of actionCreated (or, for log_only, parallel
+    // to it — see code below).
+    autoTierCount: 0,
+    loggedAuditOnly: 0,
     skippedExistingDeal: 0,
     skippedDuplicatePending: 0,
     skippedNoSignal: 0,
     skippedNoExternalRecipient: 0,
     errors: 0,
+  }
+  const matchedSignalBreakdown = {
+    loi: 0,
+    tour: 0,
+    nda: 0,
+    tenant_rep_search: 0,
   }
   const samples = []
 
@@ -126,6 +139,9 @@ async function main() {
       continue
     }
     stats.matched++
+    if (signal.signalType in matchedSignalBreakdown) {
+      matchedSignalBreakdown[signal.signalType]++
+    }
 
     const externalRecipient = pickFirstExternalRecipient(
       toRecipients,
@@ -147,15 +163,41 @@ async function main() {
       continue
     }
 
+    // Dry-run tier preview: mirrors the logic inside proposeBuyerRepDeal so
+    // we can show what the apply pass WOULD produce without calling it.
+    const attachments = Array.isArray(meta?.attachments) ? meta.attachments : []
+    const loiFilenameMatch = attachments.some(
+      (a) =>
+        typeof a?.name === "string" &&
+        /loi|letter[-_ ]of[-_ ]intent|offer/i.test(a.name)
+    )
+    let predictedTier = "approve"
+    if (signal.signalType === "tenant_rep_search") {
+      predictedTier = "log_only"
+    } else if (signal.signalType === "loi" && loiFilenameMatch) {
+      predictedTier = "auto"
+    }
+
     if (samples.length < 10) {
       samples.push({
         commId: row.id,
         subject: row.subject?.slice(0, 80),
         signalType: signal.signalType,
         proposedStage: signal.proposedStage,
+        predictedTier,
+        attachmentNames: attachments
+          .map((a) => a?.name)
+          .filter(Boolean)
+          .slice(0, 3),
         contactIdResolved: !!contactId,
         recipient: externalRecipient?.email,
       })
+    }
+
+    if (!apply) {
+      // Pre-tally what apply would produce so the dry-run output is decisive.
+      if (predictedTier === "log_only") stats.loggedAuditOnly++
+      else if (predictedTier === "auto") stats.autoTierCount++
     }
 
     if (apply) {
@@ -171,6 +213,8 @@ async function main() {
         })
         if (result.created) {
           stats.actionCreated++
+          if (result.tier === "log_only") stats.loggedAuditOnly++
+          else if (result.tier === "auto") stats.autoTierCount++
         } else if (result.skipReason === "existing-buyer-rep-deal") {
           stats.skippedExistingDeal++
         } else if (result.skipReason === "duplicate-pending-action") {
@@ -183,7 +227,9 @@ async function main() {
     }
   }
 
-  console.log(JSON.stringify({ stats, samples }, null, 2))
+  console.log(
+    JSON.stringify({ stats, matchedSignalBreakdown, samples }, null, 2)
+  )
   await db.$disconnect()
 }
 
