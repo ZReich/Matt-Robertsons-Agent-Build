@@ -381,7 +381,7 @@ export function estimateExtractorUsd(usage: ScrubApiUsage): number {
  * unchanged. The model handles it natively. If a future SDK rejects
  * this form, switch to `anyOf: [{type: "string"}, {type: "null"}]`.
  */
-const EXTRACT_TOOL = {
+export const EXTRACT_TOOL = {
   name: "extract_lease",
   description: "Emit the structured lease/sale extraction.",
   input_schema: {
@@ -435,6 +435,15 @@ async function loadPromptBody(): Promise<string> {
   const text = await fs.readFile(promptPath, "utf8")
   if (process.env.NODE_ENV === "production") EXTRACTOR_PROMPT_CACHE = text
   return text
+}
+
+/**
+ * Public alias for the prompt loader. The PDF extractor reuses the
+ * same MD file so the body and PDF prompts never drift; exported here
+ * so that file doesn't have to duplicate the path/cache logic.
+ */
+export async function loadLeaseExtractorPrompt(): Promise<string> {
+  return loadPromptBody()
 }
 
 /**

@@ -22,17 +22,23 @@ export type ScrubApiOutcome =
   | "db-commit-failed"
   | "fenced-out"
   | "retry-correction"
-  // Closed-deal classifier outcomes (Stage 1 of lease pipeline) and
-  // lease/sale extractor outcomes (Stage 2). Both share the same
-  // telemetry table because the schema fits 1:1 — only the cost model
-  // differs (DeepSeek for the classifier, Haiku for the extractor and
-  // for scrub), and callers pass an override via `estimatedUsdOverride`.
+  // Closed-deal classifier outcomes (Stage 1 of lease pipeline),
+  // lease/sale body-extractor outcomes (Stage 2), and lease/sale
+  // PDF-extractor outcomes (Stage 2 fallback for PDF lease docs). All
+  // share the same telemetry table because the schema fits 1:1 — only
+  // the cost model differs (DeepSeek for the classifier, Haiku for the
+  // extractors and for scrub), and callers pass an override via
+  // `estimatedUsdOverride`.
   //
-  // CONVENTION: classifier-* and extractor-* outcomes are namespaced
-  // because there is no `purpose` column on ScrubApiCall. Any
-  // cross-cutting query like "show me all validation failures" must
-  // UNION over "validation-failed" AND "classifier-validation-failed"
-  // AND "extractor-validation-failed".
+  // CONVENTION: classifier-*, extractor-*, and extractor-pdf-* outcomes
+  // are namespaced because there is no `purpose` column on
+  // ScrubApiCall. Any cross-cutting query like "show me all validation
+  // failures" must UNION over "validation-failed" AND
+  // "classifier-validation-failed" AND "extractor-validation-failed"
+  // AND "extractor-pdf-validation-failed". The `extractor-pdf-skipped`
+  // outcome additionally fires for PDF inputs we refused to send to
+  // Anthropic (file_too_large, not_pdf) — those rows carry zero
+  // tokens and zero cost so the skip rate is queryable.
   // Follow-up: add `purpose` column to schema and migrate.
   | "classifier-ok"
   | "classifier-validation-failed"
@@ -40,6 +46,10 @@ export type ScrubApiOutcome =
   | "extractor-ok"
   | "extractor-validation-failed"
   | "extractor-provider-error"
+  | "extractor-pdf-ok"
+  | "extractor-pdf-validation-failed"
+  | "extractor-pdf-provider-error"
+  | "extractor-pdf-skipped"
 
 const HAIKU_INPUT_PER_M = 1
 const HAIKU_CACHE_READ_PER_M = 0.1
