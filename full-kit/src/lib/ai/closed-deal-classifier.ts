@@ -159,13 +159,21 @@ export function estimateClassifierUsd({
 }
 
 /**
- * Classifier system prompt body. Loaded from disk on first read and
- * cached for the lifetime of the process — the file is part of the
- * deployed bundle and never changes between requests.
+ * Classifier system prompt body. In production, loaded from disk on
+ * first read and cached for the lifetime of the process — the file is
+ * part of the deployed bundle and never changes between requests.
+ *
+ * In non-production (dev) mode the cache is bypassed so edits to
+ * `closed-deal-classifier.prompt.md` take effect without a server
+ * restart. Next.js hot-reload does not re-run module-scope initialisers,
+ * so a module-level cache would silently serve stale prompt text.
  */
 let CLASSIFIER_PROMPT_CACHE: string | null = null
 async function loadClassifierPrompt(): Promise<string> {
-  if (CLASSIFIER_PROMPT_CACHE !== null) return CLASSIFIER_PROMPT_CACHE
+  // Bypass cache in dev so prompt edits take effect without a restart.
+  if (process.env.NODE_ENV === "production" && CLASSIFIER_PROMPT_CACHE !== null) {
+    return CLASSIFIER_PROMPT_CACHE
+  }
   const promptPath = path.join(
     process.cwd(),
     "src",
@@ -173,8 +181,9 @@ async function loadClassifierPrompt(): Promise<string> {
     "ai",
     "closed-deal-classifier.prompt.md"
   )
-  CLASSIFIER_PROMPT_CACHE = await fs.readFile(promptPath, "utf8")
-  return CLASSIFIER_PROMPT_CACHE
+  const text = await fs.readFile(promptPath, "utf8")
+  if (process.env.NODE_ENV === "production") CLASSIFIER_PROMPT_CACHE = text
+  return text
 }
 
 function getClassifierEndpoint(): string {

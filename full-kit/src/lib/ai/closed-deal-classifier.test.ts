@@ -240,6 +240,16 @@ describe("callClassifier (DeepSeek wiring)", () => {
       /classifier provider failed.*500/i
     )
     expect(fetchMock).toHaveBeenCalledTimes(2)
+
+    // writeClassifierLog is fire-and-forget (void-prefixed); flush the
+    // microtask queue so the create() call has landed before we assert.
+    await Promise.resolve()
+    const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ outcome: "classifier-provider-error" }),
+      })
+    )
   })
 
   it("does NOT retry on 4xx other than 429 (e.g. 400)", async () => {
@@ -267,6 +277,16 @@ describe("callClassifier (DeepSeek wiring)", () => {
     )
     const out = await callClassifier("subj", "body")
     expect(out).toBeNull()
+
+    // writeClassifierLog is fire-and-forget (void-prefixed); flush the
+    // microtask queue so the create() call has landed before we assert.
+    await Promise.resolve()
+    const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ outcome: "classifier-validation-failed" }),
+      })
+    )
   })
 
   it("returns null when the response content is not valid JSON", async () => {
@@ -279,6 +299,16 @@ describe("callClassifier (DeepSeek wiring)", () => {
     })
     const out = await callClassifier("subj", "body")
     expect(out).toBeNull()
+
+    // writeClassifierLog is fire-and-forget (void-prefixed); flush the
+    // microtask queue so the create() call has landed before we assert.
+    await Promise.resolve()
+    const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ outcome: "classifier-validation-failed" }),
+      })
+    )
   })
 
   it("retries once on 429 (Retry-After respected) and returns the 200 result", async () => {

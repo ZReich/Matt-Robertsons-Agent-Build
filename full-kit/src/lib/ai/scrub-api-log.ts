@@ -26,6 +26,12 @@ export type ScrubApiOutcome =
   // share the same telemetry table because the schema fits 1:1 — only
   // the cost model differs (DeepSeek vs Haiku), and callers pass an
   // override via `estimatedUsdOverride`.
+  //
+  // CONVENTION: classifier-* outcomes are namespaced because there is no
+  // `purpose` column on ScrubApiCall. Any cross-cutting query like
+  // "show me all validation failures" must UNION over both
+  // "validation-failed" AND "classifier-validation-failed".
+  // Follow-up: add `purpose` column to schema and migrate.
   | "classifier-ok"
   | "classifier-validation-failed"
   | "classifier-provider-error"
