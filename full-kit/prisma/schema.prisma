@@ -253,6 +253,8 @@ enum ClientType {
   active_listing_client
   active_buyer_rep_client
   past_client
+  past_listing_client
+  past_buyer_client
   cooperating_broker
   service_provider
   other
@@ -826,7 +828,14 @@ model PendingReply {
   @@index([status, createdAt])
   @@index([contactId])
   @@index([propertyId])
+  /// @prisma-unique-partial: trigger_communication_id IS NOT NULL AND contact_id IS NOT NULL AND property_id IS NOT NULL
+  /// Partial unique index `pending_replies_dedupe_uidx` enforces this in
+  /// Postgres (see migration phase_c_role_lifecycle_and_pending_reply_dedupe).
+  /// Prisma's schema DSL can't express partial unique indexes, so this is
+  /// document-only — the constraint is created via raw SQL migration.
   @@index([triggerCommunicationId])
+  @@index([approvedCommunicationId])
+  @@index([leaseRecordId])
   @@map("pending_replies")
 }
 
