@@ -30,7 +30,13 @@ type WindowAgg = {
 async function aggregate(windowMs: number): Promise<WindowAgg> {
   const since = new Date(Date.now() - windowMs)
   const rows = await db.scrubApiCall.findMany({
-    where: { at: { gte: since } },
+    where: {
+      at: { gte: since },
+      // Scope to scrub rows. `purpose IS NULL` keeps pre-migration rows
+      // (all of which were scrub) in scope; once those age out of the
+      // 30-day window the OR can be dropped.
+      OR: [{ purpose: "scrub" }, { purpose: null }],
+    },
     select: {
       outcome: true,
       tokensIn: true,

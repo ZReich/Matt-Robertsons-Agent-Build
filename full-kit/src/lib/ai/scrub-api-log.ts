@@ -14,6 +14,11 @@ export type ScrubApiUsage = {
  *
  * The remaining outcomes are terminal. `updateScrubApiCallOutcome()`
  * transitions a row from "pending-validation" to its final state.
+ *
+ * Cross-purpose outcomes (`ok`, `validation-failed`, `provider-error`)
+ * are scoped by the `purpose` column — a query for "all validation
+ * failures across the closed-deal classifier" is
+ * `WHERE outcome = 'validation-failed' AND purpose = 'closed_deal_classifier'`.
  */
 export type ScrubApiOutcome =
   | "pending-validation"
@@ -22,19 +27,19 @@ export type ScrubApiOutcome =
   | "db-commit-failed"
   | "fenced-out"
   | "retry-correction"
-  // Closed-deal classifier outcomes (Stage 1 of lease pipeline). These
-  // share the same telemetry table because the schema fits 1:1 — only
-  // the cost model differs (DeepSeek vs Haiku), and callers pass an
-  // override via `estimatedUsdOverride`.
-  //
-  // CONVENTION: classifier-* outcomes are namespaced because there is no
-  // `purpose` column on ScrubApiCall. Any cross-cutting query like
-  // "show me all validation failures" must UNION over both
-  // "validation-failed" AND "classifier-validation-failed".
-  // Follow-up: add `purpose` column to schema and migrate.
-  | "classifier-ok"
-  | "classifier-validation-failed"
-  | "classifier-provider-error"
+  | "ok"
+  | "provider-error"
+
+/**
+ * Identifies which AI call site produced a `ScrubApiCall` row. Persisted
+ * to the `purpose` column so cross-cutting queries can scope by source
+ * without relying on outcome-string prefixes.
+ */
+export type ScrubApiPurpose =
+  | "scrub"
+  | "closed_deal_classifier"
+  | "lease_extractor"
+  | "pdf_lease_extractor"
 
 const HAIKU_INPUT_PER_M = 1
 const HAIKU_CACHE_READ_PER_M = 0.1
@@ -68,6 +73,7 @@ export async function logScrubApiCall({
   modelUsed,
   usage,
   outcome,
+  purpose,
   estimatedUsdOverride,
 }: {
   queueRowId?: string | null
@@ -76,6 +82,7 @@ export async function logScrubApiCall({
   modelUsed: string
   usage: ScrubApiUsage
   outcome: ScrubApiOutcome
+  purpose: ScrubApiPurpose
   /**
    * Optional pre-computed USD estimate. Use when the caller has its own
    * pricing model (e.g. the closed-deal classifier on DeepSeek, which
@@ -101,6 +108,7 @@ export async function logScrubApiCall({
         cacheReadTokens: usage.cacheReadTokens ?? 0,
         cacheWriteTokens: usage.cacheWriteTokens ?? 0,
         outcome,
+        purpose,
         estimatedUsd: usd.toFixed(6),
       },
       select: { id: true },

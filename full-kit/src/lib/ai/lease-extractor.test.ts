@@ -1,11 +1,28 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
+
+// Hoisted fake Anthropic client so vi.mock can wire it before any
+// `import` of the SDK in module-under-test code.
+const { mockMessagesCreate, MockAnthropicClass } = vi.hoisted(() => {
+  const mockMessagesCreate = vi.fn()
+  class MockAnthropicClass {
+    messages = { create: mockMessagesCreate }
+    constructor(_opts?: unknown) {}
+  }
+  return { mockMessagesCreate, MockAnthropicClass }
+})
+
+vi.mock("@anthropic-ai/sdk", () => ({
+  default: MockAnthropicClass,
+}))
 
 import { db } from "@/lib/prisma"
 
 import {
   callExtractor,
+  estimateExtractorUsd,
+  LEASE_EXTRACTOR_VERSION,
   resolveExtractorModel,
   runLeaseExtraction,
   validateLeaseExtraction,
@@ -15,6 +32,10 @@ vi.mock("@/lib/prisma", () => ({
   db: {
     communication: {
       findUnique: vi.fn(),
+    },
+    scrubApiCall: {
+      create: vi.fn().mockResolvedValue({ id: "log-1" }),
+      update: vi.fn(),
     },
   },
 }))
@@ -224,15 +245,286 @@ describe("validateLeaseExtraction — rejections", () => {
   })
 })
 
-describe("callExtractor (stub)", () => {
-  it("returns null until the prompt is wired", async () => {
+describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
+  const ORIGINAL_ENV = { ...process.env }
+
+  beforeEach(() => {
+    process.env.ANTHROPIC_API_KEY = "sk-ant-test-key"
+    delete process.env.ANTHROPIC_LEASE_EXTRACTOR_MODEL
+    mockMessagesCreate.mockReset()
+    ;(db.scrubApiCall.create as ReturnType<typeof vi.fn>).mockClear()
+    ;(db.scrubApiCall.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: "log-1",
+    })
+  })
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV }
+  })
+
+  function buildToolUseResponse(
+    input: Record<string, unknown>,
+    overrides: {
+      model?: string
+      usage?: {
+        input_tokens?: number
+        output_tokens?: number
+        cache_read_input_tokens?: number
+        cache_creation_input_tokens?: number
+      }
+    } = {}
+  ) {
+    return {
+      model: overrides.model ?? "claude-haiku-4-5-20251001",
+      usage: {
+        input_tokens: overrides.usage?.input_tokens ?? 800,
+        output_tokens: overrides.usage?.output_tokens ?? 220,
+        cache_read_input_tokens: overrides.usage?.cache_read_input_tokens ?? 0,
+        cache_creation_input_tokens:
+          overrides.usage?.cache_creation_input_tokens ?? 0,
+      },
+      content: [
+        {
+          type: "tool_use",
+          name: "extract_lease",
+          input,
+        },
+      ],
+    }
+  }
+
+  it("calls Haiku with tool-use forced for extract_lease, prompt loaded from MD, temperature 0", async () => {
+    mockMessagesCreate.mockResolvedValueOnce(buildToolUseResponse(VALID_LEASE))
+
+    const out = await callExtractor({
+      subject: "Lease fully executed — 303 N Broadway",
+      body: "Brandon signed today.",
+      classification: "closed_lease",
+      signals: ["fully executed", "commencement"],
+    })
+
+    expect(mockMessagesCreate).toHaveBeenCalledTimes(1)
+    const args = mockMessagesCreate.mock.calls[0][0]
+
+    expect(args.model).toBe("claude-haiku-4-5-20251001")
+    expect(args.temperature).toBe(0)
+    expect(args.max_tokens).toBeGreaterThan(0)
+    expect(args.tool_choice).toEqual({ type: "tool", name: "extract_lease" })
+
+    // tools array contains exactly the extract_lease tool with the right
+    // schema shape.
+    expect(Array.isArray(args.tools)).toBe(true)
+    expect(args.tools).toHaveLength(1)
+    expect(args.tools[0].name).toBe("extract_lease")
+    expect(args.tools[0].input_schema.type).toBe("object")
+    expect(args.tools[0].input_schema.required).toContain("contactName")
+    expect(args.tools[0].input_schema.required).toContain("dealKind")
+    expect(args.tools[0].input_schema.required).toContain("confidence")
+    expect(args.tools[0].input_schema.required).toContain("reasoning")
+
+    // System block is the prompt MD with cache_control set.
+    expect(Array.isArray(args.system)).toBe(true)
+    expect(args.system[0].type).toBe("text")
+    expect(args.system[0].cache_control).toEqual({ type: "ephemeral" })
+    // The prompt MD is non-trivial.
+    expect(args.system[0].text.length).toBeGreaterThan(2000)
+
+    // User content includes the four labelled sections.
+    expect(args.messages).toHaveLength(1)
+    expect(args.messages[0].role).toBe("user")
+    const userText = args.messages[0].content as string
+    expect(userText).toContain("SUBJECT:")
+    expect(userText).toContain("Lease fully executed — 303 N Broadway")
+    expect(userText).toContain("BODY:")
+    expect(userText).toContain("Brandon signed today.")
+    expect(userText).toContain("CLASSIFICATION: closed_lease")
+    expect(userText).toContain("SIGNALS:")
+    expect(userText).toContain(
+      JSON.stringify(["fully executed", "commencement"])
+    )
+
+    // The validator-narrowed return matches what the SDK emitted.
+    expect(out).toEqual(VALID_LEASE)
+  })
+
+  it("returns the raw tool input pre-validation; runLeaseExtraction narrows it via validateLeaseExtraction", async () => {
+    mockMessagesCreate.mockResolvedValueOnce(buildToolUseResponse(VALID_LEASE))
     const out = await callExtractor({
       subject: "x",
       body: "y",
       classification: "closed_lease",
       signals: [],
     })
+    // callExtractor returns the raw tool_use.input — runLeaseExtraction
+    // is what runs the validator. Confirm shape here.
+    const validated = validateLeaseExtraction(out, "lease")
+    expect(validated.ok).toBe(true)
+    if (validated.ok) {
+      expect(validated.value.dealKind).toBe("lease")
+      expect(validated.value.contactName).toBe("Brandon Miller")
+    }
+  })
+
+  it("honors ANTHROPIC_LEASE_EXTRACTOR_MODEL override", async () => {
+    process.env.ANTHROPIC_LEASE_EXTRACTOR_MODEL = "claude-3-5-haiku-latest"
+    mockMessagesCreate.mockResolvedValueOnce(
+      buildToolUseResponse(VALID_LEASE, { model: "claude-3-5-haiku-latest" })
+    )
+    await callExtractor({
+      subject: "s",
+      body: "b",
+      classification: "closed_lease",
+      signals: [],
+    })
+    expect(mockMessagesCreate.mock.calls[0][0].model).toBe(
+      "claude-3-5-haiku-latest"
+    )
+  })
+
+  it("returns null when the response carries no tool_use block", async () => {
+    mockMessagesCreate.mockResolvedValueOnce({
+      model: "claude-haiku-4-5-20251001",
+      usage: {
+        input_tokens: 200,
+        output_tokens: 30,
+        cache_read_input_tokens: 0,
+        cache_creation_input_tokens: 0,
+      },
+      content: [{ type: "text", text: "I don't think this is a lease." }],
+    })
+    const out = await callExtractor({
+      subject: "s",
+      body: "b",
+      classification: "closed_lease",
+      signals: [],
+    })
     expect(out).toBeNull()
+
+    // Logs a validation-failed row.
+    await Promise.resolve()
+    const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ outcome: "validation-failed" }),
+      })
+    )
+  })
+
+  it("logs a ScrubApiCall row on success with ok and Haiku-priced USD", async () => {
+    mockMessagesCreate.mockResolvedValueOnce(
+      buildToolUseResponse(VALID_LEASE, {
+        usage: {
+          input_tokens: 1_000_000,
+          output_tokens: 0,
+          cache_read_input_tokens: 0,
+          cache_creation_input_tokens: 0,
+        },
+      })
+    )
+    await callExtractor({
+      subject: "s",
+      body: "b",
+      classification: "closed_lease",
+      signals: [],
+    })
+
+    const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    expect(create).toHaveBeenCalledTimes(1)
+    const args = create.mock.calls[0][0]
+    expect(args.data.outcome).toBe("ok")
+    expect(args.data.purpose).toBe("lease_extractor")
+    expect(args.data.modelUsed).toBe("claude-haiku-4-5-20251001")
+    expect(args.data.promptVersion).toBe(LEASE_EXTRACTOR_VERSION)
+    expect(args.data.tokensIn).toBe(1_000_000)
+    expect(args.data.tokensOut).toBe(0)
+    // Haiku 4.5 input pricing: $1.00/M.
+    expect(parseFloat(args.data.estimatedUsd)).toBeCloseTo(1.0, 4)
+  })
+
+  it("logs provider-error and rethrows when the SDK throws", async () => {
+    mockMessagesCreate.mockRejectedValueOnce(new Error("anthropic 503"))
+
+    await expect(
+      callExtractor({
+        subject: "s",
+        body: "b",
+        classification: "closed_lease",
+        signals: [],
+      })
+    ).rejects.toThrow(/anthropic 503/)
+
+    await Promise.resolve()
+    const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ outcome: "provider-error" }),
+      })
+    )
+  })
+
+  it("does not throw when telemetry write fails (non-fatal log)", async () => {
+    mockMessagesCreate.mockResolvedValueOnce(buildToolUseResponse(VALID_LEASE))
+    ;(db.scrubApiCall.create as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error("db down")
+    )
+    const out = await callExtractor({
+      subject: "s",
+      body: "b",
+      classification: "closed_lease",
+      signals: [],
+    })
+    // Telemetry failure must not eat the result.
+    expect(out).toEqual(VALID_LEASE)
+  })
+})
+
+describe("estimateExtractorUsd (Haiku 4.5 pricing)", () => {
+  it("prices input @ $1.00/M, output @ $5.00/M, cache reads @ $0.10/M, cache writes @ $1.25/M", () => {
+    expect(
+      estimateExtractorUsd({
+        tokensIn: 1_000_000,
+        tokensOut: 0,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+      })
+    ).toBeCloseTo(1.0, 4)
+    expect(
+      estimateExtractorUsd({
+        tokensIn: 0,
+        tokensOut: 1_000_000,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+      })
+    ).toBeCloseTo(5.0, 4)
+    expect(
+      estimateExtractorUsd({
+        tokensIn: 0,
+        tokensOut: 0,
+        cacheReadTokens: 1_000_000,
+        cacheWriteTokens: 0,
+      })
+    ).toBeCloseTo(0.1, 4)
+    expect(
+      estimateExtractorUsd({
+        tokensIn: 0,
+        tokensOut: 0,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 1_000_000,
+      })
+    ).toBeCloseTo(1.25, 4)
+  })
+
+  it("subtracts cache reads from the priced input total (matches scrub estimator)", () => {
+    // 800 input tokens of which 600 came from cache → 200 priced @ $1/M
+    // + 600 priced @ $0.10/M.
+    const usd = estimateExtractorUsd({
+      tokensIn: 800,
+      tokensOut: 0,
+      cacheReadTokens: 600,
+      cacheWriteTokens: 0,
+    })
+    // 200 / 1M * 1.0 + 600 / 1M * 0.1 = 0.0002 + 0.00006 = 0.00026
+    expect(usd).toBeCloseTo(0.00026, 6)
   })
 })
 
@@ -292,7 +584,14 @@ describe("runLeaseExtraction", () => {
       subject: "Lease executed",
       body: "Both parties signed.",
     })
-    const out = await runLeaseExtraction("c1", "closed_lease")
+    // After the Haiku wiring landed, the real `callExtractor` either
+    // returns the raw tool_use input or throws. The `stub_no_response`
+    // reason fires when the extractor returns null (no tool_use block
+    // in the response). Inject a callFn returning null to exercise it.
+    const callExtractorFn = vi.fn().mockResolvedValue(null)
+    const out = await runLeaseExtraction("c1", "closed_lease", {
+      callExtractorFn,
+    })
     expect(out.ok).toBe(false)
     if (!out.ok) expect(out.reason).toBe("stub_no_response")
   })

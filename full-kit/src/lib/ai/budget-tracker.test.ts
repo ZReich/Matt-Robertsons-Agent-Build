@@ -29,7 +29,10 @@ describe("budget-tracker", () => {
     await expect(getRollingScrubSpendUsd()).resolves.toBe(1.234567)
     expect(db.scrubApiCall.aggregate).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { at: { gte: expect.any(Date) } },
+        where: {
+          at: { gte: expect.any(Date) },
+          OR: [{ purpose: "scrub" }, { purpose: null }],
+        },
         _sum: { estimatedUsd: true },
       })
     )
