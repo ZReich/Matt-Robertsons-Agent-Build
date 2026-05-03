@@ -1,5 +1,6 @@
 import type { DealStage } from "@prisma/client"
 
+import type { BuyerRepSignalType } from "./buyer-rep-detector"
 import { db } from "@/lib/prisma"
 
 export type ProposeBuyerRepInput = {
@@ -11,7 +12,7 @@ export type ProposeBuyerRepInput = {
   contactId?: string | null
   recipientEmail?: string | null
   recipientDisplayName?: string | null
-  signalType: "tour" | "loi"
+  signalType: BuyerRepSignalType
   proposedStage: DealStage
   confidence: number
 }
