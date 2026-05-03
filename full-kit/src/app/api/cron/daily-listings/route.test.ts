@@ -154,4 +154,73 @@ describe("GET /api/cron/daily-listings", () => {
     const res = await GET(makeReq({ Authorization: "Bearer " }))
     expect(res.status).toBe(503)
   })
+
+  // B6 regression: when both env vars are set to DIFFERENT values, the route
+  // must accept either bearer. Previously it only honoured
+  // DAILY_LISTINGS_CRON_SECRET because of the `||` short-circuit, which made
+  // every Vercel-cron firing 401 silently.
+  describe("when both DAILY_LISTINGS_CRON_SECRET and CRON_SECRET are set", () => {
+    const FEATURE_SECRET = "feature-secret-aaaaaaaaaaaaaaaaaaaa"
+    const VERCEL_SECRET = "vercel-secret-bbbbbbbbbbbbbbbbbbbbb"
+
+    beforeEach(() => {
+      process.env.DAILY_LISTINGS_CRON_SECRET = FEATURE_SECRET
+      process.env.CRON_SECRET = VERCEL_SECRET
+      processUnprocessedDailyListings.mockResolvedValue({
+        candidates: 0,
+        processed: 0,
+        results: [],
+      })
+    })
+
+    it("accepts a bearer matching DAILY_LISTINGS_CRON_SECRET", async () => {
+      const res = await GET(
+        makeReq({ Authorization: `Bearer ${FEATURE_SECRET}` })
+      )
+      expect(res.status).toBe(200)
+      expect(processUnprocessedDailyListings).toHaveBeenCalledOnce()
+    })
+
+    it("accepts a bearer matching the Vercel-injected CRON_SECRET", async () => {
+      const res = await GET(
+        makeReq({ Authorization: `Bearer ${VERCEL_SECRET}` })
+      )
+      expect(res.status).toBe(200)
+      expect(processUnprocessedDailyListings).toHaveBeenCalledOnce()
+    })
+
+    it("rejects a bearer that matches neither secret", async () => {
+      const res = await GET(
+        makeReq({
+          Authorization: "Bearer some-other-totally-unrelated-secret-cccccc",
+        })
+      )
+      expect(res.status).toBe(401)
+      expect(processUnprocessedDailyListings).not.toHaveBeenCalled()
+    })
+  })
+
+  it("accepts CRON_SECRET when only CRON_SECRET is configured", async () => {
+    delete process.env.DAILY_LISTINGS_CRON_SECRET
+    process.env.CRON_SECRET = SECRET
+    processUnprocessedDailyListings.mockResolvedValueOnce({
+      candidates: 0,
+      processed: 0,
+      results: [],
+    })
+    const res = await GET(makeReq({ Authorization: `Bearer ${SECRET}` }))
+    expect(res.status).toBe(200)
+  })
+
+  it("accepts DAILY_LISTINGS_CRON_SECRET when only that is configured", async () => {
+    process.env.DAILY_LISTINGS_CRON_SECRET = SECRET
+    delete process.env.CRON_SECRET
+    processUnprocessedDailyListings.mockResolvedValueOnce({
+      candidates: 0,
+      processed: 0,
+      results: [],
+    })
+    const res = await GET(makeReq({ Authorization: `Bearer ${SECRET}` }))
+    expect(res.status).toBe(200)
+  })
 })
