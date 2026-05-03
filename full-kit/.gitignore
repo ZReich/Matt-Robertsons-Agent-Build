@@ -36,3 +36,7 @@ dev-server.*.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local dev logs + uploaded source CSVs (gitignored — Matt's data)
+.logs/
+deal_pipeline.csv
