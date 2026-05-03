@@ -98,6 +98,8 @@ async function main() {
     examined: 0,
     matched: 0,
     actionCreated: 0,
+    skippedExistingDeal: 0,
+    skippedDuplicatePending: 0,
     skippedNoSignal: 0,
     skippedNoExternalRecipient: 0,
     errors: 0,
@@ -158,7 +160,7 @@ async function main() {
 
     if (apply) {
       try {
-        await proposeBuyerRepDeal({
+        const result = await proposeBuyerRepDeal({
           communicationId: row.id,
           contactId,
           recipientEmail: externalRecipient?.email ?? null,
@@ -167,7 +169,13 @@ async function main() {
           proposedStage: signal.proposedStage,
           confidence: signal.confidence,
         })
-        stats.actionCreated++
+        if (result.created) {
+          stats.actionCreated++
+        } else if (result.skipReason === "existing-buyer-rep-deal") {
+          stats.skippedExistingDeal++
+        } else if (result.skipReason === "duplicate-pending-action") {
+          stats.skippedDuplicatePending++
+        }
       } catch (err) {
         stats.errors++
         console.error(`error on ${row.id}:`, err.message)
