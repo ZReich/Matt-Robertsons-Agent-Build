@@ -66,4 +66,136 @@ describe("classifyBuyerRepSignal", () => {
     })
     expect(result.signalType).toBeNull()
   })
+
+  // ---- Phase D step 2: NDA detection ------------------------------------
+
+  it("classifies NDA-in-subject as 'nda' at confidence 0.7", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "NDA for 2621 Overland — please review",
+      body: "Standard 30-day terms.",
+      recipientDomains: ["jll.com"],
+    })
+    expect(result.signalType).toEqual("nda")
+    expect(result.proposedStage).toEqual("prospecting")
+    expect(result.confidence).toBeCloseTo(0.7)
+  })
+
+  it("classifies 'non-disclosure agreement' in body as 'nda'", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Confidentiality docs",
+      body: "Attached is the non-disclosure agreement for review.",
+      recipientDomains: ["cbre.com"],
+    })
+    expect(result.signalType).toEqual("nda")
+  })
+
+  it("classifies 'confidentiality agreement' in body as 'nda'", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Docs",
+      body: "Please countersign the confidentiality agreement.",
+      recipientDomains: ["colliers.com"],
+    })
+    expect(result.signalType).toEqual("nda")
+  })
+
+  it("does NOT match 'panda' or 'mandatory' as NDA (word-boundary safety)", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Mandatory site visit panda mascot ideas",
+      body: "Nothing of substance here.",
+      recipientDomains: ["jll.com"],
+    })
+    expect(result.signalType).toBeNull()
+  })
+
+  // ---- Phase D step 2: tenant-rep search detection ----------------------
+
+  it("classifies 'in the market for' as 'tenant_rep_search' at confidence 0.5", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Seeking industrial space",
+      body: "My client is in the market for a 50k sf warehouse near Spokane.",
+      recipientDomains: ["jll.com"],
+    })
+    expect(result.signalType).toEqual("tenant_rep_search")
+    expect(result.proposedStage).toEqual("prospecting")
+    expect(result.confidence).toBeCloseTo(0.5)
+  })
+
+  it("classifies 'looking for warehouse' as 'tenant_rep_search'", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Buyer search",
+      body: "We're looking for warehouse space along the I-90 corridor.",
+      recipientDomains: ["cushwake.com"],
+    })
+    expect(result.signalType).toEqual("tenant_rep_search")
+  })
+
+  it("classifies 'exploring options' as 'tenant_rep_search'", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Hi",
+      body: "My buyer is exploring options in the Bozeman submarket.",
+      recipientDomains: ["newmark.com"],
+    })
+    expect(result.signalType).toEqual("tenant_rep_search")
+  })
+
+  // ---- Precedence: LOI > tour > NDA > tenant_rep ------------------------
+
+  it("LOI takes precedence over NDA when both signals present", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "LOI and NDA package",
+      body: "Attached: letter of intent and non-disclosure agreement.",
+      recipientDomains: ["cushwake.com"],
+    })
+    expect(result.signalType).toEqual("loi")
+  })
+
+  it("NDA takes precedence over tenant_rep_search when both present", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "NDA",
+      body: "My client is in the market for industrial — please countersign the NDA.",
+      recipientDomains: ["cushwake.com"],
+    })
+    expect(result.signalType).toEqual("nda")
+  })
+
+  it("tour takes precedence over NDA when both present", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Tour scheduling and NDA package",
+      body: "Can we schedule the showing for Tuesday? Also: NDA attached.",
+      recipientDomains: ["jll.com"],
+    })
+    expect(result.signalType).toEqual("tour")
+  })
+
+  // ---- Constraint: external broker required ------------------------------
+
+  it("returns null for tenant_rep_search to a non-broker recipient", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "Looking for office",
+      body: "We're looking for office space downtown.",
+      recipientDomains: ["someclient.com"],
+    })
+    expect(result.signalType).toBeNull()
+  })
+
+  it("returns null for NDA to a non-broker recipient", () => {
+    const result = classifyBuyerRepSignal({
+      direction: "outbound",
+      subject: "NDA",
+      body: "Attached non-disclosure agreement.",
+      recipientDomains: ["someclient.com"],
+    })
+    expect(result.signalType).toBeNull()
+  })
 })
