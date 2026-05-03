@@ -131,6 +131,8 @@
     "clients": "Clients",
     "leads": "Leads",
     "deals": "Deals",
+    "properties": "Properties",
+    "pendingReplies": "Pending Replies",
     "contactCandidates": "Contact Candidates",
     "contacts": "Contacts",
     "communications": "Communications",

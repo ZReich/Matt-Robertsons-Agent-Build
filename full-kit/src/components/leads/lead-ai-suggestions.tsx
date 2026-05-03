@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -16,6 +16,7 @@ import type { AiSuggestionState } from "@/lib/ai/suggestions"
 import { DEFAULT_AGENT_ACTION_SNOOZE_MS } from "@/lib/ai/review-constants"
 
 import { Button } from "@/components/ui/button"
+import { SourceCommunicationInline } from "@/components/communications/source-communication-inline"
 
 export interface LeadAISuggestionsProps {
   state: AiSuggestionState
@@ -49,6 +50,7 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
   const router = useRouter()
   const [actions, setActions] = useState(state.actions)
   const [isProcessing, setIsProcessing] = useState(false)
+  const autoTriggeredRef = useRef(false)
   const reviewableActions = useMemo(
     () => actions.filter((action) => !action.isSnoozed && !action.isStale),
     [actions]
@@ -77,7 +79,8 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
       state.queue.inFlight > 0 ||
       state.queue.failed > 0)
 
-  async function processSuggestions() {
+  async function processSuggestions(options: { silent?: boolean } = {}) {
+    const { silent = false } = options
     setIsProcessing(true)
     try {
       // First attempt: do not auto-confirm reprocess. If the server says
@@ -89,32 +92,56 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
         result = await callProcess(true)
       }
       if (!result.ok) {
-        toast.error(result.error ?? "AI processing failed", {
-          description: result.code,
-        })
+        if (!silent) {
+          toast.error(result.error ?? "AI processing failed", {
+            description: result.code,
+          })
+        }
         return
       }
       const enqueued = result.enqueued ?? 0
       const succeeded = result.succeeded ?? 0
       const noun = state.entityType === "deal" ? "deal" : "contact"
-      if (enqueued === 0) {
-        toast.success("Already up to date", {
-          description: `No new emails to process for this ${noun}.`,
-        })
-      } else {
-        toast.success("AI processing started", {
-          description: `${enqueued} email${enqueued === 1 ? "" : "s"} queued · ${succeeded} processed so far`,
-        })
+      if (!silent) {
+        if (enqueued === 0) {
+          toast.success("Already up to date", {
+            description: `No new emails to process for this ${noun}.`,
+          })
+        } else {
+          toast.success("AI processing started", {
+            description: `${enqueued} email${enqueued === 1 ? "" : "s"} queued · ${succeeded} processed so far`,
+          })
+        }
       }
       router.refresh()
     } catch (err) {
-      toast.error("AI processing failed", {
-        description: err instanceof Error ? err.message : undefined,
-      })
+      if (!silent) {
+        toast.error("AI processing failed", {
+          description: err instanceof Error ? err.message : undefined,
+        })
+      }
     } finally {
       setIsProcessing(false)
     }
   }
+
+  // Auto-run on first mount when there are unprocessed comms for this entity.
+  // Guarded by:
+  //   • canProcess  — server has marked this lead/contact as eligible
+  //   • notQueued > 0 — there's actually new work to do (don't re-fire on
+  //     pages that just have stale results sitting around)
+  //   • autoTriggeredRef — fires at most once per page load to avoid loops
+  // Side effect: a quiet toast-free pass that lets the suggestion list
+  // populate itself the moment the user opens a lead, instead of forcing
+  // them to find and click the "Process with AI" button.
+  useEffect(() => {
+    if (autoTriggeredRef.current) return
+    if (!canProcess) return
+    if (state.queue.notQueued <= 0) return
+    autoTriggeredRef.current = true
+    void processSuggestions({ silent: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function callProcess(confirmReprocess: boolean) {
     const response = await fetch("/api/ai-suggestions/process", {
@@ -206,7 +233,7 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
           className="mb-3 w-full"
           size="sm"
           type="button"
-          onClick={processSuggestions}
+          onClick={() => processSuggestions()}
           disabled={isProcessing}
         >
           {isProcessing ? "Processing..." : "Process with AI"}
@@ -273,6 +300,13 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
                       +{action.evidence.attachmentsRemaining} more
                     </span>
                   ) : null}
+                </div>
+              ) : null}
+              {action.sourceCommunicationId ? (
+                <div className="mt-3">
+                  <SourceCommunicationInline
+                    communicationId={action.sourceCommunicationId}
+                  />
                 </div>
               ) : null}
               <div className="mt-3 flex flex-wrap gap-2 text-[11px]">

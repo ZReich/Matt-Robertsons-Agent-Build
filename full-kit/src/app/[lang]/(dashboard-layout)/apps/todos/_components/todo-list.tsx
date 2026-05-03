@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { format, isBefore, startOfDay } from "date-fns"
-import { CheckCircle2, Circle, FileText, User } from "lucide-react"
+import { CheckCircle2, Circle, FileText, Sparkles, User } from "lucide-react"
 
 import type { TodoResolvedContext } from "@/lib/vault/resolve-context"
 import type { TodoMeta, VaultNote } from "@/lib/vault/shared"
@@ -127,6 +127,12 @@ function TodoItem({
         >
           {note.meta.title}
         </p>
+        {note.meta.ai_rationale && note.meta.ai_rationale !== note.meta.title ? (
+          <p className="mt-0.5 line-clamp-2 text-xs italic text-muted-foreground">
+            <Sparkles className="mr-1 inline-block size-3 align-text-bottom" />
+            {note.meta.ai_rationale}
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-center gap-2 mt-1">
           {note.meta.due_date && (
             <span

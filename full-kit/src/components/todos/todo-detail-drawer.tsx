@@ -37,6 +37,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
+import { SourceCommunicationInline } from "@/components/communications/source-communication-inline"
 
 type TodoNote = VaultNote<TodoMeta>
 
@@ -385,6 +386,18 @@ export function TodoDetailDrawer({
                     </div>
                   )
                 })()}
+                {/* Inline source-email body — Matt's "click and read" ask.
+                    The path "communication:<uuid>" is the convention used in
+                    src/lib/todos/prisma-todo-notes.ts line 156. */}
+                {sourceComm.path?.startsWith("communication:") ? (
+                  <div className="mt-3">
+                    <SourceCommunicationInline
+                      communicationId={sourceComm.path.slice(
+                        "communication:".length
+                      )}
+                    />
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           )}

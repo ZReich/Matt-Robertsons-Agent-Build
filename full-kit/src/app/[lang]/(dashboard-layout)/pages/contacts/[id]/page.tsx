@@ -21,15 +21,19 @@ import type { ReactNode } from "react"
 import { readCachedSummary } from "@/lib/ai/contact-summarizer"
 import { getAiSuggestionState } from "@/lib/ai/suggestions"
 import { getOutlookDeeplinkForSource } from "@/lib/communications/outlook-deeplink"
+import { findMatchesForContact } from "@/lib/matching/queries"
 import { DEAL_STAGES } from "@/lib/pipeline/stage-probability"
 import { db } from "@/lib/prisma"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ContactArcSummary } from "@/components/contacts/contact-arc-summary"
+import {
+  ContactEditPanel,
+  type SearchCriteriaShape,
+} from "@/components/contacts/contact-edit-panel"
 import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 
 interface ContactDetailPageProps {
@@ -67,6 +71,7 @@ export default async function ContactDetailPage({
     deals,
     aiSuggestions,
     cachedArcSummary,
+    propertyMatches,
   ] = await Promise.all([
     db.contact.findUnique({ where: { id } }),
     db.contactProfileFact.findMany({
@@ -124,6 +129,7 @@ export default async function ContactDetailPage({
     }),
     getAiSuggestionState({ entityType: "contact", entityId: id }),
     readCachedSummary(id),
+    findMatchesForContact(id, { limit: 8 }),
   ])
 
   if (!contact) notFound()
@@ -168,6 +174,11 @@ export default async function ContactDetailPage({
             </p>
           )}
           <div className="flex flex-wrap gap-2 mt-2">
+            {parseTags(contact.tags).map((t) => (
+              <Badge key={t} variant="secondary" className="capitalize">
+                {t.replace(/-/g, " ")}
+              </Badge>
+            ))}
             {upcomingMeetings.length > 0 && (
               <Badge variant="secondary">
                 {upcomingMeetings.length} upcoming meeting
@@ -281,6 +292,40 @@ export default async function ContactDetailPage({
             </Card>
           )}
 
+          {propertyMatches.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Matching properties ({propertyMatches.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {propertyMatches.map((m) => (
+                  <Link
+                    key={m.property.id}
+                    href={`/${lang}/pages/properties/${m.property.id}`}
+                    className="flex items-start justify-between gap-2 rounded-md border p-2 text-sm hover:border-primary/40"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium">
+                        {m.property.name ?? m.property.address}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {m.reasons.slice(0, 2).join(" · ")}
+                      </div>
+                    </div>
+                    <Badge
+                      variant={m.score >= 80 ? "default" : "secondary"}
+                      className="shrink-0 text-xs"
+                    >
+                      {m.score}%
+                    </Badge>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           {orderedDeals.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
@@ -368,19 +413,14 @@ export default async function ContactDetailPage({
           )}
         </TabsContent>
 
-        {/* Notes */}
+        {/* Notes & profile */}
         <TabsContent value="notes" className="mt-4">
-          <Card>
-            <CardContent className="p-6">
-              {contact.notes ? (
-                <MarkdownRenderer content={contact.notes} />
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  No notes for this contact yet.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <ContactEditPanel
+            contactId={contact.id}
+            initialTags={parseTags(contact.tags)}
+            initialNotes={contact.notes}
+            initialSearchCriteria={parseSearchCriteria(contact.searchCriteria)}
+          />
         </TabsContent>
       </Tabs>
     </section>
@@ -402,6 +442,16 @@ function formatProfileCategory(category: string): string {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ")
+}
+
+function parseTags(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((v): v is string => typeof v === "string")
+}
+
+function parseSearchCriteria(value: unknown): SearchCriteriaShape | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null
+  return value as SearchCriteriaShape
 }
 
 function profileFactEvidence(metadata: unknown): string | null {

@@ -10,6 +10,7 @@ import { cleanLeadMessageText } from "@/lib/leads/message-text"
 import { db } from "@/lib/prisma"
 
 import { ContactCard } from "@/components/leads/contact-card"
+import { GenerateAutoReply } from "@/components/leads/generate-auto-reply"
 import { LeadActivityTimeline } from "@/components/leads/lead-activity-timeline"
 import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 import { LeadDetailHeader } from "@/components/leads/lead-detail-header"
@@ -67,7 +68,13 @@ function formatLeadAt(date: Date | null): string {
 export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   const { id, lang } = await params
 
-  const [contact, communications, aiSuggestions] = await Promise.all([
+  const [
+    contact,
+    communications,
+    aiSuggestions,
+    catalogProperties,
+    pendingReplies,
+  ] = await Promise.all([
     db.contact.findUnique({ where: { id } }),
     db.communication.findMany({
       where: { contactId: id },
@@ -87,6 +94,23 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
       entityType: "contact",
       entityId: id,
       surface: "lead",
+    }),
+    db.property.findMany({
+      where: { archivedAt: null, status: { in: ["active", "under_contract"] } },
+      select: { id: true, name: true, address: true, status: true },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: 100,
+    }),
+    db.pendingReply.findMany({
+      where: { contactId: id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        status: true,
+        draftSubject: true,
+        createdAt: true,
+      },
+      take: 10,
     }),
   ])
 
@@ -169,6 +193,19 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
             displayPhone={inquiryFacts.contactPhone}
           />
           <LeadAISuggestions state={aiSuggestions} lang={lang} />
+          <GenerateAutoReply
+            contactId={contact.id}
+            contactEmail={contact.email}
+            lang={lang}
+            triggerCommunicationId={firstInbound?.id}
+            properties={catalogProperties}
+            existingReplies={pendingReplies.map((r) => ({
+              id: r.id,
+              status: r.status,
+              draftSubject: r.draftSubject,
+              createdAt: r.createdAt.toISOString(),
+            }))}
+          />
           <NotesCard notes={contact.notes} />
         </aside>
       </div>
