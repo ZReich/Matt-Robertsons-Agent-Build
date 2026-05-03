@@ -105,3 +105,13 @@ export function getTokenManager(): TokenManager {
   }
   return singleton
 }
+
+/**
+ * Convenience: resolve a fresh access token from the process-wide
+ * singleton. Sibling modules that issue their own `fetch` calls
+ * (`download-attachment.ts`, etc.) use this so they don't have to
+ * thread the `TokenManager` through their call signatures.
+ */
+export async function getAccessToken(): Promise<string> {
+  return getTokenManager().getAccessToken()
+}

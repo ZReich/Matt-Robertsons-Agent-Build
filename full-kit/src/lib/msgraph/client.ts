@@ -5,6 +5,13 @@ import { parseRetryAfter } from "./retry-after"
 import { getTokenManager } from "./token-manager"
 
 const GRAPH_BASE = "https://graph.microsoft.com/v1.0"
+/**
+ * Public alias for `GRAPH_BASE`. Exported for sibling modules
+ * (`download-attachment.ts`, etc.) that call Graph endpoints directly
+ * without the retry/timeout machinery in `graphFetch` — they need the
+ * absolute base URL but should not duplicate the literal.
+ */
+export const GRAPH_BASE_URL = GRAPH_BASE
 const RETRY_AFTER_DEFAULT_MS = 2000
 const RETRY_AFTER_MAX_MS = 60_000
 
