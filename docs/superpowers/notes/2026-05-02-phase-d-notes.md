@@ -210,3 +210,48 @@ through this pipeline). At that point the chip becomes user-facing essential.
 None. The existing 306 pending rows carry `tier=approve` and are untouched —
 when Matt approves them they'll mint `buyer_rep` Deals, after which the
 Phase D dedupe blocks any future re-proposal for those contacts.
+
+## Final-review follow-ups (2026-05-02)
+
+Two IMPORTANT findings from the cross-phase code review were fixed on `main`
+as standalone commits:
+
+### Finding 1 — `approveAgentAction` mishandled executed actions without a Todo
+
+**Commit:** `40d48a2` — `fix(agent-actions): handle executed deal/contact actions without a linked todo`
+
+The `status === "executed"` early-return in
+`src/lib/ai/agent-actions.ts:approveAgentAction` always tried to fetch a Todo,
+which threw a misleading 409 `missing_executed_entity` for action types that
+never link to a Todo (`move-deal-stage`, `create-deal`, `set-client-type`,
+`create-agent-memory`, `update-deal`). Today no UI surfaces these, but it was
+a footgun for operator scripts and future surfaces.
+
+Fix: branch on `actionType` so only `create-todo` and `mark-todo-done`
+resolve through Todo lookup; everything else returns `{ status: "executed",
+actionId }` for idempotent replay. Added 6 tests covering each Todo-less
+action type plus a regression guard for `mark-todo-done` whose Todo was
+deleted (that path still throws 409).
+
+### Finding 2 — Phase D `tier="auto"` rows were invisible in the queue
+
+**Commit:** `<filled in by next commit>` — `feat(agent-queue): surface tier=auto buyer-rep proposals with high-confidence badge`
+
+Both approval surfaces filtered to `tier === "approve"`, hiding the
+high-confidence LOI proposals Phase D writes with `tier="auto"`/`status="pending"`.
+Picked Option A from the review (preserve tier semantics, add visual cue):
+
+- Filter widening (`a.tier === "approve" || a.tier === "auto"`) in:
+  - `full-kit/src/app/[lang]/(dashboard-layout)/pages/agent/_components/agent-control-center.tsx`
+  - `full-kit/src/components/leads/lead-ai-suggestions.tsx`
+- "High confidence" emerald-colored Badge (in `agent-queue.tsx`) and pill
+  (in `lead-ai-suggestions.tsx`) replace the generic Review pill for
+  `tier === "auto"` rows.
+- Server-side `findMany`/route handlers were already tier-agnostic, so no
+  query changes needed.
+
+Browser-verified by synthesizing a `tier=auto` `status=pending` `create-deal`
+AgentAction directly via Prisma, navigating to `/en/pages/agent`, and
+confirming the badge rendered (DOM-inspected via `preview_inspect`:
+`data-testid="high-confidence-badge"`, emerald lab colors, sitting on the
+expected action card). Synthetic row rolled back after verification.

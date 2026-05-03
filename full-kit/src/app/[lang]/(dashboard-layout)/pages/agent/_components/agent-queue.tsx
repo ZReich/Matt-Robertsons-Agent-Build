@@ -144,12 +144,23 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
                   </span>
                 </CardDescription>
               </div>
-              <Badge
-                className={TIER_COLORS[action.tier] ?? ""}
-                variant="secondary"
-              >
-                {action.tier}
-              </Badge>
+              <div className="flex flex-col items-end gap-1">
+                <Badge
+                  className={TIER_COLORS[action.tier] ?? ""}
+                  variant="secondary"
+                >
+                  {action.tier}
+                </Badge>
+                {action.tier === "auto" && (
+                  <Badge
+                    className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                    variant="secondary"
+                    data-testid="high-confidence-badge"
+                  >
+                    High confidence
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
 

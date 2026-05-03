@@ -55,8 +55,13 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
     () => actions.filter((action) => !action.isSnoozed && !action.isStale),
     [actions]
   )
+  // Include tier="auto" rows: Phase D writes high-confidence buyer-rep
+  // proposals with tier="auto" / status="pending" — still gated on approval,
+  // but flagged with a "High confidence" pill so Matt can spot them.
   const visibleActions = reviewableActions.filter(
-    (action) => action.status === "pending" && action.tier === "approve"
+    (action) =>
+      action.status === "pending" &&
+      (action.tier === "approve" || action.tier === "auto")
   )
   const scrubbedCount = state.scrubbedCommunications.length
   const totalCommunications =
@@ -274,9 +279,18 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
                     {formatActionType(action.actionType)}
                   </div>
                 </div>
-                <span className="rounded-full bg-muted px-2 py-1 text-[11px] font-medium">
-                  Review
-                </span>
+                {action.tier === "auto" ? (
+                  <span
+                    className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                    data-testid="high-confidence-pill"
+                  >
+                    High confidence
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-muted px-2 py-1 text-[11px] font-medium">
+                    Review
+                  </span>
+                )}
               </div>
               {action.evidence?.summary ? (
                 <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">
