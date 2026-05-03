@@ -16,6 +16,8 @@ interface Props {
     autoSendDailyMatchReplies: boolean
     autoMatchScoreThreshold: number
     dailyMatchPerContactCap: number
+    leaseRenewalLookaheadMonths: number
+    autoSendLeaseRenewalReplies: boolean
   }
 }
 
@@ -100,6 +102,27 @@ export function AutomationForm({ initial }: Props) {
               onCheckedChange={(v) => toggle("autoSendDailyMatchReplies", v)}
             />
           </div>
+
+          <div className="flex items-start justify-between gap-6">
+            <div className="grid gap-1">
+              <Label className="text-sm font-medium">
+                Auto-send lease-renewal outreach
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                When ON: the daily lease-renewal sweep auto-sends drafted
+                re-engagement emails via Graph instead of queueing them as
+                Pending Replies. Defaults OFF — past-client outreach has a
+                different audience and risk profile than current-prospect
+                daily-match alerts. Recommend reviewing the first batch by
+                hand before flipping this on.
+              </p>
+            </div>
+            <Switch
+              checked={form.autoSendLeaseRenewalReplies}
+              disabled={submitting}
+              onCheckedChange={(v) => toggle("autoSendLeaseRenewalReplies", v)}
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -156,6 +179,39 @@ export function AutomationForm({ initial }: Props) {
               listings on a busy day.
             </p>
           </div>
+
+          <div className="grid gap-1.5 md:col-span-2">
+            <Label htmlFor="leaseLookahead" className="text-sm font-medium">
+              Lease-renewal lookahead (1–24 months)
+            </Label>
+            <Input
+              id="leaseLookahead"
+              type="number"
+              min={1}
+              max={24}
+              value={form.leaseRenewalLookaheadMonths}
+              disabled={submitting}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  leaseRenewalLookaheadMonths: Number(e.target.value) || 6,
+                })
+              }
+              onBlur={() =>
+                toggle(
+                  "leaseRenewalLookaheadMonths",
+                  form.leaseRenewalLookaheadMonths
+                )
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              How many months ahead of <code>leaseEndDate</code> the daily
+              renewal sweep starts firing. Default 6 — Matt&apos;s typical
+              re-engagement window. The first sweep that lands inside
+              this window per lease creates a Todo + calendar event +
+              draft re-engagement email.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -201,6 +257,8 @@ export function AutomationForm({ initial }: Props) {
               autoSendDailyMatchReplies: false,
               autoMatchScoreThreshold: 80,
               dailyMatchPerContactCap: 2,
+              leaseRenewalLookaheadMonths: 6,
+              autoSendLeaseRenewalReplies: false,
             })
             if (ok) {
               toast.success("Reset to defaults")
