@@ -454,6 +454,42 @@ import {
 } from "./lease-pipeline-orchestrator"
 
 // ---------------------------------------------------------------------------
+// TODO (M7): Phase 1 acceptance criterion — wire a real-Prisma integration
+// test that exercises processCommunicationForLease against the shadow DB
+// (SHADOW_DATABASE_URL = local Postgres on localhost:5433 per CLAUDE.md).
+// Requirements:
+//   1. Construct a SECOND PrismaClient pointing at SHADOW_DATABASE_URL
+//      (NEVER reuse DATABASE_URL/DIRECT_URL — that would hit production).
+//      Skip the test with a clear message if the shadow DB is unreachable
+//      (e.g. `await client.$queryRaw\`SELECT 1\`` in beforeAll inside a
+//      try/catch; on failure, `it.skip` the suite).
+//   2. Sync the schema to the shadow DB once at startup
+//      (`prisma db push --schema ./prisma/schema.prisma --skip-generate`
+//      against SHADOW_DATABASE_URL — or pre-flight that the migrations
+//      are applied).
+//   3. Seed a synthetic Communication row.
+//   4. Call processCommunicationForLease(commId, {classifierFn,
+//      extractorFn}) with hardcoded mock AI hooks returning known-good
+//      LeaseExtraction.
+//   5. Read back the resulting LeaseRecord, CalendarEvent, and Contact
+//      rows directly via the shadow PrismaClient and assert:
+//        - Decimal coercion (rentAmount, extractionConfidence) round-trips
+//          through PrismaNS.Decimal correctly.
+//        - JSON metadata shape matches (closedDealClassification +
+//          leaseExtractionAttempt slots).
+//        - Datetime values are stored as UTC midnight (the orchestrator
+//          uses `new Date('YYYY-MM-DDT00:00:00Z')`).
+//   6. Cleanup via either `db.$transaction(async (tx) => { ...; throw
+//      'ROLLBACK' })` or truncate the affected tables in afterEach. DO
+//      NOT leave test rows in the shadow DB.
+// Estimated effort: ~30-60 min plus debugging the schema-sync handshake.
+// Deferred from this fix-pack because wiring the second Prisma client +
+// schema-sync mechanism is a test-harness change that exceeded the scope
+// budget; tracked as Phase 1 acceptance follow-up.
+// ---------------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------------
 // processCommunicationForLease — happy path
 // ---------------------------------------------------------------------------
 
