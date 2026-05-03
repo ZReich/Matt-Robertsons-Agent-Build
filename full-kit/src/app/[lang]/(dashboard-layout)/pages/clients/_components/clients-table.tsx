@@ -43,6 +43,8 @@ const CLIENT_TYPE_LABEL: Record<ClientType, string> = {
   active_listing_client: "Listing client",
   active_buyer_rep_client: "Buyer-rep client",
   past_client: "Past client",
+  past_listing_client: "Past listing client",
+  past_buyer_client: "Past buyer client",
   cooperating_broker: "Cooperating broker",
   service_provider: "Service provider",
   other: "Other",

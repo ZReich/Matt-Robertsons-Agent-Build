@@ -2,6 +2,8 @@ import type { ClientType, Prisma } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 
+import { nextClientType } from "./role-lifecycle"
+
 export type SyncContactRoleOptions = {
   /** What user-visible event triggered this resync (audit log only). */
   trigger?: "deal_close" | "deal_stage_change" | "deal_created" | "manual_sync"
@@ -65,10 +67,16 @@ export async function syncContactRoleFromDeals(
 
   const deals = await tx.deal.findMany({
     where: { contactId, archivedAt: null },
-    select: { id: true, dealType: true, stage: true, outcome: true },
+    select: {
+      id: true,
+      dealType: true,
+      stage: true,
+      outcome: true,
+      closedAt: true,
+    },
   })
 
-  const nextRole = computeRole(deals)
+  const nextRole = nextClientType(deals)
   const prev = contact.clientType
   if (nextRole === prev) {
     return {
@@ -119,31 +127,6 @@ export async function syncContactRoleFromDeals(
   }
 }
 
-function computeRole(
-  deals: Array<{
-    dealType: "seller_rep" | "buyer_rep" | "tenant_rep"
-    stage: string
-    outcome: string | null
-  }>
-): ClientType | null {
-  // No deal history: don't infer a role.
-  if (deals.length === 0) return null
-
-  // Any active buyer-side deal (buyer_rep or tenant_rep) wins over closed
-  // history. tenant_rep is treated as buyer-side for client-classification.
-  const hasActiveBuyerSide = deals.some(
-    (d) =>
-      (d.dealType === "buyer_rep" || d.dealType === "tenant_rep") &&
-      d.stage !== "closed"
-  )
-  if (hasActiveBuyerSide) return "active_buyer_rep_client"
-
-  const hasActiveListing = deals.some(
-    (d) => d.dealType === "seller_rep" && d.stage !== "closed"
-  )
-  if (hasActiveListing) return "active_listing_client"
-
-  // All deals closed — past client regardless of outcome (won, lost, or
-  // unspecified). The won/lost detail lives on Deal.outcome.
-  return "past_client"
-}
+// computeRole was inlined into the pure helper `nextClientType`
+// (./role-lifecycle.ts) so the same logic powers route handlers, AI
+// agent-action approvals, and the backfill script without duplication.

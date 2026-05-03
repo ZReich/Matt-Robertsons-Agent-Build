@@ -21,6 +21,8 @@ const REAL_CLIENT_TYPES: ClientType[] = [
   "active_listing_client",
   "active_buyer_rep_client",
   "past_client",
+  "past_listing_client",
+  "past_buyer_client",
 ]
 
 // Map a clientType to the dealType(s) that legitimately count as that
@@ -30,7 +32,9 @@ const REAL_CLIENT_TYPES: ClientType[] = [
 function dealTypesForClient(clientType: ClientType): DealType[] {
   if (clientType === "active_listing_client") return ["seller_rep"]
   if (clientType === "active_buyer_rep_client") return ["buyer_rep"]
-  // past_client could be either; allow both.
+  if (clientType === "past_listing_client") return ["seller_rep"]
+  if (clientType === "past_buyer_client") return ["buyer_rep", "tenant_rep"]
+  // legacy past_client: could be either; allow both.
   return ["seller_rep", "buyer_rep"]
 }
 

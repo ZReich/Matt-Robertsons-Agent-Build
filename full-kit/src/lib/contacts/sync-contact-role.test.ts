@@ -37,7 +37,7 @@ beforeEach(() => {
 describe("syncContactRoleFromDeals", () => {
   it("sets active_listing_client when contact has any active listing-side deal", async () => {
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "marketing", outcome: null },
+      { dealType: "seller_rep", stage: "marketing", outcome: null, closedAt: null },
     ])
     const result = await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).toHaveBeenCalledWith({
@@ -50,7 +50,7 @@ describe("syncContactRoleFromDeals", () => {
 
   it("sets active_buyer_rep_client when contact has any active buyer-rep deal", async () => {
     dealFindMany.mockResolvedValue([
-      { dealType: "buyer_rep", stage: "showings", outcome: null },
+      { dealType: "buyer_rep", stage: "showings", outcome: null, closedAt: null },
     ])
     await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).toHaveBeenCalledWith({
@@ -61,8 +61,8 @@ describe("syncContactRoleFromDeals", () => {
 
   it("prefers active_buyer_rep_client when contact has both flows active", async () => {
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "marketing", outcome: null },
-      { dealType: "buyer_rep", stage: "offer", outcome: null },
+      { dealType: "seller_rep", stage: "marketing", outcome: null, closedAt: null },
+      { dealType: "buyer_rep", stage: "offer", outcome: null, closedAt: null },
     ])
     await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).toHaveBeenCalledWith({
@@ -71,14 +71,57 @@ describe("syncContactRoleFromDeals", () => {
     })
   })
 
-  it("sets past_client when all deals are closed (regardless of outcome)", async () => {
+  it("sets past_listing_client when only closed seller_rep deals exist", async () => {
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "closed", outcome: null },
+      {
+        dealType: "seller_rep",
+        stage: "closed",
+        outcome: null,
+        closedAt: new Date("2026-04-01T00:00:00Z"),
+      },
     ])
     await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).toHaveBeenCalledWith({
       where: { id: "contact-1" },
-      data: { clientType: "past_client" },
+      data: { clientType: "past_listing_client" },
+    })
+  })
+
+  it("sets past_buyer_client when only closed buyer_rep deals exist", async () => {
+    dealFindMany.mockResolvedValue([
+      {
+        dealType: "buyer_rep",
+        stage: "closed",
+        outcome: "won",
+        closedAt: new Date("2026-04-01T00:00:00Z"),
+      },
+    ])
+    await syncContactRoleFromDeals("contact-1")
+    expect(contactUpdate).toHaveBeenCalledWith({
+      where: { id: "contact-1" },
+      data: { clientType: "past_buyer_client" },
+    })
+  })
+
+  it("breaks mixed past-client ties by most-recent closedAt", async () => {
+    dealFindMany.mockResolvedValue([
+      {
+        dealType: "seller_rep",
+        stage: "closed",
+        outcome: "won",
+        closedAt: new Date("2026-01-01T00:00:00Z"),
+      },
+      {
+        dealType: "buyer_rep",
+        stage: "closed",
+        outcome: "won",
+        closedAt: new Date("2026-04-01T00:00:00Z"),
+      },
+    ])
+    await syncContactRoleFromDeals("contact-1")
+    expect(contactUpdate).toHaveBeenCalledWith({
+      where: { id: "contact-1" },
+      data: { clientType: "past_buyer_client" },
     })
   })
 
@@ -97,7 +140,12 @@ describe("syncContactRoleFromDeals", () => {
       clientType: "active_listing_client",
     })
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "closed", outcome: "won" },
+      {
+        dealType: "seller_rep",
+        stage: "closed",
+        outcome: "won",
+        closedAt: new Date("2026-04-01T00:00:00Z"),
+      },
     ])
     const result = await syncContactRoleFromDeals(
       "contact-1",
@@ -112,7 +160,7 @@ describe("syncContactRoleFromDeals", () => {
     expect(args.data.payload).toMatchObject({
       contactId: "contact-1",
       fromClientType: "active_listing_client",
-      toClientType: "past_client",
+      toClientType: "past_listing_client",
       dealId: "deal-1",
       trigger: "deal_close",
     })
@@ -125,7 +173,7 @@ describe("syncContactRoleFromDeals", () => {
       clientType: "active_listing_client",
     })
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "marketing", outcome: null },
+      { dealType: "seller_rep", stage: "marketing", outcome: null, closedAt: null },
     ])
     const result = await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).not.toHaveBeenCalled()
@@ -140,7 +188,12 @@ describe("syncContactRoleFromDeals", () => {
       archivedAt: new Date(),
     })
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "closed", outcome: "won" },
+      {
+        dealType: "seller_rep",
+        stage: "closed",
+        outcome: "won",
+        closedAt: new Date("2026-04-01T00:00:00Z"),
+      },
     ])
     const result = await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).not.toHaveBeenCalled()
