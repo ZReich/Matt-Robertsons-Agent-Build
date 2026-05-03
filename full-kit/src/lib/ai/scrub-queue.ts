@@ -7,6 +7,9 @@ import type { ClaimedScrubQueueRow } from "./scrub-types"
 
 import { db } from "@/lib/prisma"
 
+import { isSensitiveRoutingEnabled } from "./scrub-provider"
+import { containsSensitiveContent } from "./sensitive-filter"
+
 type DbLike =
   | PrismaClient
   | Parameters<Parameters<typeof db.$transaction>[0]>[0]
@@ -23,6 +26,40 @@ export async function enqueueScrubForCommunication(
   classification: Classification
 ): Promise<void> {
   if (classification !== "signal" && classification !== "uncertain") return
+
+  // Sensitive-content gate (Matt's call 2026-04-30/05-01): emails containing
+  // financial / banking / SSN-shaped content are skipped from AI processing
+  // entirely rather than routed to a different model. False positives just
+  // mean a single email isn't AI-enriched — the user can still see it in the
+  // inbox and act manually.
+  const comm = await tx.communication.findUnique({
+    where: { id: communicationId },
+    select: { subject: true, body: true },
+  })
+  if (comm) {
+    const sensitivity = containsSensitiveContent(comm.subject, comm.body)
+    if (sensitivity.tripped) {
+      // Two paths depending on opt-in flag:
+      //  - default (flag off): skip entirely. The email's body never reaches
+      //    any AI provider. Status="skipped_sensitive".
+      //  - opt-in (flag on, ANTHROPIC_API_KEY set): enqueue normally; the
+      //    worker will re-check sensitivity at claim time and route to
+      //    Haiku via scrubWithSensitiveProvider, keeping the body off
+      //    DeepSeek (a non-US model).
+      if (!isSensitiveRoutingEnabled()) {
+        await tx.scrubQueue.create({
+          data: {
+            communicationId,
+            status: "skipped_sensitive",
+            lastError: `sensitive_filter: ${sensitivity.reasons.slice(0, 3).join(", ")}`,
+          },
+        })
+        return
+      }
+      // Fall through to enqueue. The worker re-checks at scrubOne time.
+    }
+  }
+
   await tx.scrubQueue.create({
     data: { communicationId, status: "pending" },
   })

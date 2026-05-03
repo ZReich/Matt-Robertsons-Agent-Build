@@ -18,6 +18,12 @@ vi.mock("@/lib/prisma", () => ({
       updateMany: vi.fn(),
       groupBy: vi.fn(),
     },
+    // Sensitive-content gate (added 2026-05-01) reads subject+body from the
+    // Communication before enqueuing. Default mock returns null, which the
+    // gate treats as "skip the gate, proceed to enqueue".
+    communication: {
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
     contactPromotionCandidate: { groupBy: vi.fn() },
     systemState: {
       upsert: vi.fn(),

@@ -20,7 +20,7 @@ describe("scrubWithConfiguredProvider", () => {
     vi.mocked(scrubWithOpenAI).mockResolvedValue(stubResponse)
   })
 
-  it("routes to Claude when ANTHROPIC_API_KEY is set", async () => {
+  it("ALWAYS routes to OpenAI/DeepSeek even when ANTHROPIC_API_KEY is set — Haiku is reserved for sensitive routing only", async () => {
     process.env.ANTHROPIC_API_KEY = "sk-anthropic"
 
     await scrubWithConfiguredProvider({
@@ -28,11 +28,11 @@ describe("scrubWithConfiguredProvider", () => {
       globalMemory: "g",
     })
 
-    expect(scrubWithClaude).toHaveBeenCalledTimes(1)
-    expect(scrubWithOpenAI).not.toHaveBeenCalled()
+    expect(scrubWithOpenAI).toHaveBeenCalledTimes(1)
+    expect(scrubWithClaude).not.toHaveBeenCalled()
   })
 
-  it("falls back to OpenAI when ANTHROPIC_API_KEY is unset", async () => {
+  it("routes to OpenAI when ANTHROPIC_API_KEY is unset", async () => {
     delete process.env.ANTHROPIC_API_KEY
 
     await scrubWithConfiguredProvider({
@@ -44,7 +44,7 @@ describe("scrubWithConfiguredProvider", () => {
     expect(scrubWithClaude).not.toHaveBeenCalled()
   })
 
-  it("treats an empty ANTHROPIC_API_KEY as unset and falls back to OpenAI", async () => {
+  it("routes to OpenAI when ANTHROPIC_API_KEY is empty", async () => {
     process.env.ANTHROPIC_API_KEY = ""
 
     await scrubWithConfiguredProvider({
@@ -56,7 +56,7 @@ describe("scrubWithConfiguredProvider", () => {
     expect(scrubWithClaude).not.toHaveBeenCalled()
   })
 
-  it("forwards the correction parameter through to the chosen provider", async () => {
+  it("forwards the correction parameter through to the OpenAI path", async () => {
     process.env.ANTHROPIC_API_KEY = "sk-anthropic"
 
     await scrubWithConfiguredProvider({
@@ -65,7 +65,7 @@ describe("scrubWithConfiguredProvider", () => {
       correction: "retry",
     })
 
-    expect(scrubWithClaude).toHaveBeenCalledWith({
+    expect(scrubWithOpenAI).toHaveBeenCalledWith({
       perEmailPrompt: "p",
       globalMemory: "g",
       correction: "retry",

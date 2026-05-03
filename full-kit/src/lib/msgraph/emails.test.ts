@@ -38,6 +38,10 @@ vi.mock("@/lib/prisma", () => ({
       count: vi.fn(),
       create: vi.fn(),
       findMany: vi.fn(),
+      // findUnique added 2026-05-01 for sensitive-content gate in
+      // enqueueScrubForCommunication. Default-null = no content found =
+      // skip sensitive gate, proceed to enqueue.
+      findUnique: vi.fn().mockResolvedValue(null),
       update: vi.fn(),
     },
     agentAction: {

@@ -19,7 +19,12 @@ import {
   runHeuristicLinker,
 } from "./scrub-linker"
 import { SCRUB_TOOL } from "./scrub-prompt"
-import { scrubWithConfiguredProvider } from "./scrub-provider"
+import {
+  isSensitiveRoutingEnabled,
+  scrubWithConfiguredProvider,
+  scrubWithSensitiveProvider,
+} from "./scrub-provider"
+import { containsSensitiveContent } from "./sensitive-filter"
 import { claimScrubQueueRows, markScrubQueueFailed } from "./scrub-queue"
 import { PROMPT_VERSION } from "./scrub-types"
 import { ScrubValidationError, validateScrubToolInput } from "./scrub-validator"
@@ -278,10 +283,22 @@ export async function scrubOne(
     threadContext,
   })
 
+  // Per-email provider routing: if the email trips the broad sensitive-
+  // content filter AND sensitive-routing is enabled, swap to Haiku for this
+  // call only. The default scrubClient (DeepSeek-via-OpenAI) never sees
+  // sensitive bodies. If sensitive-routing is OFF, the enqueue step would
+  // have skipped this email — reaching here with a sensitive body means
+  // the operator explicitly opted in.
+  const sensitive = containsSensitiveContent(comm.subject, comm.body)
+  const effectiveScrubClient =
+    sensitive.tripped && isSensitiveRoutingEnabled()
+      ? scrubWithSensitiveProvider
+      : scrubClient
+
   // First attempt
   let response: ClaudeScrubResponse
   try {
-    response = await scrubClient({ perEmailPrompt, globalMemory })
+    response = await effectiveScrubClient({ perEmailPrompt, globalMemory })
   } catch (err) {
     await markScrubQueueFailed(
       queueRow.id,
