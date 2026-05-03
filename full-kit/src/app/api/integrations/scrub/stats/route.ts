@@ -27,6 +27,26 @@ type WindowAgg = {
   costUSD: number
 }
 
+/**
+ * Strip the lease-pipeline namespace prefix from a ScrubApiCall.outcome
+ * so the stats counter can use one switch statement for every prefix.
+ *
+ * `extractor-pdf-` MUST be tested before `extractor-` because the longer
+ * prefix is a strict superset.
+ */
+function stripLeasePipelinePrefix(outcome: string): string {
+  if (outcome.startsWith("extractor-pdf-")) {
+    return outcome.slice("extractor-pdf-".length)
+  }
+  if (outcome.startsWith("extractor-")) {
+    return outcome.slice("extractor-".length)
+  }
+  if (outcome.startsWith("classifier-")) {
+    return outcome.slice("classifier-".length)
+  }
+  return outcome
+}
+
 async function aggregate(windowMs: number): Promise<WindowAgg> {
   const since = new Date(Date.now() - windowMs)
   const rows = await db.scrubApiCall.findMany({
@@ -63,7 +83,14 @@ async function aggregate(windowMs: number): Promise<WindowAgg> {
     agg.cacheReadTokens += row.cacheReadTokens
     agg.cacheWriteTokens += row.cacheWriteTokens
     agg.costUSD += Number(row.estimatedUsd.toString())
-    switch (row.outcome) {
+    // Audit I3: strip lease-pipeline namespaces (classifier-, extractor-,
+    // extractor-pdf-) before bucketing so operators see real failure
+    // counts. Without this, a flood of `extractor-validation-failed` rows
+    // would aggregate to validationFailed:0 on the dashboard while the
+    // pipeline silently regressed.
+    const stripped = stripLeasePipelinePrefix(row.outcome)
+    switch (stripped) {
+      case "ok":
       case "scrubbed":
         agg.scrubbedOk += 1
         break
@@ -81,6 +108,17 @@ async function aggregate(windowMs: number): Promise<WindowAgg> {
         break
       case "retry-correction":
         agg.retryCorrection += 1
+        break
+      case "provider-error":
+        // Map lease-pipeline provider failures into dbCommitFailed for
+        // dashboard parity — they're the closest existing bucket for
+        // "the call left no usable result." (A dedicated bucket would be
+        // a schema change beyond this fix-pack's scope.)
+        agg.dbCommitFailed += 1
+        break
+      case "skipped":
+        // PDF-skip rows (file_too_large, not_pdf): zero tokens/cost so
+        // they show in apiCalls but don't move any other counter.
         break
     }
   }
