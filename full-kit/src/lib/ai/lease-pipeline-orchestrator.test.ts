@@ -1553,7 +1553,8 @@ describe("processCommunicationForLease — PDF fallback", () => {
     expect(dlFn).toHaveBeenCalledWith("msg-2", "att-1")
 
     // bodyExcerpt was passed through.
-    const pdfArgs = pdfFn.mock.calls[0][0] as {
+    const calls = pdfFn.mock.calls as unknown as unknown[][]
+    const pdfArgs = calls[0]![0] as {
       subject: string
       bodyExcerpt?: string
       classification: string
@@ -1923,7 +1924,8 @@ describe("processCommunicationForLease — PDF fallback", () => {
       settings: { leaseExtractorMinConfidence: 0.6 },
     })
 
-    const args = pdfFn.mock.calls[0][0] as { bodyExcerpt?: string }
+    const calls2 = pdfFn.mock.calls as unknown as unknown[][]
+    const args = calls2[0]![0] as { bodyExcerpt?: string }
     expect(args.bodyExcerpt?.length).toBe(500)
   })
 })
