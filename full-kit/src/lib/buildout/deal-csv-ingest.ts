@@ -6,8 +6,8 @@ import type {
   DealOutcome,
   DealType,
   PropertyType,
-  Prisma,
 } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 import { computePropertyKey } from "@/lib/properties/property-utils"
@@ -447,13 +447,33 @@ function mapDealType(t: string): DealType {
 }
 
 function isLeaseDeal(row: BuildoutDealRow): boolean {
+  // Strictly by deal type. Sales should NOT be classified as leases just
+  // because they happen to carry a Lease Expiration in the CSV (rare data
+  // entry quirk). The dealKind column on LeaseRecord disambiguates lease
+  // vs sale; we use the same flag to drive that.
   const t = row.dealType.toLowerCase()
-  return (
-    t === "lease" ||
-    t === "tenant rep" ||
-    Boolean(row.leaseExpiration) ||
-    Boolean(row.leaseTermMonths)
+  return t === "lease" || t === "tenant rep"
+}
+
+function isClosedStage(row: BuildoutDealRow): boolean {
+  return row.stage.trim().toLowerCase() === "closed"
+}
+
+function addMonthsUtc(start: Date, months: number): Date {
+  // Use UTC arithmetic to match the orchestrator's date semantics.
+  const d = new Date(
+    Date.UTC(start.getFullYear(), start.getMonth(), start.getDate(), 12)
   )
+  d.setUTCMonth(d.getUTCMonth() + months)
+  return d
+}
+
+function deriveLeaseEndDate(row: BuildoutDealRow): Date | null {
+  if (row.leaseExpiration) return row.leaseExpiration
+  if (row.leaseStart && row.leaseTermMonths && row.leaseTermMonths > 0) {
+    return addMonthsUtc(row.leaseStart, row.leaseTermMonths)
+  }
+  return null
 }
 
 export async function ingestBuildoutDealCsv(
@@ -623,60 +643,93 @@ export async function ingestBuildoutDealCsv(
           summary.dealsCreated++
         }
 
-        // Create LeaseRecord for lease deals with a known expiration date.
-        if (
-          isLeaseDeal(row) &&
-          row.leaseExpiration &&
-          property?.id &&
-          buyer?.contact
-        ) {
+        // LeaseRecord write — closed deals only. Both leases AND sales get
+        // a row (sales use dealKind="sale" with lease-only fields nulled).
+        // CSV is the source of truth, so re-imports overwrite existing rows
+        // rather than skipping.
+        if (isClosedStage(row) && property?.id && canonicalContact) {
+          const dealKind: "lease" | "sale" = isLeaseDeal(row) ? "lease" : "sale"
+          const computedEnd = dealKind === "lease" ? deriveLeaseEndDate(row) : null
+          const leaseStartDate = dealKind === "lease"
+            ? (row.leaseStart ?? row.closeDate)
+            : null
+          const status = computedEnd && computedEnd < new Date()
+            ? "expired"
+            : "active"
+          const propLabel = row.dealTitle || row.dealName || "property"
+
+          const leaseData = {
+            contactId: canonicalContact.id,
+            propertyId: property.id,
+            dealId,
+            closeDate: row.closeDate,
+            leaseStartDate,
+            leaseEndDate: computedEnd,
+            leaseTermMonths: dealKind === "lease" ? row.leaseTermMonths : null,
+            rentAmount: dealKind === "lease" ? row.averageLeaseRate : null,
+            rentPeriod: dealKind === "lease" ? "annual" : null,
+            mattRepresented,
+            dealKind,
+            extractionConfidence: new Prisma.Decimal(1), // CSV is source of truth
+            status,
+            notes: row.leaseType ? `Lease type: ${row.leaseType}` : null,
+            createdBy: "buildout-csv-import",
+          } satisfies Prisma.LeaseRecordUncheckedUpdateInput
+
           const existingLease = await tx.leaseRecord.findFirst({
             where: { dealId, archivedAt: null },
             select: { id: true },
           })
-          if (!existingLease) {
-            const leaseRecord = await tx.leaseRecord.create({
-              data: {
-                contactId: buyer.contact.id,
-                propertyId: property.id,
-                dealId,
-                closeDate: row.closeDate,
-                leaseStartDate: row.leaseStart ?? row.closeDate,
-                leaseEndDate: row.leaseExpiration,
-                leaseTermMonths: row.leaseTermMonths,
-                rentAmount: row.averageLeaseRate,
-                rentPeriod: "annual",
-                mattRepresented,
-                dealKind: "lease",
-                extractionConfidence: 1.0, // CSV is the source of truth
-                status: row.leaseExpiration < new Date() ? "expired" : "active",
-                notes: row.leaseType ? `Lease type: ${row.leaseType}` : null,
-                createdBy: "buildout-csv-import",
-              },
+
+          let leaseRecordId: string
+          if (existingLease) {
+            await tx.leaseRecord.update({
+              where: { id: existingLease.id },
+              data: leaseData,
+            })
+            leaseRecordId = existingLease.id
+          } else {
+            const created = await tx.leaseRecord.create({
+              data: leaseData as Prisma.LeaseRecordUncheckedCreateInput,
               select: { id: true },
             })
-            // Mirror the lease-end date as a CalendarEvent so Matt sees every
-            // future lease expiration on the calendar at a glance — distinct
-            // from the renewal-alert sweep which only fires inside the
-            // lookahead boundary as it crosses.
-            const propLabel =
-              row.dealTitle || row.dealName || "property"
-            await tx.calendarEvent.create({
-              data: {
-                title: `Lease ends: ${propLabel}`,
-                description: `${buyer.contact.name} lease at ${propLabel} expires.`,
-                startDate: row.leaseExpiration,
-                eventKind: "lease_renewal",
-                contactId: buyer.contact.id,
-                propertyId: property.id,
-                dealId,
-                leaseRecordId: leaseRecord.id,
-                source: "system",
-                status: "upcoming",
-                createdBy: "buildout-csv-import",
-              },
-            })
+            leaseRecordId = created.id
             summary.leaseRecordsCreated++
+          }
+
+          // Mirror lease end date as a CalendarEvent. Only for leases with
+          // a known end date; sales never trigger renewal alerts.
+          // Upsert keyed on (leaseRecordId, eventKind="lease_renewal") so
+          // re-imports update the date if it changed.
+          if (dealKind === "lease" && computedEnd) {
+            const eventData = {
+              title: `Lease ends: ${propLabel}`,
+              description: `${canonicalContact.name} lease at ${propLabel} expires.`,
+              startDate: computedEnd,
+              eventKind: "lease_renewal",
+              contactId: canonicalContact.id,
+              propertyId: property.id,
+              dealId,
+              leaseRecordId,
+              source: "system",
+              status: "upcoming",
+              createdBy: "buildout-csv-import",
+            } satisfies Prisma.CalendarEventUncheckedUpdateInput
+
+            const existingEvent = await tx.calendarEvent.findFirst({
+              where: { leaseRecordId, eventKind: "lease_renewal" },
+              select: { id: true },
+            })
+            if (existingEvent) {
+              await tx.calendarEvent.update({
+                where: { id: existingEvent.id },
+                data: eventData,
+              })
+            } else {
+              await tx.calendarEvent.create({
+                data: eventData as Prisma.CalendarEventUncheckedCreateInput,
+              })
+            }
           }
         }
       })
