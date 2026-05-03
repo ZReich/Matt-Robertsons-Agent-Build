@@ -1,0 +1,875 @@
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+vi.mock("server-only", () => ({}))
+
+import {
+  CLOSED_DEAL_CLASSIFIER_VERSION,
+} from "./closed-deal-classifier"
+import { LEASE_EXTRACTOR_VERSION } from "./lease-extractor"
+import type {
+  ClosedDealClassification,
+  LeaseExtraction,
+} from "./lease-types"
+
+// ---------------------------------------------------------------------------
+// In-memory fake DB layer.
+// ---------------------------------------------------------------------------
+//
+// The orchestrator exercises a fairly wide surface (Communication,
+// Contact, Property, LeaseRecord, CalendarEvent, SystemState) so a
+// per-test mock matrix is unwieldy. This fake captures rows in
+// dictionaries and supports the queries the orchestrator actually runs:
+// findUnique, findFirst, findMany (with `take`/`orderBy`), create,
+// update, upsert, and `$transaction(async (tx) => ...)`.
+//
+// We deliberately keep the where-clause matcher narrow — only the fields
+// the orchestrator queries on. If the orchestrator grows new query
+// shapes, this fake needs an update.
+
+// Shared mutable state that vi.mock factories close over. vi.hoisted
+// runs before any other top-level statement so the mock factories can
+// safely reference STATE via the hoisted closure.
+const { STATE, dbMock } = vi.hoisted(() => {
+  type RowH = Record<string, unknown> & { id: string }
+  type DbStateH = {
+    communications: Map<string, RowH>
+    contacts: Map<string, RowH>
+    properties: Map<string, RowH>
+    leaseRecords: Map<string, RowH>
+    calendarEvents: Map<string, RowH>
+    systemStates: Map<string, { key: string; value: unknown }>
+    nextId: number
+  }
+  const newState = (): DbStateH => ({
+    communications: new Map(),
+    contacts: new Map(),
+    properties: new Map(),
+    leaseRecords: new Map(),
+    calendarEvents: new Map(),
+    systemStates: new Map(),
+    nextId: 1,
+  })
+
+  const STATE: { current: DbStateH; reset: () => void } = {
+    current: newState(),
+    reset: () => {
+      STATE.current = newState()
+    },
+  }
+
+  function genIdH(prefix: string): string {
+    STATE.current.nextId += 1
+    return `${prefix}-${STATE.current.nextId}`
+  }
+
+  function deepCloneH<T>(v: T): T {
+    return v == null ? v : (JSON.parse(JSON.stringify(v)) as T)
+  }
+
+  function matchInsensitiveH(
+    field: unknown,
+    filter: { equals: string; mode?: string }
+  ): boolean {
+    if (typeof field !== "string") return false
+    const target = filter.equals
+    if (filter.mode === "insensitive") {
+      return field.toLowerCase() === target.toLowerCase()
+    }
+    return field === target
+  }
+
+  function matchesContactWhereH(
+    row: RowH,
+    where: Record<string, unknown>
+  ): boolean {
+    if (where.archivedAt === null && row.archivedAt != null) return false
+    if (where.email && typeof where.email === "object") {
+      const f = where.email as { equals: string; mode?: string }
+      if (!matchInsensitiveH(row.email, f)) return false
+    }
+    if (where.name && typeof where.name === "object") {
+      const f = where.name as { equals: string; mode?: string }
+      if (!matchInsensitiveH(row.name, f)) return false
+    }
+    return true
+  }
+
+  function matchesPropertyWhereH(
+    row: RowH,
+    where: Record<string, unknown>
+  ): boolean {
+    if (where.archivedAt === null && row.archivedAt != null) return false
+    if (
+      typeof where.propertyKey === "string" &&
+      row.propertyKey !== where.propertyKey
+    ) {
+      return false
+    }
+    if (where.address && typeof where.address === "object") {
+      const f = where.address as { equals: string; mode?: string }
+      if (!matchInsensitiveH(row.address, f)) return false
+    }
+    return true
+  }
+
+  function matchesLeaseWhereH(
+    row: RowH,
+    where: Record<string, unknown>
+  ): boolean {
+    for (const [k, v] of Object.entries(where)) {
+      if (k === "archivedAt" && v === null) {
+        if (row.archivedAt != null) return false
+        continue
+      }
+      if (v instanceof Date) {
+        const rv = row[k] as Date | null
+        if (!rv) return false
+        if (rv.getTime() !== v.getTime()) return false
+        continue
+      }
+      if (v === null) {
+        if (row[k] !== null && row[k] !== undefined) return false
+        continue
+      }
+      if (row[k] !== v) return false
+    }
+    return true
+  }
+
+  function matchesEventWhereH(
+    row: RowH,
+    where: Record<string, unknown>
+  ): boolean {
+    for (const [k, v] of Object.entries(where)) {
+      if (row[k] !== v) return false
+    }
+    return true
+  }
+
+  function makeTxClient(state: DbStateH) {
+    return {
+      contact: {
+        findFirst: async ({
+          where,
+        }: {
+          where: Record<string, unknown>
+        }) => {
+          for (const row of state.contacts.values()) {
+            if (matchesContactWhereH(row as RowH, where)) return deepCloneH(row)
+          }
+          return null
+        },
+        create: async ({ data }: { data: Record<string, unknown> }) => {
+          const id = genIdH("contact")
+          const row: RowH = {
+            id,
+            archivedAt: null,
+            clientType: null,
+            ...data,
+          }
+          state.contacts.set(id, row)
+          return deepCloneH(row)
+        },
+        update: async ({
+          where,
+          data,
+        }: {
+          where: { id: string }
+          data: Record<string, unknown>
+        }) => {
+          const row = state.contacts.get(where.id)
+          if (!row) throw new Error(`contact not found: ${where.id}`)
+          Object.assign(row, data)
+          return deepCloneH(row)
+        },
+      },
+      property: {
+        findFirst: async ({
+          where,
+        }: {
+          where: Record<string, unknown>
+        }) => {
+          for (const row of state.properties.values()) {
+            if (matchesPropertyWhereH(row as RowH, where)) return deepCloneH(row)
+          }
+          return null
+        },
+      },
+      leaseRecord: {
+        findFirst: async ({
+          where,
+        }: {
+          where: Record<string, unknown>
+        }) => {
+          for (const row of state.leaseRecords.values()) {
+            if (matchesLeaseWhereH(row as RowH, where)) return deepCloneH(row)
+          }
+          return null
+        },
+        create: async ({ data }: { data: Record<string, unknown> }) => {
+          const id = genIdH("lease")
+          const row: RowH = { id, archivedAt: null, ...data }
+          state.leaseRecords.set(id, row)
+          return deepCloneH(row)
+        },
+        update: async ({
+          where,
+          data,
+        }: {
+          where: { id: string }
+          data: Record<string, unknown>
+        }) => {
+          const row = state.leaseRecords.get(where.id)
+          if (!row) throw new Error(`leaseRecord not found: ${where.id}`)
+          Object.assign(row, data)
+          return deepCloneH(row)
+        },
+      },
+      calendarEvent: {
+        findFirst: async ({
+          where,
+        }: {
+          where: Record<string, unknown>
+        }) => {
+          for (const row of state.calendarEvents.values()) {
+            if (matchesEventWhereH(row as RowH, where)) return deepCloneH(row)
+          }
+          return null
+        },
+        create: async ({ data }: { data: Record<string, unknown> }) => {
+          const id = genIdH("event")
+          const row: RowH = { id, ...data }
+          state.calendarEvents.set(id, row)
+          return deepCloneH(row)
+        },
+        update: async ({
+          where,
+          data,
+        }: {
+          where: { id: string }
+          data: Record<string, unknown>
+        }) => {
+          const row = state.calendarEvents.get(where.id)
+          if (!row) throw new Error(`calendarEvent not found: ${where.id}`)
+          Object.assign(row, data)
+          return deepCloneH(row)
+        },
+      },
+    }
+  }
+
+  const dbMock = {
+    communication: {
+      findUnique: async ({ where }: { where: { id: string } }) => {
+        const row = STATE.current.communications.get(where.id)
+        return row ? deepCloneH(row) : null
+      },
+      findMany: async ({ take }: { take?: number } = {}) => {
+        const rows = Array.from(STATE.current.communications.values())
+          .sort((a, b) => {
+            const ad = (a.date as Date).getTime()
+            const bd = (b.date as Date).getTime()
+            if (ad !== bd) return ad - bd
+            return (a.id as string).localeCompare(b.id as string)
+          })
+          .filter((r) => {
+            const m = r.metadata as
+              | Record<string, unknown>
+              | null
+              | undefined
+            const slot = m?.closedDealClassification as
+              | Record<string, unknown>
+              | undefined
+            return slot?.version !== CLOSED_DEAL_CLASSIFIER_VERSION
+          })
+          // Reflect just the fields the caller `select`s. Preserve real
+          // Date instances (deepCloneH would JSON-stringify them).
+          .map((r) => ({ id: r.id as string, date: r.date as Date }))
+        return take ? rows.slice(0, take) : rows
+      },
+      update: async ({
+        where,
+        data,
+      }: {
+        where: { id: string }
+        data: Record<string, unknown>
+      }) => {
+        const row = STATE.current.communications.get(where.id)
+        if (!row) throw new Error(`communication not found: ${where.id}`)
+        Object.assign(row, data)
+        return deepCloneH(row)
+      },
+    },
+    systemState: {
+      findUnique: async ({ where }: { where: { key: string } }) => {
+        const row = STATE.current.systemStates.get(where.key)
+        return row ? deepCloneH(row) : null
+      },
+      upsert: async ({
+        where,
+        create,
+        update,
+      }: {
+        where: { key: string }
+        create: { key: string; value: unknown }
+        update: { value: unknown }
+      }) => {
+        const existing = STATE.current.systemStates.get(where.key)
+        if (existing) {
+          existing.value = update.value
+        } else {
+          STATE.current.systemStates.set(create.key, {
+            key: create.key,
+            value: create.value,
+          })
+        }
+        return STATE.current.systemStates.get(where.key)!
+      },
+    },
+    $transaction: async <T>(
+      fn: (tx: ReturnType<typeof makeTxClient>) => Promise<T>
+    ): Promise<T> => {
+      const tx = makeTxClient(STATE.current)
+      return fn(tx)
+    },
+  }
+
+  return { STATE, dbMock }
+})
+
+function genId(prefix: string): string {
+  STATE.current.nextId += 1
+  return `${prefix}-${STATE.current.nextId}`
+}
+
+vi.mock("@/lib/prisma", () => ({
+  db: dbMock,
+}))
+
+// Don't actually load the real settings (it would hit the DB) — we
+// inject `options.settings` on every call.
+vi.mock("@/lib/system-state/automation-settings", () => ({
+  getAutomationSettings: vi.fn(async () => ({
+    leaseExtractorMinConfidence: 0.6,
+  })),
+}))
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function seedCommunication(opts?: {
+  id?: string
+  metadata?: unknown
+  date?: Date
+}): string {
+  const id = opts?.id ?? genId("comm")
+  STATE.current.communications.set(id, {
+    id,
+    subject: "Lease executed",
+    body: "Lease finalized.",
+    date: opts?.date ?? new Date("2026-01-01T00:00:00Z"),
+    archivedAt: null,
+    metadata: opts?.metadata ?? null,
+  })
+  return id
+}
+
+function seedProperty(opts: {
+  address: string
+  propertyKey: string
+  id?: string
+}): string {
+  const id = opts.id ?? genId("prop")
+  STATE.current.properties.set(id, {
+    id,
+    address: opts.address,
+    propertyKey: opts.propertyKey,
+    archivedAt: null,
+  })
+  return id
+}
+
+const VALID_LEASE_EXTRACTION: LeaseExtraction = {
+  contactName: "Brandon Miller",
+  contactEmail: "brandon@example.com",
+  propertyAddress: "303 N Broadway",
+  closeDate: "2026-01-15",
+  leaseStartDate: "2026-02-01",
+  leaseEndDate: "2031-01-31",
+  leaseTermMonths: 60,
+  rentAmount: 4500,
+  rentPeriod: "monthly",
+  mattRepresented: "owner",
+  dealKind: "lease",
+  confidence: 0.88,
+  reasoning: "Subject line says 'Lease fully executed'.",
+}
+
+const VALID_CLASSIFICATION: ClosedDealClassification = {
+  classification: "closed_lease",
+  confidence: 0.92,
+  signals: ["fully executed"],
+}
+
+function classifierStub(result: ClosedDealClassification = VALID_CLASSIFICATION) {
+  return vi.fn(async (..._args: unknown[]) => ({
+    ok: true as const,
+    result,
+    modelUsed: "deepseek-chat",
+  }))
+}
+
+function extractorStub(result: LeaseExtraction = VALID_LEASE_EXTRACTION) {
+  return vi.fn(async (..._args: unknown[]) => ({
+    ok: true as const,
+    result,
+    modelUsed: "claude-haiku-4-5-20251001",
+  }))
+}
+
+beforeEach(() => {
+  STATE.reset()
+  vi.clearAllMocks()
+})
+
+// Import AFTER all the vi.mock calls above are hoisted-applied.
+import {
+  processBacklogClosedDeals,
+  processCommunicationForLease,
+} from "./lease-pipeline-orchestrator"
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — happy path
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — happy path", () => {
+  it("classifies, extracts, upserts LeaseRecord + CalendarEvent, transitions Contact", async () => {
+    const commId = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    expect(out.leaseRecordId).toMatch(/^lease-/)
+    expect(out.calendarEventId).toMatch(/^event-/)
+    expect(out.contactId).toMatch(/^contact-/)
+    expect(out.propertyId).toMatch(/^prop-/)
+
+    // Contact.clientType — close date is past (2026-01-15 < 2026-01-20),
+    // owner-side lease → past_listing_client.
+    const contact = STATE.current.contacts.get(out.contactId)!
+    expect(contact.clientType).toBe("past_listing_client")
+    expect(out.contactClientTypeChanged).toBe(true)
+
+    // CalendarEvent — leaseEndDate 2031-01-31 is in the future.
+    const event = STATE.current.calendarEvents.get(out.calendarEventId!)!
+    expect(event.eventKind).toBe("lease_renewal")
+    expect((event.startDate as Date).toISOString()).toBe(
+      "2031-01-31T00:00:00.000Z"
+    )
+
+    // Communication.metadata stamped with the classifier outcome.
+    const comm = STATE.current.communications.get(commId)!
+    const metadata = comm.metadata as Record<string, unknown>
+    const stamp = metadata.closedDealClassification as Record<string, unknown>
+    expect(stamp.version).toBe(CLOSED_DEAL_CLASSIFIER_VERSION)
+    expect(stamp.classification).toBe("closed_lease")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — already-processed shortcut
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — already-processed shortcut", () => {
+  it("returns reason already_processed and skips both AI calls", async () => {
+    const commId = seedCommunication({
+      metadata: {
+        closedDealClassification: {
+          version: CLOSED_DEAL_CLASSIFIER_VERSION,
+          classification: "closed_lease",
+        },
+      },
+    })
+
+    const classifierFn = classifierStub()
+    const extractorFn = extractorStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierFn,
+      runLeaseExtractionFn: extractorFn,
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("already_processed")
+    expect(classifierFn).not.toHaveBeenCalled()
+    expect(extractorFn).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — not-a-deal classification
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — not_a_deal", () => {
+  it("stamps metadata, does not run extractor, returns not_a_closed_deal", async () => {
+    const commId = seedCommunication()
+
+    const extractorFn = extractorStub()
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub({
+        classification: "not_a_deal",
+        confidence: 0.95,
+        signals: [],
+      }),
+      runLeaseExtractionFn: extractorFn,
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("not_a_closed_deal")
+    expect(extractorFn).not.toHaveBeenCalled()
+
+    const comm = STATE.current.communications.get(commId)!
+    const stamp = (comm.metadata as Record<string, unknown>)
+      .closedDealClassification as Record<string, unknown>
+    expect(stamp.classification).toBe("not_a_deal")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — low-confidence extraction
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — low confidence", () => {
+  it("stamps leaseExtractionAttempt and returns low_confidence", async () => {
+    const commId = seedCommunication()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub({
+        ...VALID_LEASE_EXTRACTION,
+        confidence: 0.5, // below 0.6 threshold
+      }),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("low_confidence")
+
+    expect(STATE.current.leaseRecords.size).toBe(0)
+
+    const comm = STATE.current.communications.get(commId)!
+    const meta = comm.metadata as Record<string, unknown>
+    const attempt = meta.leaseExtractionAttempt as Record<string, unknown>
+    expect(attempt.failedReason).toBe("low_confidence")
+    expect(attempt.version).toBe(LEASE_EXTRACTOR_VERSION)
+    expect(attempt.confidence).toBe(0.5)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — missing property fallback
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — missing property", () => {
+  it("creates LeaseRecord with propertyId: null when address has no match", async () => {
+    const commId = seedCommunication()
+    // No properties seeded.
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    expect(out.propertyId).toBeNull()
+    const lease = STATE.current.leaseRecords.get(out.leaseRecordId)!
+    expect(lease.propertyId).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — past-dated close, no future end date
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — already-expired lease", () => {
+  it("does NOT create a calendar event when leaseEndDate is in the past", async () => {
+    const commId = seedCommunication()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub({
+        ...VALID_LEASE_EXTRACTION,
+        leaseEndDate: "2020-01-31",
+        leaseStartDate: "2015-02-01",
+        closeDate: "2015-01-15",
+      }),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    expect(out.calendarEventId).toBeNull()
+    expect(STATE.current.calendarEvents.size).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — close-today / start-tomorrow
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — close today, start tomorrow", () => {
+  it("keeps Contact in active_* state when closeDate is today", async () => {
+    const commId = seedCommunication()
+    const today = new Date("2026-05-02T00:00:00Z")
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub({
+        ...VALID_LEASE_EXTRACTION,
+        // closeDate equals today — NOT strictly less than now, so not "past".
+        closeDate: "2026-05-02",
+        leaseStartDate: "2026-05-03",
+        leaseEndDate: "2031-05-02",
+        mattRepresented: "owner",
+      }),
+      now: today,
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    const contact = STATE.current.contacts.get(out.contactId)!
+    expect(contact.clientType).toBe("active_listing_client")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — idempotent re-run on a fresh stamp
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — idempotency", () => {
+  it("re-running on the same Communication does not create duplicate rows", async () => {
+    const commId = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    // First run.
+    const first = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+    expect(first.ok).toBe(true)
+
+    // Second run — should hit the already_processed shortcut.
+    const second = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+    expect(second.ok).toBe(false)
+    if (second.ok) throw new Error("unreachable")
+    expect(second.reason).toBe("already_processed")
+
+    expect(STATE.current.leaseRecords.size).toBe(1)
+    expect(STATE.current.calendarEvents.size).toBe(1)
+  })
+
+  it("clearing the stamp and re-running upserts in place rather than appending", async () => {
+    const commId = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    // Forcibly drop the version stamp to simulate reprocessing.
+    const comm = STATE.current.communications.get(commId)!
+    const meta = comm.metadata as Record<string, unknown>
+    delete meta.closedDealClassification
+
+    await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(STATE.current.leaseRecords.size).toBe(1)
+    expect(STATE.current.calendarEvents.size).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processBacklogClosedDeals
+// ---------------------------------------------------------------------------
+
+describe("processBacklogClosedDeals", () => {
+  it("processes pending Communications, persists cursor, returns complete", async () => {
+    const c1 = seedCommunication({ id: "c-aaa", date: new Date("2025-01-01") })
+    const c2 = seedCommunication({ id: "c-bbb", date: new Date("2025-02-01") })
+    const c3 = seedCommunication({ id: "c-ccc", date: new Date("2025-03-01") })
+
+    const processFn = vi.fn(async (commId: string) => {
+      // Simulate the orchestrator stamping the metadata so the next
+      // findMany doesn't return this Communication again.
+      const row = STATE.current.communications.get(commId)!
+      row.metadata = {
+        closedDealClassification: { version: CLOSED_DEAL_CLASSIFIER_VERSION },
+      }
+      return {
+        ok: true as const,
+        leaseRecordId: `lease-${commId}`,
+        calendarEventId: null,
+        contactId: `contact-${commId}`,
+        propertyId: null,
+        classification: VALID_CLASSIFICATION,
+        extraction: VALID_LEASE_EXTRACTION,
+        contactClientTypeChanged: true,
+      }
+    })
+
+    const result = await processBacklogClosedDeals({
+      batchSize: 2,
+      throttleMs: 0,
+      processFn,
+      assertBudgetFn: async () => {},
+      sleepFn: async () => {},
+    })
+
+    expect(result.stoppedReason).toBe("complete")
+    expect(result.processed).toBe(3)
+    expect(result.leaseRecordsCreated).toBe(3)
+    expect(processFn).toHaveBeenCalledTimes(3)
+
+    // Cursor advanced to the last processed row.
+    expect(result.cursor?.lastProcessedCommunicationId).toBe(c3)
+    expect(result.cursor?.lastProcessedReceivedAt).toBe(
+      new Date("2025-03-01").toISOString()
+    )
+
+    // SystemState was persisted under the default key.
+    const cursor = STATE.current.systemStates.get("closed-deal-backlog-cursor")
+    expect(cursor).toBeDefined()
+    expect(processFn.mock.calls.map((c) => c[0])).toEqual([c1, c2, c3])
+  })
+
+  it("stops with reason budget when assertBudgetFn throws ScrubBudgetError", async () => {
+    seedCommunication({ id: "c-1", date: new Date("2025-01-01") })
+    seedCommunication({ id: "c-2", date: new Date("2025-02-01") })
+
+    const { ScrubBudgetError } = await import("@/lib/ai/budget-tracker")
+    let calls = 0
+    const assertBudgetFn = vi.fn(async () => {
+      calls += 1
+      if (calls > 1) throw new ScrubBudgetError(10, 5)
+    })
+
+    const processFn = vi.fn(async (commId: string) => {
+      const row = STATE.current.communications.get(commId)!
+      row.metadata = {
+        closedDealClassification: { version: CLOSED_DEAL_CLASSIFIER_VERSION },
+      }
+      return {
+        ok: true as const,
+        leaseRecordId: `lease-${commId}`,
+        calendarEventId: null,
+        contactId: `contact-${commId}`,
+        propertyId: null,
+        classification: VALID_CLASSIFICATION,
+        extraction: VALID_LEASE_EXTRACTION,
+        contactClientTypeChanged: false,
+      }
+    })
+
+    const result = await processBacklogClosedDeals({
+      batchSize: 5,
+      throttleMs: 0,
+      processFn,
+      assertBudgetFn,
+      sleepFn: async () => {},
+    })
+
+    expect(result.stoppedReason).toBe("budget")
+    expect(result.processed).toBe(1)
+  })
+
+  it("stops with reason max_batches when limit is reached", async () => {
+    // Three rows, batchSize 1, maxBatches 2 → process only 2.
+    seedCommunication({ id: "c-1", date: new Date("2025-01-01") })
+    seedCommunication({ id: "c-2", date: new Date("2025-02-01") })
+    seedCommunication({ id: "c-3", date: new Date("2025-03-01") })
+
+    const processFn = vi.fn(async (commId: string) => {
+      const row = STATE.current.communications.get(commId)!
+      row.metadata = {
+        closedDealClassification: { version: CLOSED_DEAL_CLASSIFIER_VERSION },
+      }
+      return {
+        ok: true as const,
+        leaseRecordId: `lease-${commId}`,
+        calendarEventId: null,
+        contactId: `contact-${commId}`,
+        propertyId: null,
+        classification: VALID_CLASSIFICATION,
+        extraction: VALID_LEASE_EXTRACTION,
+        contactClientTypeChanged: false,
+      }
+    })
+
+    const result = await processBacklogClosedDeals({
+      batchSize: 1,
+      throttleMs: 0,
+      maxBatches: 2,
+      processFn,
+      assertBudgetFn: async () => {},
+      sleepFn: async () => {},
+    })
+
+    expect(result.stoppedReason).toBe("max_batches")
+    expect(result.processed).toBe(2)
+  })
+
+  it("captures per-Communication exceptions and stops with reason error", async () => {
+    seedCommunication({ id: "c-1", date: new Date("2025-01-01") })
+    seedCommunication({ id: "c-2", date: new Date("2025-02-01") })
+
+    const processFn = vi.fn(async () => {
+      throw new Error("boom")
+    })
+
+    const result = await processBacklogClosedDeals({
+      batchSize: 5,
+      throttleMs: 0,
+      processFn,
+      assertBudgetFn: async () => {},
+      sleepFn: async () => {},
+    })
+
+    expect(result.stoppedReason).toBe("error")
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0].message).toBe("boom")
+    expect(result.processed).toBe(0)
+  })
+})

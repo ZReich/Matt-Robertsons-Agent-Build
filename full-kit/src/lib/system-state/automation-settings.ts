@@ -36,6 +36,13 @@ export interface AutomationSettings {
    * because the audiences and risk profiles are different (current prospects
    * vs. past clients with sensitive history). */
   autoSendLeaseRenewalReplies: boolean
+
+  /** Minimum confidence (0..1) for the Stage-2 lease extractor before the
+   * orchestrator promotes the extraction to a `LeaseRecord` row + side
+   * effects. Below this, the Communication is stamped with
+   * `metadata.leaseExtractionAttempt` and Phase 2 falls back to a
+   * PDF-attachment scan. Default 0.6. */
+  leaseExtractorMinConfidence: number
 }
 
 export const DEFAULT_AUTOMATION_SETTINGS: AutomationSettings = {
@@ -45,6 +52,11 @@ export const DEFAULT_AUTOMATION_SETTINGS: AutomationSettings = {
   dailyMatchPerContactCap: 2,
   leaseRenewalLookaheadMonths: 6,
   autoSendLeaseRenewalReplies: false,
+  leaseExtractorMinConfidence: 0.6,
+}
+
+function isFiniteInClosedRange(v: unknown, min: number, max: number): v is number {
+  return typeof v === "number" && Number.isFinite(v) && v >= min && v <= max
 }
 
 function isFiniteInRange(v: unknown, min: number, max: number): v is number {
@@ -82,6 +94,13 @@ function coerce(value: unknown): AutomationSettings {
       typeof v.autoSendLeaseRenewalReplies === "boolean"
         ? v.autoSendLeaseRenewalReplies
         : DEFAULT_AUTOMATION_SETTINGS.autoSendLeaseRenewalReplies,
+    leaseExtractorMinConfidence: isFiniteInClosedRange(
+      v.leaseExtractorMinConfidence,
+      0,
+      1
+    )
+      ? v.leaseExtractorMinConfidence
+      : DEFAULT_AUTOMATION_SETTINGS.leaseExtractorMinConfidence,
   }
 }
 
