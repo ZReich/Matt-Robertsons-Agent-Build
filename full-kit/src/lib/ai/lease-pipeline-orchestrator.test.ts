@@ -1179,9 +1179,9 @@ describe("processCommunicationForLease — sale path", () => {
     expect(lease.leaseEndDate).toBeNull()
     expect(lease.rentAmount).toBeNull()
 
-    // Idempotency: re-running on the same comm should hit
-    // already_processed; no second LeaseRecord even after we forcibly
-    // re-trigger by clearing the stamp (sale upsert key is contactId+closeDate).
+    // Idempotency: clearing the classifier stamp + re-running should
+    // upsert into the same LeaseRecord (sale upsert key is now
+    // contactId+propertyId+closeDate).
     const comm = STATE.current.communications.get(commId)!
     const meta = comm.metadata as Record<string, unknown>
     delete meta.closedDealClassification
@@ -1196,5 +1196,63 @@ describe("processCommunicationForLease — sale path", () => {
       settings: { leaseExtractorMinConfidence: 0.6 },
     })
     expect(STATE.current.leaseRecords.size).toBe(1)
+  })
+
+  it("does NOT collapse two sales of DIFFERENT properties closed on the same day", async () => {
+    // Regression for the original sale-side dedupe bug: two sales sharing
+    // (contactId, closeDate) but on different properties must be two
+    // distinct LeaseRecords. Real-world case: a broker closing two
+    // adjacent units on the same day.
+    const comm1 = seedCommunication()
+    const comm2 = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+    seedProperty({ address: "305 N Broadway", propertyKey: "305 n broadway" })
+
+    const baseSale: LeaseExtraction = {
+      contactName: "Sara Buyer",
+      contactEmail: "sara@example.com",
+      propertyAddress: "303 N Broadway",
+      closeDate: "2026-01-15",
+      leaseStartDate: null,
+      leaseEndDate: null,
+      leaseTermMonths: null,
+      rentAmount: null,
+      rentPeriod: null,
+      mattRepresented: "owner",
+      dealKind: "sale",
+      confidence: 0.91,
+      reasoning: "Sale 1.",
+    }
+
+    await processCommunicationForLease(comm1, {
+      runClosedDealClassifierFn: classifierStub({
+        classification: "closed_sale",
+        confidence: 0.9,
+        signals: [],
+      }),
+      runLeaseExtractionFn: extractorStub(baseSale),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    await processCommunicationForLease(comm2, {
+      runClosedDealClassifierFn: classifierStub({
+        classification: "closed_sale",
+        confidence: 0.9,
+        signals: [],
+      }),
+      runLeaseExtractionFn: extractorStub({
+        ...baseSale,
+        propertyAddress: "305 N Broadway",
+        reasoning: "Sale 2.",
+      }),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(STATE.current.leaseRecords.size).toBe(2)
+    const allLeases = [...STATE.current.leaseRecords.values()]
+    const propIds = new Set(allLeases.map((lr) => lr.propertyId))
+    expect(propIds.size).toBe(2)
   })
 })

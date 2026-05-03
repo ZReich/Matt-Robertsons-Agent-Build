@@ -147,10 +147,18 @@ function mergeMetadata(
 
 /**
  * Turn an extractor result into the deterministic find-key for the
- * LeaseRecord upsert. Leases key on (contactId, propertyId, leaseStartDate);
- * sales key on (contactId, closeDate). When the date dimension is missing,
- * we fall back to (contactId, sourceCommunicationId) so the create remains
- * idempotent on retry of the same Communication.
+ * LeaseRecord upsert. Both kinds key on (contactId, propertyId, dateDim):
+ *   - leases use leaseStartDate
+ *   - sales use closeDate
+ * When the date dimension is missing, fall back to
+ * (contactId, sourceCommunicationId) so the create remains idempotent on
+ * retry of the same Communication.
+ *
+ * propertyId is part of the key so that two distinct sales (or leases)
+ * that share contact + date but differ in property are NOT collapsed into
+ * one upsert. Real-world cases: a broker closing two adjacent units on
+ * the same day, or a CSV import where close_date is null across many
+ * unrelated rows.
  */
 function buildLeaseRecordWhere(args: {
   contactId: string
@@ -163,25 +171,21 @@ function buildLeaseRecordWhere(args: {
   const { contactId, propertyId, extraction, sourceCommunicationId } = args
   const where: Prisma.LeaseRecordWhereInput = {
     contactId,
+    propertyId,
     archivedAt: null,
     dealKind: extraction.dealKind,
   }
-  if (extraction.dealKind === "lease") {
-    where.propertyId = propertyId
-    if (args.leaseStartDate) {
-      where.leaseStartDate = args.leaseStartDate
+  const dateDim = extraction.dealKind === "lease" ? args.leaseStartDate : args.closeDate
+  if (dateDim) {
+    if (extraction.dealKind === "lease") {
+      where.leaseStartDate = dateDim
     } else {
-      // No leaseStartDate — guard with sourceCommunicationId so we don't
-      // mistakenly consider an unrelated lease for the same contact/property
-      // as a duplicate.
-      where.sourceCommunicationId = sourceCommunicationId
+      where.closeDate = dateDim
     }
   } else {
-    if (args.closeDate) {
-      where.closeDate = args.closeDate
-    } else {
-      where.sourceCommunicationId = sourceCommunicationId
-    }
+    // No date dimension — guard with sourceCommunicationId so unrelated
+    // rows for the same contact/property aren't treated as duplicates.
+    where.sourceCommunicationId = sourceCommunicationId
   }
   return where
 }
