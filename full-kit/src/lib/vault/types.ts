@@ -171,6 +171,9 @@ export interface TodoMeta extends VaultNoteMeta {
   proposedByRunId?: string
   /** Vault path of the communication that generated this todo */
   source_communication?: string
+  /** When the AI generated this todo, the model's one-line "why" — surfaced
+   * in the UI so the user understands what triggered it. */
+  ai_rationale?: string
 }
 
 /** Email template frontmatter (vault/templates/*.md) */

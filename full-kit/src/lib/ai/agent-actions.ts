@@ -21,6 +21,8 @@ export class AgentActionReviewError extends Error {
 
 export type AgentActionReviewResult =
   | { status: "executed"; todoId: string; actionId: string }
+  | { status: "executed"; actionId: string; memoryId: string }
+  | { status: "executed"; actionId: string }
   | {
       status: "rejected_duplicate"
       todoId: string
@@ -82,6 +84,8 @@ export async function approveAgentAction({
       return createTodoFromAction(action, reviewer)
     case "mark-todo-done":
       return markTodoDoneFromAction(action, reviewer)
+    case "create-agent-memory":
+      return createAgentMemoryFromAction(action, reviewer)
     case "move-deal-stage":
       return moveDealStageFromAction(action, reviewer)
     case "update-deal":
@@ -96,6 +100,29 @@ export async function approveAgentAction({
       )
   }
 }
+
+/**
+ * Action types that should never sit in the approval queue. The scrub
+ * applier creates them with status=pending (so the audit trail is unbroken
+ * with the rest of the AgentAction lifecycle), but immediately calls
+ * approveAgentAction with reviewer="auto" so the side effect lands.
+ *
+ * These are the action types Matt explicitly said should auto-fire:
+ *   - create-todo: AI thinks Matt should do something → goes straight on
+ *     the todo list with the summary as the "why created" blurb.
+ *   - mark-todo-done: AI thinks Matt already did the thing (e.g. attached
+ *     OM in an outbound email) → auto-checks the todo.
+ *   - create-agent-memory: AI extracted a durable preference / referral
+ *     source / playbook fact → goes straight into AgentMemory.
+ *
+ * For everything else (deal stage moves, deal field updates, deal creation),
+ * the human approval gate still applies — those are bigger commitments.
+ */
+export const AUTO_APPROVE_ACTION_TYPES = new Set<string>([
+  "create-todo",
+  "mark-todo-done",
+  "create-agent-memory",
+])
 
 export async function rejectAgentAction({
   id,
@@ -326,6 +353,117 @@ async function markTodoDoneFromAction(
   }
 
   return { status: "executed", todoId: result.todoId, actionId: action.id }
+}
+
+interface CreateAgentMemoryPayload {
+  memoryType: "rule" | "preference" | "playbook" | "client_note" | "style_guide"
+  title: string
+  content: string
+  priority?: "low" | "medium" | "high" | "urgent"
+  contactId?: string
+  dealId?: string
+  tags?: string[]
+}
+
+const VALID_MEMORY_TYPES = new Set([
+  "rule",
+  "preference",
+  "playbook",
+  "client_note",
+  "style_guide",
+])
+
+function parseCreateAgentMemoryPayload(
+  action: AgentAction
+): CreateAgentMemoryPayload {
+  const p = asRecord(action.payload)
+  const title = typeof p.title === "string" ? p.title.trim() : ""
+  const content = typeof p.content === "string" ? p.content.trim() : ""
+  const memoryType =
+    typeof p.memoryType === "string" && VALID_MEMORY_TYPES.has(p.memoryType)
+      ? (p.memoryType as CreateAgentMemoryPayload["memoryType"])
+      : "client_note"
+  if (!title) {
+    throw new AgentActionReviewError(
+      "memory title is required",
+      400,
+      "invalid_payload"
+    )
+  }
+  if (!content) {
+    throw new AgentActionReviewError(
+      "memory content is required",
+      400,
+      "invalid_payload"
+    )
+  }
+  const priority =
+    p.priority === "low" ||
+    p.priority === "medium" ||
+    p.priority === "high" ||
+    p.priority === "urgent"
+      ? (p.priority as CreateAgentMemoryPayload["priority"])
+      : undefined
+  return {
+    memoryType,
+    title: title.slice(0, 250),
+    content: content.slice(0, 8000),
+    priority,
+    contactId: typeof p.contactId === "string" ? p.contactId : undefined,
+    dealId: typeof p.dealId === "string" ? p.dealId : undefined,
+    tags: Array.isArray(p.tags)
+      ? p.tags.filter((t): t is string => typeof t === "string").slice(0, 20)
+      : undefined,
+  }
+}
+
+async function createAgentMemoryFromAction(
+  action: AgentAction,
+  reviewer: string
+): Promise<AgentActionReviewResult> {
+  const payload = parseCreateAgentMemoryPayload(action)
+  try {
+    const memory = await db.$transaction(async (tx) => {
+      const created = await tx.agentMemory.create({
+        data: {
+          memoryType: payload.memoryType,
+          title: payload.title,
+          content: payload.content,
+          priority: payload.priority ?? null,
+          tags: (payload.tags ?? []) as Prisma.InputJsonValue,
+          contactId: payload.contactId ?? null,
+          dealId: payload.dealId ?? null,
+          agentActionId: action.id,
+        },
+        select: { id: true },
+      })
+      await tx.agentAction.update({
+        where: { id: action.id },
+        data: {
+          status: "executed",
+          executedAt: new Date(),
+          feedback: reviewer === "auto" ? "auto-approved" : null,
+        },
+      })
+      return created
+    })
+    return { status: "executed", actionId: action.id, memoryId: memory.id }
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      // The unique constraint on agent_action_id means this action already
+      // produced a memory. Treat as idempotent success.
+      const existing = await db.agentMemory.findUnique({
+        where: { agentActionId: action.id },
+        select: { id: true },
+      })
+      return {
+        status: "executed",
+        actionId: action.id,
+        memoryId: existing?.id ?? "",
+      }
+    }
+    throw error
+  }
 }
 
 async function createTodoFromAction(

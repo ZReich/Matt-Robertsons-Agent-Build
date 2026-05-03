@@ -50,6 +50,13 @@ const TODO_CONTEXT_INCLUDE = {
       deal: { select: { propertyAddress: true } },
     },
   },
+  agentAction: {
+    select: {
+      id: true,
+      summary: true,
+      actionType: true,
+    },
+  },
 } satisfies Prisma.TodoInclude
 
 type TodoWithContext = Prisma.TodoGetPayload<{
@@ -149,6 +156,9 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
         ? { source_communication: `communication:${todo.communicationId}` }
         : {}),
       source: todo.agentActionId ? "ai_email_scrub" : "manual",
+      ...(todo.agentAction?.summary
+        ? { ai_rationale: todo.agentAction.summary }
+        : {}),
       created: todo.createdAt.toISOString(),
       updated: todo.updatedAt.toISOString(),
     },
