@@ -1547,6 +1547,18 @@ model LeaseRecord {
   // Both kinds key on (contactId, propertyId, dateDim) so that two
   // distinct sales/leases of different properties closing on the same
   // day are NOT collapsed.
+  //
+  // NOTE (audit I1): the actual DB constraints are PARTIAL unique indexes:
+  //   lease_record_dedupe_lease  WHERE archived_at IS NULL AND lease_start_date IS NOT NULL
+  //   lease_record_dedupe_sale   WHERE archived_at IS NULL AND close_date    IS NOT NULL
+  // Postgres treats NULL as distinct in unique constraints, so without
+  // the IS NOT NULL clause two rows with a null date dimension would not
+  // be deduped. The archived_at clause lets us recreate a key after
+  // archiving the prior LeaseRecord. The Prisma @@unique declarations are
+  // KEPT here so Prisma's upsert continues to recognize the columns; the
+  // partial WHERE clause is enforced by migration
+  // 20260503150000_lease_record_partial_dedupe. `prisma migrate diff` will
+  // report the WHERE clause as drift — that drift is intentional.
   @@unique([contactId, propertyId, leaseStartDate], map: "lease_record_dedupe_lease")
   @@unique([contactId, propertyId, closeDate], map: "lease_record_dedupe_sale")
   @@map("lease_records")
@@ -1588,6 +1600,9 @@ model CalendarEvent {
   @@index([leaseRecordId])
   @@index([contactId])
   @@index([dealId])
+  // PARTIAL unique index — see migration 20260503150000_lease_record_partial_dedupe.
+  // WHERE lease_record_id IS NOT NULL so unrelated CalendarEvent rows
+  // (no underlying LeaseRecord) aren't deduped against each other.
   @@unique([leaseRecordId, eventKind], map: "calendar_event_dedupe_kind")
   @@map("calendar_events")
 }
