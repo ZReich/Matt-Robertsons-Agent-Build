@@ -5,7 +5,8 @@ import { Prisma as PrismaNS } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 import {
-  assertWithinScrubBudget,
+  assertWithinLeaseBackfillBudget,
+  LeaseBackfillBudgetError,
   ScrubBudgetError,
 } from "@/lib/ai/budget-tracker"
 import {
@@ -655,7 +656,9 @@ export interface BacklogOpts {
     options?: ProcessLeaseOptions
   ) => Promise<ProcessLeaseResult>
   /**
-   * Inject for tests. Defaults to `assertWithinScrubBudget`.
+   * Inject for tests. Defaults to `assertWithinLeaseBackfillBudget`
+   * (audit I4 — lease pipeline has its own budget separate from the
+   * live scrub pipeline).
    */
   assertBudgetFn?: () => Promise<void>
   /**
@@ -743,7 +746,7 @@ export async function processBacklogClosedDeals(
   const maxBatches = opts.maxBatches ?? Number.POSITIVE_INFINITY
   const cursorKey = opts.cursorKey ?? DEFAULT_BACKLOG_KEY
   const processFn = opts.processFn ?? processCommunicationForLease
-  const assertBudgetFn = opts.assertBudgetFn ?? assertWithinScrubBudget
+  const assertBudgetFn = opts.assertBudgetFn ?? assertWithinLeaseBackfillBudget
   const sleepFn = opts.sleepFn ?? defaultSleep
 
   const result: BacklogResult = {
@@ -817,7 +820,10 @@ export async function processBacklogClosedDeals(
       try {
         await assertBudgetFn()
       } catch (err) {
-        if (err instanceof ScrubBudgetError) {
+        if (
+          err instanceof ScrubBudgetError ||
+          err instanceof LeaseBackfillBudgetError
+        ) {
           stop = "budget"
           break
         }

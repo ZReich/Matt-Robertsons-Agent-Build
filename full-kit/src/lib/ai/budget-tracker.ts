@@ -11,12 +11,68 @@ export class ScrubBudgetError extends Error {
   }
 }
 
+export class LeaseBackfillBudgetError extends Error {
+  code = "LEASE_BACKFILL_BUDGET_CAP_HIT" as const
+
+  constructor(
+    readonly spentUsd: number,
+    readonly capUsd: number
+  ) {
+    super(`Lease-backfill budget cap hit: spent $${spentUsd} of $${capUsd}`)
+  }
+}
+
+/**
+ * Audit I4: outcome-prefix lists used to partition spend between the
+ * "live" scrub pipeline (Haiku-backed) and the lease backfill pipeline
+ * (DeepSeek classifier + Haiku extractors). Without partitioning, a
+ * 200K-row backfill would exhaust SCRUB_DAILY_BUDGET_USD and silently
+ * starve scrub-of-new-mail (or vice versa).
+ */
+const LEASE_PIPELINE_OUTCOME_PREFIXES = [
+  "classifier-",
+  "extractor-",
+  "extractor-pdf-",
+] as const
+
+/**
+ * Spend over the rolling window for the LIVE scrub pipeline only.
+ * Lease-pipeline outcomes are excluded so they don't double-count
+ * against `SCRUB_DAILY_BUDGET_USD`.
+ */
 export async function getRollingScrubSpendUsd(
   windowMs = 24 * 60 * 60 * 1000
 ): Promise<number> {
   const since = new Date(Date.now() - windowMs)
   const result = await db.scrubApiCall.aggregate({
-    where: { at: { gte: since } },
+    where: {
+      at: { gte: since },
+      NOT: LEASE_PIPELINE_OUTCOME_PREFIXES.map((prefix) => ({
+        outcome: { startsWith: prefix },
+      })),
+    },
+    _sum: { estimatedUsd: true },
+  })
+  const value = result._sum.estimatedUsd
+  if (value == null) return 0
+  return typeof value === "number" ? value : Number(value.toString())
+}
+
+/**
+ * Spend over the rolling window for the lease-backfill pipeline ONLY
+ * (classifier + body extractor + PDF extractor outcomes).
+ */
+export async function getRollingLeaseBackfillSpendUsd(
+  windowMs = 24 * 60 * 60 * 1000
+): Promise<number> {
+  const since = new Date(Date.now() - windowMs)
+  const result = await db.scrubApiCall.aggregate({
+    where: {
+      at: { gte: since },
+      OR: LEASE_PIPELINE_OUTCOME_PREFIXES.map((prefix) => ({
+        outcome: { startsWith: prefix },
+      })),
+    },
     _sum: { estimatedUsd: true },
   })
   const value = result._sum.estimatedUsd
@@ -29,5 +85,20 @@ export async function assertWithinScrubBudget(): Promise<void> {
   const spentUsd = await getRollingScrubSpendUsd()
   if (Number.isFinite(capUsd) && spentUsd >= capUsd) {
     throw new ScrubBudgetError(spentUsd, capUsd)
+  }
+}
+
+/**
+ * Audit I4: the lease backfill driver calls this in place of
+ * `assertWithinScrubBudget` so it has its own daily ceiling. Default
+ * cap matches the spec's documented backfill-mode estimate of $30/day.
+ */
+export async function assertWithinLeaseBackfillBudget(): Promise<void> {
+  const capUsd = Number.parseFloat(
+    process.env.LEASE_BACKFILL_DAILY_BUDGET_USD ?? "30"
+  )
+  const spentUsd = await getRollingLeaseBackfillSpendUsd()
+  if (Number.isFinite(capUsd) && spentUsd >= capUsd) {
+    throw new LeaseBackfillBudgetError(spentUsd, capUsd)
   }
 }
