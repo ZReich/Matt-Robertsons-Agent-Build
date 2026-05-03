@@ -5,10 +5,26 @@ import {
   validateJsonMutationRequest,
 } from "@/lib/api-route-auth"
 import { runRenewalAlertSweep } from "@/lib/lease/renewal-alert-job"
+import { constantTimeCompare } from "@/lib/msgraph"
+
+/**
+ * Accept the operator admin token (`x-admin-token: $MSGRAPH_TEST_ADMIN_TOKEN`)
+ * as an auth fallback so the sweep can be triggered headlessly from CLI/cron
+ * even when no NextAuth session exists. Mirrors the pattern at
+ * `daily-listings/process/route.ts` (commit 5861c9a).
+ */
+function isOperatorTokenAuthorized(request: Request): boolean {
+  const expected = process.env.MSGRAPH_TEST_ADMIN_TOKEN ?? ""
+  if (!expected) return false
+  const provided = request.headers.get("x-admin-token") ?? ""
+  return provided.length > 0 && constantTimeCompare(provided, expected)
+}
 
 export async function POST(request: Request): Promise<Response> {
-  const unauthorized = await requireApiUser()
-  if (unauthorized) return unauthorized
+  if (!isOperatorTokenAuthorized(request)) {
+    const unauthorized = await requireApiUser()
+    if (unauthorized) return unauthorized
+  }
   const invalidRequest = validateJsonMutationRequest(request)
   if (invalidRequest) return invalidRequest
 
