@@ -380,15 +380,22 @@ function seedCommunication(opts?: {
   id?: string
   metadata?: unknown
   date?: Date
+  subject?: string
+  body?: string | null
+  externalMessageId?: string | null
 }): string {
   const id = opts?.id ?? genId("comm")
   STATE.current.communications.set(id, {
     id,
-    subject: "Lease executed",
-    body: "Lease finalized.",
+    subject: opts?.subject ?? "Lease executed",
+    body: opts?.body === undefined ? "Lease finalized." : opts.body,
     date: opts?.date ?? new Date("2026-01-01T00:00:00Z"),
     archivedAt: null,
     metadata: opts?.metadata ?? null,
+    externalMessageId:
+      opts?.externalMessageId === undefined
+        ? null
+        : opts.externalMessageId,
   })
   return id
 }
@@ -1387,5 +1394,536 @@ describe("processCommunicationForLease — sale path", () => {
     const allLeases = [...STATE.current.leaseRecords.values()]
     const propIds = new Set(allLeases.map((lr) => lr.propertyId))
     expect(propIds.size).toBe(2)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — PDF fallback (Task 2.3)
+// ---------------------------------------------------------------------------
+//
+// Covers the chained-fallback semantics: when the body extractor returns
+// a recoverable failure (low_confidence / stub_no_response / validation_failed),
+// the orchestrator should reach into Communication.metadata.attachments,
+// pick the smallest-PDF-first candidate, download it via Graph, and ship
+// it to the PDF extractor. First success wins. If everything fails, the
+// orchestrator stamps `metadata.leaseExtractionAttempt.pdfAttempted = true`
+// (gated by `LEASE_EXTRACTOR_VERSION`) so backlog re-runs at the same
+// version skip the redundant work.
+
+// Synthetic PDF buffer the orchestrator never actually parses — the PDF
+// extractor is stubbed in every test below — but the magic-byte sniff in
+// the real production extractor would reject anything that doesn't start
+// with `%PDF-`, so we keep the fixture honest in case the test is later
+// pointed at the real extractor.
+const FAKE_PDF_BYTES = Buffer.concat([
+  Buffer.from("%PDF-1.4\n"),
+  Buffer.alloc(64, 0x20),
+])
+
+function pdfAttachment(opts: {
+  id: string
+  size: number
+  isInline?: boolean
+  contentType?: string
+  attachmentType?: "file" | "item" | "reference" | "unknown"
+}) {
+  return {
+    id: opts.id,
+    name: `${opts.id}.pdf`,
+    size: opts.size,
+    contentType: opts.contentType ?? "application/pdf",
+    isInline: opts.isInline ?? false,
+    attachmentType: opts.attachmentType ?? "file",
+  }
+}
+
+function downloadStub(
+  perId?: Record<string, { contentBytes?: Buffer; throwMsg?: string }>
+) {
+  return vi.fn(async (messageId: string, attachmentId: string) => {
+    const cfg = perId?.[attachmentId]
+    if (cfg?.throwMsg) throw new Error(cfg.throwMsg)
+    return {
+      id: attachmentId,
+      name: `${attachmentId}.pdf`,
+      contentType: "application/pdf",
+      size: cfg?.contentBytes?.length ?? FAKE_PDF_BYTES.length,
+      contentBytes: cfg?.contentBytes ?? FAKE_PDF_BYTES,
+    }
+  })
+}
+
+function pdfExtractorOkStub(result: LeaseExtraction = VALID_LEASE_EXTRACTION) {
+  return vi.fn(async () => ({
+    ok: true as const,
+    result,
+    modelUsed: "claude-haiku-4-5-20251001",
+  }))
+}
+
+function pdfExtractorFailStub(
+  reason:
+    | "file_too_large"
+    | "not_pdf"
+    | "stub_no_response"
+    | "validation_failed"
+    | "provider_error" = "stub_no_response"
+) {
+  return vi.fn(async () => ({
+    ok: false as const,
+    reason,
+  }))
+}
+
+function lowConfidenceExtractorStub() {
+  return vi.fn(async () => ({
+    ok: true as const,
+    result: { ...VALID_LEASE_EXTRACTION, confidence: 0.3 },
+    modelUsed: "deepseek-chat",
+  }))
+}
+
+function stubNoResponseBodyStub() {
+  return vi.fn(async () => ({
+    ok: false as const,
+    reason: "stub_no_response" as const,
+  }))
+}
+
+describe("processCommunicationForLease — PDF fallback", () => {
+  it("body works → PDF extractor is NOT called", async () => {
+    const commId = seedCommunication({
+      externalMessageId: "msg-1",
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-1", size: 10_000 })],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    expect(pdfFn).not.toHaveBeenCalled()
+    expect(dlFn).not.toHaveBeenCalled()
+
+    // No `pdfAttempted` stamp on success — the success path stamps a
+    // confidence-only `leaseExtractionAttempt`.
+    const comm = STATE.current.communications.get(commId)!
+    const attempt = (comm.metadata as Record<string, unknown>)
+      .leaseExtractionAttempt as Record<string, unknown>
+    expect(attempt.pdfAttempted).toBeUndefined()
+  })
+
+  it("body low_confidence → first PDF wins → LeaseRecord + CalendarEvent created", async () => {
+    const commId = seedCommunication({
+      externalMessageId: "msg-2",
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-1", size: 10_000 })],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    expect(out.leaseRecordId).toMatch(/^lease-/)
+    expect(out.calendarEventId).toMatch(/^event-/)
+    expect(pdfFn).toHaveBeenCalledTimes(1)
+    expect(dlFn).toHaveBeenCalledWith("msg-2", "att-1")
+
+    // bodyExcerpt was passed through.
+    const pdfArgs = pdfFn.mock.calls[0][0] as {
+      subject: string
+      bodyExcerpt?: string
+      classification: string
+    }
+    expect(pdfArgs.subject).toBe("Lease executed")
+    expect(pdfArgs.bodyExcerpt).toBe("Lease finalized.")
+    expect(pdfArgs.classification).toBe("closed_lease")
+  })
+
+  it("body stub_no_response → smallest PDF tried first → first PDF fails, second wins", async () => {
+    const commId = seedCommunication({
+      externalMessageId: "msg-3",
+      metadata: {
+        attachments: [
+          // Larger PDF first in array order — the orchestrator must
+          // sort smallest-first, so the 5KB candidate wins the first slot.
+          pdfAttachment({ id: "big", size: 1_000_000 }),
+          pdfAttachment({ id: "small", size: 5_000 }),
+        ],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    let pdfCalls = 0
+    const pdfFn = vi.fn(async () => {
+      pdfCalls += 1
+      if (pdfCalls === 1) {
+        return { ok: false as const, reason: "validation_failed" as const }
+      }
+      return {
+        ok: true as const,
+        result: VALID_LEASE_EXTRACTION,
+        modelUsed: "claude-haiku-4-5-20251001",
+      }
+    })
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: stubNoResponseBodyStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    expect(pdfFn).toHaveBeenCalledTimes(2)
+    // Download order: smallest first, then larger.
+    expect(dlFn.mock.calls.map((c) => c[1])).toEqual(["small", "big"])
+  })
+
+  it("body fails + all PDFs fail → low_confidence + pdfAttempted=true stamp", async () => {
+    const commId = seedCommunication({
+      externalMessageId: "msg-4",
+      metadata: {
+        attachments: [
+          pdfAttachment({ id: "att-a", size: 10_000 }),
+          pdfAttachment({ id: "att-b", size: 20_000 }),
+        ],
+      },
+    })
+
+    const pdfFn = pdfExtractorFailStub("validation_failed")
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("low_confidence")
+    expect(pdfFn).toHaveBeenCalledTimes(2)
+
+    const comm = STATE.current.communications.get(commId)!
+    const attempt = (comm.metadata as Record<string, unknown>)
+      .leaseExtractionAttempt as Record<string, unknown>
+    expect(attempt.pdfAttempted).toBe(true)
+    expect(attempt.pdfFailureReason).toBe("validation_failed")
+    expect(attempt.failedReason).toBe("low_confidence")
+    expect(attempt.version).toBe(LEASE_EXTRACTOR_VERSION)
+  })
+
+  it("body fails + Communication has NO PDF attachments → pdfAttempted=false", async () => {
+    const commId = seedCommunication({
+      externalMessageId: "msg-5",
+      metadata: {
+        attachments: [
+          // Image attachment — not a PDF, should be filtered out.
+          {
+            id: "img-1",
+            name: "logo.png",
+            size: 4_000,
+            contentType: "image/png",
+            isInline: false,
+            attachmentType: "file",
+          },
+          // Inline PDF — filtered out as "probably an email signature".
+          pdfAttachment({ id: "sig-pdf", size: 1_000, isInline: true }),
+        ],
+      },
+    })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("low_confidence")
+    expect(pdfFn).not.toHaveBeenCalled()
+    expect(dlFn).not.toHaveBeenCalled()
+
+    const comm = STATE.current.communications.get(commId)!
+    const attempt = (comm.metadata as Record<string, unknown>)
+      .leaseExtractionAttempt as Record<string, unknown>
+    expect(attempt.pdfAttempted).toBe(false)
+    expect(attempt.pdfFailureReason).toBe("no_pdf_attachments")
+  })
+
+  it("re-run after a failed PDF attempt at the SAME version short-circuits the PDF retry", async () => {
+    // Seed a Communication whose metadata already records a prior failed
+    // PDF attempt at the current LEASE_EXTRACTOR_VERSION. On re-run, the
+    // orchestrator should NOT re-download or re-extract the PDF — it
+    // should stamp `already_attempted` and bail with low_confidence.
+    const commId = seedCommunication({
+      externalMessageId: "msg-6",
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-x", size: 10_000 })],
+        leaseExtractionAttempt: {
+          version: LEASE_EXTRACTOR_VERSION,
+          failedReason: "low_confidence",
+          pdfAttempted: true,
+          pdfFailureReason: "validation_failed",
+        },
+      },
+    })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    expect(pdfFn).not.toHaveBeenCalled()
+    expect(dlFn).not.toHaveBeenCalled()
+
+    const comm = STATE.current.communications.get(commId)!
+    const attempt = (comm.metadata as Record<string, unknown>)
+      .leaseExtractionAttempt as Record<string, unknown>
+    // pdfAttempted stays false on this run (we didn't actually attempt)
+    // but pdfFailureReason explains why we skipped.
+    expect(attempt.pdfAttempted).toBe(false)
+    expect(attempt.pdfFailureReason).toBe("already_attempted")
+  })
+
+  it("re-run after a failed PDF attempt at a DIFFERENT version DOES re-attempt", async () => {
+    // Stale stamp from an older extractor version: orchestrator should
+    // ignore the stale `pdfAttempted` flag and try the PDF fresh.
+    const commId = seedCommunication({
+      externalMessageId: "msg-7",
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-y", size: 10_000 })],
+        leaseExtractionAttempt: {
+          version: "stale-version-from-2025",
+          failedReason: "low_confidence",
+          pdfAttempted: true,
+        },
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    expect(pdfFn).toHaveBeenCalledTimes(1)
+    expect(dlFn).toHaveBeenCalledWith("msg-7", "att-y")
+  })
+
+  it("filters out non-PDFs, item attachments, oversize PDFs", async () => {
+    const commId = seedCommunication({
+      externalMessageId: "msg-8",
+      metadata: {
+        attachments: [
+          // Wrong content-type.
+          {
+            id: "doc-1",
+            name: "lease.docx",
+            size: 5_000,
+            contentType:
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            isInline: false,
+            attachmentType: "file",
+          },
+          // attachmentType=item (no contentBytes).
+          pdfAttachment({ id: "item-pdf", size: 10_000, attachmentType: "item" }),
+          // Oversize.
+          pdfAttachment({ id: "huge", size: 33 * 1024 * 1024 }),
+          // The valid candidate.
+          pdfAttachment({ id: "good", size: 12_000 }),
+        ],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    expect(pdfFn).toHaveBeenCalledTimes(1)
+    // Only the good candidate was downloaded.
+    expect(dlFn.mock.calls.map((c) => c[1])).toEqual(["good"])
+  })
+
+  it("Graph download throws → moves on to the next PDF candidate", async () => {
+    const commId = seedCommunication({
+      externalMessageId: "msg-9",
+      metadata: {
+        attachments: [
+          pdfAttachment({ id: "broken", size: 5_000 }),
+          pdfAttachment({ id: "ok", size: 10_000 }),
+        ],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub({
+      broken: { throwMsg: "graph 401" },
+    })
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    expect(pdfFn).toHaveBeenCalledTimes(1)
+    expect(dlFn).toHaveBeenCalledTimes(2)
+  })
+
+  it("does NOT attempt PDF when externalMessageId is missing", async () => {
+    const commId = seedCommunication({
+      externalMessageId: null,
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-z", size: 10_000 })],
+      },
+    })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    expect(pdfFn).not.toHaveBeenCalled()
+    expect(dlFn).not.toHaveBeenCalled()
+  })
+
+  it("provider_error from body extractor is NOT recoverable via PDF", async () => {
+    // provider_error is an infrastructure failure (rate limit, network) —
+    // we want to retry that whole call later, not pivot to PDF and burn
+    // tokens on a possibly-transient blip. The orchestrator should stamp
+    // and bail with extractor_failed WITHOUT calling the PDF extractor.
+    const commId = seedCommunication({
+      externalMessageId: "msg-10",
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-q", size: 10_000 })],
+      },
+    })
+
+    const bodyFn = vi.fn(async () => ({
+      ok: false as const,
+      reason: "provider_error" as const,
+      details: "ECONNRESET",
+    }))
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: bodyFn,
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("extractor_failed")
+    expect(pdfFn).not.toHaveBeenCalled()
+    expect(dlFn).not.toHaveBeenCalled()
+  })
+
+  it("body excerpt is truncated to ~500 chars", async () => {
+    const longBody = "X".repeat(2000)
+    const commId = seedCommunication({
+      externalMessageId: "msg-11",
+      body: longBody,
+      metadata: {
+        attachments: [pdfAttachment({ id: "att-1", size: 10_000 })],
+      },
+    })
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const pdfFn = pdfExtractorOkStub()
+    const dlFn = downloadStub()
+
+    await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: lowConfidenceExtractorStub(),
+      extractLeaseFromPdfFn: pdfFn,
+      downloadAttachmentFn: dlFn,
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    const args = pdfFn.mock.calls[0][0] as { bodyExcerpt?: string }
+    expect(args.bodyExcerpt?.length).toBe(500)
   })
 })

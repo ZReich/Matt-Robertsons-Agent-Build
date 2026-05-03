@@ -17,10 +17,13 @@ import {
   LEASE_EXTRACTOR_VERSION,
   runLeaseExtraction,
 } from "@/lib/ai/lease-extractor"
+import { extractLeaseFromPdf } from "@/lib/ai/pdf-lease-extractor"
 import type {
   ClosedDealClassification,
   LeaseExtraction,
 } from "@/lib/ai/lease-types"
+import type { AttachmentMeta } from "@/lib/communications/attachment-types"
+import { downloadAttachment } from "@/lib/msgraph/download-attachment"
 import { getAutomationSettings } from "@/lib/system-state/automation-settings"
 
 /**
@@ -92,6 +95,20 @@ export interface ProcessLeaseOptions {
   runClosedDealClassifierFn?: typeof runClosedDealClassifier
   /** Inject extractor for tests. Falls back to the production runner. */
   runLeaseExtractionFn?: typeof runLeaseExtraction
+  /**
+   * Inject the PDF extractor for tests. Falls back to the real
+   * `extractLeaseFromPdf` runner. Called only when the body extractor
+   * returns a recoverable failure (low_confidence / stub_no_response /
+   * validation_failed) AND the Communication has at least one PDF
+   * attachment we can ship to Anthropic.
+   */
+  extractLeaseFromPdfFn?: typeof extractLeaseFromPdf
+  /**
+   * Inject the Graph attachment downloader for tests. Falls back to the
+   * real `downloadAttachment` runner. Called only inside the PDF fallback
+   * path described above.
+   */
+  downloadAttachmentFn?: typeof downloadAttachment
   /** Override "now" for past-vs-future close-date determinations. Tests only. */
   now?: Date
   /** Override the automation settings snapshot (skips a DB read in tests). */
@@ -129,6 +146,124 @@ function existingClassificationVersion(
   if (!slot || typeof slot !== "object" || Array.isArray(slot)) return null
   const v = (slot as Record<string, unknown>).version
   return typeof v === "string" ? v : null
+}
+
+/**
+ * Read `metadata.leaseExtractionAttempt` and check whether a PDF fallback
+ * was already attempted at the CURRENT extractor version. We deliberately
+ * key on `version`: if the extractor or its prompt/schema bumps to a new
+ * `LEASE_EXTRACTOR_VERSION`, the prior `pdfAttempted: true` stamp is
+ * effectively stale and we let the next run try PDF again. This mirrors
+ * how the classifier-stamp short-circuit at the top of
+ * `processCommunicationForLease` is gated by `CLOSED_DEAL_CLASSIFIER_VERSION`.
+ */
+function pdfAlreadyAttemptedAtCurrentVersion(
+  metadata: Prisma.JsonValue | null | undefined
+): boolean {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return false
+  }
+  const m = metadata as Record<string, unknown>
+  const slot = m.leaseExtractionAttempt
+  if (!slot || typeof slot !== "object" || Array.isArray(slot)) return false
+  const s = slot as Record<string, unknown>
+  if (s.pdfAttempted !== true) return false
+  return s.version === LEASE_EXTRACTOR_VERSION
+}
+
+/**
+ * Pull `attachments` (an `AttachmentMeta[]`) off `Communication.metadata`.
+ * The shape is set by `persistMessage` in `src/lib/msgraph/emails.ts`
+ * (line ~466: `metadata.attachments = AttachmentMeta[]`). Returns an empty
+ * array when the metadata is null, the slot is missing, or the slot is
+ * the wrong shape — the orchestrator should never throw on a malformed
+ * metadata blob from a legacy row.
+ */
+function readAttachmentsFromMetadata(
+  metadata: Prisma.JsonValue | null | undefined
+): AttachmentMeta[] {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return []
+  }
+  const raw = (metadata as Record<string, unknown>).attachments
+  if (!Array.isArray(raw)) return []
+  const out: AttachmentMeta[] = []
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue
+    const e = entry as Record<string, unknown>
+    if (typeof e.id !== "string") continue
+    if (typeof e.name !== "string") continue
+    if (typeof e.size !== "number") continue
+    if (typeof e.contentType !== "string") continue
+    out.push({
+      id: e.id,
+      name: e.name,
+      size: e.size,
+      contentType: e.contentType,
+      isInline: e.isInline === true,
+      attachmentType:
+        e.attachmentType === "file" ||
+        e.attachmentType === "item" ||
+        e.attachmentType === "reference" ||
+        e.attachmentType === "unknown"
+          ? e.attachmentType
+          : undefined,
+    })
+  }
+  return out
+}
+
+/**
+ * Anthropic's PDF endpoint caps a single document at 32MB. The PDF
+ * extractor short-circuits any payload over this cap with a zero-cost
+ * `extractor-pdf-skipped` row, but skipping at the orchestrator level
+ * avoids paying the Graph download bandwidth too. Same cap as the one
+ * inside `pdf-lease-extractor.ts:48`.
+ */
+const PDF_FALLBACK_MAX_BYTES = 32 * 1024 * 1024
+
+/**
+ * Filter the Communication's attachments down to the set we'd actually
+ * ship to the PDF extractor, then sort smallest-first so a successful
+ * extraction lands on the cheapest payload. Filters:
+ *   - `contentType === "application/pdf"` (case-insensitive, since Graph
+ *     sometimes returns mixed case).
+ *   - `attachmentType === "file"` (skip itemAttachment / referenceAttachment
+ *     — those don't carry `contentBytes`).
+ *   - `size <= PDF_FALLBACK_MAX_BYTES` (skip oversize before download).
+ *   - `isInline !== true` (inline attachments are almost always email
+ *     signatures, not lease PDFs — and shipping a sig graphic to Claude
+ *     is pure waste).
+ */
+function selectPdfFallbackCandidates(
+  attachments: AttachmentMeta[]
+): AttachmentMeta[] {
+  return attachments
+    .filter((a) => {
+      if (a.isInline === true) return false
+      if (a.attachmentType !== "file") return false
+      if (typeof a.contentType !== "string") return false
+      if (a.contentType.toLowerCase() !== "application/pdf") return false
+      if (typeof a.size !== "number") return false
+      if (a.size <= 0) return false
+      if (a.size > PDF_FALLBACK_MAX_BYTES) return false
+      return true
+    })
+    .sort((a, b) => a.size - b.size)
+}
+
+/**
+ * Trim the email body to the leading slice we hand to the PDF extractor
+ * as `bodyExcerpt`. Caps at ~500 chars (per the task spec) — enough to
+ * give the model the surrounding email-thread context without bloating
+ * the prompt or leaking long signature blocks.
+ */
+const PDF_BODY_EXCERPT_MAX_CHARS = 500
+function buildBodyExcerpt(body: string | null | undefined): string {
+  if (!body) return ""
+  return body.length > PDF_BODY_EXCERPT_MAX_CHARS
+    ? body.slice(0, PDF_BODY_EXCERPT_MAX_CHARS)
+    : body
 }
 
 /**
@@ -203,14 +338,27 @@ export async function processCommunicationForLease(
 ): Promise<ProcessLeaseResult> {
   const classifierFn = options.runClosedDealClassifierFn ?? runClosedDealClassifier
   const extractorFn = options.runLeaseExtractionFn ?? runLeaseExtraction
+  const pdfExtractorFn = options.extractLeaseFromPdfFn ?? extractLeaseFromPdf
+  const downloadAttachmentFn =
+    options.downloadAttachmentFn ?? downloadAttachment
   const now = options.now ?? new Date()
 
   const settings =
     options.settings ?? (await getAutomationSettings())
 
+  // Subject/body/externalMessageId are needed for the PDF fallback (the
+  // PDF extractor takes `subject` and `bodyExcerpt`; the Graph download
+  // takes `externalMessageId`). Pulled in the initial read so the PDF
+  // path doesn't require a second findUnique.
   const comm = await db.communication.findUnique({
     where: { id: communicationId },
-    select: { id: true, metadata: true },
+    select: {
+      id: true,
+      metadata: true,
+      subject: true,
+      body: true,
+      externalMessageId: true,
+    },
   })
   if (!comm) {
     return { ok: false, reason: "classifier_failed", details: "missing_communication" }
@@ -305,62 +453,201 @@ export async function processCommunicationForLease(
   const extractorOutcome = await extractorFn(communicationId, classification, {
     signals: classifierOutcome.result.signals,
   })
+
+  // Detect a "body extractor failed in a way the PDF fallback might
+  // recover from" condition. The recoverable bucket per spec:
+  //   - extractor_failed with reason `stub_no_response` or `validation_failed`
+  //   - extractor returned a result, but confidence < threshold (low_confidence)
+  // Other failure modes (`missing_communication`, `wrong_classification`,
+  // `sensitive_content`, `provider_error`) are NOT recoverable via PDF —
+  // they're either infrastructure problems or hard policy gates.
+  type BodyFailure =
+    | { kind: "stub_no_response" | "validation_failed"; details: string | null }
+    | {
+        kind: "low_confidence"
+        confidence: number
+        threshold: number
+      }
+  let bodyFailure: BodyFailure | null = null
+  let extraction: LeaseExtraction | null = null
+
   if (!extractorOutcome.ok) {
-    // Stamp the failed-extraction attempt so the backlog driver doesn't
-    // re-pick this Communication. Phase 2 PDF fallback reads this stamp.
-    // Preserve any pre-existing unrelated metadata. Single-write txn
-    // because the classifier-stamp is already durable from txn-1.
-    await db.$transaction(async (tx) => {
-      const fresh = await tx.communication.findUnique({
-        where: { id: communicationId },
-        select: { metadata: true },
+    if (
+      extractorOutcome.reason === "stub_no_response" ||
+      extractorOutcome.reason === "validation_failed"
+    ) {
+      bodyFailure = {
+        kind: extractorOutcome.reason,
+        details: extractorOutcome.details ?? null,
+      }
+    } else {
+      // Non-recoverable failure: stamp and return WITHOUT trying PDF.
+      // (provider_error / sensitive_content / missing_communication /
+      // wrong_classification all land here.)
+      await db.$transaction(async (tx) => {
+        const fresh = await tx.communication.findUnique({
+          where: { id: communicationId },
+          select: { metadata: true },
+        })
+        await tx.communication.update({
+          where: { id: communicationId },
+          data: {
+            metadata: mergeMetadata(fresh?.metadata, {
+              closedDealClassification: classificationStamp,
+              leaseExtractionAttempt: {
+                version: LEASE_EXTRACTOR_VERSION,
+                failedReason: extractorOutcome.reason,
+                details: extractorOutcome.details ?? null,
+                runAt: now.toISOString(),
+              },
+            }),
+          },
+        })
       })
-      await tx.communication.update({
-        where: { id: communicationId },
-        data: {
-          metadata: mergeMetadata(fresh?.metadata, {
-            closedDealClassification: classificationStamp,
-            leaseExtractionAttempt: {
-              version: LEASE_EXTRACTOR_VERSION,
-              failedReason: extractorOutcome.reason,
-              details: extractorOutcome.details ?? null,
-              runAt: now.toISOString(),
-            },
-          }),
-        },
-      })
-    })
-    return {
-      ok: false,
-      reason: "extractor_failed",
-      details: extractorOutcome.reason,
+      return {
+        ok: false,
+        reason: "extractor_failed",
+        details: extractorOutcome.reason,
+      }
+    }
+  } else if (
+    extractorOutcome.result.confidence < settings.leaseExtractorMinConfidence
+  ) {
+    bodyFailure = {
+      kind: "low_confidence",
+      confidence: extractorOutcome.result.confidence,
+      threshold: settings.leaseExtractorMinConfidence,
+    }
+  } else {
+    extraction = extractorOutcome.result
+  }
+
+  // -------------------------------------------------------------------
+  // PDF fallback (Phase 2 / Task 2.3).
+  //
+  // When the body extractor failed recoverably AND the Communication has
+  // PDF attachments we can ship to Anthropic, try each in size order
+  // (smallest first → cheapest token bill on the win path) and let the
+  // FIRST success win. The PDF extractor writes its own ScrubApiCall row
+  // (`extractor-pdf-*` outcomes) so we don't add orchestrator-level
+  // logging here — the per-row budget gate inside the backlog driver
+  // already covers PDF spend because PDF telemetry rolls up through the
+  // same lease-backfill budget.
+  //
+  // Re-attempt semantics: if a prior run already attempted PDF at the
+  // CURRENT `LEASE_EXTRACTOR_VERSION` (stamped via `pdfAttempted: true`),
+  // skip the re-attempt — it would burn another round of Graph download
+  // + Haiku tokens for the same likely-same outcome. When the extractor
+  // version bumps, that stamp goes stale and we DO retry.
+  // -------------------------------------------------------------------
+  let pdfAttempted = false
+  let pdfFailureReason: string | null = null
+  if (bodyFailure) {
+    const pdfAlreadyAttempted = pdfAlreadyAttemptedAtCurrentVersion(
+      comm.metadata
+    )
+    const candidates = pdfAlreadyAttempted
+      ? []
+      : selectPdfFallbackCandidates(readAttachmentsFromMetadata(comm.metadata))
+
+    if (candidates.length > 0 && comm.externalMessageId) {
+      const subject = comm.subject ?? ""
+      const bodyExcerpt = buildBodyExcerpt(comm.body)
+      pdfAttempted = true
+
+      for (const attachment of candidates) {
+        let blobBytes: Buffer
+        try {
+          const blob = await downloadAttachmentFn(
+            comm.externalMessageId,
+            attachment.id
+          )
+          blobBytes = blob.contentBytes
+        } catch (err) {
+          // A single attachment download failing isn't fatal — log the
+          // reason on the metadata stamp (last attempt wins) and keep
+          // trying the next attachment.
+          pdfFailureReason = `download_failed:${
+            err instanceof Error ? err.message : String(err)
+          }`
+          continue
+        }
+
+        const pdfOutcome = await pdfExtractorFn({
+          pdf: blobBytes,
+          classification,
+          signals: classifierOutcome.result.signals,
+          subject,
+          bodyExcerpt,
+        })
+        if (pdfOutcome.ok) {
+          extraction = pdfOutcome.result
+          pdfFailureReason = null
+          break
+        }
+        pdfFailureReason = pdfOutcome.reason
+      }
+    } else if (!pdfAlreadyAttempted && candidates.length === 0) {
+      // No usable PDF candidate to try, but we DID look. Stamp this so
+      // operators can tell apart "we tried and failed" from "we never
+      // tried because the email had no PDFs".
+      pdfFailureReason = "no_pdf_attachments"
+    } else if (pdfAlreadyAttempted) {
+      pdfFailureReason = "already_attempted"
     }
   }
 
-  const extraction = extractorOutcome.result
-  if (extraction.confidence < settings.leaseExtractorMinConfidence) {
+  if (bodyFailure && !extraction) {
+    // Body failed AND PDF either wasn't tried or didn't recover. Stamp
+    // the attempt (carrying `pdfAttempted` so backlog re-runs at the same
+    // extractor version skip the redundant work) and return the same
+    // shape as the pre-fallback code path.
     await db.$transaction(async (tx) => {
       const fresh = await tx.communication.findUnique({
         where: { id: communicationId },
         select: { metadata: true },
       })
+      const stamp: Record<string, unknown> = {
+        version: LEASE_EXTRACTOR_VERSION,
+        runAt: now.toISOString(),
+        pdfAttempted,
+      }
+      if (pdfFailureReason !== null) {
+        stamp.pdfFailureReason = pdfFailureReason
+      }
+      if (bodyFailure.kind === "low_confidence") {
+        stamp.failedReason = "low_confidence"
+        stamp.confidence = bodyFailure.confidence
+        stamp.threshold = bodyFailure.threshold
+      } else {
+        stamp.failedReason = bodyFailure.kind
+        stamp.details = bodyFailure.details
+      }
       await tx.communication.update({
         where: { id: communicationId },
         data: {
           metadata: mergeMetadata(fresh?.metadata, {
             closedDealClassification: classificationStamp,
-            leaseExtractionAttempt: {
-              version: LEASE_EXTRACTOR_VERSION,
-              failedReason: "low_confidence",
-              confidence: extraction.confidence,
-              threshold: settings.leaseExtractorMinConfidence,
-              runAt: now.toISOString(),
-            },
+            leaseExtractionAttempt: stamp,
           }),
         },
       })
     })
-    return { ok: false, reason: "low_confidence" }
+    if (bodyFailure.kind === "low_confidence") {
+      return { ok: false, reason: "low_confidence" }
+    }
+    return {
+      ok: false,
+      reason: "extractor_failed",
+      details: bodyFailure.kind,
+    }
+  }
+
+  // Sanity: by here we MUST have an extraction. Either the body
+  // extractor produced one above the confidence threshold, or the PDF
+  // fallback just supplied one.
+  if (!extraction) {
+    throw new Error("orchestrator: extraction is null after fallback path")
   }
 
   // Pre-flight: reject obviously-unusable contactName before opening txn-2.
