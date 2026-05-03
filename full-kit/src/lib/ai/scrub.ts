@@ -319,6 +319,7 @@ export async function scrubOne(
     modelUsed: response.modelUsed,
     usage: response.usage,
     outcome: "pending-validation",
+    purpose: "scrub",
   })
 
   // Validation — one correction retry allowed on outer-shape mismatch.
@@ -343,6 +344,7 @@ export async function scrubOne(
           modelUsed: retry.modelUsed,
           usage: retry.usage,
           outcome: "pending-validation",
+          purpose: "scrub",
         })
         validated = validateScrubToolInput(retry.toolInput, { mode })
       } catch (retryErr) {

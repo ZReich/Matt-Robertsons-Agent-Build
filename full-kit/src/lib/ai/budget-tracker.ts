@@ -16,7 +16,13 @@ export async function getRollingScrubSpendUsd(
 ): Promise<number> {
   const since = new Date(Date.now() - windowMs)
   const result = await db.scrubApiCall.aggregate({
-    where: { at: { gte: since } },
+    where: {
+      at: { gte: since },
+      // Scope to scrub rows so the SCRUB_DAILY_BUDGET_USD cap doesn't
+      // get tripped by classifier or extractor spend. `purpose IS NULL`
+      // keeps pre-migration rows (all scrub) in scope.
+      OR: [{ purpose: "scrub" }, { purpose: null }],
+    },
     _sum: { estimatedUsd: true },
   })
   const value = result._sum.estimatedUsd

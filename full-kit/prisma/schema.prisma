@@ -1160,6 +1160,7 @@ model ScrubApiCall {
   cacheReadTokens  Int      @default(0) @map("cache_read_tokens")
   cacheWriteTokens Int      @default(0) @map("cache_write_tokens")
   outcome          String
+  purpose          String?
   estimatedUsd     Decimal  @map("estimated_usd") @db.Decimal(10, 6)
   at               DateTime @default(now())
 

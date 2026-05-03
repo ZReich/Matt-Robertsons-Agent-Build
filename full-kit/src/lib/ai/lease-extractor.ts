@@ -449,10 +449,7 @@ async function writeExtractorLog({
 }: {
   modelUsed: string
   usage: ScrubApiUsage
-  outcome: Extract<
-    ScrubApiOutcome,
-    "extractor-ok" | "extractor-validation-failed" | "extractor-provider-error"
-  >
+  outcome: Extract<ScrubApiOutcome, "ok" | "validation-failed" | "provider-error">
 }): Promise<void> {
   try {
     await logScrubApiCall({
@@ -460,6 +457,7 @@ async function writeExtractorLog({
       modelUsed,
       usage,
       outcome,
+      purpose: "lease_extractor",
       estimatedUsdOverride: estimateExtractorUsd(usage),
     })
   } catch (err) {
@@ -478,9 +476,9 @@ async function writeExtractorLog({
  *   defend anyway because Anthropic occasionally returns a stop-reason
  *   like `max_tokens` with a partial tool_use that we treat as a
  *   validation failure rather than a hard error.
- * - Logs every call to `ScrubApiCall` with the appropriate
- *   `extractor-*` outcome and a Haiku-priced USD estimate. Logging
- *   failure is non-fatal (telemetry under-count > losing the result).
+ * - Logs every call to `ScrubApiCall` with `purpose=lease_extractor`
+ *   and a Haiku-priced USD estimate. Logging failure is non-fatal
+ *   (telemetry under-count > losing the result).
  * - Re-raises provider errors after logging — caller maps them to
  *   `provider_error` in the outcome union.
  *
@@ -525,7 +523,7 @@ export async function callExtractor(
     void writeExtractorLog({
       modelUsed: model,
       usage: { tokensIn: 0, tokensOut: 0 },
-      outcome: "extractor-provider-error",
+      outcome: "provider-error",
     })
     throw err
   }
@@ -556,7 +554,7 @@ export async function callExtractor(
     void writeExtractorLog({
       modelUsed,
       usage,
-      outcome: "extractor-validation-failed",
+      outcome: "validation-failed",
     })
     return null
   }
@@ -564,7 +562,7 @@ export async function callExtractor(
   void writeExtractorLog({
     modelUsed,
     usage,
-    outcome: "extractor-ok",
+    outcome: "ok",
   })
 
   return toolUse.input
