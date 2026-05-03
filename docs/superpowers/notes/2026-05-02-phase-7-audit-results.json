@@ -1,0 +1,102 @@
+{
+  "findings": [
+    {
+      "name": "A.1.a move-deal-stage executes",
+      "ok": true,
+      "detail": "stage=showings stageChangedAt=2026-05-02T12:14:57.328Z action.status=executed"
+    },
+    {
+      "name": "A.1.b stage-mismatch returns 409",
+      "ok": true,
+      "detail": "AgentActionReviewError status=409 code=stage_mismatch"
+    },
+    {
+      "name": "A.2.a update-deal executes",
+      "ok": true,
+      "detail": "value=1234567 probability=60 closingDate=2026-12-31T00:00:00.000Z"
+    },
+    {
+      "name": "A.2.b update-deal forbidden-field rejected",
+      "ok": true,
+      "detail": "AgentActionReviewError status=400 code=forbidden_update_field"
+    },
+    {
+      "name": "A.2.c create-deal executes (find-or-create contact)",
+      "ok": true,
+      "detail": "deal=cc294c92-a29e-4b06-84e4-4536f94fbcc4 contact=phase7-audit-1777724101924@example.invalid action.status=executed"
+    }
+  ],
+  "samplePayloads": [
+    {
+      "id": "2a11b6dd-b1fb-4368-b6d2-2add254ff559",
+      "summary": "Propose buyer-rep deal at offer from loi signal",
+      "payload": {
+        "stage": "offer",
+        "reason": "Buyer-rep loi signal detected with confidence 0.85",
+        "dealType": "buyer_rep",
+        "contactId": null,
+        "confidence": 0.85,
+        "dealSource": "buyer_rep_inferred",
+        "signalType": "loi",
+        "recipientEmail": "shaun@wegnerroofing.com",
+        "recipientDisplayName": "Shaun Sideris"
+      },
+      "sourceCommunicationId": "edb62e8e-0c2d-4461-a176-6ab7fd6d7aac",
+      "createdAt": "2026-04-30T09:55:46.307Z"
+    },
+    {
+      "id": "0ae7a802-a550-4ca4-b2e3-d955c4e49bef",
+      "summary": "Propose buyer-rep deal at offer from loi signal",
+      "payload": {
+        "stage": "offer",
+        "reason": "Buyer-rep loi signal detected with confidence 0.85",
+        "dealType": "buyer_rep",
+        "contactId": null,
+        "confidence": 0.85,
+        "dealSource": "buyer_rep_inferred",
+        "signalType": "loi",
+        "recipientEmail": "ryan.tracy@dsgsupply.com",
+        "recipientDisplayName": "Ryan Tracy"
+      },
+      "sourceCommunicationId": "759628c9-c62d-4f80-b9f2-d158e1e67c5c",
+      "createdAt": "2026-04-30T09:55:45.915Z"
+    },
+    {
+      "id": "03be6102-39bc-4e7e-9296-65391fcd2196",
+      "summary": "Propose buyer-rep deal at offer from loi signal",
+      "payload": {
+        "stage": "offer",
+        "reason": "Buyer-rep loi signal detected with confidence 0.85",
+        "dealType": "buyer_rep",
+        "contactId": null,
+        "confidence": 0.85,
+        "dealSource": "buyer_rep_inferred",
+        "signalType": "loi",
+        "recipientEmail": "ryan.tracy@dsgsupply.com",
+        "recipientDisplayName": "Ryan Tracy"
+      },
+      "sourceCommunicationId": "6c258ec2-cc5e-4593-bcfd-7d22f7c3b619",
+      "createdAt": "2026-04-30T09:55:44.668Z"
+    }
+  ],
+  "payloadBreakdown": [
+    {
+      "deal_type": "buyer_rep",
+      "signal_type": "loi",
+      "deal_source": "buyer_rep_inferred",
+      "n": 242
+    },
+    {
+      "deal_type": "buyer_rep",
+      "signal_type": "tour",
+      "deal_source": "buyer_rep_inferred",
+      "n": 64
+    }
+  ],
+  "duplicateCount": [
+    {
+      "dup_count": 0
+    }
+  ],
+  "runAt": "2026-05-02T12:15:05.498Z"
+}
