@@ -34,7 +34,7 @@ import { containsRawSensitiveData } from "./sensitive-filter"
  * through.
  */
 
-export const LEASE_EXTRACTOR_VERSION = "2026-05-02.2"
+export const LEASE_EXTRACTOR_VERSION = "2026-05-03.1"
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 const RENT_PERIOD_VALUES: ReadonlySet<"monthly" | "annual"> = new Set([

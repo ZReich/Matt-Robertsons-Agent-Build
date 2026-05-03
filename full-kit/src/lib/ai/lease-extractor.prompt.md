@@ -71,6 +71,13 @@ extraction.
 The `SIGNALS` array is the classifier's evidence trail. Use it as a
 starting point but verify each one against the body before trusting it.
 
+When this extractor is invoked over an attached PDF, the user message ALSO
+contains a `document` block carrying the lease/sale agreement bytes. In that
+case the BODY text may be a sentinel like "(extracted from PDF only — no body
+excerpt)" or a 500-char snippet of the originating email. The PDF document IS
+the authoritative source — extract from it. The text header carries
+CLASSIFICATION + SIGNALS for context only.
+
 ## Output schema
 
 Emit a single `extract_lease` tool call. The tool input must conform to
