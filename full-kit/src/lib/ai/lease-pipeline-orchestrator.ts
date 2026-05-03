@@ -54,7 +54,10 @@ import { getAutomationSettings } from "@/lib/system-state/automation-settings"
  * - Sending any external email or notification.
  */
 
-import { findOrCreateContactForLease } from "@/lib/contacts/find-or-create-for-lease"
+import {
+  findOrCreateContactForLease,
+  isUsableContactName,
+} from "@/lib/contacts/find-or-create-for-lease"
 import { findPropertyForLease } from "@/lib/properties/find-for-lease"
 import {
   nextClientTypeForLease,
@@ -338,6 +341,33 @@ export async function processCommunicationForLease(
     return { ok: false, reason: "low_confidence" }
   }
 
+  // Pre-flight: reject obviously-unusable contactName before opening txn-2.
+  // We don't want a hallucinated "Re: closed lease" name turning into a
+  // fresh garbage Contact row. If contactName is unusable AND there's no
+  // contactEmail to fall back on, treat as low-confidence and skip all
+  // DB writes (just stamp metadata so the backlog driver doesn't re-pick).
+  const trimmedContactName = extraction.contactName.trim()
+  const trimmedContactEmail = extraction.contactEmail?.trim() ?? ""
+  if (!isUsableContactName(trimmedContactName) && trimmedContactEmail.length === 0) {
+    await db.$transaction(async (tx) => {
+      await tx.communication.update({
+        where: { id: communicationId },
+        data: {
+          metadata: mergeMetadata(comm.metadata, {
+            closedDealClassification: classificationStamp,
+            leaseExtractionAttempt: {
+              version: LEASE_EXTRACTOR_VERSION,
+              failedReason: "unusable_contact_name",
+              contactName: extraction.contactName,
+              runAt: now.toISOString(),
+            },
+          }),
+        },
+      })
+    })
+    return { ok: false, reason: "low_confidence" }
+  }
+
   // Persistence — txn-2: single atomic group covering the
   // leaseExtractionAttempt stamp + LeaseRecord create/upsert +
   // CalendarEvent upsert + Contact.clientType update. If any step throws,
@@ -367,7 +397,6 @@ export async function processCommunicationForLease(
       },
     })
 
-
     const contact = await findOrCreateContactForLease(
       {
         contactName: extraction.contactName,
@@ -377,6 +406,13 @@ export async function processCommunicationForLease(
       },
       tx
     )
+    if (!contact) {
+      // Pre-flight should have caught this — defense in depth. Throwing
+      // here triggers the txn-2 rollback so no side effects land.
+      throw new Error(
+        "findOrCreateContactForLease returned null after pre-flight validation passed"
+      )
+    }
 
     const property = await findPropertyForLease(
       { propertyAddress: extraction.propertyAddress },
@@ -597,12 +633,20 @@ async function persistBacklogCursor(
  *
  * Stop conditions (in priority order):
  *   1. Budget cap hit (`ScrubBudgetError`) → `stoppedReason: "budget"`.
- *   2. Per-Communication exception → `stoppedReason: "error"`. We log
- *      and stop rather than continuing because most failures here are
- *      either a DB outage or a code bug, both of which want a human.
+ *   2. Per-Communication exceptions are tolerated up to thresholds. The
+ *      driver continues processing on a per-row failure (logging it to
+ *      `errors[]` and advancing the cursor past it) until either:
+ *        - 5 consecutive errors occur, OR
+ *        - 50 total errors accumulate.
+ *      At that point `stoppedReason: "error"` and we stop. This shape lets
+ *      a 200K-row backfill survive transient DB blips without aborting the
+ *      whole sweep, while still bailing fast on a true outage or a code
+ *      bug (which would burn through the consecutive-error budget quickly).
  *   3. Reached `maxBatches` → `stoppedReason: "max_batches"`.
  *   4. Query returned no more rows → `stoppedReason: "complete"`.
  */
+const BACKLOG_MAX_CONSECUTIVE_ERRORS = 5
+const BACKLOG_MAX_TOTAL_ERRORS = 50
 export async function processBacklogClosedDeals(
   opts: BacklogOpts = {}
 ): Promise<BacklogResult> {
@@ -624,6 +668,7 @@ export async function processBacklogClosedDeals(
 
   let batchesRun = 0
   let cursor = await loadBacklogCursor(cursorKey)
+  let consecutiveErrors = 0
 
   while (batchesRun < maxBatches) {
     // Build a where clause that excludes already-stamped Communications.
@@ -699,13 +744,32 @@ export async function processBacklogClosedDeals(
           lastProcessedCommunicationId: comm.id,
           lastProcessedReceivedAt: comm.date.toISOString(),
         }
+        consecutiveErrors = 0
       } catch (err) {
         result.errors.push({
           communicationId: comm.id,
           message: err instanceof Error ? err.message : String(err),
         })
-        stop = "error"
-        break
+        consecutiveErrors += 1
+        // Advance the cursor past the failed row anyway. The classifier
+        // stamp from txn-1 may or may not have landed (depends where the
+        // throw came from); skipping forward prevents the same row from
+        // blocking the sweep on every retry. The metadata exclusion in
+        // findMany is the durable record of "did this row get classified" —
+        // the cursor is just a paging optimization layered on top.
+        cursor = {
+          lastProcessedCommunicationId: comm.id,
+          lastProcessedReceivedAt: comm.date.toISOString(),
+        }
+        if (
+          consecutiveErrors >= BACKLOG_MAX_CONSECUTIVE_ERRORS ||
+          result.errors.length >= BACKLOG_MAX_TOTAL_ERRORS
+        ) {
+          stop = "error"
+          break
+        }
+        // Continue to the next row — a transient blip on one row should
+        // not abort the entire backlog sweep.
       }
 
       if (throttleMs > 0) await sleepFn(throttleMs)

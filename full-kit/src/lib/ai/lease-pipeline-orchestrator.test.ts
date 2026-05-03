@@ -937,16 +937,22 @@ describe("processBacklogClosedDeals", () => {
     expect(result.processed).toBe(2)
   })
 
-  it("captures per-Communication exceptions and stops with reason error", async () => {
-    seedCommunication({ id: "c-1", date: new Date("2025-01-01") })
-    seedCommunication({ id: "c-2", date: new Date("2025-02-01") })
+  it("stops with reason error after 5 consecutive per-Communication exceptions", async () => {
+    // Seed 10 — driver should stop after the 5th consecutive failure,
+    // not on the very first one (that was the old fragile behavior).
+    for (let i = 1; i <= 10; i++) {
+      seedCommunication({
+        id: `c-${i.toString().padStart(2, "0")}`,
+        date: new Date(`2025-01-${i.toString().padStart(2, "0")}T00:00:00Z`),
+      })
+    }
 
     const processFn = vi.fn(async () => {
       throw new Error("boom")
     })
 
     const result = await processBacklogClosedDeals({
-      batchSize: 5,
+      batchSize: 20,
       throttleMs: 0,
       processFn,
       assertBudgetFn: async () => {},
@@ -954,8 +960,205 @@ describe("processBacklogClosedDeals", () => {
     })
 
     expect(result.stoppedReason).toBe("error")
-    expect(result.errors).toHaveLength(1)
+    expect(result.errors).toHaveLength(5)
     expect(result.errors[0].message).toBe("boom")
     expect(result.processed).toBe(0)
+  })
+
+  it("tolerates a single bad row in a batch and processes the rest", async () => {
+    // 10 rows, the 3rd one throws. Driver should log it, advance the
+    // cursor, process the other 9, finish "complete".
+    for (let i = 1; i <= 10; i++) {
+      seedCommunication({
+        id: `c-${i.toString().padStart(2, "0")}`,
+        date: new Date(`2025-01-${i.toString().padStart(2, "0")}T00:00:00Z`),
+      })
+    }
+
+    let calls = 0
+    const processFn = vi.fn(async (commId: string) => {
+      calls += 1
+      if (calls === 3) {
+        throw new Error("transient blip on row 3")
+      }
+      const row = STATE.current.communications.get(commId)!
+      row.metadata = {
+        closedDealClassification: { version: CLOSED_DEAL_CLASSIFIER_VERSION },
+      }
+      return {
+        ok: true as const,
+        leaseRecordId: `lease-${commId}`,
+        calendarEventId: null,
+        contactId: `contact-${commId}`,
+        propertyId: null,
+        classification: VALID_CLASSIFICATION,
+        extraction: VALID_LEASE_EXTRACTION,
+        contactClientTypeChanged: true,
+      }
+    })
+
+    const result = await processBacklogClosedDeals({
+      batchSize: 20,
+      throttleMs: 0,
+      // Single batch — the test's findMany mock doesn't honor the cursor's
+      // date-based pagination, so without this the still-unstamped failed
+      // row would re-appear in the next batch and inflate the count.
+      maxBatches: 1,
+      processFn,
+      assertBudgetFn: async () => {},
+      sleepFn: async () => {},
+    })
+
+    expect(result.processed).toBe(9)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0].communicationId).toBe("c-03")
+    // Cursor advanced past all 10 rows including the failed one.
+    expect(result.cursor?.lastProcessedCommunicationId).toBe("c-10")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — contact-name validation (I7)
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — contact name validation", () => {
+  it("happy path: a valid name still creates the Contact + LeaseRecord", async () => {
+    const commId = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub(),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    const contact = STATE.current.contacts.get(out.contactId)!
+    expect(contact.name).toBe("Brandon Miller")
+  })
+
+  it('falls back to email when contactName looks like "Re: ..." subject prefix', async () => {
+    const commId = seedCommunication()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub({
+        ...VALID_LEASE_EXTRACTION,
+        contactName: "Re: closed lease",
+        contactEmail: "real@example.com",
+      }),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    const contact = STATE.current.contacts.get(out.contactId)!
+    // Display name fell back to lowercased email.
+    expect(contact.name).toBe("real@example.com")
+    expect(contact.email).toBe("real@example.com")
+  })
+
+  it("returns low_confidence and writes no rows when name is whitespace and email is null", async () => {
+    const commId = seedCommunication()
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub(),
+      runLeaseExtractionFn: extractorStub({
+        ...VALID_LEASE_EXTRACTION,
+        contactName: "   ",
+        contactEmail: null,
+      }),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(false)
+    if (out.ok) throw new Error("expected not ok")
+    expect(out.reason).toBe("low_confidence")
+
+    expect(STATE.current.contacts.size).toBe(0)
+    expect(STATE.current.leaseRecords.size).toBe(0)
+    expect(STATE.current.calendarEvents.size).toBe(0)
+
+    // metadata stamp recorded the unusable_contact_name failure.
+    const comm = STATE.current.communications.get(commId)!
+    const meta = comm.metadata as Record<string, unknown>
+    const attempt = meta.leaseExtractionAttempt as Record<string, unknown>
+    expect(attempt.failedReason).toBe("unusable_contact_name")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// processCommunicationForLease — sale-side end-to-end (I8)
+// ---------------------------------------------------------------------------
+
+describe("processCommunicationForLease — sale path", () => {
+  it("processes dealKind=sale end-to-end with no CalendarEvent", async () => {
+    const commId = seedCommunication()
+    seedProperty({ address: "303 N Broadway", propertyKey: "303 n broadway" })
+
+    const SALE_EXTRACTION: LeaseExtraction = {
+      contactName: "Sara Buyer",
+      contactEmail: "sara@example.com",
+      propertyAddress: "303 N Broadway",
+      closeDate: "2026-01-15",
+      // Lease-only fields all null on a sale.
+      leaseStartDate: null,
+      leaseEndDate: null,
+      leaseTermMonths: null,
+      rentAmount: null,
+      rentPeriod: null,
+      mattRepresented: "owner",
+      dealKind: "sale",
+      confidence: 0.91,
+      reasoning: "Closing statement attached.",
+    }
+
+    const out = await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub({
+        classification: "closed_sale",
+        confidence: 0.9,
+        signals: ["closing statement"],
+      }),
+      runLeaseExtractionFn: extractorStub(SALE_EXTRACTION),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+
+    expect(out.ok).toBe(true)
+    if (!out.ok) throw new Error("expected ok")
+    expect(out.calendarEventId).toBeNull() // sales do not get a renewal event
+    expect(STATE.current.calendarEvents.size).toBe(0)
+
+    const lease = STATE.current.leaseRecords.get(out.leaseRecordId)!
+    expect(lease.dealKind).toBe("sale")
+    expect(lease.contactId).toBe(out.contactId)
+    expect((lease.closeDate as Date).toISOString()).toBe(
+      "2026-01-15T00:00:00.000Z"
+    )
+    expect(lease.leaseStartDate).toBeNull()
+    expect(lease.leaseEndDate).toBeNull()
+    expect(lease.rentAmount).toBeNull()
+
+    // Idempotency: re-running on the same comm should hit
+    // already_processed; no second LeaseRecord even after we forcibly
+    // re-trigger by clearing the stamp (sale upsert key is contactId+closeDate).
+    const comm = STATE.current.communications.get(commId)!
+    const meta = comm.metadata as Record<string, unknown>
+    delete meta.closedDealClassification
+    await processCommunicationForLease(commId, {
+      runClosedDealClassifierFn: classifierStub({
+        classification: "closed_sale",
+        confidence: 0.9,
+        signals: ["closing statement"],
+      }),
+      runLeaseExtractionFn: extractorStub(SALE_EXTRACTION),
+      now: new Date("2026-01-20T00:00:00Z"),
+      settings: { leaseExtractorMinConfidence: 0.6 },
+    })
+    expect(STATE.current.leaseRecords.size).toBe(1)
   })
 })
