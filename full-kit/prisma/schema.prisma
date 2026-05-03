@@ -1537,6 +1537,15 @@ model LeaseRecord {
   @@index([closeDate])
   @@index([propertyId])
   @@index([dealId])
+  // INTENT: also enforce DB-side dedupe via
+  //   @@unique([contactId, propertyId, leaseStartDate], map: "lease_record_dedupe_lease")
+  //   @@unique([contactId, closeDate], map: "lease_record_dedupe_sale")
+  // and a parallel @@unique on CalendarEvent for (leaseRecordId, eventKind).
+  // BLOCKED on apply: the live DB has 4 pre-existing duplicate-lease groups
+  // and 10 pre-existing duplicate-sale groups (from prior partial backfills),
+  // so CREATE UNIQUE INDEX fails with P2002. Manual triage of those rows is
+  // required before the constraints can land. See migration
+  // `20260503102447_lease_record_dedupe_constraints` (NOT yet applied).
   @@map("lease_records")
 }
 
@@ -1576,5 +1585,10 @@ model CalendarEvent {
   @@index([leaseRecordId])
   @@index([contactId])
   @@index([dealId])
+  // INTENT: also enforce
+  //   @@unique([leaseRecordId, eventKind], map: "calendar_event_dedupe_kind")
+  // BLOCKED in tandem with the LeaseRecord uniques (see schema comment on
+  // LeaseRecord) — the migration is staged but not applied because the
+  // companion LeaseRecord uniques cannot land yet.
   @@map("calendar_events")
 }
