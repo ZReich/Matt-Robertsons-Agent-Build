@@ -22,6 +22,13 @@ export type ScrubApiOutcome =
   | "db-commit-failed"
   | "fenced-out"
   | "retry-correction"
+  // Closed-deal classifier outcomes (Stage 1 of lease pipeline). These
+  // share the same telemetry table because the schema fits 1:1 — only
+  // the cost model differs (DeepSeek vs Haiku), and callers pass an
+  // override via `estimatedUsdOverride`.
+  | "classifier-ok"
+  | "classifier-validation-failed"
+  | "classifier-provider-error"
 
 const HAIKU_INPUT_PER_M = 1
 const HAIKU_CACHE_READ_PER_M = 0.1
@@ -55,6 +62,7 @@ export async function logScrubApiCall({
   modelUsed,
   usage,
   outcome,
+  estimatedUsdOverride,
 }: {
   queueRowId?: string | null
   communicationId?: string | null
@@ -62,8 +70,20 @@ export async function logScrubApiCall({
   modelUsed: string
   usage: ScrubApiUsage
   outcome: ScrubApiOutcome
+  /**
+   * Optional pre-computed USD estimate. Use when the caller has its own
+   * pricing model (e.g. the closed-deal classifier on DeepSeek, which
+   * does not match the Haiku cost curve baked into
+   * `estimateScrubCostUsd`). When omitted, falls back to the Haiku
+   * estimator.
+   */
+  estimatedUsdOverride?: number
 }): Promise<string | null> {
   try {
+    const usd =
+      estimatedUsdOverride !== undefined
+        ? estimatedUsdOverride
+        : estimateScrubCostUsd(usage)
     const row = await db.scrubApiCall.create({
       data: {
         scrubQueueId: queueRowId ?? null,
@@ -75,7 +95,7 @@ export async function logScrubApiCall({
         cacheReadTokens: usage.cacheReadTokens ?? 0,
         cacheWriteTokens: usage.cacheWriteTokens ?? 0,
         outcome,
-        estimatedUsd: estimateScrubCostUsd(usage).toFixed(6),
+        estimatedUsd: usd.toFixed(6),
       },
       select: { id: true },
     })

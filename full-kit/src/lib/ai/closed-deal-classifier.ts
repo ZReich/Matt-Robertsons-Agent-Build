@@ -1,11 +1,15 @@
 import "server-only"
 
+import { promises as fs } from "node:fs"
+import path from "node:path"
+
 import { db } from "@/lib/prisma"
 
 import {
   type ClosedDealClassification,
   type ClosedDealClassificationKind,
 } from "./lease-types"
+import { logScrubApiCall, type ScrubApiOutcome } from "./scrub-api-log"
 import { containsRawSensitiveData } from "./sensitive-filter"
 
 /**
@@ -124,23 +128,255 @@ export function resolveClassifierModel(): string {
 }
 
 /**
- * Stub for the actual provider call. Returns `null` until the prompt is
- * wired in. When implemented, this should:
- *   1. Build the chat-completions payload using the prompt MD as the
- *      system message and `{subject, body}` as the user message.
- *   2. POST to `${OPENAI_BASE_URL ?? https://api.openai.com/v1}/chat/completions`
- *      with the model from `resolveClassifierModel()`.
- *   3. Parse the JSON tool-call output and pass through
- *      `validateClosedDealClassification`.
+ * DeepSeek pricing as of 2026 — published rates for `deepseek-chat`:
+ *   input  ~$0.14 / 1M tokens
+ *   output ~$0.28 / 1M tokens
  *
- * TODO: WIRE PROMPT — see closed-deal-classifier.prompt.md
+ * No cache pricing is applied here — the classifier sends a fresh
+ * single-message request per Communication and DeepSeek's
+ * implicit-cache discount is not material at v1 traffic levels.
+ */
+const DEEPSEEK_INPUT_PER_M_USD = 0.14
+const DEEPSEEK_OUTPUT_PER_M_USD = 0.28
+
+/**
+ * Cost estimate for a single DeepSeek classifier call. Colocated with
+ * the wiring (not in `scrub-api-log.ts`) because the pricing model is
+ * provider-specific and we don't want to entangle it with the Haiku
+ * scrub cost curve.
+ */
+export function estimateClassifierUsd({
+  tokensIn,
+  tokensOut,
+}: {
+  tokensIn: number
+  tokensOut: number
+}): number {
+  return (
+    (tokensIn / 1_000_000) * DEEPSEEK_INPUT_PER_M_USD +
+    (tokensOut / 1_000_000) * DEEPSEEK_OUTPUT_PER_M_USD
+  )
+}
+
+/**
+ * Classifier system prompt body. Loaded from disk on first read and
+ * cached for the lifetime of the process — the file is part of the
+ * deployed bundle and never changes between requests.
+ */
+let CLASSIFIER_PROMPT_CACHE: string | null = null
+async function loadClassifierPrompt(): Promise<string> {
+  if (CLASSIFIER_PROMPT_CACHE !== null) return CLASSIFIER_PROMPT_CACHE
+  const promptPath = path.join(
+    process.cwd(),
+    "src",
+    "lib",
+    "ai",
+    "closed-deal-classifier.prompt.md"
+  )
+  CLASSIFIER_PROMPT_CACHE = await fs.readFile(promptPath, "utf8")
+  return CLASSIFIER_PROMPT_CACHE
+}
+
+function getClassifierEndpoint(): string {
+  const baseUrl =
+    process.env.OPENAI_BASE_URL?.replace(/\/$/, "") ??
+    "https://api.openai.com/v1"
+  return `${baseUrl}/chat/completions`
+}
+
+type DeepSeekChatResponse = {
+  model?: string
+  choices?: Array<{
+    message?: {
+      content?: string | null
+    }
+  }>
+  usage?: {
+    prompt_tokens?: number
+    completion_tokens?: number
+  }
+  error?: {
+    message?: string
+  }
+}
+
+/**
+ * Sleep `ms` milliseconds without blocking other timers. Extracted to a
+ * named function for clarity in the retry path; intentionally
+ * non-cancelable — the request loop only retries once.
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Compute backoff for the single retry the classifier permits.
+ * Honors `Retry-After` if the server sent one (seconds, integer).
+ */
+function backoffMsFromResponse(response: Response): number {
+  const retryAfter = response.headers.get("retry-after")
+  if (retryAfter) {
+    const seconds = Number.parseInt(retryAfter, 10)
+    if (Number.isFinite(seconds) && seconds >= 0) {
+      return seconds * 1000
+    }
+  }
+  return 1000 // 1s base backoff
+}
+
+/**
+ * Provider call: POST {subject, body} to DeepSeek's chat-completions
+ * endpoint, parse the model's JSON content, validate, and return the
+ * narrowed classification (or null if the response wasn't usable).
+ *
+ * - Uses JSON-mode (`response_format: { type: "json_object" }`) — the
+ *   classifier prompt instructs the model to output a single JSON
+ *   object. We do NOT use tool-calling here; the schema is small and
+ *   JSON-mode keeps the request shape simple and the response cheap.
+ * - Retries ONCE on 429 and 5xx with `Retry-After`-aware backoff.
+ *   Throws on persistent provider failure (caller maps to
+ *   `provider_error`).
+ * - Logs every call to `ScrubApiCall` with a classifier-specific
+ *   outcome and DeepSeek-priced USD estimate. Logging failure is
+ *   non-fatal.
  */
 export async function callClassifier(
-  _subject: string,
-  _body: string
+  subject: string,
+  body: string
 ): Promise<ClosedDealClassification | null> {
-  // TODO: WIRE PROMPT — see closed-deal-classifier.prompt.md
-  return null
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    throw new Error("classifier provider failed: OPENAI_API_KEY is not set")
+  }
+
+  const model = resolveClassifierModel()
+  const systemPrompt = await loadClassifierPrompt()
+  const userPayload = JSON.stringify({ subject, body })
+
+  const requestBody = JSON.stringify({
+    model,
+    temperature: 0,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPayload },
+    ],
+  })
+
+  const url = getClassifierEndpoint()
+  const headers: Record<string, string> = {
+    authorization: `Bearer ${apiKey}`,
+    "content-type": "application/json",
+  }
+
+  // One-shot retry: if the first response is 429 or 5xx, wait and try
+  // once more. After the second attempt we either return success or
+  // throw the most recent failure.
+  let response: Response | null = null
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: requestBody,
+    })
+    const isRetryable =
+      response.status === 429 || (response.status >= 500 && response.status < 600)
+    if (!isRetryable || attempt === 1) break
+    const delay = backoffMsFromResponse(response)
+    await sleep(delay)
+  }
+
+  if (!response) {
+    // Defensive — the loop above always assigns at least once.
+    throw new Error("classifier provider failed: no response")
+  }
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "")
+    const excerpt = text.slice(0, 200)
+    // Best-effort log of the failed call so spend is still observable.
+    void writeClassifierLog({
+      modelUsed: model,
+      tokensIn: 0,
+      tokensOut: 0,
+      outcome: "classifier-provider-error",
+    })
+    throw new Error(
+      `classifier provider failed (${response.status}): ${excerpt}`
+    )
+  }
+
+  const json = (await response.json().catch(() => ({}))) as DeepSeekChatResponse
+  const tokensIn = json.usage?.prompt_tokens ?? 0
+  const tokensOut = json.usage?.completion_tokens ?? 0
+  const content = json.choices?.[0]?.message?.content ?? ""
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(content)
+  } catch {
+    void writeClassifierLog({
+      modelUsed: json.model ?? model,
+      tokensIn,
+      tokensOut,
+      outcome: "classifier-validation-failed",
+    })
+    return null
+  }
+
+  const validation = validateClosedDealClassification(parsed)
+  if (!validation.ok) {
+    void writeClassifierLog({
+      modelUsed: json.model ?? model,
+      tokensIn,
+      tokensOut,
+      outcome: "classifier-validation-failed",
+    })
+    return null
+  }
+
+  void writeClassifierLog({
+    modelUsed: json.model ?? model,
+    tokensIn,
+    tokensOut,
+    outcome: "classifier-ok",
+  })
+
+  return validation.value
+}
+
+/**
+ * Telemetry-write wrapper. Always swallows errors so a failed insert
+ * never propagates to the caller — under-counting spend is strictly
+ * preferred over losing a successful classification result.
+ */
+async function writeClassifierLog({
+  modelUsed,
+  tokensIn,
+  tokensOut,
+  outcome,
+}: {
+  modelUsed: string
+  tokensIn: number
+  tokensOut: number
+  outcome: Extract<
+    ScrubApiOutcome,
+    | "classifier-ok"
+    | "classifier-validation-failed"
+    | "classifier-provider-error"
+  >
+}): Promise<void> {
+  try {
+    await logScrubApiCall({
+      promptVersion: CLOSED_DEAL_CLASSIFIER_VERSION,
+      modelUsed,
+      usage: { tokensIn, tokensOut },
+      outcome,
+      estimatedUsdOverride: estimateClassifierUsd({ tokensIn, tokensOut }),
+    })
+  } catch (err) {
+    console.error("[classifier] failed to write ScrubApiCall row:", err)
+  }
 }
 
 /**
