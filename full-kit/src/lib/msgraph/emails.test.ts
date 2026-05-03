@@ -46,6 +46,15 @@ vi.mock("@/lib/prisma", () => ({
     },
     agentAction: {
       create: vi.fn(),
+      // Added for buyer-rep dedupe (Phase D commit 1) — proposeBuyerRepDeal
+      // looks up an existing pending create-deal for the same
+      // (recipientEmail, signalType) within 90d before creating a new one.
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    deal: {
+      // Added for buyer-rep dedupe — short-circuits if a non-archived
+      // buyer_rep Deal already exists for the resolved contact.
+      findFirst: vi.fn().mockResolvedValue(null),
     },
     $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
