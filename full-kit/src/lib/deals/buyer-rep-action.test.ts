@@ -9,6 +9,7 @@ vi.mock("@/lib/prisma", () => {
     contact: { findFirst: vi.fn() },
     deal: { findFirst: vi.fn() },
     agentAction: { findFirst: vi.fn(), create: vi.fn() },
+    communication: { findUnique: vi.fn() },
     $executeRaw: vi.fn(async () => 1),
   }
   return {
@@ -26,6 +27,7 @@ const dbAny = db as unknown as {
     findFirst: ReturnType<typeof vi.fn>
     create: ReturnType<typeof vi.fn>
   }
+  communication: { findUnique: ReturnType<typeof vi.fn> }
   $transaction: ReturnType<typeof vi.fn>
   $executeRaw: ReturnType<typeof vi.fn>
 }
@@ -35,6 +37,7 @@ function resetDbMocks() {
   dbAny.deal.findFirst.mockReset()
   dbAny.agentAction.findFirst.mockReset()
   dbAny.agentAction.create.mockReset()
+  dbAny.communication.findUnique.mockReset()
   dbAny.$executeRaw.mockReset()
   dbAny.$transaction.mockImplementation(
     async (fn: (tx: unknown) => unknown) =>
@@ -42,13 +45,16 @@ function resetDbMocks() {
         contact: dbAny.contact,
         deal: dbAny.deal,
         agentAction: dbAny.agentAction,
+        communication: dbAny.communication,
         $executeRaw: dbAny.$executeRaw,
       })
   )
-  // Defaults: no contact-by-email match, no existing deal, no pending action.
+  // Defaults: no contact-by-email match, no existing deal, no pending action,
+  // no attachments on the source communication.
   dbAny.contact.findFirst.mockResolvedValue(null)
   dbAny.deal.findFirst.mockResolvedValue(null)
   dbAny.agentAction.findFirst.mockResolvedValue(null)
+  dbAny.communication.findUnique.mockResolvedValue({ metadata: {} })
   dbAny.$executeRaw.mockResolvedValue(1)
 }
 
@@ -367,5 +373,207 @@ describe("proposeBuyerRepDeal", () => {
     })
     // No deal-existence query expected when no contact resolved.
     expect(dbAny.deal.findFirst).not.toHaveBeenCalled()
+  })
+
+  // ---- Phase D step 3: tier differentiation ------------------------------
+
+  it("LOI with matching attachment → tier=auto (status pending, dedupe still applies)", async () => {
+    dbAny.communication.findUnique.mockResolvedValue({
+      metadata: {
+        attachments: [
+          {
+            id: "att-1",
+            name: "LOI_draft.pdf",
+            size: 1024,
+            contentType: "application/pdf",
+            isInline: false,
+          },
+        ],
+      },
+    })
+    dbAny.agentAction.create.mockResolvedValue({ id: "action-auto-1" })
+    const result = await proposeBuyerRepDeal({
+      communicationId: "comm-loi-att",
+      contactId: "contact-loi",
+      recipientEmail: "broker@cushwake.com",
+      signalType: "loi",
+      proposedStage: "offer",
+      confidence: 0.85,
+    })
+    expect(result.created).toBe(true)
+    expect(result.tier).toBe("auto")
+    const call = dbAny.agentAction.create.mock.calls[0]?.[0]
+    expect(call.data.tier).toBe("auto")
+    expect(call.data.status).toBe("pending")
+  })
+
+  it("LOI with non-matching attachment filename → tier=approve", async () => {
+    dbAny.communication.findUnique.mockResolvedValue({
+      metadata: {
+        attachments: [
+          {
+            id: "att-1",
+            name: "company-overview.pdf",
+            size: 1024,
+            contentType: "application/pdf",
+            isInline: false,
+          },
+        ],
+      },
+    })
+    dbAny.agentAction.create.mockResolvedValue({ id: "action-app-1" })
+    const result = await proposeBuyerRepDeal({
+      communicationId: "comm-loi-junk",
+      contactId: "contact-loi-2",
+      recipientEmail: "broker2@cushwake.com",
+      signalType: "loi",
+      proposedStage: "offer",
+      confidence: 0.85,
+    })
+    expect(result.created).toBe(true)
+    expect(result.tier).toBe("approve")
+    const call = dbAny.agentAction.create.mock.calls[0]?.[0]
+    expect(call.data.tier).toBe("approve")
+  })
+
+  it("LOI with no attachments → tier=approve", async () => {
+    dbAny.communication.findUnique.mockResolvedValue({ metadata: {} })
+    dbAny.agentAction.create.mockResolvedValue({ id: "action-app-2" })
+    const result = await proposeBuyerRepDeal({
+      communicationId: "comm-loi-noatt",
+      contactId: "contact-loi-3",
+      recipientEmail: "broker3@cushwake.com",
+      signalType: "loi",
+      proposedStage: "offer",
+      confidence: 0.85,
+    })
+    expect(result.created).toBe(true)
+    expect(result.tier).toBe("approve")
+    const call = dbAny.agentAction.create.mock.calls[0]?.[0]
+    expect(call.data.tier).toBe("approve")
+  })
+
+  it("Tour signal → tier=approve regardless of attachments", async () => {
+    dbAny.communication.findUnique.mockResolvedValue({
+      metadata: {
+        attachments: [
+          {
+            id: "att-1",
+            name: "LOI_offer.pdf",
+            size: 1024,
+            contentType: "application/pdf",
+          },
+        ],
+      },
+    })
+    dbAny.agentAction.create.mockResolvedValue({ id: "action-tour" })
+    const result = await proposeBuyerRepDeal({
+      communicationId: "comm-tour",
+      contactId: "contact-tour",
+      signalType: "tour",
+      proposedStage: "showings",
+      confidence: 0.75,
+    })
+    expect(result.created).toBe(true)
+    expect(result.tier).toBe("approve")
+    const call = dbAny.agentAction.create.mock.calls[0]?.[0]
+    expect(call.data.tier).toBe("approve")
+  })
+
+  it("NDA signal → tier=approve", async () => {
+    dbAny.communication.findUnique.mockResolvedValue({ metadata: {} })
+    dbAny.agentAction.create.mockResolvedValue({ id: "action-nda" })
+    const result = await proposeBuyerRepDeal({
+      communicationId: "comm-nda",
+      contactId: "contact-nda",
+      signalType: "nda",
+      proposedStage: "prospecting",
+      confidence: 0.7,
+    })
+    expect(result.created).toBe(true)
+    expect(result.tier).toBe("approve")
+    const call = dbAny.agentAction.create.mock.calls[0]?.[0]
+    expect(call.data.tier).toBe("approve")
+  })
+
+  it("tenant_rep_search → tier=log_only, status=executed, dedupe SKIPPED", async () => {
+    // Even with a 'matching' pending row that would normally dedupe, log_only
+    // proposals always create a new audit row.
+    dbAny.agentAction.findFirst.mockResolvedValue({ id: "stale-pending" })
+    dbAny.communication.findUnique.mockResolvedValue({ metadata: {} })
+    dbAny.agentAction.create.mockResolvedValue({ id: "action-log-1" })
+    const result = await proposeBuyerRepDeal({
+      communicationId: "comm-tenant-1",
+      contactId: null,
+      recipientEmail: "agent@jll.com",
+      recipientDisplayName: "JLL Agent",
+      signalType: "tenant_rep_search",
+      proposedStage: "prospecting",
+      confidence: 0.5,
+    })
+    expect(result.created).toBe(true)
+    expect(result.tier).toBe("log_only")
+    expect(result.actionId).toBe("action-log-1")
+    const call = dbAny.agentAction.create.mock.calls[0]?.[0]
+    expect(call.data.tier).toBe("log_only")
+    expect(call.data.status).toBe("executed")
+    // Dedupe must have been skipped — no findFirst against agentAction.
+    expect(dbAny.agentAction.findFirst).not.toHaveBeenCalled()
+    // Existing-Deal check must also be skipped (multiple log_only rows OK).
+    expect(dbAny.deal.findFirst).not.toHaveBeenCalled()
+  })
+
+  it("tenant_rep_search creates a SECOND audit row even when one already exists", async () => {
+    // Simulate prior log_only row in DB; dedupe is skipped so a second propose creates a new row.
+    dbAny.agentAction.findFirst.mockResolvedValue({ id: "previous-log-only" })
+    dbAny.communication.findUnique.mockResolvedValue({ metadata: {} })
+    dbAny.agentAction.create.mockResolvedValue({ id: "action-log-2" })
+    const result = await proposeBuyerRepDeal({
+      communicationId: "comm-tenant-2",
+      contactId: null,
+      recipientEmail: "broker@colliers.com",
+      signalType: "tenant_rep_search",
+      proposedStage: "prospecting",
+      confidence: 0.5,
+    })
+    expect(result.created).toBe(true)
+    expect(result.actionId).toBe("action-log-2")
+    expect(dbAny.agentAction.create).toHaveBeenCalledTimes(1)
+  })
+
+  it("LOI attachment regex is case-insensitive and matches multiple aliases", async () => {
+    const cases: Array<{ name: string; expected: "auto" | "approve" }> = [
+      { name: "LOI_draft.pdf", expected: "auto" },
+      { name: "loi_offer.pdf", expected: "auto" },
+      { name: "Letter-of-Intent.docx", expected: "auto" },
+      { name: "letter_of_intent.docx", expected: "auto" },
+      { name: "OFFER_sheet.pdf", expected: "auto" },
+      { name: "company-overview.pdf", expected: "approve" },
+      { name: "signature.png", expected: "approve" },
+    ]
+    for (const tc of cases) {
+      resetDbMocks()
+      dbAny.communication.findUnique.mockResolvedValue({
+        metadata: {
+          attachments: [
+            {
+              id: "a",
+              name: tc.name,
+              size: 100,
+              contentType: "application/pdf",
+            },
+          ],
+        },
+      })
+      dbAny.agentAction.create.mockResolvedValue({ id: `act-${tc.name}` })
+      const result = await proposeBuyerRepDeal({
+        communicationId: `comm-${tc.name}`,
+        contactId: "c-1",
+        signalType: "loi",
+        proposedStage: "offer",
+        confidence: 0.85,
+      })
+      expect(result.tier, `case ${tc.name}`).toBe(tc.expected)
+    }
   })
 })
