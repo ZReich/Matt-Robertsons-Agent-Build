@@ -31,9 +31,10 @@ interface PropertiesPageProps {
 }
 
 const STATUS_LABELS: Record<PropertyStatus, string> = {
-  active: "Active",
+  active: "Available",
   under_contract: "Under contract",
-  closed: "Closed",
+  leased: "Leased",
+  closed: "Sold",
   archived: "Archived",
 }
 
@@ -43,6 +44,7 @@ const STATUS_VARIANT: Record<
 > = {
   active: "default",
   under_contract: "secondary",
+  leased: "secondary",
   closed: "outline",
   archived: "outline",
 }
@@ -122,7 +124,7 @@ export default async function PropertiesPage({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {(["active", "under_contract", "closed", "archived"] as PropertyStatus[]).map(
+        {(["active", "leased", "under_contract", "closed", "archived"] as PropertyStatus[]).map(
           (s) => {
             const isActive = statusFilter === s
             const params = new URLSearchParams()

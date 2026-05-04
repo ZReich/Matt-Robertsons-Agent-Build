@@ -154,9 +154,16 @@ enum PropertyType {
 }
 
 enum PropertyStatus {
+  /// Available — no current closed deal, on the market.
   active
+  /// Has a Deal in stage under_contract / closing / due_diligence.
   under_contract
+  /// Has at least one LeaseRecord whose lease_end_date is in the future
+  /// and whose status is not expired/terminated_early/renewed.
+  leased
+  /// Sold or transactionally completed — no active lease, has a won closed Deal.
   closed
+  /// Removed from active view.
   archived
 }
 

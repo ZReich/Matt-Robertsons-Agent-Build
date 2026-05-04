@@ -14,9 +14,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const STATUS_LABELS: Record<PropertyStatus, string> = {
-  active: "Active",
+  active: "Available",
   under_contract: "Under contract",
-  closed: "Closed",
+  leased: "Leased",
+  closed: "Sold",
   archived: "Archived",
 }
 
