@@ -51,11 +51,28 @@ function profileFactEvidence(metadata: unknown): string | null {
 }
 
 export async function ContactPersonalTab({ contactId, lang }: Props) {
+  // Single round-trip: fetch active facts + their source communications in
+  // one query via Prisma's `include`. Previously this was two sequential
+  // findMany calls (facts, then comms-by-id). The relation was added in
+  // migration `20260504225537_profile_fact_source_comm_fk`.
   const profileFacts = await db.contactProfileFact.findMany({
     where: {
       contactId,
       status: "active",
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    },
+    include: {
+      sourceCommunication: {
+        select: {
+          id: true,
+          subject: true,
+          date: true,
+          channel: true,
+          externalMessageId: true,
+          createdBy: true,
+          deal: { select: { id: true, propertyAddress: true } },
+        },
+      },
     },
     orderBy: [{ category: "asc" }, { lastSeenAt: "desc" }],
   })
@@ -83,33 +100,6 @@ export async function ContactPersonalTab({ contactId, lang }: Props) {
     )
   }
 
-  // Personal-tab data: split out personal-category facts and resolve their
-  // source communications so each fact links back to where it was extracted
-  // from. We deliberately fetch the source comms in one extra query rather
-  // than blowing up the main profileFacts query with a relation join, since
-  // most contacts have <20 facts and the join-overhead would be paid even
-  // when the Personal tab isn't viewed.
-  const personalFactSourceIds = Array.from(
-    new Set(personalFacts.map((f) => f.sourceCommunicationId).filter(Boolean))
-  )
-  const personalFactSourceComms =
-    personalFactSourceIds.length > 0
-      ? await db.communication.findMany({
-          where: { id: { in: personalFactSourceIds } },
-          select: {
-            id: true,
-            subject: true,
-            date: true,
-            channel: true,
-            externalMessageId: true,
-            createdBy: true,
-            deal: { select: { id: true, propertyAddress: true } },
-          },
-        })
-      : []
-  const personalFactSourceById = new Map(
-    personalFactSourceComms.map((c) => [c.id, c])
-  )
   const groupedPersonalFacts = groupFactsByDisplayCategory(personalFacts)
 
   return (
@@ -134,9 +124,7 @@ export async function ContactPersonalTab({ contactId, lang }: Props) {
           </CardHeader>
           <CardContent className="space-y-3">
             {group.facts.map((fact) => {
-              const sourceComm = personalFactSourceById.get(
-                fact.sourceCommunicationId
-              )
+              const sourceComm = fact.sourceCommunication
               const deeplink = sourceComm
                 ? getOutlookDeeplinkForSource(
                     sourceComm.externalMessageId,

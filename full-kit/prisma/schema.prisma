@@ -476,7 +476,13 @@ model ContactProfileFact {
   status                String    @default("active")
   metadata              Json?     @default("{}")
 
-  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contact             Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  // Backref to the email/call this fact was extracted from. Lets the
+  // Personal tab fetch facts + their source comm in a single Prisma
+  // include rather than a sequential second `findMany`. SetNull rather
+  // than Cascade so a comm being purged doesn't drop hard-won extracted
+  // facts; the UI tolerates `sourceCommunication == null`.
+  sourceCommunication Communication? @relation("ProfileFactSourceComm", fields: [sourceCommunicationId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -627,6 +633,7 @@ model Communication {
   triggeredPendingReplies PendingReply[]            @relation("PendingReplyTrigger")
   approvedFromPendingReply PendingReply[]           @relation("PendingReplyApproved")
   sourceLeaseRecords      LeaseRecord[]             @relation("LeaseRecordSourceComm")
+  sourceProfileFacts      ContactProfileFact[]      @relation("ProfileFactSourceComm")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
