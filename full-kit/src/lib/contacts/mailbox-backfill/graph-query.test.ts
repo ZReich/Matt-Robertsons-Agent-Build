@@ -131,17 +131,42 @@ describe("fetchMessagesForContactWindow", () => {
     expect(decoded).toContain('cc:\\"weird+plus@example.com\\"')
   })
 
-  it("applies receivedDateTime filter for window bounds", async () => {
-    const fetchImpl = makePagedFetch([{ value: [] }])
-    await fetchMessagesForContactWindow({
+  it("filters messages by window bounds client-side (Graph rejects $search + $filter)", async () => {
+    // Graph's /users/{}/messages endpoint rejects combining $search with
+    // $filter ("The query parameter '$filter' is not supported with
+    // '$search'."), so we send $search alone and filter receivedDateTime
+    // in-process. This test pins down both halves: the URL must NOT include
+    // $filter, and the function must drop messages outside the window.
+    const msg = (id: string, receivedDateTime: string) => ({
+      id,
+      subject: "x",
+      receivedDateTime,
+    })
+    const fetchImpl = makePagedFetch([
+      {
+        value: [
+          msg("before", "2022-12-15T00:00:00Z"), // before window
+          msg("inside-1", "2023-03-01T00:00:00Z"), // in window
+          msg("inside-2", "2023-09-15T12:00:00Z"), // in window
+          msg("after", "2024-06-01T00:00:00Z"), // after window
+          msg("no-date", ""), // missing date — dropped
+        ],
+      },
+    ])
+    const out = await fetchMessagesForContactWindow({
       email: "alice@buyer.com",
       window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
       fetchImpl,
     })
+    expect(out.map((m) => m.id)).toEqual(["inside-1", "inside-2"])
+
     const firstCallPath = fetchImpl.mock.calls[0][0] as string
-    expect(firstCallPath).toContain("2023-01-01")
-    expect(firstCallPath).toContain("2024-01-01")
-    expect(firstCallPath).toContain("receivedDateTime")
+    const decoded = decodeURIComponent(firstCallPath)
+    expect(decoded).toContain("$search=")
+    expect(decoded).not.toContain("$filter")
+    // receivedDateTime is fine inside $select (we need it returned); what we
+    // must avoid is using it as a filter expression like "receivedDateTime ge".
+    expect(decoded).not.toMatch(/receivedDateTime\s+(ge|le|gt|lt|eq)/)
   })
 
   it("includes ConsistencyLevel: eventual header (required for $search)", async () => {

@@ -49,13 +49,15 @@ export async function fetchMessagesForContactWindow(
   const safeEmail = email.replace(/"/g, '\\"')
   const search =
     `"from:\\"${safeEmail}\\" OR to:\\"${safeEmail}\\" OR cc:\\"${safeEmail}\\""`
-  const filter =
-    `receivedDateTime ge ${window.start.toISOString()} ` +
-    `and receivedDateTime le ${window.end.toISOString()}`
 
+  // Graph rejects combining `$search` with `$filter` on /users/{}/messages
+  // ("The query parameter '$filter' is not supported with '$search'."). So
+  // we send `$search` only and apply the receivedDateTime window filter
+  // client-side after pagination completes. Bandwidth implication: a few
+  // out-of-window messages may be fetched and discarded; for lifetime mode
+  // (start = epoch, end = now) every message passes through.
   const params = new URLSearchParams({
     $search: search,
-    $filter: filter,
     $select: select,
     $top: "25",
   })
@@ -77,5 +79,14 @@ export async function fetchMessagesForContactWindow(
     nextPath = page["@odata.nextLink"] ?? null
   }
 
-  return out
+  // Client-side date-window filter. Always applied; in lifetime mode the
+  // window covers everything so this is a pass-through. Messages with no
+  // receivedDateTime are dropped (we cannot place them in any window).
+  const startMs = window.start.getTime()
+  const endMs = window.end.getTime()
+  return out.filter((msg) => {
+    if (!msg?.receivedDateTime) return false
+    const t = new Date(msg.receivedDateTime).getTime()
+    return t >= startMs && t <= endMs
+  })
 }
