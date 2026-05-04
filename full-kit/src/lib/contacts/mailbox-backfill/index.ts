@@ -168,6 +168,12 @@ export async function backfillMailboxForContact(
     let deduped = 0
     let scrubQueued = 0
     let multiClientConflicts = 0
+    // Track Communication IDs created/touched in THIS run so the post-ingest
+    // stale-rescrub loop doesn't re-enqueue them. Just-ingested rows have no
+    // `metadata.scrub.promptVersion` yet (they're awaiting the first scrub),
+    // so the staleness predicate would otherwise treat them as stale and
+    // double-enqueue every fresh ingest.
+    const insertedIds = new Set<string>()
 
     // Pre-load all client contacts for conflict detection.
     // 286-contact scale per Task 1; safe to load fully.
@@ -243,6 +249,9 @@ export async function backfillMailboxForContact(
             deduped += 1
           } else {
             ingested += 1
+            if (result.communicationId) {
+              insertedIds.add(result.communicationId)
+            }
             if (
               result.classification === "signal" ||
               result.classification === "uncertain"
@@ -287,8 +296,18 @@ export async function backfillMailboxForContact(
     // facts). Skipped entirely on dryRun.
     let staleRescrubsEnqueued = 0
     if (!opts.dryRun) {
+      // Exclude the rows we just inserted in this same run — they have no
+      // scrub metadata yet (the queue entry was enqueued in-transaction by
+      // ingestSingleBackfillMessage but the worker hasn't completed) so the
+      // staleness check would otherwise re-enqueue every fresh ingest.
+      const insertedIdsList = Array.from(insertedIds)
       const existingComms = await db.communication.findMany({
-        where: { contactId },
+        where: {
+          contactId,
+          ...(insertedIdsList.length > 0
+            ? { id: { notIn: insertedIdsList } }
+            : {}),
+        },
         select: { id: true, metadata: true },
       })
       for (const comm of existingComms) {

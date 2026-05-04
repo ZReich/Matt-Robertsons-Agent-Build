@@ -264,6 +264,75 @@ describe("backfillMailboxForContact", () => {
     expect(db.backfillRun.update).not.toHaveBeenCalled()
   })
 
+  it("does NOT re-enqueue same-run ingests in the stale-rescrub loop", async () => {
+    // Bug 1 regression: just-ingested rows have no scrub.promptVersion yet,
+    // so the staleness predicate would otherwise treat every fresh ingest as
+    // stale and double-enqueue them. The orchestrator must exclude same-run
+    // inserted communicationIds from the stale-rescrub query.
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { ingestSingleBackfillMessage } = await import("./ingest-message")
+    const { enqueueScrubForCommunication } = await import(
+      "@/lib/ai/scrub-queue"
+    )
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([]) // anchor lookup
+      // Stale-rescrub scan returns ONLY the prior comm — the orchestrator's
+      // `notIn` clause must have excluded the just-ingested fresh-1 / fresh-2.
+      // Asserting on the call args below proves the exclusion happened.
+      .mockResolvedValueOnce([
+        {
+          id: "prior-stale",
+          metadata: {
+            classification: "signal",
+            scrub: { promptVersion: "v5" },
+          },
+        },
+      ])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([
+      { id: "m1" },
+      { id: "m2" },
+    ])
+    ;(ingestSingleBackfillMessage as any)
+      .mockResolvedValueOnce({
+        communicationId: "fresh-1",
+        deduped: false,
+        classification: "signal",
+      })
+      .mockResolvedValueOnce({
+        communicationId: "fresh-2",
+        deduped: false,
+        classification: "uncertain",
+      })
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    expect(result.status).toBe("succeeded")
+    expect(result.ingested).toBe(2)
+    // Only the prior stale comm gets re-enqueued — NOT fresh-1 / fresh-2.
+    expect(result.staleRescrubsEnqueued).toBe(1)
+    expect(enqueueScrubForCommunication).toHaveBeenCalledTimes(1)
+    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(
+      db,
+      "prior-stale",
+      "signal"
+    )
+    // The stale-rescrub findMany call (second findMany invocation) must
+    // exclude the freshly-inserted IDs via `notIn`.
+    const findManyCalls = (db.communication.findMany as any).mock.calls
+    const staleScanCall = findManyCalls[1]
+    expect(staleScanCall[0].where.id).toEqual({
+      notIn: ["fresh-1", "fresh-2"],
+    })
+  })
+
   it("dryRun does not call ingestSingleBackfillMessage", async () => {
     const { db } = await import("@/lib/prisma")
     const { fetchMessagesForContactWindow } = await import("./graph-query")
