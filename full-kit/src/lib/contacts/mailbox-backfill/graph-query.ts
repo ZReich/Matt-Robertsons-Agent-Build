@@ -39,8 +39,16 @@ export async function fetchMessagesForContactWindow(
   const { email, window } = input
   const select = input.selectFields?.join(",") ?? DEFAULT_SELECT
 
-  // Note: Graph $search requires a double-quoted KQL expression.
-  const search = `"from:${email} OR to:${email} OR cc:${email}"`
+  // Note: Graph $search requires a double-quoted KQL expression. We further
+  // wrap each email value in escaped double-quotes so KQL parses it as a
+  // literal phrase. Without quoting, emails containing `+`, whitespace, or
+  // KQL keywords (`OR`, `AND`, `NOT`) silently corrupt the search expression
+  // — e.g. `weird+plus@example.com` would be split on `+` and `OR not@example.com`
+  // would be parsed as a boolean. The inner backslash-quote escapes the
+  // double-quotes against the outer KQL string delimiter.
+  const safeEmail = email.replace(/"/g, '\\"')
+  const search =
+    `"from:\\"${safeEmail}\\" OR to:\\"${safeEmail}\\" OR cc:\\"${safeEmail}\\""`
   const filter =
     `receivedDateTime ge ${window.start.toISOString()} ` +
     `and receivedDateTime le ${window.end.toISOString()}`

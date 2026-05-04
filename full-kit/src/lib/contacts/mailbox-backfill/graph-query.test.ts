@@ -105,10 +105,30 @@ describe("fetchMessagesForContactWindow", () => {
       fetchImpl,
     })
     const firstCallPath = fetchImpl.mock.calls[0][0] as string
-    // URLSearchParams encodes ":" → "%3A" — search for the encoded variant.
-    expect(firstCallPath).toContain("from%3Aalice%40buyer.com")
-    expect(firstCallPath).toContain("to%3Aalice%40buyer.com")
-    expect(firstCallPath).toContain("cc%3Aalice%40buyer.com")
+    // We KQL-quote each email so it parses as a literal phrase. Decode the
+    // URLSearchParams encoding before asserting on the human-readable form.
+    const decoded = decodeURIComponent(firstCallPath)
+    expect(decoded).toContain('from:\\"alice@buyer.com\\"')
+    expect(decoded).toContain('to:\\"alice@buyer.com\\"')
+    expect(decoded).toContain('cc:\\"alice@buyer.com\\"')
+  })
+
+  it("KQL-quotes emails with special chars (e.g. +plus addressing)", async () => {
+    // Without quoting, `weird+plus@example.com` would be split on `+` by KQL
+    // and `OR/AND/NOT` substrings inside the local-part would be parsed as
+    // boolean operators. The escaped double-quotes force KQL to treat the
+    // entire email as a literal phrase.
+    const fetchImpl = makePagedFetch([{ value: [] }])
+    await fetchMessagesForContactWindow({
+      email: "weird+plus@example.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    const firstCallPath = fetchImpl.mock.calls[0][0] as string
+    const decoded = decodeURIComponent(firstCallPath)
+    expect(decoded).toContain('from:\\"weird+plus@example.com\\"')
+    expect(decoded).toContain('to:\\"weird+plus@example.com\\"')
+    expect(decoded).toContain('cc:\\"weird+plus@example.com\\"')
   })
 
   it("applies receivedDateTime filter for window bounds", async () => {
