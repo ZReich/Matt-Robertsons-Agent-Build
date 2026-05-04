@@ -483,6 +483,7 @@ model ContactProfileFact {
 
   @@unique([contactId, normalizedKey])
   @@index([contactId, category])
+  @@index([contactId, status])
   @@index([sourceCommunicationId])
   @@index([status])
   @@map("contact_profile_facts")
@@ -542,7 +543,9 @@ model Deal {
   updatedAt DateTime @updatedAt
 
   @@index([contactId])
+  @@index([contactId, archivedAt])
   @@index([stage])
+  @@index([stage, archivedAt])
   @@index([propertyType])
   @@index([propertyAddress])
   /// @prisma-unique-partial: deal_type='seller_rep' AND archived_at IS NULL AND property_key IS NOT NULL
@@ -631,7 +634,10 @@ model Communication {
   @@index([channel])
   @@index([date])
   @@index([contactId])
+  @@index([contactId, date(sort: Desc)])
+  @@index([contactId, archivedAt])
   @@index([dealId])
+  @@index([dealId, date(sort: Desc)])
   @@index([direction])
   @@index([category])
   @@index([externalMessageId])
@@ -996,6 +1002,7 @@ model MeetingAttendee {
   contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   @@unique([meetingId, contactId])
+  @@index([contactId])
   @@map("meeting_attendees")
 }
 
