@@ -302,6 +302,51 @@ describe("scrubEmailBatch — real-path integration", () => {
     expect(summary.processed).toBe(10)
   })
 
+  it("parallel batch: 10 rows at concurrency=5 finish in ~2 slices' worth of wall time, not 10x", async () => {
+    // Regression: scrubEmailBatch's internal loop is now bounded-concurrency
+    // (5). With each scrubOne deliberately sleeping, 10 rows should complete
+    // in roughly 2 slices' wall time (≈ 2 × per-call latency) rather than
+    // 10×. We assert observed parallelism by tracking max-in-flight inside
+    // the mocked scrubClient and a generous wall-time bound.
+    const rows: ClaimedScrubQueueRow[] = Array.from({ length: 10 }, (_, i) => ({
+      id: `q-${i}`,
+      communicationId: `c-${i}`,
+      leaseToken: `t-${i}`,
+    }))
+    configureBasicPrismaMock(
+      rows.map((r) => ({ id: r.id, communicationId: r.communicationId }))
+    )
+    ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 1,
+    })
+
+    let inFlight = 0
+    let maxInFlight = 0
+    const PER_CALL_MS = 30
+    const scrubClient = vi.fn().mockImplementation(async () => {
+      inFlight += 1
+      maxInFlight = Math.max(maxInFlight, inFlight)
+      await new Promise((resolve) => setTimeout(resolve, PER_CALL_MS))
+      inFlight -= 1
+      return validClaudeResponse()
+    })
+
+    const t0 = Date.now()
+    const summary = await scrubEmailBatch({ scrubClient, mode: "relaxed" })
+    const elapsedMs = Date.now() - t0
+
+    expect(summary.processed).toBe(10)
+    expect(summary.succeeded).toBe(10)
+    // Two slices of 5 each → upper bound generous for CI noise. Sequential
+    // would be ≥ 10 × 30 ms = 300 ms. We accept up to ~250 ms (2 slices +
+    // jitter) to prove real parallelism.
+    expect(elapsedMs).toBeLessThan(250)
+    // At any moment we should have observed ≥ 2 in flight; concurrency cap
+    // means we should never have observed > 5.
+    expect(maxInFlight).toBeGreaterThanOrEqual(2)
+    expect(maxInFlight).toBeLessThanOrEqual(5)
+  })
+
   it("caching-not-live: marks the batch status when recent calls show cache_read_tokens=0", async () => {
     configureBasicPrismaMock([{ id: "q-1", communicationId: "c-1" }])
     ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({

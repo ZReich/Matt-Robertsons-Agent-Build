@@ -4,6 +4,8 @@ import type { ClaimedScrubQueueRow, SuggestedAction } from "./scrub-types"
 import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import { db } from "@/lib/prisma"
 
+import { processInBatches } from "@/lib/util/batch"
+
 import { assertAuthCircuitClosed, tripAuthCircuit } from "./auth-circuit"
 import { ScrubBudgetError, assertWithinScrubBudget } from "./budget-tracker"
 import { ScrubClaudeAuthError } from "./claude"
@@ -56,6 +58,16 @@ export type ScrubMode = "strict" | "relaxed"
  * "SCRUB_STRICT_MODE" section.
  */
 const STRICT_CONSECUTIVE_HALT_THRESHOLD = 5
+
+/**
+ * Per-batch internal concurrency for scrubOne calls. The bottleneck is the
+ * provider HTTP call (DeepSeek for the default path, occasionally Haiku for
+ * sensitive). DeepSeek and Anthropic both happily handle bursts of 5
+ * concurrent requests. Higher values risk hammering pgbouncer (each scrubOne
+ * does ~5 reads + 1 write) without much marginal speedup since N=5 already
+ * approaches the per-call latency floor.
+ */
+const SCRUB_BATCH_CONCURRENCY = 5
 
 /**
  * After the first batch in a fresh environment, at least this many of the
@@ -592,39 +604,63 @@ export async function scrubEmailBatch({
   let cacheReadTokens = 0
   let consecutiveValidationFailures = 0
   let halted = false
+  let authCircuitTripped = false
 
-  for (const row of rows) {
-    try {
-      const result = await scrubOne(row, scrubClient, mode)
-      tokensIn += result.tokensIn
-      tokensOut += result.tokensOut
-      cacheReadTokens += result.cacheReadTokens
-      droppedActions += result.droppedActions
-      if (result.ok) {
-        succeeded += 1
-        consecutiveValidationFailures = 0
-      } else {
-        failed += 1
-        if (result.validationFailure) {
-          consecutiveValidationFailures += 1
-          if (
-            mode === "strict" &&
-            consecutiveValidationFailures >= STRICT_CONSECUTIVE_HALT_THRESHOLD
-          ) {
-            halted = true
-            break
-          }
-        } else {
+  // Process rows in bounded-concurrency slices. The strict-mode "5
+  // consecutive validation failures halt" semantic is preserved at slice
+  // granularity: we run a slice of up to N rows in parallel, fold their
+  // results into counters in claim order, then decide whether to break out
+  // before starting the next slice. This is slightly looser than the old
+  // per-row break (a slice may overshoot the threshold by up to N-1 rows in
+  // the worst case), but the speedup is worth it and the threshold is a
+  // safety valve, not a precise budget.
+  for (let i = 0; i < rows.length && !halted && !authCircuitTripped; i += SCRUB_BATCH_CONCURRENCY) {
+    const slice = rows.slice(i, i + SCRUB_BATCH_CONCURRENCY)
+    const settled = await processInBatches(slice, SCRUB_BATCH_CONCURRENCY, (row) =>
+      scrubOne(row, scrubClient, mode)
+    )
+
+    for (let j = 0; j < settled.length; j += 1) {
+      const outcome = settled[j]!
+      if (outcome.status === "fulfilled") {
+        const result = outcome.value
+        tokensIn += result.tokensIn
+        tokensOut += result.tokensOut
+        cacheReadTokens += result.cacheReadTokens
+        droppedActions += result.droppedActions
+        if (result.ok) {
+          succeeded += 1
           consecutiveValidationFailures = 0
+        } else {
+          failed += 1
+          if (result.validationFailure) {
+            consecutiveValidationFailures += 1
+            if (
+              mode === "strict" &&
+              consecutiveValidationFailures >=
+                STRICT_CONSECUTIVE_HALT_THRESHOLD
+            ) {
+              halted = true
+              // Don't break out of the inner loop — fold the rest of this
+              // slice's already-completed results into counters first so
+              // spend is fully attributed; then the outer-loop guard halts
+              // the next slice from starting.
+            }
+          } else {
+            consecutiveValidationFailures = 0
+          }
         }
-      }
-    } catch (err) {
-      failed += 1
-      consecutiveValidationFailures = 0
-      const message = err instanceof Error ? err.message : String(err)
-      if (isScrubProviderAuthError(err)) {
-        await tripAuthCircuit(message)
-        break
+      } else {
+        // Rejected: scrubOne itself threw. Auth errors trip the circuit and
+        // halt the whole batch; all others count as a non-validation failure.
+        const err = outcome.reason
+        failed += 1
+        consecutiveValidationFailures = 0
+        if (isScrubProviderAuthError(err)) {
+          const message = err instanceof Error ? err.message : String(err)
+          await tripAuthCircuit(message)
+          authCircuitTripped = true
+        }
       }
     }
   }
