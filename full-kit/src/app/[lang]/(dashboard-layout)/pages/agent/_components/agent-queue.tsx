@@ -120,7 +120,16 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
         </p>
       </div>
 
-      {actions.map((action) => (
+      {actions.map((action) => {
+        // The "High confidence" badge is meaningful ONLY for the Phase D
+        // buyer-rep / LOI proposal flow. Future drift (another action type
+        // adopting tier="auto", or Phase B repurposing the tier field) must
+        // not silently inherit this badge — narrow it explicitly here.
+        const showHighConfidenceBadge =
+          action.tier === "auto" &&
+          action.actionType === "create-deal" &&
+          action.payload?.signalType === "loi"
+        return (
         <Card key={action.id}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-3">
@@ -144,12 +153,23 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
                   </span>
                 </CardDescription>
               </div>
-              <Badge
-                className={TIER_COLORS[action.tier] ?? ""}
-                variant="secondary"
-              >
-                {action.tier}
-              </Badge>
+              <div className="flex flex-col items-end gap-1">
+                <Badge
+                  className={TIER_COLORS[action.tier] ?? ""}
+                  variant="secondary"
+                >
+                  {action.tier}
+                </Badge>
+                {showHighConfidenceBadge && (
+                  <Badge
+                    className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                    variant="secondary"
+                    data-testid="high-confidence-badge"
+                  >
+                    High confidence
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
 
@@ -218,7 +238,8 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
             </div>
           </CardContent>
         </Card>
-      ))}
+        )
+      })}
     </div>
   )
 }

@@ -23,22 +23,23 @@ export class LeaseBackfillBudgetError extends Error {
 }
 
 /**
- * Audit I4: outcome-prefix lists used to partition spend between the
- * "live" scrub pipeline (Haiku-backed) and the lease backfill pipeline
+ * Audit I4: purpose values used to partition spend between the "live"
+ * scrub pipeline (Haiku-backed) and the lease backfill pipeline
  * (DeepSeek classifier + Haiku extractors). Without partitioning, a
  * 200K-row backfill would exhaust SCRUB_DAILY_BUDGET_USD and silently
  * starve scrub-of-new-mail (or vice versa).
  */
-const LEASE_PIPELINE_OUTCOME_PREFIXES = [
-  "classifier-",
-  "extractor-",
-  "extractor-pdf-",
+const LEASE_PIPELINE_PURPOSES = [
+  "closed_deal_classifier",
+  "lease_extractor",
+  "pdf_lease_extractor",
 ] as const
 
 /**
  * Spend over the rolling window for the LIVE scrub pipeline only.
- * Lease-pipeline outcomes are excluded so they don't double-count
- * against `SCRUB_DAILY_BUDGET_USD`.
+ * Lease-pipeline rows are excluded so they don't double-count against
+ * `SCRUB_DAILY_BUDGET_USD`. Pre-migration rows (purpose IS NULL) are
+ * treated as scrub since that was the only pipeline at the time.
  */
 export async function getRollingScrubSpendUsd(
   windowMs = 24 * 60 * 60 * 1000
@@ -47,9 +48,7 @@ export async function getRollingScrubSpendUsd(
   const result = await db.scrubApiCall.aggregate({
     where: {
       at: { gte: since },
-      NOT: LEASE_PIPELINE_OUTCOME_PREFIXES.map((prefix) => ({
-        outcome: { startsWith: prefix },
-      })),
+      OR: [{ purpose: "scrub" }, { purpose: null }],
     },
     _sum: { estimatedUsd: true },
   })
@@ -60,7 +59,7 @@ export async function getRollingScrubSpendUsd(
 
 /**
  * Spend over the rolling window for the lease-backfill pipeline ONLY
- * (classifier + body extractor + PDF extractor outcomes).
+ * (classifier + body extractor + PDF extractor purposes).
  */
 export async function getRollingLeaseBackfillSpendUsd(
   windowMs = 24 * 60 * 60 * 1000
@@ -69,9 +68,7 @@ export async function getRollingLeaseBackfillSpendUsd(
   const result = await db.scrubApiCall.aggregate({
     where: {
       at: { gte: since },
-      OR: LEASE_PIPELINE_OUTCOME_PREFIXES.map((prefix) => ({
-        outcome: { startsWith: prefix },
-      })),
+      purpose: { in: [...LEASE_PIPELINE_PURPOSES] },
     },
     _sum: { estimatedUsd: true },
   })

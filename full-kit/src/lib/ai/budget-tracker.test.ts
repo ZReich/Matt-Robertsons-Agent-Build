@@ -35,16 +35,10 @@ describe("budget-tracker — scrub", () => {
     await expect(getRollingScrubSpendUsd()).resolves.toBe(1.234567)
     expect(mockedAggregate).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({
+        where: {
           at: { gte: expect.any(Date) },
-          // Audit I4: lease-pipeline outcomes excluded so the scrub
-          // budget isn't double-counting them.
-          NOT: expect.arrayContaining([
-            { outcome: { startsWith: "classifier-" } },
-            { outcome: { startsWith: "extractor-" } },
-            { outcome: { startsWith: "extractor-pdf-" } },
-          ]),
-        }),
+          OR: [{ purpose: "scrub" }, { purpose: null }],
+        },
         _sum: { estimatedUsd: true },
       })
     )
@@ -66,7 +60,7 @@ describe("budget-tracker — lease backfill (I4)", () => {
     delete process.env.LEASE_BACKFILL_DAILY_BUDGET_USD
   })
 
-  it("getRollingLeaseBackfillSpendUsd queries ONLY classifier-/extractor-/extractor-pdf- outcomes", async () => {
+  it("getRollingLeaseBackfillSpendUsd queries ONLY closed_deal_classifier/lease_extractor/pdf_lease_extractor purposes", async () => {
     mockedAggregate.mockResolvedValue({
       _sum: { estimatedUsd: { toString: () => "12.5" } },
     })
@@ -76,18 +70,20 @@ describe("budget-tracker — lease backfill (I4)", () => {
       expect.objectContaining({
         where: expect.objectContaining({
           at: { gte: expect.any(Date) },
-          OR: expect.arrayContaining([
-            { outcome: { startsWith: "classifier-" } },
-            { outcome: { startsWith: "extractor-" } },
-            { outcome: { startsWith: "extractor-pdf-" } },
-          ]),
+          purpose: {
+            in: [
+              "closed_deal_classifier",
+              "lease_extractor",
+              "pdf_lease_extractor",
+            ],
+          },
         }),
         _sum: { estimatedUsd: true },
       })
     )
   })
 
-  it("$25 of classifier-ok spend does NOT trip the scrub budget cap (lease-pipeline outcomes excluded)", async () => {
+  it("$25 of classifier spend does NOT trip the scrub budget cap (lease-pipeline purposes excluded)", async () => {
     process.env.SCRUB_DAILY_BUDGET_USD = "5"
     // Scrub aggregate excludes lease-pipeline outcomes — so the
     // mocked aggregate (returning 0 because the WHERE filter would
@@ -97,7 +93,7 @@ describe("budget-tracker — lease backfill (I4)", () => {
     await expect(assertWithinScrubBudget()).resolves.toBeUndefined()
   })
 
-  it("$25 of classifier-ok spend DOES trip the lease-backfill budget when cap is $20", async () => {
+  it("$25 of classifier spend DOES trip the lease-backfill budget when cap is $20", async () => {
     process.env.LEASE_BACKFILL_DAILY_BUDGET_USD = "20"
     mockedAggregate.mockResolvedValue({ _sum: { estimatedUsd: 25 } })
 

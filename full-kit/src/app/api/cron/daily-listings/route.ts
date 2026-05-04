@@ -16,13 +16,19 @@ function authorize(headers: Headers): {
   ok: boolean
   status?: number
 } {
-  // Accept either the feature-specific secret or Vercel's auto-injected
+  // Accept EITHER the feature-specific secret or Vercel's auto-injected
   // CRON_SECRET. Vercel only auto-attaches Authorization: Bearer <CRON_SECRET>
   // when the env var is literally named CRON_SECRET, so reading both lets the
   // user configure it either way.
-  const secret =
-    process.env.DAILY_LISTINGS_CRON_SECRET || process.env.CRON_SECRET
-  if (!secret) {
+  //
+  // B6 fix: previously this used `DAILY_LISTINGS_CRON_SECRET || CRON_SECRET`,
+  // which silently rejected Vercel's injected bearer if BOTH env vars were
+  // set to different values (e.g. user adopted DAILY_LISTINGS_CRON_SECRET
+  // without realising Vercel still auto-injects CRON_SECRET). We now check
+  // both independently with constant-time compare.
+  const featureSecret = process.env.DAILY_LISTINGS_CRON_SECRET
+  const vercelSecret = process.env.CRON_SECRET
+  if (!featureSecret && !vercelSecret) {
     // The endpoint exists but is misconfigured in this environment. 503 makes
     // the failure mode obvious in cron logs vs a generic 401 — Matt's local
     // dev env may not have either secret set at all.
@@ -33,10 +39,13 @@ function authorize(headers: Headers): {
     return { ok: false, status: 401 }
   }
   const presented = auth.slice(BEARER_PREFIX.length)
-  if (!constantTimeCompare(presented, secret)) {
-    return { ok: false, status: 401 }
+  if (featureSecret && constantTimeCompare(presented, featureSecret)) {
+    return { ok: true }
   }
-  return { ok: true }
+  if (vercelSecret && constantTimeCompare(presented, vercelSecret)) {
+    return { ok: true }
+  }
+  return { ok: false, status: 401 }
 }
 
 interface ProcessorResult {

@@ -26,6 +26,10 @@ export interface AgentActionView {
   dedupedToTodoId: string | null
   createdAt: string
   executedAt: string | null
+  // Subset of `payload` we render against. Kept loosely typed because the
+  // payload shape varies by actionType — the badge condition narrows on
+  // signalType for the buyer-rep / LOI case.
+  payload: { signalType?: string } | null
   sourceCommunication?: {
     id: string
     subject: string | null
@@ -57,8 +61,12 @@ export function AgentControlCenter({
   const [actions, setActions] = useState(initialActions)
   const [memory] = useState(initialMemory)
 
+  // Include tier="auto" rows: Phase D writes high-confidence buyer-rep
+  // proposals (e.g. LOI emails with a matching attachment) with tier="auto"
+  // and status="pending" — the approval queue is still the gate, but the row
+  // gets a "High confidence" badge so Matt can tell them apart at a glance.
   const pendingActions = actions.filter(
-    (a) => a.status === "pending" && a.tier === "approve"
+    (a) => a.status === "pending" && (a.tier === "approve" || a.tier === "auto")
   )
   const completedActions = actions.filter((a) => a.status !== "pending")
 

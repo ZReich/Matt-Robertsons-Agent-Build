@@ -253,9 +253,8 @@ function backoffMsFromResponse(response: Response): number {
  * - Retries ONCE on 429 and 5xx with `Retry-After`-aware backoff.
  *   Throws on persistent provider failure (caller maps to
  *   `provider_error`).
- * - Logs every call to `ScrubApiCall` with a classifier-specific
- *   outcome and DeepSeek-priced USD estimate. Logging failure is
- *   non-fatal.
+ * - Logs every call to `ScrubApiCall` with `purpose=closed_deal_classifier`
+ *   and a DeepSeek-priced USD estimate. Logging failure is non-fatal.
  */
 export async function callClassifier(
   subject: string,
@@ -358,7 +357,7 @@ export async function callClassifier(
       modelUsed: model,
       tokensIn: 0,
       tokensOut: 0,
-      outcome: "classifier-provider-error",
+      outcome: "provider-error",
     })
     throw new Error(
       `classifier provider failed (${response.status}): ${excerpt}`
@@ -378,7 +377,7 @@ export async function callClassifier(
       modelUsed: json.model ?? model,
       tokensIn,
       tokensOut,
-      outcome: "classifier-validation-failed",
+      outcome: "validation-failed",
     })
     return null
   }
@@ -389,7 +388,7 @@ export async function callClassifier(
       modelUsed: json.model ?? model,
       tokensIn,
       tokensOut,
-      outcome: "classifier-validation-failed",
+      outcome: "validation-failed",
     })
     return null
   }
@@ -398,7 +397,7 @@ export async function callClassifier(
     modelUsed: json.model ?? model,
     tokensIn,
     tokensOut,
-    outcome: "classifier-ok",
+    outcome: "ok",
   })
 
   return validation.value
@@ -418,12 +417,7 @@ async function writeClassifierLog({
   modelUsed: string
   tokensIn: number
   tokensOut: number
-  outcome: Extract<
-    ScrubApiOutcome,
-    | "classifier-ok"
-    | "classifier-validation-failed"
-    | "classifier-provider-error"
-  >
+  outcome: Extract<ScrubApiOutcome, "ok" | "validation-failed" | "provider-error">
 }): Promise<void> {
   try {
     await logScrubApiCall({
@@ -431,6 +425,7 @@ async function writeClassifierLog({
       modelUsed,
       usage: { tokensIn, tokensOut },
       outcome,
+      purpose: "closed_deal_classifier",
       estimatedUsdOverride: estimateClassifierUsd({ tokensIn, tokensOut }),
     })
   } catch (err) {

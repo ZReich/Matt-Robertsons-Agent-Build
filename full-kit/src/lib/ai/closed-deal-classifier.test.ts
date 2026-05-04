@@ -247,7 +247,7 @@ describe("callClassifier (DeepSeek wiring)", () => {
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ outcome: "classifier-provider-error" }),
+        data: expect.objectContaining({ outcome: "provider-error" }),
       })
     )
   })
@@ -284,7 +284,7 @@ describe("callClassifier (DeepSeek wiring)", () => {
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ outcome: "classifier-validation-failed" }),
+        data: expect.objectContaining({ outcome: "validation-failed" }),
       })
     )
   })
@@ -306,7 +306,7 @@ describe("callClassifier (DeepSeek wiring)", () => {
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ outcome: "classifier-validation-failed" }),
+        data: expect.objectContaining({ outcome: "validation-failed" }),
       })
     )
   })
@@ -413,7 +413,8 @@ describe("callClassifier (DeepSeek wiring)", () => {
     expect(args.data.promptVersion).toBe(CLOSED_DEAL_CLASSIFIER_VERSION)
     expect(args.data.tokensIn).toBe(1000)
     expect(args.data.tokensOut).toBe(200)
-    expect(args.data.outcome).toBe("classifier-ok")
+    expect(args.data.outcome).toBe("ok")
+    expect(args.data.purpose).toBe("closed_deal_classifier")
     // 1000 input tokens @ 0.14/M + 200 output tokens @ 0.28/M
     // = 0.00014 + 0.000056 = 0.000196
     expect(parseFloat(args.data.estimatedUsd)).toBeCloseTo(0.000196, 6)

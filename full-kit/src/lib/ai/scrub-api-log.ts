@@ -16,6 +16,11 @@ type ScrubApiMetadata = Record<string, unknown>
  *
  * The remaining outcomes are terminal. `updateScrubApiCallOutcome()`
  * transitions a row from "pending-validation" to its final state.
+ *
+ * Cross-purpose outcomes (`ok`, `validation-failed`, `provider-error`)
+ * are scoped by the `purpose` column — a query for "all validation
+ * failures across the closed-deal classifier" is
+ * `WHERE outcome = 'validation-failed' AND purpose = 'closed_deal_classifier'`.
  */
 export type ScrubApiOutcome =
   | "pending-validation"
@@ -24,34 +29,22 @@ export type ScrubApiOutcome =
   | "db-commit-failed"
   | "fenced-out"
   | "retry-correction"
-  // Closed-deal classifier outcomes (Stage 1 of lease pipeline),
-  // lease/sale body-extractor outcomes (Stage 2), and lease/sale
-  // PDF-extractor outcomes (Stage 2 fallback for PDF lease docs). All
-  // share the same telemetry table because the schema fits 1:1 — only
-  // the cost model differs (DeepSeek for the classifier, Haiku for the
-  // extractors and for scrub), and callers pass an override via
-  // `estimatedUsdOverride`.
-  //
-  // CONVENTION: classifier-*, extractor-*, and extractor-pdf-* outcomes
-  // are namespaced because there is no `purpose` column on
-  // ScrubApiCall. Any cross-cutting query like "show me all validation
-  // failures" must UNION over "validation-failed" AND
-  // "classifier-validation-failed" AND "extractor-validation-failed"
-  // AND "extractor-pdf-validation-failed". The `extractor-pdf-skipped`
-  // outcome additionally fires for PDF inputs we refused to send to
-  // Anthropic (file_too_large, not_pdf) — those rows carry zero
-  // tokens and zero cost so the skip rate is queryable.
-  // Follow-up: add `purpose` column to schema and migrate.
-  | "classifier-ok"
-  | "classifier-validation-failed"
-  | "classifier-provider-error"
-  | "extractor-ok"
-  | "extractor-validation-failed"
-  | "extractor-provider-error"
-  | "extractor-pdf-ok"
-  | "extractor-pdf-validation-failed"
-  | "extractor-pdf-provider-error"
-  | "extractor-pdf-skipped"
+  | "ok"
+  | "provider-error"
+  /// PDF inputs we refused to send to Anthropic (file_too_large, not_pdf).
+  /// Rows carry zero tokens and zero cost so the skip rate is queryable.
+  | "skipped"
+
+/**
+ * Identifies which AI call site produced a `ScrubApiCall` row. Persisted
+ * to the `purpose` column so cross-cutting queries can scope by source
+ * without relying on outcome-string prefixes.
+ */
+export type ScrubApiPurpose =
+  | "scrub"
+  | "closed_deal_classifier"
+  | "lease_extractor"
+  | "pdf_lease_extractor"
 
 const HAIKU_INPUT_PER_M = 1
 const HAIKU_CACHE_READ_PER_M = 0.1
@@ -87,6 +80,7 @@ export async function logScrubApiCall({
   modelUsed,
   usage,
   outcome,
+  purpose,
   estimatedUsdOverride,
   metadata,
 }: {
@@ -96,6 +90,7 @@ export async function logScrubApiCall({
   modelUsed: string
   usage: ScrubApiUsage
   outcome: ScrubApiOutcome
+  purpose: ScrubApiPurpose
   metadata?: ScrubApiMetadata
   /**
    * Optional pre-computed USD estimate. Use when the caller has its own
@@ -122,6 +117,7 @@ export async function logScrubApiCall({
         cacheReadTokens: usage.cacheReadTokens ?? 0,
         cacheWriteTokens: usage.cacheWriteTokens ?? 0,
         outcome,
+        purpose,
         estimatedUsd: usd.toFixed(6),
       },
       select: { id: true },

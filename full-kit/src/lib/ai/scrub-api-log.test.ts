@@ -45,12 +45,14 @@ describe("scrub-api-log", () => {
       modelUsed: "claude-haiku-4-5-20251001",
       usage: { tokensIn: 100, tokensOut: 25, cacheReadTokens: 50 },
       outcome: "pending-validation",
+      purpose: "scrub",
     })
 
     expect(id).toBe("api-call-1")
     expect(db.scrubApiCall.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         outcome: "pending-validation",
+        purpose: "scrub",
         estimatedUsd: expect.any(String),
       }),
       select: { id: true },
@@ -79,6 +81,7 @@ describe("scrub-api-log", () => {
       modelUsed: "claude-haiku-4-5-20251001",
       usage: { tokensIn: 10, tokensOut: 5 },
       outcome: "pending-validation",
+      purpose: "scrub",
     })
     expect(id).toBeNull()
   })

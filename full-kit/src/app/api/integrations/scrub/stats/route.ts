@@ -27,30 +27,16 @@ type WindowAgg = {
   costUSD: number
 }
 
-/**
- * Strip the lease-pipeline namespace prefix from a ScrubApiCall.outcome
- * so the stats counter can use one switch statement for every prefix.
- *
- * `extractor-pdf-` MUST be tested before `extractor-` because the longer
- * prefix is a strict superset.
- */
-function stripLeasePipelinePrefix(outcome: string): string {
-  if (outcome.startsWith("extractor-pdf-")) {
-    return outcome.slice("extractor-pdf-".length)
-  }
-  if (outcome.startsWith("extractor-")) {
-    return outcome.slice("extractor-".length)
-  }
-  if (outcome.startsWith("classifier-")) {
-    return outcome.slice("classifier-".length)
-  }
-  return outcome
-}
-
 async function aggregate(windowMs: number): Promise<WindowAgg> {
   const since = new Date(Date.now() - windowMs)
   const rows = await db.scrubApiCall.findMany({
-    where: { at: { gte: since } },
+    where: {
+      at: { gte: since },
+      // Scope to scrub rows. `purpose IS NULL` keeps pre-migration rows
+      // (all of which were scrub) in scope; once those age out of the
+      // 30-day window the OR can be dropped.
+      OR: [{ purpose: "scrub" }, { purpose: null }],
+    },
     select: {
       outcome: true,
       tokensIn: true,
@@ -83,13 +69,9 @@ async function aggregate(windowMs: number): Promise<WindowAgg> {
     agg.cacheReadTokens += row.cacheReadTokens
     agg.cacheWriteTokens += row.cacheWriteTokens
     agg.costUSD += Number(row.estimatedUsd.toString())
-    // Audit I3: strip lease-pipeline namespaces (classifier-, extractor-,
-    // extractor-pdf-) before bucketing so operators see real failure
-    // counts. Without this, a flood of `extractor-validation-failed` rows
-    // would aggregate to validationFailed:0 on the dashboard while the
-    // pipeline silently regressed.
-    const stripped = stripLeasePipelinePrefix(row.outcome)
-    switch (stripped) {
+    // Lease-pipeline rows (purpose != "scrub") are excluded by the query
+    // above, so the outcomes here come from scrub only.
+    switch (row.outcome) {
       case "ok":
       case "scrubbed":
         agg.scrubbedOk += 1
@@ -110,15 +92,12 @@ async function aggregate(windowMs: number): Promise<WindowAgg> {
         agg.retryCorrection += 1
         break
       case "provider-error":
-        // Map lease-pipeline provider failures into dbCommitFailed for
-        // dashboard parity — they're the closest existing bucket for
-        // "the call left no usable result." (A dedicated bucket would be
-        // a schema change beyond this fix-pack's scope.)
+        // Closest existing bucket for "the call left no usable result."
         agg.dbCommitFailed += 1
         break
       case "skipped":
-        // PDF-skip rows (file_too_large, not_pdf): zero tokens/cost so
-        // they show in apiCalls but don't move any other counter.
+        // Defensive: skipped rows belong to the PDF extractor and should
+        // be filtered out by the purpose clause. Counted as a no-op.
         break
     }
   }

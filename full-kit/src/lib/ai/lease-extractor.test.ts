@@ -400,17 +400,17 @@ describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
     })
     expect(out).toBeNull()
 
-    // Logs an extractor-validation-failed row.
+    // Logs a validation-failed row.
     await Promise.resolve()
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ outcome: "extractor-validation-failed" }),
+        data: expect.objectContaining({ outcome: "validation-failed" }),
       })
     )
   })
 
-  it("logs a ScrubApiCall row on success with extractor-ok and Haiku-priced USD", async () => {
+  it("logs a ScrubApiCall row on success with ok and Haiku-priced USD", async () => {
     mockMessagesCreate.mockResolvedValueOnce(
       buildToolUseResponse(VALID_LEASE, {
         usage: {
@@ -431,7 +431,8 @@ describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledTimes(1)
     const args = create.mock.calls[0][0]
-    expect(args.data.outcome).toBe("extractor-ok")
+    expect(args.data.outcome).toBe("ok")
+    expect(args.data.purpose).toBe("lease_extractor")
     expect(args.data.modelUsed).toBe("claude-haiku-4-5-20251001")
     expect(args.data.promptVersion).toBe(LEASE_EXTRACTOR_VERSION)
     expect(args.data.tokensIn).toBe(1_000_000)
@@ -440,7 +441,7 @@ describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
     expect(parseFloat(args.data.estimatedUsd)).toBeCloseTo(1.0, 4)
   })
 
-  it("logs extractor-provider-error and rethrows when the SDK throws", async () => {
+  it("logs provider-error and rethrows when the SDK throws", async () => {
     mockMessagesCreate.mockRejectedValueOnce(new Error("anthropic 503"))
 
     await expect(
@@ -455,7 +456,7 @@ describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ outcome: "extractor-provider-error" }),
+        data: expect.objectContaining({ outcome: "provider-error" }),
       })
     )
   })
@@ -490,7 +491,10 @@ describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
     expect(create).toHaveBeenCalledTimes(1)
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ outcome: "extractor-provider-error" }),
+        data: expect.objectContaining({
+          outcome: "provider-error",
+          purpose: "lease_extractor",
+        }),
       })
     )
   })

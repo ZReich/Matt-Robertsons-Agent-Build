@@ -1168,11 +1168,9 @@ model ScrubApiCall {
   cacheWriteTokens Int      @default(0) @map("cache_write_tokens")
   outcome          String
   metadata         Json     @default("{}")
-  /// Optional discriminator for the call's pipeline component. Reserved
-  /// for the planned migration away from outcome-prefix namespacing
-  /// (`classifier-*`, `extractor-*`); see CONVENTION comment in
-  /// scrub-api-log.ts. Column already exists in the live DB (predates
-  /// schema declaration); declared here to reconcile drift.
+  /// Pipeline component discriminator: "classifier", "extractor",
+  /// "extractor-pdf", "scrub", etc. Replaces the older outcome-prefix
+  /// namespacing. Used by budget-tracker to filter lease-backfill spend.
   purpose          String?
   estimatedUsd     Decimal  @map("estimated_usd") @db.Decimal(10, 6)
   at               DateTime @default(now())

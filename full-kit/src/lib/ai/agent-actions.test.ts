@@ -333,6 +333,121 @@ describe("agent action review workflow", () => {
     expect(db.agentAction.update).not.toHaveBeenCalled()
   })
 
+  it("returns idempotent success for an executed move-deal-stage action without a todo", async () => {
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "move-deal-stage",
+      status: "executed",
+    })
+    ;(db.todo.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).resolves.toEqual({
+      status: "executed",
+      actionId: "action-1",
+    })
+
+    expect(db.todo.findUnique).not.toHaveBeenCalled()
+  })
+
+  it("returns idempotent success for an executed create-deal action without a todo", async () => {
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "create-deal",
+      status: "executed",
+    })
+    ;(db.todo.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).resolves.toEqual({
+      status: "executed",
+      actionId: "action-1",
+    })
+
+    expect(db.todo.findUnique).not.toHaveBeenCalled()
+  })
+
+  it("returns idempotent success for an executed set-client-type action without a todo", async () => {
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "set-client-type",
+      status: "executed",
+    })
+    ;(db.todo.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).resolves.toEqual({
+      status: "executed",
+      actionId: "action-1",
+    })
+
+    expect(db.todo.findUnique).not.toHaveBeenCalled()
+  })
+
+  it("returns idempotent success for an executed create-agent-memory action", async () => {
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "create-agent-memory",
+      status: "executed",
+    })
+    ;(db.todo.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).resolves.toEqual({
+      status: "executed",
+      actionId: "action-1",
+    })
+
+    expect(db.todo.findUnique).not.toHaveBeenCalled()
+  })
+
+  it("returns idempotent success for an executed update-deal action", async () => {
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "update-deal",
+      status: "executed",
+    })
+    ;(db.todo.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).resolves.toEqual({
+      status: "executed",
+      actionId: "action-1",
+    })
+
+    expect(db.todo.findUnique).not.toHaveBeenCalled()
+  })
+
+  it("throws missing_executed_entity when an executed mark-todo-done has a deleted todo", async () => {
+    const todoUpdatedAt = new Date("2026-04-27T13:00:00.000Z")
+    ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ...action,
+      actionType: "mark-todo-done",
+      status: "executed",
+      payload: {
+        todoId: "todo-deleted",
+        reason: "Matt closed the loop.",
+        todoUpdatedAt: todoUpdatedAt.toISOString(),
+        contactId: "contact-1",
+        dealId: null,
+        communicationId: "comm-previous",
+      },
+    })
+    ;(db.todo.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+
+    await expect(
+      approveAgentAction({ id: "action-1", reviewer: "reviewer@example.com" })
+    ).rejects.toMatchObject({
+      code: "missing_executed_entity",
+      status: 409,
+    })
+  })
+
   it("refuses to snooze non-create-todo actions in V1", async () => {
     ;(db.agentAction.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
       ...action,

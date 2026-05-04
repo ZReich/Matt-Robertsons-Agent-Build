@@ -48,40 +48,26 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe("scrub stats route — namespaced outcome bucketing (I3)", () => {
-  it("counts classifier-validation-failed in validationFailed", async () => {
-    mockedFindMany.mockResolvedValue([
-      row("classifier-validation-failed"),
-      row("classifier-validation-failed"),
-      row("validation-failed"),
-    ])
+describe("scrub stats route — outcome bucketing", () => {
+  it("scopes the findMany query to scrub-purpose rows (and pre-migration null)", async () => {
+    mockedFindMany.mockResolvedValue([])
 
-    const res = await GET(
-      new Request("http://localhost/api/integrations/scrub/stats")
-    )
-    const body = (await res.json()) as { last24h: { validationFailed: number } }
-    expect(body.last24h.validationFailed).toBe(3)
+    await GET(new Request("http://localhost/api/integrations/scrub/stats"))
+
+    // First call is the 24h window. Inspect its WHERE.
+    const calls = mockedFindMany.mock.calls
+    expect(calls.length).toBeGreaterThan(0)
+    expect(calls[0][0]).toMatchObject({
+      where: expect.objectContaining({
+        OR: [{ purpose: "scrub" }, { purpose: null }],
+      }),
+    })
   })
 
-  it("counts extractor-validation-failed AND extractor-pdf-validation-failed in validationFailed", async () => {
+  it("counts ok / scrubbed in scrubbedOk", async () => {
     mockedFindMany.mockResolvedValue([
-      row("extractor-validation-failed"),
-      row("extractor-pdf-validation-failed"),
-      row("extractor-pdf-validation-failed"),
-    ])
-
-    const res = await GET(
-      new Request("http://localhost/api/integrations/scrub/stats")
-    )
-    const body = (await res.json()) as { last24h: { validationFailed: number } }
-    expect(body.last24h.validationFailed).toBe(3)
-  })
-
-  it("counts classifier-ok / extractor-ok / extractor-pdf-ok in scrubbedOk", async () => {
-    mockedFindMany.mockResolvedValue([
-      row("classifier-ok"),
-      row("extractor-ok"),
-      row("extractor-pdf-ok"),
+      row("ok"),
+      row("ok"),
       row("scrubbed"),
     ])
 
@@ -89,14 +75,27 @@ describe("scrub stats route — namespaced outcome bucketing (I3)", () => {
       new Request("http://localhost/api/integrations/scrub/stats")
     )
     const body = (await res.json()) as { last24h: { scrubbedOk: number } }
-    expect(body.last24h.scrubbedOk).toBe(4)
+    expect(body.last24h.scrubbedOk).toBe(3)
   })
 
-  it("counts classifier-/extractor-/extractor-pdf- provider-error in dbCommitFailed", async () => {
+  it("counts validation-failed in validationFailed", async () => {
     mockedFindMany.mockResolvedValue([
-      row("classifier-provider-error"),
-      row("extractor-provider-error"),
-      row("extractor-pdf-provider-error"),
+      row("validation-failed"),
+      row("validation-failed"),
+    ])
+
+    const res = await GET(
+      new Request("http://localhost/api/integrations/scrub/stats")
+    )
+    const body = (await res.json()) as { last24h: { validationFailed: number } }
+    expect(body.last24h.validationFailed).toBe(2)
+  })
+
+  it("counts provider-error and db-commit-failed in dbCommitFailed", async () => {
+    mockedFindMany.mockResolvedValue([
+      row("provider-error"),
+      row("db-commit-failed"),
+      row("db-commit-failed"),
     ])
 
     const res = await GET(

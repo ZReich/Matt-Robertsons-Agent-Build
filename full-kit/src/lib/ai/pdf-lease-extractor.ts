@@ -87,10 +87,7 @@ async function writePdfExtractorLog(args: {
   usage: ScrubApiUsage
   outcome: Extract<
     ScrubApiOutcome,
-    | "extractor-pdf-ok"
-    | "extractor-pdf-validation-failed"
-    | "extractor-pdf-provider-error"
-    | "extractor-pdf-skipped"
+    "ok" | "validation-failed" | "provider-error" | "skipped"
   >
   metadata?: Record<string, unknown>
 }): Promise<void> {
@@ -100,6 +97,7 @@ async function writePdfExtractorLog(args: {
       modelUsed: args.modelUsed,
       usage: args.usage,
       outcome: args.outcome,
+      purpose: "pdf_lease_extractor",
       metadata: args.metadata,
       // Skips are zero-cost; success/error use the same Haiku pricing
       // as the body extractor — by design (spec acceptance: "no new
@@ -156,7 +154,8 @@ export async function extractLeaseFromPdf(
     await writePdfExtractorLog({
       modelUsed: model,
       usage: { tokensIn: 0, tokensOut: 0 },
-      outcome: "extractor-pdf-skipped",
+      outcome: "skipped",
+      metadata: { skipReason: "file_too_large" },
     })
     return {
       ok: false,
@@ -176,7 +175,8 @@ export async function extractLeaseFromPdf(
     await writePdfExtractorLog({
       modelUsed: model,
       usage: { tokensIn: 0, tokensOut: 0 },
-      outcome: "extractor-pdf-skipped",
+      outcome: "skipped",
+      metadata: { skipReason: "not_pdf" },
     })
     return { ok: false, reason: "not_pdf" }
   }
@@ -226,7 +226,7 @@ export async function extractLeaseFromPdf(
     await writePdfExtractorLog({
       modelUsed: model,
       usage: { tokensIn: 0, tokensOut: 0 },
-      outcome: "extractor-pdf-provider-error",
+      outcome: "provider-error",
       metadata: { details },
     })
     return {
@@ -260,7 +260,8 @@ export async function extractLeaseFromPdf(
     await writePdfExtractorLog({
       modelUsed,
       usage,
-      outcome: "extractor-pdf-validation-failed",
+      outcome: "validation-failed",
+      metadata: { reason: "stub_no_response" },
     })
     return { ok: false, reason: "stub_no_response" }
   }
@@ -273,7 +274,8 @@ export async function extractLeaseFromPdf(
     await writePdfExtractorLog({
       modelUsed,
       usage,
-      outcome: "extractor-pdf-validation-failed",
+      outcome: "validation-failed",
+      metadata: { reason: validation.reason },
     })
     return {
       ok: false,
@@ -285,7 +287,7 @@ export async function extractLeaseFromPdf(
   await writePdfExtractorLog({
     modelUsed,
     usage,
-    outcome: "extractor-pdf-ok",
+    outcome: "ok",
   })
 
   return { ok: true, result: validation.value, modelUsed }

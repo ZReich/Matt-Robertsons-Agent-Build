@@ -17,9 +17,12 @@ export type ProposeBuyerRepInput = {
   confidence: number
 }
 
+export type ProposeBuyerRepTier = "auto" | "approve" | "log_only"
+
 export type ProposeBuyerRepResult = {
   created: boolean
   actionId: string | null
+  tier?: ProposeBuyerRepTier
   skipReason?: "existing-buyer-rep-deal" | "duplicate-pending-action"
 }
 
@@ -31,6 +34,26 @@ export type ProposeBuyerRepResult = {
 // blocking a legitimate re-engagement after a long gap.
 const PENDING_DEDUPE_WINDOW_DAYS = 90
 
+// Phase D step 3: filename match for promoting LOI proposals to tier=auto.
+// Anchored on the most reliable broker/lawyer naming conventions for
+// transactional docs. Case-insensitive — file systems vary, and Outlook
+// often re-cases attachment names on download.
+const LOI_FILENAME_RE = /loi|letter[-_ ]of[-_ ]intent|offer/i
+
+type AttachmentLike = { name?: unknown }
+
+function hasLoiAttachment(metadata: unknown): boolean {
+  if (!metadata || typeof metadata !== "object") return false
+  const md = metadata as { attachments?: unknown }
+  const list = md.attachments
+  if (!Array.isArray(list)) return false
+  for (const att of list as AttachmentLike[]) {
+    const name = att?.name
+    if (typeof name === "string" && LOI_FILENAME_RE.test(name)) return true
+  }
+  return false
+}
+
 export async function proposeBuyerRepDeal(
   input: ProposeBuyerRepInput
 ): Promise<ProposeBuyerRepResult> {
@@ -41,6 +64,41 @@ export async function proposeBuyerRepDeal(
   }
 
   return await db.$transaction(async (tx) => {
+    // Phase D step 3: tenant_rep_search is a pure audit row. It does NOT
+    // dedupe (multiple log-only rows for the same contact across different
+    // emails are useful — they show the user is talking to many brokers),
+    // and it ships with status=executed so it never appears in the approval
+    // queue. We bypass the advisory lock + dedupe path entirely.
+    if (input.signalType === "tenant_rep_search") {
+      const reason = `Buyer-rep ${input.signalType} signal detected with confidence ${input.confidence}`
+      const action = await tx.agentAction.create({
+        data: {
+          actionType: "create-deal",
+          status: "executed",
+          tier: "log_only",
+          summary: `Audit: ${input.signalType} signal at ${input.proposedStage}`,
+          sourceCommunicationId: input.communicationId,
+          payload: {
+            contactId: input.contactId ?? null,
+            recipientEmail: input.recipientEmail ?? null,
+            recipientDisplayName: input.recipientDisplayName ?? null,
+            dealType: "buyer_rep",
+            dealSource: "buyer_rep_inferred",
+            stage: input.proposedStage,
+            signalType: input.signalType,
+            confidence: input.confidence,
+            reason,
+            auditOnly: true,
+          },
+        },
+      })
+      return {
+        created: true,
+        actionId: action.id,
+        tier: "log_only" as const,
+      }
+    }
+
     // Postgres advisory lock keyed on the proposer's identity (email or
     // contactId). Two concurrent callers (live ingest + manual sweep, or two
     // sweep retries on the same recipient/signal) serialize here so the
@@ -156,13 +214,30 @@ export async function proposeBuyerRepDeal(
       }
     }
 
-    // 4. No dedupe hit — create the AgentAction.
+    // 4. Tier resolution. LOI proposals get promoted to tier=auto IF the
+    //    source Communication carries an attachment whose filename matches
+    //    LOI_FILENAME_RE. Auto here is a UI hint — the action still appears
+    //    in the approval queue (status pending), but pre-flagged as
+    //    high-confidence. Per Matt's preference, no auto-execute for
+    //    buyer-rep; he confirms each big move.
+    let tier: ProposeBuyerRepTier = "approve"
+    if (input.signalType === "loi") {
+      const comm = (await tx.communication.findUnique({
+        where: { id: input.communicationId },
+        select: { metadata: true },
+      })) as { metadata: unknown } | null
+      if (comm && hasLoiAttachment(comm.metadata)) {
+        tier = "auto"
+      }
+    }
+
+    // 5. No dedupe hit — create the AgentAction.
     const reason = `Buyer-rep ${input.signalType} signal detected with confidence ${input.confidence}`
     const action = await tx.agentAction.create({
       data: {
         actionType: "create-deal",
         status: "pending",
-        tier: "approve",
+        tier,
         summary: `Propose buyer-rep deal at ${input.proposedStage} from ${input.signalType} signal`,
         sourceCommunicationId: input.communicationId,
         payload: {
@@ -178,6 +253,6 @@ export async function proposeBuyerRepDeal(
         },
       },
     })
-    return { created: true, actionId: action.id }
+    return { created: true, actionId: action.id, tier }
   })
 }

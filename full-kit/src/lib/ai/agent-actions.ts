@@ -42,24 +42,35 @@ export async function approveAgentAction({
   const action = await getAction(id)
 
   if (action.status === "executed") {
-    const todo =
+    // Action types that link to a Todo when executed.
+    if (
+      action.actionType === "create-todo" ||
       action.actionType === "mark-todo-done"
-        ? await db.todo.findUnique({
-            where: {
-              id: parseMarkTodoDonePayload(action, {
-                requireEvidenceSnapshot: false,
-              }).todoId,
-            },
-          })
-        : await db.todo.findUnique({ where: { agentActionId: id } })
-    if (!todo) {
-      throw new AgentActionReviewError(
-        "executed action has no linked todo",
-        409,
-        "missing_executed_entity"
-      )
+    ) {
+      const todo =
+        action.actionType === "mark-todo-done"
+          ? await db.todo.findUnique({
+              where: {
+                id: parseMarkTodoDonePayload(action, {
+                  requireEvidenceSnapshot: false,
+                }).todoId,
+              },
+            })
+          : await db.todo.findUnique({ where: { agentActionId: id } })
+      if (!todo) {
+        throw new AgentActionReviewError(
+          "executed action has no linked todo",
+          409,
+          "missing_executed_entity"
+        )
+      }
+      return { status: "executed", todoId: todo.id, actionId: id }
     }
-    return { status: "executed", todoId: todo.id, actionId: id }
+    // All other action types (create-deal, move-deal-stage, set-client-type,
+    // create-agent-memory, update-deal) have side effects on Deal/Contact/
+    // AgentMemory tables that don't link back to a Todo. The action being
+    // executed is the success state — replay should be idempotent.
+    return { status: "executed", actionId: id }
   }
 
   if (isRejectedDuplicate(action)) {

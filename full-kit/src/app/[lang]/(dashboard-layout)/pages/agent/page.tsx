@@ -61,6 +61,10 @@ export default async function AgentPage({ params }: AgentPageProps) {
         dedupedToTodoId: true,
         createdAt: true,
         executedAt: true,
+        // Needed so the queue can narrow the "High confidence" badge to
+        // create-deal/LOI proposals only — bare tier="auto" is no longer
+        // sufficient (B5).
+        payload: true,
         sourceCommunication: {
           select: { id: true, subject: true, date: true, archivedAt: true },
         },
@@ -130,6 +134,10 @@ export default async function AgentPage({ params }: AgentPageProps) {
     dedupedToTodoId: action.dedupedToTodoId,
     createdAt: action.createdAt.toISOString(),
     executedAt: action.executedAt?.toISOString() ?? null,
+    payload:
+      action.payload && typeof action.payload === "object"
+        ? (action.payload as { signalType?: string })
+        : null,
     sourceCommunication: action.sourceCommunication
       ? {
           id: action.sourceCommunication.id,

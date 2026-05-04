@@ -184,7 +184,7 @@ describe("extractLeaseFromPdf", () => {
     expect(textBlock.text).toContain("(extracted from PDF only — no body excerpt)")
   })
 
-  it("logs extractor-pdf-ok with Haiku-priced USD on success", async () => {
+  it("logs ok with Haiku-priced USD on success", async () => {
     mockMessagesCreate.mockResolvedValueOnce(
       buildToolUseResponse(VALID_LEASE, {
         usage: {
@@ -204,7 +204,8 @@ describe("extractLeaseFromPdf", () => {
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledTimes(1)
     const args = create.mock.calls[0][0]
-    expect(args.data.outcome).toBe("extractor-pdf-ok")
+    expect(args.data.outcome).toBe("ok")
+    expect(args.data.purpose).toBe("pdf_lease_extractor")
     expect(args.data.modelUsed).toBe("claude-haiku-4-5-20251001")
     expect(args.data.promptVersion).toBe(LEASE_EXTRACTOR_VERSION)
     expect(args.data.tokensIn).toBe(1_000_000)
@@ -213,7 +214,7 @@ describe("extractLeaseFromPdf", () => {
     expect(parseFloat(args.data.estimatedUsd)).toBeCloseTo(1.0, 4)
   })
 
-  it("returns file_too_large and stamps extractor-pdf-skipped without calling Anthropic when the PDF exceeds 32MB", async () => {
+  it("returns file_too_large and stamps skipped without calling Anthropic when the PDF exceeds 32MB", async () => {
     const oversize = Buffer.alloc(32 * 1024 * 1024 + 1, 0x20)
     // Stamp magic bytes so we know we're rejecting on size, not magic.
     Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d]).copy(oversize, 0)
@@ -234,13 +235,14 @@ describe("extractLeaseFromPdf", () => {
 
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create.mock.calls[0][0].data.outcome).toBe("extractor-pdf-skipped")
+    expect(create.mock.calls[0][0].data.outcome).toBe("skipped")
+    expect(create.mock.calls[0][0].data.purpose).toBe("pdf_lease_extractor")
     expect(create.mock.calls[0][0].data.tokensIn).toBe(0)
     expect(create.mock.calls[0][0].data.tokensOut).toBe(0)
     expect(parseFloat(create.mock.calls[0][0].data.estimatedUsd)).toBe(0)
   })
 
-  it("returns not_pdf and stamps extractor-pdf-skipped when the magic bytes are missing", async () => {
+  it("returns not_pdf and stamps skipped when the magic bytes are missing", async () => {
     const docx = Buffer.from("PK\x03\x04 not a pdf at all")
     const out = await extractLeaseFromPdf({
       pdf: docx,
@@ -255,10 +257,11 @@ describe("extractLeaseFromPdf", () => {
 
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create.mock.calls[0][0].data.outcome).toBe("extractor-pdf-skipped")
+    expect(create.mock.calls[0][0].data.outcome).toBe("skipped")
+    expect(create.mock.calls[0][0].data.purpose).toBe("pdf_lease_extractor")
   })
 
-  it("returns provider_error and stamps extractor-pdf-provider-error when the SDK throws", async () => {
+  it("returns provider_error and stamps provider-error when the SDK throws", async () => {
     mockMessagesCreate.mockRejectedValueOnce(new Error("anthropic 503"))
 
     const out = await extractLeaseFromPdf({
@@ -276,9 +279,8 @@ describe("extractLeaseFromPdf", () => {
 
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create.mock.calls[0][0].data.outcome).toBe(
-      "extractor-pdf-provider-error"
-    )
+    expect(create.mock.calls[0][0].data.outcome).toBe("provider-error")
+    expect(create.mock.calls[0][0].data.purpose).toBe("pdf_lease_extractor")
     expect(db.$executeRawUnsafe).toHaveBeenCalledWith(
       expect.stringContaining('"metadata"'),
       JSON.stringify({ details: "anthropic 503" }),
@@ -286,7 +288,7 @@ describe("extractLeaseFromPdf", () => {
     )
   })
 
-  it("returns stub_no_response and stamps extractor-pdf-validation-failed when the response carries no tool_use", async () => {
+  it("returns stub_no_response and stamps validation-failed when the response carries no tool_use", async () => {
     mockMessagesCreate.mockResolvedValueOnce({
       model: "claude-haiku-4-5-20251001",
       usage: {
@@ -310,12 +312,11 @@ describe("extractLeaseFromPdf", () => {
 
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create.mock.calls[0][0].data.outcome).toBe(
-      "extractor-pdf-validation-failed"
-    )
+    expect(create.mock.calls[0][0].data.outcome).toBe("validation-failed")
+    expect(create.mock.calls[0][0].data.purpose).toBe("pdf_lease_extractor")
   })
 
-  it("returns validation_failed and stamps extractor-pdf-validation-failed when the validator rejects the tool input", async () => {
+  it("returns validation_failed and stamps validation-failed when the validator rejects the tool input", async () => {
     mockMessagesCreate.mockResolvedValueOnce(
       buildToolUseResponse({
         ...VALID_LEASE,
@@ -338,9 +339,8 @@ describe("extractLeaseFromPdf", () => {
 
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create.mock.calls[0][0].data.outcome).toBe(
-      "extractor-pdf-validation-failed"
-    )
+    expect(create.mock.calls[0][0].data.outcome).toBe("validation-failed")
+    expect(create.mock.calls[0][0].data.purpose).toBe("pdf_lease_extractor")
   })
 
   it("propagates the dealKind expectation from the classification (closed_sale → expectedDealKind=sale)", async () => {
@@ -396,8 +396,7 @@ describe("extractLeaseFromPdf", () => {
 
     // Telemetry ran before the function returned.
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create.mock.calls[0][0].data.outcome).toBe(
-      "extractor-pdf-provider-error"
-    )
+    expect(create.mock.calls[0][0].data.outcome).toBe("provider-error")
+    expect(create.mock.calls[0][0].data.purpose).toBe("pdf_lease_extractor")
   })
 })
