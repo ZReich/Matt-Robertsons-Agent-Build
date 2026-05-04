@@ -1,5 +1,5 @@
-export const PROMPT_VERSION = "v5"
-export const PROMPT_RELEASED_AT = "2026-04-28T00:00:00.000Z"
+export const PROMPT_VERSION = "v6"
+export const PROMPT_RELEASED_AT = "2026-05-04T00:00:00.000Z"
 
 export const TOPIC_TAGS = [
   "showing-scheduling",
@@ -47,12 +47,24 @@ export const DEAL_STAGES = [
 ] as const
 
 /**
- * Profile fact taxonomy — fixed by RALPLAN Phase 5 (Relationship Profile
- * Intelligence Governance). Adding a category requires a corresponding
- * RALPLAN amendment and a back-fill migration for `contact_profile_facts`.
- * Buckets like `personal`, `schedule`, `constraint`, `relationship`, and
- * `other` were retired because they encouraged sensitive-data sprawl that
- * the wording-class axis already covers.
+ * Profile fact taxonomy.
+ *
+ * The original RALPLAN Phase 5 set (preference / communication_style /
+ * schedule_constraint / deal_interest / objection / important_date) covered
+ * transactional + workflow facts only. PROMPT_VERSION v6 (2026-05-04) added
+ * the `family / pets / hobbies / vehicles / sports / travel / food /
+ * personal_milestone` buckets so Matt's relationship profile surfaces the
+ * humanizing context he uses to open conversations — kid's name, dog's
+ * breed, recent fishing trip, etc.
+ *
+ * Personal categories are subject to the same drop-list (medical, legal,
+ * financial distress, protected-class) enforced in scrub-applier
+ * `FORBIDDEN_AUTO_FACT_PATTERN`. The `caution` wordingClass route remains
+ * the safety valve for anything ambiguous.
+ *
+ * The DB column `contact_profile_facts.category` is `text`, so adding
+ * categories does NOT require a Prisma migration — only the validator,
+ * extractor prompt, and rendering layer need updating.
  */
 export const PROFILE_FACT_CATEGORIES = [
   "preference",
@@ -61,6 +73,15 @@ export const PROFILE_FACT_CATEGORIES = [
   "deal_interest",
   "objection",
   "important_date",
+  // Personal / relationship-building categories (added v6).
+  "family",
+  "pets",
+  "hobbies",
+  "vehicles",
+  "sports",
+  "travel",
+  "food",
+  "personal_milestone",
 ] as const
 
 export const PROFILE_FACT_WORDING_CLASSES = [
