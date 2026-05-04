@@ -24,15 +24,16 @@ interface Props {
 export default async function CalendarPage({ params }: Props) {
   const { lang } = await params
 
-  // Default range: 30 days back through 12 months forward. 12 months covers
-  // the lease-renewal lookahead (default 6 months) PLUS later-dated renewals
-  // already on the calendar. The client component owns navigation; this is
-  // just the initial seed.
+  // Default range: 2 years back through 10 years forward. Wide enough that
+  // long-tail lease renewals (e.g. an Apr 2030 lease's outreach landing in
+  // Oct 2029) are included in the initial seed and the client doesn't have
+  // to refetch when the user navigates years. With take: 500 caps and ~350
+  // events portfolio-wide, the payload stays small.
   const now = new Date()
   const from = new Date(now)
-  from.setDate(from.getDate() - 30)
+  from.setFullYear(from.getFullYear() - 2)
   const to = new Date(now)
-  to.setMonth(to.getMonth() + 12)
+  to.setFullYear(to.getFullYear() + 10)
 
   const [meetings, calendarEvents] = await Promise.all([
     db.meeting.findMany({
