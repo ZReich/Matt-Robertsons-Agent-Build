@@ -1,5 +1,7 @@
 import "server-only"
 
+import { Prisma as PrismaNS } from "@prisma/client"
+
 import {
   assertWithinLeaseBackfillBudget,
   LeaseBackfillBudgetError,
@@ -371,30 +373,75 @@ async function persistExtraction(args: {
     }
   }
 
-  const created = await db.leaseRecord.create({
-    data: {
-      contactId: deal.contactId,
-      propertyId: deal.propertyId ?? undefined,
-      dealId: deal.dealId,
-      closeDate: deal.closeDate ?? undefined,
-      leaseStartDate: startDate ?? undefined,
-      leaseEndDate: endDate ?? undefined,
-      leaseTermMonths: result.leaseTermMonths ?? undefined,
-      rentAmount: result.rentAmount ?? undefined,
-      rentPeriod: result.rentPeriod ?? undefined,
-      mattRepresented: result.mattRepresented ?? undefined,
-      dealKind: result.dealKind,
-      extractionConfidence: result.confidence,
-      status: "active",
-      notes: noteLine,
-    },
-    select: { id: true },
-  })
+  // The new partial unique constraints on lease_records can fire if a
+  // sibling deal already populated the same (contactId, propertyId,
+  // leaseStartDate) tuple. Catch P2002 → re-find → update, mirroring the
+  // orchestrator's I-2 fix.
+  const createData = {
+    contactId: deal.contactId,
+    propertyId: deal.propertyId ?? undefined,
+    dealId: deal.dealId,
+    closeDate: deal.closeDate ?? undefined,
+    leaseStartDate: startDate ?? undefined,
+    leaseEndDate: endDate ?? undefined,
+    leaseTermMonths: result.leaseTermMonths ?? undefined,
+    rentAmount: result.rentAmount ?? undefined,
+    rentPeriod: result.rentPeriod ?? undefined,
+    mattRepresented: result.mattRepresented ?? undefined,
+    dealKind: result.dealKind,
+    extractionConfidence: result.confidence,
+    status: "active",
+    notes: noteLine,
+  }
+
+  let createdId: string
+  try {
+    const created = await db.leaseRecord.create({
+      data: createData,
+      select: { id: true },
+    })
+    createdId = created.id
+  } catch (err) {
+    if (
+      err instanceof PrismaNS.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      // A sibling deal beat us to creating the LeaseRecord at this
+      // (contactId, propertyId, dateDim). Re-find and update in place.
+      const siblingWhere =
+        result.dealKind === "lease"
+          ? {
+              contactId: deal.contactId,
+              propertyId: deal.propertyId ?? null,
+              leaseStartDate: startDate ?? null,
+              archivedAt: null,
+            }
+          : {
+              contactId: deal.contactId,
+              propertyId: deal.propertyId ?? null,
+              closeDate: deal.closeDate ?? null,
+              archivedAt: null,
+            }
+      const sibling = await db.leaseRecord.findFirst({
+        where: siblingWhere,
+        select: { id: true },
+      })
+      if (!sibling) throw err
+      const updated = await db.leaseRecord.update({
+        where: { id: sibling.id },
+        data: createData,
+        select: { id: true },
+      })
+      createdId = updated.id
+    } else {
+      throw err
+    }
+  }
 
   return {
     dealId: deal.dealId,
     status: "created",
-    leaseRecordId: created.id,
+    leaseRecordId: createdId,
     leaseEndDate: result.leaseEndDate,
     leaseStartDate: result.leaseStartDate,
     searchTermsUsed,
