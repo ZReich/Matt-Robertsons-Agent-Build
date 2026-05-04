@@ -443,6 +443,7 @@ model Contact {
   pendingReplies PendingReply[]               @relation("PendingReplyContact")
   leaseRecords   LeaseRecord[]
   calendarEvents CalendarEvent[]
+  backfillRuns   BackfillRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1219,6 +1220,28 @@ model OperationalEmailReview {
   @@index([type, status])
   @@index([createdFromRunId])
   @@map("operational_email_reviews")
+}
+
+model BackfillRun {
+  id          String    @id @default(cuid())
+  contactId   String?   @map("contact_id")
+  parentId    String?   @map("parent_id") // links per-contact runs to a bulk parent
+  trigger     String    // "ui" | "bulk" | "cli"
+  mode        String    // "lifetime" | "deal-anchored"
+  startedAt   DateTime  @default(now()) @map("started_at")
+  finishedAt  DateTime? @map("finished_at")
+  status      String    // "running" | "succeeded" | "failed" | "skipped"
+  result      Json?
+  errorMessage String?  @map("error_message")
+
+  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  parent      BackfillRun? @relation("BackfillRunChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    BackfillRun[] @relation("BackfillRunChildren")
+
+  @@index([contactId, startedAt])
+  @@index([parentId])
+  @@index([status, startedAt])
+  @@map("backfill_runs")
 }
 
 /// Audit ledger for reviewer-driven coverage actions and outbound-todo
