@@ -7,11 +7,14 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
+  Loader2,
   Paperclip,
+  Search,
   Sparkles,
 } from "lucide-react"
 
 import type { AiSuggestionState } from "@/lib/ai/suggestions"
+import type { BackfillResult } from "@/lib/contacts/mailbox-backfill"
 
 import { DEFAULT_AGENT_ACTION_SNOOZE_MS } from "@/lib/ai/review-constants"
 
@@ -50,6 +53,13 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
   const router = useRouter()
   const [actions, setActions] = useState(state.actions)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [scanState, setScanState] = useState<
+    | { kind: "idle" }
+    | { kind: "scanning" }
+    | { kind: "success"; result: BackfillResult }
+    | { kind: "rate_limited"; retryAfter: number }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" })
   const autoTriggeredRef = useRef(false)
   const reviewableActions = useMemo(
     () => actions.filter((action) => !action.isSnoozed && !action.isStale),
@@ -127,6 +137,43 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
       }
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  async function handleScanMailbox() {
+    if (state.entityType !== "contact") return
+    setScanState({ kind: "scanning" })
+    try {
+      const res = await fetch(
+        `/api/contacts/${state.entityId}/email-backfill`,
+        { method: "POST" }
+      )
+      if (res.status === 429) {
+        const body = (await res.json().catch(() => ({}))) as {
+          retryAfter?: number
+        }
+        setScanState({
+          kind: "rate_limited",
+          retryAfter: body.retryAfter ?? 0,
+        })
+        return
+      }
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        setScanState({
+          kind: "error",
+          message: body.error ?? `HTTP ${res.status}`,
+        })
+        return
+      }
+      const result = (await res.json()) as BackfillResult
+      setScanState({ kind: "success", result })
+      router.refresh()
+    } catch (err) {
+      setScanState({
+        kind: "error",
+        message: err instanceof Error ? err.message : "unknown_error",
+      })
     }
   }
 
@@ -243,6 +290,51 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
         >
           {isProcessing ? "Processing..." : "Process with AI"}
         </Button>
+      ) : null}
+
+      {state.entityType === "contact" ? (
+        <div className="mb-3">
+          <Button
+            className="w-full"
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={handleScanMailbox}
+            disabled={scanState.kind === "scanning"}
+          >
+            {scanState.kind === "scanning" ? (
+              <>
+                <Loader2 className="mr-1 size-3.5 animate-spin" />
+                Scanning mailbox…
+              </>
+            ) : (
+              <>
+                <Search className="mr-1 size-3.5" />
+                Scan mailbox
+              </>
+            )}
+          </Button>
+          {scanState.kind === "success" ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Found {scanState.result.messagesDiscovered} message
+              {scanState.result.messagesDiscovered === 1 ? "" : "s"} —{" "}
+              {scanState.result.ingested} imported,{" "}
+              {scanState.result.deduped} already on file,{" "}
+              {scanState.result.scrubQueued} queued for AI scrub
+            </p>
+          ) : null}
+          {scanState.kind === "rate_limited" ? (
+            <p className="mt-2 text-xs text-amber-600">
+              Recently scanned — retry in{" "}
+              {Math.max(1, Math.ceil(scanState.retryAfter / 60))} min
+            </p>
+          ) : null}
+          {scanState.kind === "error" ? (
+            <p className="mt-2 text-xs text-red-600">
+              Error: {scanState.message}
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {visibleActions.length === 0 ? (
