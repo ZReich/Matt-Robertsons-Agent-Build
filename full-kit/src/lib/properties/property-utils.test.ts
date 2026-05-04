@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   computePropertyKey,
+  extractPropertyUnit,
   isPropertyType,
   parsePropertyCsv,
 } from "./property-utils"
@@ -23,6 +24,58 @@ describe("computePropertyKey", () => {
     const key = computePropertyKey({ address: "Acme | Plaza, , .", city: "" })
     expect(key.trim()).toBe(key)
     expect(key).not.toMatch(/[.,|]/)
+  })
+})
+
+describe("extractPropertyUnit", () => {
+  it("returns null when no unit/suite suffix is present", () => {
+    expect(extractPropertyUnit("303 N Broadway")).toBeNull()
+    expect(extractPropertyUnit("West Park Promenade")).toBeNull()
+  })
+
+  it("extracts Suite N from a pipe-separated deal title", () => {
+    // The buildout normalizer recognizes "Suite N" → unitOrSuite="suite n"
+    expect(extractPropertyUnit("303 N Broadway | Suite 100")).toBe("suite 100")
+    expect(extractPropertyUnit("1601 Lewis | 1601 Lewis Ave, Suite 104")).toBe(
+      "suite 104"
+    )
+  })
+
+  it("extracts Unit N from a pipe-separated deal title", () => {
+    expect(extractPropertyUnit("West Park Promenade | Unit 110")).toBe(
+      "unit 110"
+    )
+  })
+
+  it("recognizes 'Ste N' as a suite designator", () => {
+    expect(extractPropertyUnit("2621 Overland - Ste A")).toBe("suite a")
+  })
+
+  it("recognizes a #N suffix", () => {
+    expect(extractPropertyUnit("100 Main St #5")).toBe("suite 5")
+  })
+
+  it("does not invent a unit from building-name + address pipe forms", () => {
+    // "Securities Building | 2708 1st Ave N" — the right side is just the
+    // street address, not a unit; should NOT be treated as a unit.
+    expect(extractPropertyUnit("Securities Building | 2708 1st Ave N")).toBeNull()
+  })
+
+  it("falls back to a short bare-token after the pipe as a unit", () => {
+    // Real-world CSV row has lone "110" with no Unit/Suite token
+    expect(extractPropertyUnit("West Park Promenade | 110")).toBe("110")
+  })
+
+  it("collapses to building key when paired with computePropertyKey", () => {
+    // Two suites in the same building share the same propertyKey but have
+    // distinct unit values — that's exactly what (propertyKey, unit) dedupe
+    // requires.
+    const a = "1601 Lewis | Suite 104"
+    const b = "1601 Lewis | Suite 110"
+    const keyA = computePropertyKey({ address: a })
+    const keyB = computePropertyKey({ address: b })
+    expect(keyA).toBe(keyB)
+    expect(extractPropertyUnit(a)).not.toBe(extractPropertyUnit(b))
   })
 })
 

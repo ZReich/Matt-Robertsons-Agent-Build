@@ -29,6 +29,11 @@ export const PROPERTY_TYPE_VALUES: ReadonlyArray<PropertyType> = PROPERTY_TYPES
  *
  * Combines `address` with `city`, `state`, `zip` so addresses missing the city
  * suffix in the input field still normalize correctly.
+ *
+ * The returned key is the BUILDING portion only — unit/suite suffixes are
+ * stripped (the normalizer does this via `stripSuite`). Use
+ * {@link extractPropertyUnit} to recover the unit portion for dedupe on
+ * `(propertyKey, unit)`.
  */
 export function computePropertyKey(input: {
   address: string
@@ -54,6 +59,44 @@ export function computePropertyKey(input: {
     .replace(/[.,|]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
+}
+
+/**
+ * Extract the unit/suite designator from a raw address string.
+ *
+ * Multi-suite buildings like "West Park Promenade | Unit 110" or
+ * "1601 Lewis | Suite 104" must dedupe on `(propertyKey, unit)` rather than
+ * `propertyKey` alone — otherwise every suite in a building collapses onto
+ * the same Property record.
+ *
+ * Strategy: delegate to {@link normalizeBuildoutProperty}, which already
+ * recognizes "Suite N" / "Ste N" / "Unit N" / "#N" patterns and returns
+ * them via `unitOrSuite`. Falls back to extracting the portion after the
+ * first pipe separator when the normalizer doesn't see a Suite-token (e.g.
+ * "West Park Promenade | Unit 110" vs the more common "Suite 110" form).
+ *
+ * Returns `null` when no unit suffix is present (the building itself is the
+ * Property).
+ */
+export function extractPropertyUnit(rawAddress: string): string | null {
+  const trimmed = rawAddress?.trim()
+  if (!trimmed) return null
+  const normalized = normalizeBuildoutProperty(trimmed)
+  if (normalized?.unitOrSuite) return normalized.unitOrSuite
+
+  // Fallback: pipe-separated "<building> | <unit>" forms where the right
+  // side doesn't match Suite/Ste/Unit/# (e.g. just a number, or already
+  // includes the building address — we conservatively only take it as a
+  // unit if it's a short token that looks unit-shaped).
+  const pipeIdx = trimmed.indexOf("|")
+  if (pipeIdx > 0) {
+    const right = trimmed.slice(pipeIdx + 1).trim()
+    // Bare unit number like "110" or "B-2"
+    if (/^[A-Za-z0-9-]{1,8}$/.test(right)) {
+      return right.toLowerCase()
+    }
+  }
+  return null
 }
 
 export interface PropertyImportRow {
