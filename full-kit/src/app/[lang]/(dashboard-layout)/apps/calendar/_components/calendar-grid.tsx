@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
+import multiMonthPlugin from "@fullcalendar/multimonth"
 import FullCalendar from "@fullcalendar/react"
 import { useDirection } from "@radix-ui/react-direction"
 
@@ -246,14 +247,20 @@ export function CalendarGrid({
       <div className="rounded-lg border bg-card p-4">
         <FullCalendar
           direction={direction}
-          plugins={[dayGridPlugin, interactionPlugin]}
+          plugins={[dayGridPlugin, interactionPlugin, multiMonthPlugin]}
           initialView="dayGridMonth"
           eventDisplay="block"
           events={events}
           headerToolbar={{
             start: "prev,next today",
             center: "title",
-            end: "dayGridMonth,dayGridWeek",
+            end: "multiMonthYear,dayGridMonth,dayGridWeek",
+          }}
+          views={{
+            multiMonthYear: {
+              buttonText: "Year",
+              multiMonthMaxColumns: 3,
+            },
           }}
           eventClick={handleEventClick}
           dayMaxEvents={3}
