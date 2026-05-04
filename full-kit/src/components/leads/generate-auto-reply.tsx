@@ -1,8 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { toast } from "sonner"
 import { Check, Clipboard, Send, Sparkles, X } from "lucide-react"
 
@@ -175,10 +175,7 @@ export function GenerateAutoReply({
 
   async function saveEdits(silent = false): Promise<boolean> {
     if (!draft) return false
-    if (
-      editedSubject === draft.subject &&
-      editedBody === draft.body
-    ) {
+    if (editedSubject === draft.subject && editedBody === draft.body) {
       return true // no changes; nothing to save
     }
     const ok = await patchDraft(draft.pendingReplyId, "edit", {
@@ -196,7 +193,9 @@ export function GenerateAutoReply({
       if (!(await saveEdits(true))) return
       const ok = await patchDraft(draft.pendingReplyId, "approve")
       if (ok) {
-        toast.success("Approved & logged — copy from Pending Replies to send manually")
+        toast.success(
+          "Approved & logged — copy from Pending Replies to send manually"
+        )
         closeDrawer()
         router.refresh()
       }
@@ -248,10 +247,14 @@ export function GenerateAutoReply({
 
   async function copyToClipboard() {
     try {
-      await navigator.clipboard.writeText(`Subject: ${editedSubject}\n\n${editedBody}`)
+      await navigator.clipboard.writeText(
+        `Subject: ${editedSubject}\n\n${editedBody}`
+      )
       toast.success("Copied to clipboard")
     } catch {
-      toast.error("Could not copy — your browser may have blocked clipboard access")
+      toast.error(
+        "Could not copy — your browser may have blocked clipboard access"
+      )
     }
   }
 
@@ -316,10 +319,15 @@ export function GenerateAutoReply({
 
           {existingReplies.length > 0 ? (
             <div className="text-xs">
-              <p className="mb-1 font-medium text-muted-foreground">Past drafts</p>
+              <p className="mb-1 font-medium text-muted-foreground">
+                Past drafts
+              </p>
               <ul className="grid gap-1">
                 {existingReplies.slice(0, 5).map((r) => (
-                  <li key={r.id} className="flex items-center justify-between gap-2">
+                  <li
+                    key={r.id}
+                    className="flex items-center justify-between gap-2"
+                  >
                     <Link
                       href={`/${lang}/pages/pending-replies?status=${r.status}`}
                       className="line-clamp-1 hover:underline"
@@ -387,18 +395,24 @@ export function GenerateAutoReply({
                 {draft.suggestedProperties.length > 0 ? (
                   <div className="rounded-md border bg-muted/30 p-3 text-xs">
                     <p className="mb-1 font-medium">
-                      Cross-references mentioned ({draft.suggestedProperties.length})
+                      Cross-references mentioned (
+                      {draft.suggestedProperties.length})
                     </p>
                     <ul className="grid gap-1">
                       {draft.suggestedProperties.map((s) => (
-                        <li key={s.propertyId} className="flex items-center justify-between">
+                        <li
+                          key={s.propertyId}
+                          className="flex items-center justify-between"
+                        >
                           <Link
                             href={`/${lang}/pages/properties/${s.propertyId}`}
                             className="hover:underline"
                           >
                             {s.name ? `${s.name} — ${s.address}` : s.address}
                           </Link>
-                          <span className="text-muted-foreground">{s.score}% match</span>
+                          <span className="text-muted-foreground">
+                            {s.score}% match
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -443,7 +457,8 @@ export function GenerateAutoReply({
                       onClick={() => saveEdits(false)}
                       disabled={
                         submitting ||
-                        (editedSubject === draft.subject && editedBody === draft.body)
+                        (editedSubject === draft.subject &&
+                          editedBody === draft.body)
                       }
                     >
                       Save edits

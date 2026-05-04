@@ -30,14 +30,13 @@
  */
 
 import type { Prisma } from "@prisma/client"
+import type { EmailFolder, GraphEmailMessage } from "./email-types"
 
 import { db } from "@/lib/prisma"
 
 import { graphFetch } from "./client"
 import { loadMsgraphConfig } from "./config"
 import { EMAIL_METADATA_SELECT_FIELDS, processOneMessage } from "./emails"
-
-import type { EmailFolder, GraphEmailMessage } from "./email-types"
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -132,7 +131,8 @@ function coerceCursor(raw: unknown): HistoryBackfillCursorState | null {
       ? obj.lastCompletedMonth
       : null
   const processedCount =
-    typeof obj.processedCount === "number" && Number.isFinite(obj.processedCount)
+    typeof obj.processedCount === "number" &&
+    Number.isFinite(obj.processedCount)
       ? obj.processedCount
       : 0
   const lastError =
@@ -248,13 +248,11 @@ async function* fetchMonthPages(
 ): AsyncGenerator<GraphMessagesPage, void, void> {
   const { folder, month, targetUpn, rateLimitMs } = opts
   const fetchImpl: FetchPageImpl =
-    opts.fetchImpl ??
-    ((url: string) => graphFetch<GraphMessagesPage>(url))
+    opts.fetchImpl ?? ((url: string) => graphFetch<GraphMessagesPage>(url))
   const sleepImpl = opts.sleepImpl ?? sleep
 
   const { startIso, endIso } = monthBounds(month)
-  const filter =
-    `receivedDateTime ge ${startIso} and receivedDateTime lt ${endIso}`
+  const filter = `receivedDateTime ge ${startIso} and receivedDateTime lt ${endIso}`
 
   // Initial URL — relative path, graphFetch will prepend the base.
   let url: string | undefined =
@@ -351,10 +349,7 @@ export async function runEmailHistoryBackfill(
     updatedAt: new Date(0).toISOString(),
   }
 
-  const months = enumerateMonthsDescending(
-    options.startMonth,
-    options.endMonth
-  )
+  const months = enumerateMonthsDescending(options.startMonth, options.endMonth)
 
   const result: HistoryBackfillResult = {
     folder,

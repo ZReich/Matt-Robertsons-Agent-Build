@@ -367,7 +367,8 @@ async function callPropose(
   }
 
   const toolCall = body.choices?.[0]?.message?.tool_calls?.find(
-    (call) => call.type === "function" && call.function?.name === PROPOSE_TOOL.name
+    (call) =>
+      call.type === "function" && call.function?.name === PROPOSE_TOOL.name
   )
   const rawArguments = toolCall?.function?.arguments
   if (!rawArguments) {
@@ -385,10 +386,7 @@ async function callPropose(
   }
   const validated = validateProposal(raw, knownCommIds)
   if (!validated) {
-    throw new DealStageDetectorError(
-      "tool arguments failed validation",
-      502
-    )
+    throw new DealStageDetectorError("tool arguments failed validation", 502)
   }
 
   return {

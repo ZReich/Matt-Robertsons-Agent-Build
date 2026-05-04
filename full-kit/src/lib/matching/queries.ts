@@ -1,12 +1,10 @@
 import "server-only"
 
+import type { SearchCriteria } from "./property-criteria"
+
 import { db } from "@/lib/prisma"
 
-import {
-  MIN_USEFUL_SCORE,
-  scorePropertyMatch,
-  type SearchCriteria,
-} from "./property-criteria"
+import { MIN_USEFUL_SCORE, scorePropertyMatch } from "./property-criteria"
 
 export interface PropertyMatchForContact {
   property: {

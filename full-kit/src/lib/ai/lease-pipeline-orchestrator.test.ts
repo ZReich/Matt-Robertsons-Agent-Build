@@ -1,15 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("server-only", () => ({}))
+import type { ClosedDealClassification, LeaseExtraction } from "./lease-types"
 
-import {
-  CLOSED_DEAL_CLASSIFIER_VERSION,
-} from "./closed-deal-classifier"
+import { CLOSED_DEAL_CLASSIFIER_VERSION } from "./closed-deal-classifier"
 import { LEASE_EXTRACTOR_VERSION } from "./lease-extractor"
-import type {
-  ClosedDealClassification,
-  LeaseExtraction,
-} from "./lease-types"
+// Import AFTER all the vi.mock calls above are hoisted-applied.
+import {
+  processBacklogClosedDeals,
+  processCommunicationForLease,
+} from "./lease-pipeline-orchestrator"
+
+vi.mock("server-only", () => ({}))
 
 // ---------------------------------------------------------------------------
 // In-memory fake DB layer.
@@ -167,11 +168,7 @@ const { STATE, dbMock } = vi.hoisted(() => {
         },
       },
       contact: {
-        findFirst: async ({
-          where,
-        }: {
-          where: Record<string, unknown>
-        }) => {
+        findFirst: async ({ where }: { where: Record<string, unknown> }) => {
           for (const row of state.contacts.values()) {
             if (matchesContactWhereH(row as RowH, where)) return deepCloneH(row)
           }
@@ -202,23 +199,16 @@ const { STATE, dbMock } = vi.hoisted(() => {
         },
       },
       property: {
-        findFirst: async ({
-          where,
-        }: {
-          where: Record<string, unknown>
-        }) => {
+        findFirst: async ({ where }: { where: Record<string, unknown> }) => {
           for (const row of state.properties.values()) {
-            if (matchesPropertyWhereH(row as RowH, where)) return deepCloneH(row)
+            if (matchesPropertyWhereH(row as RowH, where))
+              return deepCloneH(row)
           }
           return null
         },
       },
       leaseRecord: {
-        findFirst: async ({
-          where,
-        }: {
-          where: Record<string, unknown>
-        }) => {
+        findFirst: async ({ where }: { where: Record<string, unknown> }) => {
           for (const row of state.leaseRecords.values()) {
             if (matchesLeaseWhereH(row as RowH, where)) return deepCloneH(row)
           }
@@ -244,11 +234,7 @@ const { STATE, dbMock } = vi.hoisted(() => {
         },
       },
       calendarEvent: {
-        findFirst: async ({
-          where,
-        }: {
-          where: Record<string, unknown>
-        }) => {
+        findFirst: async ({ where }: { where: Record<string, unknown> }) => {
           for (const row of state.calendarEvents.values()) {
             if (matchesEventWhereH(row as RowH, where)) return deepCloneH(row)
           }
@@ -291,10 +277,7 @@ const { STATE, dbMock } = vi.hoisted(() => {
             return (a.id as string).localeCompare(b.id as string)
           })
           .filter((r) => {
-            const m = r.metadata as
-              | Record<string, unknown>
-              | null
-              | undefined
+            const m = r.metadata as Record<string, unknown> | null | undefined
             const slot = m?.closedDealClassification as
               | Record<string, unknown>
               | undefined
@@ -393,9 +376,7 @@ function seedCommunication(opts?: {
     archivedAt: null,
     metadata: opts?.metadata ?? null,
     externalMessageId:
-      opts?.externalMessageId === undefined
-        ? null
-        : opts.externalMessageId,
+      opts?.externalMessageId === undefined ? null : opts.externalMessageId,
   })
   return id
 }
@@ -437,7 +418,9 @@ const VALID_CLASSIFICATION: ClosedDealClassification = {
   signals: ["fully executed"],
 }
 
-function classifierStub(result: ClosedDealClassification = VALID_CLASSIFICATION) {
+function classifierStub(
+  result: ClosedDealClassification = VALID_CLASSIFICATION
+) {
   return vi.fn(async (..._args: unknown[]) => ({
     ok: true as const,
     result,
@@ -457,12 +440,6 @@ beforeEach(() => {
   STATE.reset()
   vi.clearAllMocks()
 })
-
-// Import AFTER all the vi.mock calls above are hoisted-applied.
-import {
-  processBacklogClosedDeals,
-  processCommunicationForLease,
-} from "./lease-pipeline-orchestrator"
 
 // ---------------------------------------------------------------------------
 // TODO (M7): Phase 1 acceptance criterion — wire a real-Prisma integration
@@ -498,7 +475,6 @@ import {
 // schema-sync mechanism is a test-harness change that exceeded the scope
 // budget; tracked as Phase 1 acceptance follow-up.
 // ---------------------------------------------------------------------------
-
 
 // ---------------------------------------------------------------------------
 // processCommunicationForLease — happy path
@@ -733,11 +709,9 @@ describe("processCommunicationForLease — atomicity", () => {
     // Force tx.leaseRecord.create to throw on the FIRST invocation only,
     // so that we trigger the rollback inside txn-2. The classifier-stamp
     // write in txn-1 must remain durable.
-    const originalLeaseCreate = (
-      dbMock as unknown as {
-        $transaction: (fn: (tx: unknown) => Promise<unknown>) => Promise<unknown>
-      }
-    )
+    const originalLeaseCreate = dbMock as unknown as {
+      $transaction: (fn: (tx: unknown) => Promise<unknown>) => Promise<unknown>
+    }
     // We patch by intercepting the makeTxClient via a wrapped $transaction.
     // Easier: monkey-patch the $transaction temporarily to inject a tx
     // whose leaseRecord.create throws.
@@ -747,7 +721,9 @@ describe("processCommunicationForLease — atomicity", () => {
       fn: (tx: unknown) => Promise<T>
     ): Promise<T> => {
       return realTxn(async (tx: unknown) => {
-        const t = tx as { leaseRecord?: { create?: (...args: unknown[]) => unknown } }
+        const t = tx as {
+          leaseRecord?: { create?: (...args: unknown[]) => unknown }
+        }
         if (firstTxnDone && t.leaseRecord?.create) {
           // Second txn (the persistence one): make leaseRecord.create throw.
           t.leaseRecord.create = async () => {
@@ -1781,7 +1757,11 @@ describe("processCommunicationForLease — PDF fallback", () => {
             attachmentType: "file",
           },
           // attachmentType=item (no contentBytes).
-          pdfAttachment({ id: "item-pdf", size: 10_000, attachmentType: "item" }),
+          pdfAttachment({
+            id: "item-pdf",
+            size: 10_000,
+            attachmentType: "item",
+          }),
           // Oversize.
           pdfAttachment({ id: "huge", size: 33 * 1024 * 1024 }),
           // The valid candidate.

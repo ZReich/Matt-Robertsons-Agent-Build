@@ -1,10 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useState, type FormEvent } from "react"
 import { toast } from "sonner"
 
 import type { PropertyStatus, PropertyType } from "@prisma/client"
+import type { FormEvent } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -84,7 +85,10 @@ export function PropertyForm({
     description: initial?.description ?? "",
   })
 
-  function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+  function update<K extends keyof typeof form>(
+    key: K,
+    value: (typeof form)[K]
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -97,9 +101,7 @@ export function PropertyForm({
     setSubmitting(true)
     try {
       const isEdit = Boolean(initial?.id)
-      const url = isEdit
-        ? `/api/properties/${initial!.id}`
-        : "/api/properties"
+      const url = isEdit ? `/api/properties/${initial!.id}` : "/api/properties"
       const method = isEdit ? "PATCH" : "POST"
       const res = await fetch(url, {
         method,
@@ -115,7 +117,11 @@ export function PropertyForm({
           capRate: form.capRate ? Number(form.capRate) : undefined,
         }),
       })
-      const json = (await res.json()) as { ok?: boolean; property?: { id: string }; error?: string }
+      const json = (await res.json()) as {
+        ok?: boolean
+        property?: { id: string }
+        error?: string
+      }
       if (!res.ok || !json.ok) {
         toast.error(json.error ?? "Failed to save property")
         return
@@ -290,7 +296,9 @@ export function PropertyForm({
             />
           </div>
           <div>
-            <Label htmlFor="listingUrl">Listing URL (Buildout / LoopNet / Crexi)</Label>
+            <Label htmlFor="listingUrl">
+              Listing URL (Buildout / LoopNet / Crexi)
+            </Label>
             <Input
               id="listingUrl"
               type="url"
@@ -332,7 +340,11 @@ export function PropertyForm({
           Cancel
         </Button>
         <Button type="submit" disabled={submitting}>
-          {submitting ? "Saving…" : initial?.id ? "Save changes" : "Create property"}
+          {submitting
+            ? "Saving…"
+            : initial?.id
+              ? "Save changes"
+              : "Create property"}
         </Button>
       </div>
     </form>

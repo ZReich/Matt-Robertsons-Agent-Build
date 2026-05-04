@@ -98,9 +98,7 @@ export function ContactArcSummary({
         ) : null}
       </CardHeader>
       <CardContent className="text-sm">
-        {error ? (
-          <p className="text-xs text-destructive">{error}</p>
-        ) : null}
+        {error ? <p className="text-xs text-destructive">{error}</p> : null}
         {summary ? (
           <>
             <p className="whitespace-pre-line break-words">{summary.summary}</p>

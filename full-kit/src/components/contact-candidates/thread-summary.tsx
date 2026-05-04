@@ -86,9 +86,7 @@ export function CandidateThreadSummary({
             onClick={() => generate(true)}
             disabled={loading}
           >
-            <RefreshCw
-              className={`size-3 ${loading ? "animate-spin" : ""}`}
-            />
+            <RefreshCw className={`size-3 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </div>
         {error ? (
@@ -107,8 +105,8 @@ export function CandidateThreadSummary({
     <div className="rounded-md border border-dashed bg-muted/20 p-3 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
-          Summarize this candidate&apos;s evidence emails into a paragraph
-          you can scan in a few seconds.
+          Summarize this candidate&apos;s evidence emails into a paragraph you
+          can scan in a few seconds.
         </p>
         <Button
           size="sm"

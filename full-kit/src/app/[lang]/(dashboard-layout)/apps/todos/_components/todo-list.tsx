@@ -127,7 +127,8 @@ function TodoItem({
         >
           {note.meta.title}
         </p>
-        {note.meta.ai_rationale && note.meta.ai_rationale !== note.meta.title ? (
+        {note.meta.ai_rationale &&
+        note.meta.ai_rationale !== note.meta.title ? (
           <p className="mt-0.5 line-clamp-2 text-xs italic text-muted-foreground">
             <Sparkles className="mr-1 inline-block size-3 align-text-bottom" />
             {note.meta.ai_rationale}

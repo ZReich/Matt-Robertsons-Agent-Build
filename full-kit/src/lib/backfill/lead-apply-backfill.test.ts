@@ -579,8 +579,7 @@ describe("lead-apply-backfill", () => {
       rows: [
         leadRow({
           id: "comm-bld-1",
-          subject:
-            "303 North Broadway - Information Requested by Shae Nielsen",
+          subject: "303 North Broadway - Information Requested by Shae Nielsen",
           body: "Listing Address 303 North Broadway, Billings, MT 59101\nProfile information on file for Shae Nielsen: Email shae@example.com Phone 406.555.0100",
           metadata: {
             classification: "signal",
@@ -849,9 +848,11 @@ function makeClient({
     contactPromotionCandidate: {
       findUnique: vi.fn(async () => existingCandidate),
       findMany: vi.fn(async () => {
-        const c = existingCandidate as
-          | { id: string; status: string; dedupeKey?: string }
-          | null
+        const c = existingCandidate as {
+          id: string
+          status: string
+          dedupeKey?: string
+        } | null
         if (!c) return []
         return [
           {

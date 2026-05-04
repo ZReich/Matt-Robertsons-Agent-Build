@@ -5,6 +5,8 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { Check, Pencil, Send, Sparkles, X } from "lucide-react"
 
+import type { CalendarEventDTO, CalendarMeetingDTO } from "./calendar-grid"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,11 +19,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
-
-import type {
-  CalendarEventDTO,
-  CalendarMeetingDTO,
-} from "./calendar-grid"
 
 export type DrawerSubject =
   | { kind: "meeting"; meeting: CalendarMeetingDTO }
@@ -266,8 +263,7 @@ function CalendarEventBody({
             <ul className="grid gap-1 text-muted-foreground">
               {event.leaseRecord.leaseStartDate && (
                 <li>
-                  Term:{" "}
-                  {formatDate(new Date(event.leaseRecord.leaseStartDate))}
+                  Term: {formatDate(new Date(event.leaseRecord.leaseStartDate))}
                   {event.leaseRecord.leaseEndDate &&
                     ` → ${formatDate(new Date(event.leaseRecord.leaseEndDate))}`}
                   {event.leaseRecord.leaseTermMonths != null &&
@@ -452,7 +448,10 @@ function RenewalReplyInline({
     setBusy("send")
     try {
       // If editing, persist edits first so the sent body matches what's on screen.
-      if (editing && (subject !== reply.draftSubject || body !== reply.draftBody)) {
+      if (
+        editing &&
+        (subject !== reply.draftSubject || body !== reply.draftBody)
+      ) {
         const editOk = await patch("edit", {
           draftSubject: subject,
           draftBody: body,
@@ -626,7 +625,8 @@ function RenewalReplyInline({
         <p className="mt-3 text-xs opacity-70">
           {reply.status === "approved" ? (
             <>
-              <Check className="me-1 inline size-3" /> Already actioned. Open the{" "}
+              <Check className="me-1 inline size-3" /> Already actioned. Open
+              the{" "}
               <Link
                 href={`/${lang}/pages/pending-replies?leaseRecordId=${encodeURIComponent(leaseRecordId)}`}
                 className="underline"

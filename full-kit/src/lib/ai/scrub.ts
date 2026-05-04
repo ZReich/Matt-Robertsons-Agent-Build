@@ -3,7 +3,6 @@ import type { ClaimedScrubQueueRow, SuggestedAction } from "./scrub-types"
 
 import { getAttachmentSummary } from "@/lib/communications/attachment-types"
 import { db } from "@/lib/prisma"
-
 import { processInBatches } from "@/lib/util/batch"
 
 import { assertAuthCircuitClosed, tripAuthCircuit } from "./auth-circuit"
@@ -26,10 +25,10 @@ import {
   scrubWithConfiguredProvider,
   scrubWithSensitiveProvider,
 } from "./scrub-provider"
-import { containsSensitiveContent } from "./sensitive-filter"
 import { claimScrubQueueRows, markScrubQueueFailed } from "./scrub-queue"
 import { PROMPT_VERSION } from "./scrub-types"
 import { ScrubValidationError, validateScrubToolInput } from "./scrub-validator"
+import { containsSensitiveContent } from "./sensitive-filter"
 
 export type BatchSummary = {
   status:
@@ -614,10 +613,16 @@ export async function scrubEmailBatch({
   // per-row break (a slice may overshoot the threshold by up to N-1 rows in
   // the worst case), but the speedup is worth it and the threshold is a
   // safety valve, not a precise budget.
-  for (let i = 0; i < rows.length && !halted && !authCircuitTripped; i += SCRUB_BATCH_CONCURRENCY) {
+  for (
+    let i = 0;
+    i < rows.length && !halted && !authCircuitTripped;
+    i += SCRUB_BATCH_CONCURRENCY
+  ) {
     const slice = rows.slice(i, i + SCRUB_BATCH_CONCURRENCY)
-    const settled = await processInBatches(slice, SCRUB_BATCH_CONCURRENCY, (row) =>
-      scrubOne(row, scrubClient, mode)
+    const settled = await processInBatches(
+      slice,
+      SCRUB_BATCH_CONCURRENCY,
+      (row) => scrubOne(row, scrubClient, mode)
     )
 
     for (let j = 0; j < settled.length; j += 1) {
@@ -637,8 +642,7 @@ export async function scrubEmailBatch({
             consecutiveValidationFailures += 1
             if (
               mode === "strict" &&
-              consecutiveValidationFailures >=
-                STRICT_CONSECUTIVE_HALT_THRESHOLD
+              consecutiveValidationFailures >= STRICT_CONSECUTIVE_HALT_THRESHOLD
             ) {
               halted = true
               // Don't break out of the inner loop — fold the rest of this

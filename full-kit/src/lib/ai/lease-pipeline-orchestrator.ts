@@ -1,13 +1,19 @@
 import "server-only"
 
-import type { ClientType, Prisma } from "@prisma/client"
 import { Prisma as PrismaNS } from "@prisma/client"
 
-import { db } from "@/lib/prisma"
+import type {
+  ClosedDealClassification,
+  LeaseExtraction,
+} from "@/lib/ai/lease-types"
+import type { AttachmentMeta } from "@/lib/communications/attachment-types"
+import type { LeaseLifecycleInput } from "@/lib/contacts/lease-role-lifecycle"
+import type { ClientType, Prisma } from "@prisma/client"
+
 import {
-  assertWithinLeaseBackfillBudget,
   LeaseBackfillBudgetError,
   ScrubBudgetError,
+  assertWithinLeaseBackfillBudget,
 } from "@/lib/ai/budget-tracker"
 import {
   CLOSED_DEAL_CLASSIFIER_VERSION,
@@ -18,14 +24,6 @@ import {
   runLeaseExtraction,
 } from "@/lib/ai/lease-extractor"
 import { extractLeaseFromPdf } from "@/lib/ai/pdf-lease-extractor"
-import type {
-  ClosedDealClassification,
-  LeaseExtraction,
-} from "@/lib/ai/lease-types"
-import type { AttachmentMeta } from "@/lib/communications/attachment-types"
-import { downloadAttachment } from "@/lib/msgraph/download-attachment"
-import { getAutomationSettings } from "@/lib/system-state/automation-settings"
-
 /**
  * Lease pipeline orchestrator.
  *
@@ -62,11 +60,11 @@ import {
   findOrCreateContactForLease,
   isUsableContactName,
 } from "@/lib/contacts/find-or-create-for-lease"
+import { nextClientTypeForLease } from "@/lib/contacts/lease-role-lifecycle"
+import { downloadAttachment } from "@/lib/msgraph/download-attachment"
+import { db } from "@/lib/prisma"
 import { findPropertyForLease } from "@/lib/properties/find-for-lease"
-import {
-  nextClientTypeForLease,
-  type LeaseLifecycleInput,
-} from "@/lib/contacts/lease-role-lifecycle"
+import { getAutomationSettings } from "@/lib/system-state/automation-settings"
 
 export type ProcessLeaseResult =
   | {
@@ -249,7 +247,8 @@ function selectPdfFallbackCandidates(
       // shape. Treat undefined as "probably a file" — the magic-byte sniff in the
       // PDF extractor enforces the actual PDF contract. Only reject Outlook-specific
       // non-file types ("item" = embedded message, "reference" = OneDrive link).
-      if (a.attachmentType === "item" || a.attachmentType === "reference") return false
+      if (a.attachmentType === "item" || a.attachmentType === "reference")
+        return false
       if (typeof a.contentType !== "string") return false
       if (a.contentType.toLowerCase() !== "application/pdf") return false
       if (typeof a.size !== "number") return false
@@ -319,7 +318,8 @@ function buildLeaseRecordWhere(args: {
     archivedAt: null,
     dealKind: extraction.dealKind,
   }
-  const dateDim = extraction.dealKind === "lease" ? args.leaseStartDate : args.closeDate
+  const dateDim =
+    extraction.dealKind === "lease" ? args.leaseStartDate : args.closeDate
   if (dateDim) {
     if (extraction.dealKind === "lease") {
       where.leaseStartDate = dateDim
@@ -344,15 +344,15 @@ export async function processCommunicationForLease(
   communicationId: string,
   options: ProcessLeaseOptions = {}
 ): Promise<ProcessLeaseResult> {
-  const classifierFn = options.runClosedDealClassifierFn ?? runClosedDealClassifier
+  const classifierFn =
+    options.runClosedDealClassifierFn ?? runClosedDealClassifier
   const extractorFn = options.runLeaseExtractionFn ?? runLeaseExtraction
   const pdfExtractorFn = options.extractLeaseFromPdfFn ?? extractLeaseFromPdf
   const downloadAttachmentFn =
     options.downloadAttachmentFn ?? downloadAttachment
   const now = options.now ?? new Date()
 
-  const settings =
-    options.settings ?? (await getAutomationSettings())
+  const settings = options.settings ?? (await getAutomationSettings())
 
   // Subject/body/externalMessageId are needed for the PDF fallback (the
   // PDF extractor takes `subject` and `bodyExcerpt`; the Graph download
@@ -369,7 +369,11 @@ export async function processCommunicationForLease(
     },
   })
   if (!comm) {
-    return { ok: false, reason: "classifier_failed", details: "missing_communication" }
+    return {
+      ok: false,
+      reason: "classifier_failed",
+      details: "missing_communication",
+    }
   }
 
   const stampedVersion = existingClassificationVersion(comm.metadata)
@@ -592,7 +596,9 @@ export async function processCommunicationForLease(
           // C1: apply the same confidence gate as the body extractor. A PDF
           // result below the threshold is not authoritative — treat it as a
           // recoverable failure and continue to the next PDF candidate.
-          if (pdfOutcome.result.confidence < settings.leaseExtractorMinConfidence) {
+          if (
+            pdfOutcome.result.confidence < settings.leaseExtractorMinConfidence
+          ) {
             pdfFailureReason = "low_confidence"
             continue
           }
@@ -672,7 +678,10 @@ export async function processCommunicationForLease(
   // DB writes (just stamp metadata so the backlog driver doesn't re-pick).
   const trimmedContactName = extraction.contactName.trim()
   const trimmedContactEmail = extraction.contactEmail?.trim() ?? ""
-  if (!isUsableContactName(trimmedContactName) && trimmedContactEmail.length === 0) {
+  if (
+    !isUsableContactName(trimmedContactName) &&
+    trimmedContactEmail.length === 0
+  ) {
     await db.$transaction(async (tx) => {
       const fresh = await tx.communication.findUnique({
         where: { id: communicationId },
@@ -1085,24 +1094,25 @@ export async function processBacklogClosedDeals(
 
     // Cursor-based pagination — use the receivedAt+id pair from the prior
     // batch so we never re-scan the same row twice.
-    const where: Prisma.CommunicationWhereInput = cursor?.lastProcessedReceivedAt
-      ? {
-          AND: [
-            whereExclusions,
-            {
-              OR: [
-                {
-                  date: { gt: new Date(cursor.lastProcessedReceivedAt) },
-                },
-                {
-                  date: new Date(cursor.lastProcessedReceivedAt),
-                  id: { gt: cursor.lastProcessedCommunicationId ?? "" },
-                },
-              ],
-            },
-          ],
-        }
-      : whereExclusions
+    const where: Prisma.CommunicationWhereInput =
+      cursor?.lastProcessedReceivedAt
+        ? {
+            AND: [
+              whereExclusions,
+              {
+                OR: [
+                  {
+                    date: { gt: new Date(cursor.lastProcessedReceivedAt) },
+                  },
+                  {
+                    date: new Date(cursor.lastProcessedReceivedAt),
+                    id: { gt: cursor.lastProcessedCommunicationId ?? "" },
+                  },
+                ],
+              },
+            ],
+          }
+        : whereExclusions
 
     const batch = await db.communication.findMany({
       where,

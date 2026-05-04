@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react"
 import { format } from "date-fns"
-import { ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronUp } from "lucide-react"
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
@@ -103,7 +108,11 @@ export function SourceCommunicationInline({
           )}
           {expanded ? "Hide source" : "Read source email"}
         </span>
-        {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+        {expanded ? (
+          <ChevronUp className="size-3.5" />
+        ) : (
+          <ChevronDown className="size-3.5" />
+        )}
       </button>
       {expanded ? (
         <div className="border-t px-3 py-3 text-xs">

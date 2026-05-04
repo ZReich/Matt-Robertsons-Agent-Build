@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { generatePendingReply } from "@/lib/ai/auto-reply"
+import { sendMailAsMatt } from "@/lib/msgraph/send-mail"
 import { db } from "@/lib/prisma"
+import { getAutomationSettings } from "@/lib/system-state/automation-settings"
+
+import { maybeFireAutoReplyForApprovedLead } from "./contact-promotion-auto-reply"
 
 vi.mock("@/lib/prisma", () => ({
   db: {
@@ -34,12 +39,6 @@ vi.mock("@/lib/system-state/automation-settings", () => ({
 vi.mock("@/lib/msgraph/send-mail", () => ({
   sendMailAsMatt: vi.fn(),
 }))
-
-import { generatePendingReply } from "@/lib/ai/auto-reply"
-import { sendMailAsMatt } from "@/lib/msgraph/send-mail"
-import { getAutomationSettings } from "@/lib/system-state/automation-settings"
-
-import { maybeFireAutoReplyForApprovedLead } from "./contact-promotion-auto-reply"
 
 const dbAny = db as unknown as {
   communication: { findUnique: ReturnType<typeof vi.fn> }

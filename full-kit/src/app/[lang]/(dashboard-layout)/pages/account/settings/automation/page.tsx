@@ -1,6 +1,6 @@
-import type { Metadata } from "next"
-
 import { formatDistanceToNow } from "date-fns"
+
+import type { Metadata } from "next"
 
 import { getAutomationSettings } from "@/lib/system-state/automation-settings"
 import { getLastDailyListingsSweep } from "@/lib/system-state/last-daily-listings-sweep"

@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-vi.mock("server-only", () => ({}))
-
 import { db } from "@/lib/prisma"
 
 import {
-  callClassifier,
   CLOSED_DEAL_CLASSIFIER_VERSION,
+  callClassifier,
   estimateClassifierUsd,
   resolveClassifierModel,
   runClosedDealClassifier,
   validateClosedDealClassification,
 } from "./closed-deal-classifier"
+
+vi.mock("server-only", () => ({}))
 
 vi.mock("@/lib/prisma", () => ({
   db: {
@@ -135,18 +135,18 @@ describe("callClassifier (DeepSeek wiring)", () => {
     vi.restoreAllMocks()
   })
 
-  function mockFetchOnce(
-    response: {
-      status?: number
-      headers?: Record<string, string>
-      body: unknown
-    }
-  ) {
+  function mockFetchOnce(response: {
+    status?: number
+    headers?: Record<string, string>
+    body: unknown
+  }) {
     const fetchMock = vi.fn().mockResolvedValueOnce({
       ok: (response.status ?? 200) >= 200 && (response.status ?? 200) < 300,
       status: response.status ?? 200,
       statusText: "OK",
-      headers: { get: (k: string) => response.headers?.[k.toLowerCase()] ?? null },
+      headers: {
+        get: (k: string) => response.headers?.[k.toLowerCase()] ?? null,
+      },
       json: async () => response.body,
       text: async () =>
         typeof response.body === "string"
@@ -157,7 +157,10 @@ describe("callClassifier (DeepSeek wiring)", () => {
     return fetchMock
   }
 
-  function buildOkResponse(payload: object, usage = { prompt_tokens: 120, completion_tokens: 30 }) {
+  function buildOkResponse(
+    payload: object,
+    usage = { prompt_tokens: 120, completion_tokens: 30 }
+  ) {
     return {
       body: {
         model: "deepseek-chat",
@@ -204,7 +207,10 @@ describe("callClassifier (DeepSeek wiring)", () => {
     expect(body.messages[0].content.length).toBeGreaterThan(500)
     expect(body.messages[1]).toEqual({
       role: "user",
-      content: JSON.stringify({ subject: "Lease executed", body: "Fully executed." }),
+      content: JSON.stringify({
+        subject: "Lease executed",
+        body: "Fully executed.",
+      }),
     })
   })
 
@@ -318,7 +324,9 @@ describe("callClassifier (DeepSeek wiring)", () => {
         ok: false,
         status: 429,
         statusText: "Too Many Requests",
-        headers: { get: (k: string) => (k.toLowerCase() === "retry-after" ? "0" : null) },
+        headers: {
+          get: (k: string) => (k.toLowerCase() === "retry-after" ? "0" : null),
+        },
         json: async () => ({ error: { message: "rate limited" } }),
         text: async () => "rate limited",
       })
@@ -356,16 +364,14 @@ describe("callClassifier (DeepSeek wiring)", () => {
   })
 
   it("retries once on 503 then surfaces failure if still bad", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue({
-        ok: false,
-        status: 503,
-        statusText: "Service Unavailable",
-        headers: { get: () => null },
-        json: async () => ({ error: { message: "down" } }),
-        text: async () => "down",
-      })
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+      headers: { get: () => null },
+      json: async () => ({ error: { message: "down" } }),
+      text: async () => "down",
+    })
     vi.stubGlobal("fetch", fetchMock)
 
     await expect(callClassifier("subj", "body")).rejects.toThrow(/503/)
@@ -423,14 +429,12 @@ describe("callClassifier (DeepSeek wiring)", () => {
 
 describe("estimateClassifierUsd", () => {
   it("prices DeepSeek at ~$0.14/M input + $0.28/M output", () => {
-    expect(estimateClassifierUsd({ tokensIn: 1_000_000, tokensOut: 0 })).toBeCloseTo(
-      0.14,
-      4
-    )
-    expect(estimateClassifierUsd({ tokensIn: 0, tokensOut: 1_000_000 })).toBeCloseTo(
-      0.28,
-      4
-    )
+    expect(
+      estimateClassifierUsd({ tokensIn: 1_000_000, tokensOut: 0 })
+    ).toBeCloseTo(0.14, 4)
+    expect(
+      estimateClassifierUsd({ tokensIn: 0, tokensOut: 1_000_000 })
+    ).toBeCloseTo(0.28, 4)
     expect(estimateClassifierUsd({ tokensIn: 0, tokensOut: 0 })).toBe(0)
   })
 })
@@ -527,7 +531,9 @@ describe("runClosedDealClassifier", () => {
       subject: "Closed",
       body: "ok",
     })
-    const callClassifierFn = vi.fn().mockRejectedValue(new Error("network down"))
+    const callClassifierFn = vi
+      .fn()
+      .mockRejectedValue(new Error("network down"))
     const out = await runClosedDealClassifier("c1", { callClassifierFn })
     expect(out.ok).toBe(false)
     if (!out.ok) {

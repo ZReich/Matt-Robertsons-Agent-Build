@@ -1,10 +1,8 @@
+import type { BackfillMode } from "./window-resolver"
+
 import { db } from "@/lib/prisma"
 
-import {
-  BackfillAlreadyRunningError,
-  backfillMailboxForContact,
-} from "./index"
-import type { BackfillMode } from "./window-resolver"
+import { BackfillAlreadyRunningError, backfillMailboxForContact } from "./index"
 
 export interface BulkInput {
   /**

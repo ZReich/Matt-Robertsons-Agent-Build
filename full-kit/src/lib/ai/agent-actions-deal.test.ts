@@ -32,8 +32,8 @@ vi.mock("@/lib/prisma", () => {
       ...dbMock,
       // $transaction passes the same db mock as the tx client so existing
       // tests that mock `db.deal.findUnique` apply transparently.
-      $transaction: vi.fn(
-        async (fn: (tx: typeof dbMock) => Promise<unknown>) => fn(dbMock)
+      $transaction: vi.fn(async (fn: (tx: typeof dbMock) => Promise<unknown>) =>
+        fn(dbMock)
       ),
     },
   }
@@ -43,9 +43,7 @@ vi.mock("@/lib/contacts/sync-contact-role", () => ({
   syncContactRoleFromDeals: vi.fn(),
 }))
 
-const dealFindUnique = db.deal.findUnique as unknown as ReturnType<
-  typeof vi.fn
->
+const dealFindUnique = db.deal.findUnique as unknown as ReturnType<typeof vi.fn>
 const dealFindFirst = db.deal.findFirst as unknown as ReturnType<typeof vi.fn>
 const dealUpdate = db.deal.update as unknown as ReturnType<typeof vi.fn>
 const dealCreate = db.deal.create as unknown as ReturnType<typeof vi.fn>

@@ -5,7 +5,10 @@ import type { LeaseRecord, Property } from "@prisma/client"
 import { findMatchesForContact } from "@/lib/matching/queries"
 import { db } from "@/lib/prisma"
 
-import { containsRawSensitiveData, containsSensitiveContent } from "./sensitive-filter"
+import {
+  containsRawSensitiveData,
+  containsSensitiveContent,
+} from "./sensitive-filter"
 
 export interface GenerateAutoReplyInput {
   /** Communication that triggered the inquiry — used for context. Optional
@@ -128,7 +131,12 @@ interface ChatCompletionResponse {
 async function callDeepSeek(
   systemPrompt: string,
   userPrompt: string
-): Promise<{ subject: string; body: string; reasoning: string; modelUsed: string }> {
+): Promise<{
+  subject: string
+  body: string
+  reasoning: string
+  modelUsed: string
+}> {
   const apiKey = process.env.OPENAI_API_KEY
   const baseUrl =
     process.env.OPENAI_BASE_URL?.replace(/\/$/, "") ??
@@ -221,8 +229,10 @@ function describeProperty(p: Property): string {
   if (p.propertyType) parts.push(`type: ${p.propertyType.replace(/_/g, " ")}`)
   if (p.status) parts.push(`status: ${p.status.replace(/_/g, " ")}`)
   if (p.squareFeet) parts.push(`sqft: ${p.squareFeet.toLocaleString()}`)
-  if (p.listPrice) parts.push(`list price: $${Number(p.listPrice).toLocaleString()}`)
-  if (p.capRate) parts.push(`cap rate: ${(Number(p.capRate) * 100).toFixed(2)}%`)
+  if (p.listPrice)
+    parts.push(`list price: $${Number(p.listPrice).toLocaleString()}`)
+  if (p.capRate)
+    parts.push(`cap rate: ${(Number(p.capRate) * 100).toFixed(2)}%`)
   if (p.listingUrl) parts.push(`listing url: ${p.listingUrl}`)
   if (p.flyerUrl) parts.push(`flyer url: ${p.flyerUrl}`)
   if (p.description) parts.push(`description: ${p.description.slice(0, 600)}`)
@@ -268,8 +278,11 @@ export async function generatePendingReply(
   })
   if (!contact) return { ok: false, reason: "contact_not_found" }
 
-  let trigger: { id: string; subject: string | null; body: string | null } | null =
-    null
+  let trigger: {
+    id: string
+    subject: string | null
+    body: string | null
+  } | null = null
   if (input.triggerCommunicationId) {
     trigger = await db.communication.findUnique({
       where: { id: input.triggerCommunicationId },
@@ -342,8 +355,7 @@ export async function generatePendingReply(
       ? Math.max(
           1,
           Math.round(
-            (Date.now() - closeDate.getTime()) /
-              (1000 * 60 * 60 * 24 * 365.25)
+            (Date.now() - closeDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
           )
         )
       : null
@@ -351,8 +363,7 @@ export async function generatePendingReply(
       ? Math.max(
           0,
           Math.round(
-            (leaseEnd.getTime() - Date.now()) /
-              (1000 * 60 * 60 * 24 * 30.44)
+            (leaseEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30.44)
           )
         )
       : null
@@ -369,9 +380,7 @@ export async function generatePendingReply(
       `  matt represented: ${leaseRecord.mattRepresented ?? "(unknown)"}`,
       `  deal kind: ${leaseRecord.dealKind ?? "lease"}`,
       closeDate ? `  closed: ${closeDate.toISOString().slice(0, 10)}` : "",
-      yearsSinceClose
-        ? `  approx years since close: ${yearsSinceClose}`
-        : "",
+      yearsSinceClose ? `  approx years since close: ${yearsSinceClose}` : "",
       leaseEnd
         ? `  lease end date: ${leaseEnd.toISOString().slice(0, 10)}`
         : "",
@@ -426,7 +435,12 @@ export async function generatePendingReply(
       ? SYSTEM_PROMPT_MARKET_ALERT
       : SYSTEM_PROMPT_INQUIRY
 
-  let draft: { subject: string; body: string; reasoning: string; modelUsed: string }
+  let draft: {
+    subject: string
+    body: string
+    reasoning: string
+    modelUsed: string
+  }
   try {
     draft = await callDeepSeek(systemPrompt, userPrompt)
   } catch (e) {

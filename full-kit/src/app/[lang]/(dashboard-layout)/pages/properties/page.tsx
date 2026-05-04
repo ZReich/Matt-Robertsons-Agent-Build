@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { Building2, FileUp, Plus } from "lucide-react"
 
-import type { Metadata } from "next"
 import type { PropertyStatus, PropertyType } from "@prisma/client"
+import type { Metadata } from "next"
 
 import { db } from "@/lib/prisma"
 import { cn, formatCurrency } from "@/lib/utils"
@@ -49,9 +49,7 @@ const STATUS_VARIANT: Record<
   archived: "outline",
 }
 
-function paramString(
-  v: string | string[] | undefined
-): string | undefined {
+function paramString(v: string | string[] | undefined): string | undefined {
   if (typeof v === "string" && v.trim().length > 0) return v
   return undefined
 }
@@ -105,8 +103,9 @@ export default async function PropertiesPage({
         <div className="flex-1">
           <h1 className="text-xl font-semibold">Properties</h1>
           <p className="text-sm text-muted-foreground">
-            {properties.length} {properties.length === 1 ? "listing" : "listings"} ·
-            seed source for auto-replies and criteria matching
+            {properties.length}{" "}
+            {properties.length === 1 ? "listing" : "listings"} · seed source for
+            auto-replies and criteria matching
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -124,31 +123,37 @@ export default async function PropertiesPage({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {(["active", "leased", "under_contract", "closed", "archived"] as PropertyStatus[]).map(
-          (s) => {
-            const isActive = statusFilter === s
-            const params = new URLSearchParams()
-            if (!isActive) params.set("status", s)
-            if (search) params.set("search", search)
-            if (typeFilter) params.set("type", typeFilter)
-            if (includeArchived) params.set("archived", "1")
-            const href = `?${params.toString()}`
-            return (
-              <Link
-                key={s}
-                href={href}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium",
-                  isActive
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:border-primary/40"
-                )}
-              >
-                {STATUS_LABELS[s]} ({countByStatus.get(s) ?? 0})
-              </Link>
-            )
-          }
-        )}
+        {(
+          [
+            "active",
+            "leased",
+            "under_contract",
+            "closed",
+            "archived",
+          ] as PropertyStatus[]
+        ).map((s) => {
+          const isActive = statusFilter === s
+          const params = new URLSearchParams()
+          if (!isActive) params.set("status", s)
+          if (search) params.set("search", search)
+          if (typeFilter) params.set("type", typeFilter)
+          if (includeArchived) params.set("archived", "1")
+          const href = `?${params.toString()}`
+          return (
+            <Link
+              key={s}
+              href={href}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-medium",
+                isActive
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:border-primary/40"
+              )}
+            >
+              {STATUS_LABELS[s]} ({countByStatus.get(s) ?? 0})
+            </Link>
+          )
+        })}
         {statusFilter || typeFilter || search || includeArchived ? (
           <Link
             href="?"
@@ -176,7 +181,10 @@ export default async function PropertiesPage({
             <TableBody>
               {properties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="py-12 text-center text-sm text-muted-foreground"
+                  >
                     No properties yet. Add one manually or import from a CSV.
                   </TableCell>
                 </TableRow>
@@ -199,7 +207,10 @@ export default async function PropertiesPage({
                       {p.propertyType ? p.propertyType.replace(/_/g, " ") : "—"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANT[p.status]} className="capitalize">
+                      <Badge
+                        variant={STATUS_VARIANT[p.status]}
+                        className="capitalize"
+                      >
                         {STATUS_LABELS[p.status]}
                       </Badge>
                     </TableCell>
@@ -209,10 +220,14 @@ export default async function PropertiesPage({
                     <TableCell className="text-right">
                       {p.listPrice ? formatCurrency(Number(p.listPrice)) : "—"}
                     </TableCell>
-                    <TableCell className="text-right">{p._count.deals}</TableCell>
+                    <TableCell className="text-right">
+                      {p._count.deals}
+                    </TableCell>
                     <TableCell className="text-right">
                       {p._count.pendingReplies > 0 ? (
-                        <Badge variant="default">{p._count.pendingReplies}</Badge>
+                        <Badge variant="default">
+                          {p._count.pendingReplies}
+                        </Badge>
                       ) : (
                         "0"
                       )}

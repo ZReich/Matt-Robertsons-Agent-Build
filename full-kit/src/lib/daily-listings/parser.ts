@@ -38,7 +38,17 @@
 
 const URL_PATTERN = /^https?:\/\/[^\s<>]+$/i
 
-const KNOWN_TYPES: Record<string, "office" | "retail" | "industrial" | "land" | "multifamily" | "mixed_use" | "hospitality" | "other"> = {
+const KNOWN_TYPES: Record<
+  string,
+  | "office"
+  | "retail"
+  | "industrial"
+  | "land"
+  | "multifamily"
+  | "mixed_use"
+  | "hospitality"
+  | "other"
+> = {
   office: "office",
   retail: "retail",
   industrial: "industrial",

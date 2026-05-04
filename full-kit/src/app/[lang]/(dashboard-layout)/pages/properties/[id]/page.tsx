@@ -2,8 +2,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, ExternalLink, Pencil } from "lucide-react"
 
-import type { Metadata } from "next"
 import type { PropertyStatus } from "@prisma/client"
+import type { Metadata } from "next"
 
 import { findMatchesForProperty } from "@/lib/matching/queries"
 import { db } from "@/lib/prisma"
@@ -119,11 +119,20 @@ export default async function PropertyDetailPage({
             <CardTitle>Overview</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <Stat label="Property type" value={property.propertyType ? property.propertyType.replace(/_/g, " ") : "—"} />
+            <Stat
+              label="Property type"
+              value={
+                property.propertyType
+                  ? property.propertyType.replace(/_/g, " ")
+                  : "—"
+              }
+            />
             <Stat label="Status" value={STATUS_LABELS[property.status]} />
             <Stat
               label="Square feet"
-              value={property.squareFeet ? property.squareFeet.toLocaleString() : "—"}
+              value={
+                property.squareFeet ? property.squareFeet.toLocaleString() : "—"
+              }
             />
             <Stat
               label="Occupied SQFT"
@@ -144,7 +153,9 @@ export default async function PropertyDetailPage({
             <Stat
               label="Cap rate"
               value={
-                property.capRate ? `${(Number(property.capRate) * 1).toFixed(2)}%` : "—"
+                property.capRate
+                  ? `${(Number(property.capRate) * 1).toFixed(2)}%`
+                  : "—"
               }
             />
             {property.description ? (
@@ -152,7 +163,9 @@ export default async function PropertyDetailPage({
                 <p className="mb-1 text-xs font-medium text-muted-foreground">
                   Description
                 </p>
-                <p className="whitespace-pre-wrap text-sm">{property.description}</p>
+                <p className="whitespace-pre-wrap text-sm">
+                  {property.description}
+                </p>
               </div>
             ) : null}
           </CardContent>
@@ -169,7 +182,9 @@ export default async function PropertyDetailPage({
                 {property.source ?? "—"}
               </div>
               <div>
-                <span className="font-medium text-foreground">Property key:</span>{" "}
+                <span className="font-medium text-foreground">
+                  Property key:
+                </span>{" "}
                 <code className="text-[11px]">{property.propertyKey}</code>
               </div>
               <div>
@@ -249,10 +264,10 @@ export default async function PropertyDetailPage({
         <CardContent>
           {matches.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No contacts have search criteria that match this property yet.
-              Tag contacts as <strong>buyer</strong> /{" "}
-              <strong>tenant</strong> / <strong>investor</strong> and fill in
-              their criteria to populate this list.
+              No contacts have search criteria that match this property yet. Tag
+              contacts as <strong>buyer</strong> / <strong>tenant</strong> /{" "}
+              <strong>investor</strong> and fill in their criteria to populate
+              this list.
             </p>
           ) : (
             <ul className="grid gap-2">
@@ -293,14 +308,19 @@ export default async function PropertyDetailPage({
       <Card>
         <CardHeader>
           <CardTitle>
-            Pending auto-reply drafts ({property.pendingReplies.filter((r) => r.status === "pending").length})
+            Pending auto-reply drafts (
+            {
+              property.pendingReplies.filter((r) => r.status === "pending")
+                .length
+            }
+            )
           </CardTitle>
         </CardHeader>
         <CardContent>
           {property.pendingReplies.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No pending replies. Drafts are generated automatically when a
-              lead inquiry on this property arrives.
+              No pending replies. Drafts are generated automatically when a lead
+              inquiry on this property arrives.
             </p>
           ) : (
             <ul className="grid gap-2">

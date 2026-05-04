@@ -1,19 +1,18 @@
 import "server-only"
 
+import type { SearchCriteria } from "@/lib/matching/property-criteria"
 import type { Prisma, Property, PropertyType } from "@prisma/client"
+import type { ParsedDailyListing } from "./parser"
 
 import { generatePendingReply } from "@/lib/ai/auto-reply"
+import { scorePropertyMatch } from "@/lib/matching/property-criteria"
 import { findMatchesForProperty } from "@/lib/matching/queries"
-import {
-  scorePropertyMatch,
-  type SearchCriteria,
-} from "@/lib/matching/property-criteria"
 import { sendMailAsMatt } from "@/lib/msgraph/send-mail"
 import { db } from "@/lib/prisma"
 import { getAutomationSettings } from "@/lib/system-state/automation-settings"
 
 import { isDailyListingsEmail } from "./classifier"
-import { parseDailyListings, type ParsedDailyListing } from "./parser"
+import { parseDailyListings } from "./parser"
 
 export interface ProcessOneResult {
   ok: true
@@ -60,12 +59,19 @@ function inferAddressFromListing(listing: ParsedDailyListing): {
     const segments = url.pathname.split("/").filter(Boolean)
     const last = segments[segments.length - 1] ?? ""
     inferred = decodeURIComponent(last).replace(/-/g, " ").trim()
-    inferred = inferred.replace(/^(montana|wyoming|north dakota|south dakota|idaho)\s+/i, "")
+    inferred = inferred.replace(
+      /^(montana|wyoming|north dakota|south dakota|idaho)\s+/i,
+      ""
+    )
   } catch {
     // not a URL we can parse; fall through
   }
   const address = inferred || listing.url
-  const city = listing.townHint || (listing.city !== "Other" && listing.city !== "Unknown" ? listing.city : null)
+  const city =
+    listing.townHint ||
+    (listing.city !== "Other" && listing.city !== "Unknown"
+      ? listing.city
+      : null)
   return { address, city, state: city ? "MT" : null }
 }
 
@@ -183,7 +189,9 @@ export async function processDailyListingsEmail(
     select: { id: true, subject: true, body: true, metadata: true, date: true },
   })
   if (!comm) return { ok: false, reason: "communication_not_found" }
-  if (!isDailyListingsEmail({ subject: comm.subject, metadata: comm.metadata })) {
+  if (
+    !isDailyListingsEmail({ subject: comm.subject, metadata: comm.metadata })
+  ) {
     return { ok: false, reason: "not_a_daily_listings_email", communicationId }
   }
   if (!comm.body) return { ok: false, reason: "no_body", communicationId }
@@ -311,10 +319,12 @@ export async function processDailyListingsEmail(
  * no `dailyListingsProcessed` metadata stamp) within the lookback window and
  * process each. Useful as a cron and as a backfill.
  */
-export async function processUnprocessedDailyListings(options: {
-  lookbackDays?: number
-  limit?: number
-} = {}): Promise<{
+export async function processUnprocessedDailyListings(
+  options: {
+    lookbackDays?: number
+    limit?: number
+  } = {}
+): Promise<{
   candidates: number
   processed: number
   results: Array<ProcessOneResult | ProcessOneSkip>

@@ -2,9 +2,11 @@ import "server-only"
 
 import { Prisma as PrismaNS } from "@prisma/client"
 
+import type { LeaseExtraction } from "@/lib/ai/lease-types"
+
 import {
-  assertWithinLeaseBackfillBudget,
   LeaseBackfillBudgetError,
+  assertWithinLeaseBackfillBudget,
 } from "@/lib/ai/budget-tracker"
 import { extractLeaseFromPdf } from "@/lib/ai/pdf-lease-extractor"
 import { GRAPH_BASE_URL } from "@/lib/msgraph/client"
@@ -290,7 +292,10 @@ function isLikelyPdf(meta: AttachmentMeta): boolean {
   return meta.name.toLowerCase().endsWith(".pdf")
 }
 
-function emptyOutcome(deal: ScanMissingDealRow, status: ScanStatus): ScanOutcome {
+function emptyOutcome(
+  deal: ScanMissingDealRow,
+  status: ScanStatus
+): ScanOutcome {
   return {
     dealId: deal.dealId,
     status,
@@ -310,7 +315,7 @@ function appendNote(existing: string | null, line: string): string {
 
 async function persistExtraction(args: {
   deal: ScanMissingDealRow
-  result: import("@/lib/ai/lease-types").LeaseExtraction
+  result: LeaseExtraction
   messagesScanned: number
   pdfsAttempted: number
   searchTermsUsed: string[]
@@ -318,7 +323,9 @@ async function persistExtraction(args: {
   const { deal, result, messagesScanned, pdfsAttempted, searchTermsUsed } = args
   const today = new Date().toISOString().slice(0, 10)
   const noteLine = `Lease dates discovered via email scan ${today}`
-  const startDate = result.leaseStartDate ? new Date(result.leaseStartDate) : null
+  const startDate = result.leaseStartDate
+    ? new Date(result.leaseStartDate)
+    : null
   const endDate = result.leaseEndDate ? new Date(result.leaseEndDate) : null
 
   if (deal.existingLeaseRecordId) {
@@ -369,7 +376,8 @@ async function persistExtraction(args: {
       searchTermsUsed,
       messagesScanned,
       pdfsAttempted,
-      reasoning: "no contactId and no existing LeaseRecord; refusing to fabricate a contact",
+      reasoning:
+        "no contactId and no existing LeaseRecord; refusing to fabricate a contact",
     }
   }
 
@@ -484,7 +492,10 @@ async function scanOneDeal(args: {
     }
   }
 
-  const messages = await args.searchMessagesFn(searchTermsUsed, args.maxMessages)
+  const messages = await args.searchMessagesFn(
+    searchTermsUsed,
+    args.maxMessages
+  )
   const withAttachments = messages.filter((m) => m.hasAttachments && m.id)
   if (withAttachments.length === 0) {
     return {
@@ -615,7 +626,8 @@ export async function scanMissingLeaseEndDates(
   const searchMessagesFn = opts.searchMessagesFn ?? defaultSearchMessages
   const fetchMessageAttachmentsFn =
     opts.fetchMessageAttachmentsFn ?? defaultFetchAttachments
-  const extractLeaseFromPdfFn = opts.extractLeaseFromPdfFn ?? extractLeaseFromPdf
+  const extractLeaseFromPdfFn =
+    opts.extractLeaseFromPdfFn ?? extractLeaseFromPdf
   const downloadAttachmentFn = opts.downloadAttachmentFn ?? downloadAttachment
   const assertWithinBudgetFn =
     opts.assertWithinBudgetFn ?? assertWithinLeaseBackfillBudget

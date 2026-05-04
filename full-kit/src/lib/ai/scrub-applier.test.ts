@@ -559,9 +559,9 @@ describe("applyScrubResult", () => {
     "drops forbidden sensitive content regardless of category (%s)",
     async (category) => {
       process.env.PROFILE_FACT_EXTRACTION_MODE = "live_only"
-      ;(
-        db.scrubQueue.updateMany as ReturnType<typeof vi.fn>
-      ).mockResolvedValue({ count: 1 })
+      ;(db.scrubQueue.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+        { count: 1 }
+      )
 
       await applyScrubResult({
         communicationId: "comm-1",
@@ -616,8 +616,8 @@ describe("applyScrubResult", () => {
     })
 
     expect(db.contactProfileFact.upsert).toHaveBeenCalledTimes(1)
-    const call = (db.contactProfileFact.upsert as ReturnType<typeof vi.fn>)
-      .mock.calls[0][0] as {
+    const call = (db.contactProfileFact.upsert as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as {
       create: { status: string; wordingClass: string; category: string }
       update: { status: string; wordingClass: string }
     }

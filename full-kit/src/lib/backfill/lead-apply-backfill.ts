@@ -735,10 +735,7 @@ async function createLeadContact(
   // After the contact is linked to the communication, propagate to a Deal if
   // the extractor surfaced a propertyKey. The function is a no-op when
   // propertyKey is null (e.g., named-only addresses or non-property events).
-  if (
-    linkedContactId &&
-    (extracted.propertyKey || extracted.propertyAddress)
-  ) {
+  if (linkedContactId && (extracted.propertyKey || extracted.propertyAddress)) {
     await upsertDealForLead({
       contactId: linkedContactId,
       communicationId: row.id,

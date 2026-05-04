@@ -1,4 +1,3 @@
-import { classifyEmail } from "@/lib/msgraph/email-filter"
 import type {
   BehavioralHints,
   EmailAcquisitionDecision,
@@ -6,6 +5,8 @@ import type {
   EmailFolder,
   GraphEmailMessage,
 } from "@/lib/msgraph/email-types"
+
+import { classifyEmail } from "@/lib/msgraph/email-filter"
 import { persistMessage } from "@/lib/msgraph/emails"
 import { normalizeSenderAddress } from "@/lib/msgraph/sender-normalize"
 

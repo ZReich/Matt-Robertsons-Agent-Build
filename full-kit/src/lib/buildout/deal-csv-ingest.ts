@@ -1,13 +1,14 @@
 import "server-only"
 
+import { Prisma } from "@prisma/client"
+
 import type {
   Contact,
-  DealStage,
   DealOutcome,
+  DealStage,
   DealType,
   PropertyType,
 } from "@prisma/client"
-import { Prisma } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 import {
@@ -123,7 +124,11 @@ export interface IngestSummary {
   dealsCreated: number
   dealsUpdated: number
   leaseRecordsCreated: number
-  ingestErrors: Array<{ rowIndex: number; buildoutDealId: string; reason: string }>
+  ingestErrors: Array<{
+    rowIndex: number
+    buildoutDealId: string
+    reason: string
+  }>
 }
 
 export interface IngestOptions {
@@ -265,15 +270,7 @@ function parseUSDate(v: string): Date | null {
   const m = trimmedVal.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
   if (!m) return null
   const [, mm, dd, yyyy] = m
-  const date = new Date(
-    Number(yyyy),
-    Number(mm) - 1,
-    Number(dd),
-    12,
-    0,
-    0,
-    0
-  )
+  const date = new Date(Number(yyyy), Number(mm) - 1, Number(dd), 12, 0, 0, 0)
   if (Number.isNaN(date.getTime())) return null
   return date
 }
@@ -665,13 +662,12 @@ export async function ingestBuildoutDealCsv(
         // rather than skipping.
         if (isClosedStage(row) && property?.id && canonicalContact) {
           const dealKind: "lease" | "sale" = isLeaseDeal(row) ? "lease" : "sale"
-          const computedEnd = dealKind === "lease" ? deriveLeaseEndDate(row) : null
-          const leaseStartDate = dealKind === "lease"
-            ? (row.leaseStart ?? row.closeDate)
-            : null
-          const status = computedEnd && computedEnd < new Date()
-            ? "expired"
-            : "active"
+          const computedEnd =
+            dealKind === "lease" ? deriveLeaseEndDate(row) : null
+          const leaseStartDate =
+            dealKind === "lease" ? (row.leaseStart ?? row.closeDate) : null
+          const status =
+            computedEnd && computedEnd < new Date() ? "expired" : "active"
           const propLabel = row.dealTitle || row.dealName || "property"
 
           const leaseData = {
@@ -771,7 +767,9 @@ export async function ingestBuildoutDealCsv(
   }
 
   if (summary.ingestErrors.length > 0) {
-    const byReason = bucketByErrorPrefix(summary.ingestErrors.map((e) => e.reason))
+    const byReason = bucketByErrorPrefix(
+      summary.ingestErrors.map((e) => e.reason)
+    )
     console.warn(
       `[buildout-csv-import] ${summary.ingestErrors.length} ingest errors:`,
       byReason
@@ -786,9 +784,7 @@ export async function ingestBuildoutDealCsv(
  * E.g. "unresolvable_contact: ..." → { unresolvable_contact: N }
  * Errors with no colon prefix fall into "other".
  */
-export function bucketByErrorPrefix(
-  reasons: string[]
-): Record<string, number> {
+export function bucketByErrorPrefix(reasons: string[]): Record<string, number> {
   const counts: Record<string, number> = {}
   for (const reason of reasons) {
     const colonIdx = reason.indexOf(":")

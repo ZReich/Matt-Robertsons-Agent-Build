@@ -1,13 +1,13 @@
 import type { DealStage, Prisma } from "@prisma/client"
 
-import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
-import { normalizeBuildoutProperty } from "@/lib/buildout/property-normalizer"
 import { containsSensitiveContent } from "@/lib/ai/sensitive-filter"
-import { extractBuildoutEvent } from "@/lib/msgraph/email-extractors"
+import { normalizeBuildoutProperty } from "@/lib/buildout/property-normalizer"
+import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 import {
   mapBuildoutStageToDealOutcome,
   mapBuildoutStageToDealStage,
 } from "@/lib/msgraph/buildout-stage-parser"
+import { extractBuildoutEvent } from "@/lib/msgraph/email-extractors"
 import { db } from "@/lib/prisma"
 
 export type ProcessBuildoutStageUpdateResult =
@@ -203,11 +203,8 @@ export async function processBuildoutStageUpdate(
       where: { id: comm.id },
       select: { metadata: true },
     })) as { metadata: unknown } | null
-    const freshMeta =
-      ((fresh?.metadata as Record<string, unknown> | null) ?? {}) as Record<
-        string,
-        unknown
-      >
+    const freshMeta = ((fresh?.metadata as Record<string, unknown> | null) ??
+      {}) as Record<string, unknown>
     if (freshMeta.buildoutStageUpdate) {
       return {
         status: "already-processed",
@@ -398,9 +395,7 @@ export interface SweepResultSummary {
   processed: number
   executed: number
   byStatus: Record<string, number>
-  results: Array<
-    ProcessBuildoutStageUpdateResult & { communicationId: string }
-  >
+  results: Array<ProcessBuildoutStageUpdateResult & { communicationId: string }>
 }
 
 export async function processUnprocessedBuildoutStageUpdates(

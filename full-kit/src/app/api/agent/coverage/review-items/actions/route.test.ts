@@ -289,8 +289,16 @@ describe("coverage review item batch actions route", () => {
         dryRun: false,
         runId: "run-1",
         results: [
-          { reviewItemId: "review-1", status: "noop", reviewStatus: "resolved" },
-          { reviewItemId: "review-2", status: "noop", reviewStatus: "resolved" },
+          {
+            reviewItemId: "review-1",
+            status: "noop",
+            reviewStatus: "resolved",
+          },
+          {
+            reviewItemId: "review-2",
+            status: "noop",
+            reviewStatus: "resolved",
+          },
         ],
         summary: { count: 2, applied: 0, skipped: 2, unsupported: 0 },
       })

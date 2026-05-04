@@ -31,8 +31,15 @@
  * touches the shadow DB.
  */
 
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 import { PrismaClient, Prisma as PrismaNS } from "@prisma/client"
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
+
+import type { ClosedDealClassification, LeaseExtraction } from "./lease-types"
+
+import { CLOSED_DEAL_CLASSIFIER_VERSION } from "./closed-deal-classifier"
+import { LEASE_EXTRACTOR_VERSION } from "./lease-extractor"
+// Import the orchestrator AFTER the mocks are in place.
+import { processCommunicationForLease } from "./lease-pipeline-orchestrator"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // vi.hoisted: build the shadow client BEFORE any mock factory runs.
@@ -44,7 +51,8 @@ import { PrismaClient, Prisma as PrismaNS } from "@prisma/client"
 // ─────────────────────────────────────────────────────────────────────────────
 const { shadowDb } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { PrismaClient: PC } = require("@prisma/client") as typeof import("@prisma/client")
+  const { PrismaClient: PC } =
+    require("@prisma/client") as typeof import("@prisma/client")
   const shadowUrl =
     process.env.SHADOW_DATABASE_URL ??
     "postgresql://postgres:shadow@localhost:5433/postgres"
@@ -69,17 +77,6 @@ vi.mock("@/lib/system-state/automation-settings", () => ({
   })),
 }))
 
-// Import the orchestrator AFTER the mocks are in place.
-import { processCommunicationForLease } from "./lease-pipeline-orchestrator"
-import {
-  CLOSED_DEAL_CLASSIFIER_VERSION,
-} from "./closed-deal-classifier"
-import { LEASE_EXTRACTOR_VERSION } from "./lease-extractor"
-import type {
-  ClosedDealClassification,
-  LeaseExtraction,
-} from "./lease-types"
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Shadow DB connectivity check — skip suite gracefully if unreachable
 // ─────────────────────────────────────────────────────────────────────────────
@@ -93,7 +90,8 @@ beforeAll(async () => {
     console.warn(
       "[M7 integration] shadow DB unreachable — skipping integration tests.",
       "Start docker: `docker start shadow-postgres`",
-      "\nError:", err instanceof Error ? err.message : String(err),
+      "\nError:",
+      err instanceof Error ? err.message : String(err)
     )
     shadowAvailable = false
   }
@@ -291,7 +289,9 @@ describe("M7 integration — happy path end-to-end", () => {
     expect(lease!.rentAmount!.toNumber()).toBe(4500)
 
     // DateTime UTC anchoring: parseIsoDate("2026-02-01") → 2026-02-01T00:00:00Z
-    expect(lease!.leaseStartDate!.toISOString()).toBe("2026-02-01T00:00:00.000Z")
+    expect(lease!.leaseStartDate!.toISOString()).toBe(
+      "2026-02-01T00:00:00.000Z"
+    )
     expect(lease!.leaseEndDate!.toISOString()).toBe("2031-01-31T00:00:00.000Z")
     expect(lease!.closeDate!.toISOString()).toBe("2026-01-15T00:00:00.000Z")
 

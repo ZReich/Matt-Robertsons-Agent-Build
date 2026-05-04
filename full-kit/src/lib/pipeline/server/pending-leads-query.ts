@@ -1,8 +1,8 @@
 import type { LeadSource, Prisma } from "@prisma/client"
+import type { PipelineFilters } from "./board"
 
 import { db } from "@/lib/prisma"
 
-import type { PipelineFilters } from "./board"
 import { getMissedFollowupCutoff } from "./followups"
 
 /**
@@ -129,39 +129,43 @@ export async function getPendingLeadCandidatesForPipeline(
     : []
   const commsById = new Map(comms.map((c) => [c.id, c]))
 
-  return candidates.map((c) => ({
-    id: c.id,
-    displayName: c.displayName,
-    company: c.company,
-    normalizedEmail: c.normalizedEmail,
-    message: c.message,
-    sourcePlatform: c.sourcePlatform,
-    sourceKind: c.sourceKind,
-    evidenceCount: c.evidenceCount,
-    firstSeenAt: c.firstSeenAt,
-    lastSeenAt: c.lastSeenAt,
-    evidence: c.communicationId ? (commsById.get(c.communicationId) ?? null) : null,
-  })).filter((row) => {
-    // Use firstSeenAt for age bucketing — that matches the `leadAt`
-    // semantics on promoted contacts ("when did this lead originate?"),
-    // not lastSeenAt which is "last activity touch."
-    if (!filters.age) return true
-    const days = Math.floor(
-      (now.getTime() - row.firstSeenAt.getTime()) / 86_400_000
-    )
-    switch (filters.age) {
-      case "lt7":
-        return days < 7
-      case "7_30":
-        return days >= 7 && days < 30
-      case "30_90":
-        return days >= 30 && days < 90
-      case "gt90":
-        return days >= 90
-      default:
-        return true
-    }
-  })
+  return candidates
+    .map((c) => ({
+      id: c.id,
+      displayName: c.displayName,
+      company: c.company,
+      normalizedEmail: c.normalizedEmail,
+      message: c.message,
+      sourcePlatform: c.sourcePlatform,
+      sourceKind: c.sourceKind,
+      evidenceCount: c.evidenceCount,
+      firstSeenAt: c.firstSeenAt,
+      lastSeenAt: c.lastSeenAt,
+      evidence: c.communicationId
+        ? (commsById.get(c.communicationId) ?? null)
+        : null,
+    }))
+    .filter((row) => {
+      // Use firstSeenAt for age bucketing — that matches the `leadAt`
+      // semantics on promoted contacts ("when did this lead originate?"),
+      // not lastSeenAt which is "last activity touch."
+      if (!filters.age) return true
+      const days = Math.floor(
+        (now.getTime() - row.firstSeenAt.getTime()) / 86_400_000
+      )
+      switch (filters.age) {
+        case "lt7":
+          return days < 7
+        case "7_30":
+          return days >= 7 && days < 30
+        case "30_90":
+          return days >= 30 && days < 90
+        case "gt90":
+          return days >= 90
+        default:
+          return true
+      }
+    })
 }
 
 export function platformToLeadSource(

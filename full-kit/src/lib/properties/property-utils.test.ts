@@ -9,14 +9,28 @@ import {
 
 describe("computePropertyKey", () => {
   it("normalizes directionals + street suffixes the same as the buildout normalizer", () => {
-    const a = computePropertyKey({ address: "303 North Broadway", city: "Billings", state: "MT", zip: "59101" })
-    const b = computePropertyKey({ address: "303 N Broadway", city: "Billings", state: "MT", zip: "59101" })
+    const a = computePropertyKey({
+      address: "303 North Broadway",
+      city: "Billings",
+      state: "MT",
+      zip: "59101",
+    })
+    const b = computePropertyKey({
+      address: "303 N Broadway",
+      city: "Billings",
+      state: "MT",
+      zip: "59101",
+    })
     expect(a).toBe(b)
     expect(a).toContain("303 n broadway")
   })
 
   it("falls back to a lowercased trimmed key when no street-number prefix is present", () => {
-    const key = computePropertyKey({ address: "Some Named Property", city: "Billings", state: "MT" })
+    const key = computePropertyKey({
+      address: "Some Named Property",
+      city: "Billings",
+      state: "MT",
+    })
     expect(key).toContain("some named property")
   })
 
@@ -58,7 +72,9 @@ describe("extractPropertyUnit", () => {
   it("does not invent a unit from building-name + address pipe forms", () => {
     // "Securities Building | 2708 1st Ave N" — the right side is just the
     // street address, not a unit; should NOT be treated as a unit.
-    expect(extractPropertyUnit("Securities Building | 2708 1st Ave N")).toBeNull()
+    expect(
+      extractPropertyUnit("Securities Building | 2708 1st Ave N")
+    ).toBeNull()
   })
 
   it("falls back to a short bare-token after the pipe as a unit", () => {
@@ -119,13 +135,9 @@ describe("parsePropertyCsv", () => {
   })
 
   it("ignores blank lines and trailing empty cells", () => {
-    const csv = [
-      "Address",
-      "303 N Broadway",
-      "",
-      "  ",
-      "100 Main St",
-    ].join("\n")
+    const csv = ["Address", "303 N Broadway", "", "  ", "100 Main St"].join(
+      "\n"
+    )
     const { rows } = parsePropertyCsv(csv)
     expect(rows).toHaveLength(2)
   })

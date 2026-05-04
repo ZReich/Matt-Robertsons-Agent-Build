@@ -1,25 +1,20 @@
 import { createHash } from "node:crypto"
 
 import type { Prisma } from "@prisma/client"
+import type { CoverageDb, CoverageFilter } from "./communication-coverage"
 
 import { db } from "@/lib/prisma"
 
 import {
   COVERAGE_FILTERS,
   COVERAGE_POLICY_VERSION,
-  type CoverageDb,
-  type CoverageFilter,
 } from "./communication-coverage"
 
 export const MAX_AUDIT_REVIEW_ITEM_IDS = 100
 export const COVERAGE_AUDIT_RETENTION_DAYS = 90
 export const COVERAGE_REVIEW_RETENTION_DAYS = 90
 
-const REVIEW_RETENTION_STATUSES = [
-  "resolved",
-  "ignored",
-  "snoozed",
-] as const
+const REVIEW_RETENTION_STATUSES = ["resolved", "ignored", "snoozed"] as const
 type ReviewRetentionStatus = (typeof REVIEW_RETENTION_STATUSES)[number]
 
 const REVIEW_RETENTION_BATCH_DEFAULT = 200
@@ -200,9 +195,7 @@ export async function retainCoverageReviewRows(
     throw new Error("batchSize must be a positive integer")
   }
   const now = input.now ?? new Date()
-  const boundary = new Date(
-    now.getTime() - olderThanDays * 24 * 60 * 60 * 1000
-  )
+  const boundary = new Date(now.getTime() - olderThanDays * 24 * 60 * 60 * 1000)
   const statuses = (input.status ?? REVIEW_RETENTION_STATUSES).filter(
     (status): status is ReviewRetentionStatus =>
       REVIEW_RETENTION_STATUSES.includes(status as ReviewRetentionStatus)
@@ -280,9 +273,7 @@ export async function retainCoverageActionAuditLog(
     throw new Error("batchSize must be a positive integer")
   }
   const now = input.now ?? new Date()
-  const boundary = new Date(
-    now.getTime() - olderThanDays * 24 * 60 * 60 * 1000
-  )
+  const boundary = new Date(now.getTime() - olderThanDays * 24 * 60 * 60 * 1000)
 
   const candidates = await client.coverageActionAuditLog.findMany({
     where: {
@@ -340,10 +331,7 @@ function redactActor(actor: string): string {
 
 function redactSlug(value: string, fallback: string): string {
   if (typeof value !== "string") return fallback
-  const stripped = value
-    .replace(/[ -]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
+  const stripped = value.replace(/[ -]/g, " ").replace(/\s+/g, " ").trim()
   if (!stripped) return fallback
   return stripped.slice(0, 200)
 }

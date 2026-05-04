@@ -14,10 +14,10 @@
 
 import { afterAll, describe, expect, it, vi } from "vitest"
 
-vi.mock("server-only", () => ({}))
-
 import { reviewContactPromotionCandidate } from "@/lib/contact-promotion-candidates"
 import { db } from "@/lib/prisma"
+
+vi.mock("server-only", () => ({}))
 
 const SHOULD_RUN = process.env.PHASE_E_LIVE === "1"
 

@@ -39,15 +39,14 @@ function resetDbMocks() {
   dbAny.agentAction.create.mockReset()
   dbAny.communication.findUnique.mockReset()
   dbAny.$executeRaw.mockReset()
-  dbAny.$transaction.mockImplementation(
-    async (fn: (tx: unknown) => unknown) =>
-      fn({
-        contact: dbAny.contact,
-        deal: dbAny.deal,
-        agentAction: dbAny.agentAction,
-        communication: dbAny.communication,
-        $executeRaw: dbAny.$executeRaw,
-      })
+  dbAny.$transaction.mockImplementation(async (fn: (tx: unknown) => unknown) =>
+    fn({
+      contact: dbAny.contact,
+      deal: dbAny.deal,
+      agentAction: dbAny.agentAction,
+      communication: dbAny.communication,
+      $executeRaw: dbAny.$executeRaw,
+    })
   )
   // Defaults: no contact-by-email match, no existing deal, no pending action,
   // no attachments on the source communication.
@@ -310,8 +309,8 @@ describe("proposeBuyerRepDeal", () => {
     const where = dbAny.agentAction.findFirst.mock.calls[0]?.[0].where
     // The filter must restrict by signalType so that a stored 'loi' wouldn't match a 'tour' propose.
     const serialized = JSON.stringify(where)
-    expect(serialized).toContain("\"signalType\"")
-    expect(serialized).toContain("\"tour\"")
+    expect(serialized).toContain('"signalType"')
+    expect(serialized).toContain('"tour"')
   })
 
   it("creates a new action when matching action is rejected/executed (only pending counts)", async () => {

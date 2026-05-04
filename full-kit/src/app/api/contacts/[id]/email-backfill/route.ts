@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 
+import { requireApiUser } from "@/lib/api-route-auth"
 import {
   BackfillAlreadyRunningError,
   backfillMailboxForContact,
 } from "@/lib/contacts/mailbox-backfill"
-import { requireApiUser } from "@/lib/api-route-auth"
 import { db } from "@/lib/prisma"
 
 const RATE_GUARD_WINDOW_MS = 10 * 60 * 1000
@@ -53,7 +53,11 @@ export async function POST(
       (RATE_GUARD_WINDOW_MS - (Date.now() - recent.startedAt.getTime())) / 1000
     )
     return NextResponse.json(
-      { error: "rate_limited", retryAfter: retryAfterSec, lastRunId: recent.id },
+      {
+        error: "rate_limited",
+        retryAfter: retryAfterSec,
+        lastRunId: recent.id,
+      },
       { status: 429, headers: { "Retry-After": String(retryAfterSec) } }
     )
   }

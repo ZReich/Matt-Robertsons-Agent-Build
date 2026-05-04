@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  MIN_USEFUL_SCORE,
-  scorePropertyMatch,
-  type SearchCriteria,
-} from "./property-criteria"
+import type { SearchCriteria } from "./property-criteria"
+
+import { MIN_USEFUL_SCORE, scorePropertyMatch } from "./property-criteria"
 
 const baseProperty = {
   propertyType: "industrial" as const,

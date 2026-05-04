@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { maybeFireAutoReplyForApprovedLead } from "./contact-promotion-auto-reply"
+import {
+  listContactPromotionCandidates,
+  reviewContactPromotionCandidate,
+} from "./contact-promotion-candidates"
+
 vi.mock("./contact-promotion-auto-reply", () => ({
   maybeFireAutoReplyForApprovedLead: vi.fn(async () => ({
     status: "skipped",
@@ -7,15 +13,8 @@ vi.mock("./contact-promotion-auto-reply", () => ({
   })),
 }))
 
-import { maybeFireAutoReplyForApprovedLead } from "./contact-promotion-auto-reply"
-import {
-  listContactPromotionCandidates,
-  reviewContactPromotionCandidate,
-} from "./contact-promotion-candidates"
-
-const autoReplyMock = maybeFireAutoReplyForApprovedLead as unknown as ReturnType<
-  typeof vi.fn
->
+const autoReplyMock =
+  maybeFireAutoReplyForApprovedLead as unknown as ReturnType<typeof vi.fn>
 
 describe("contact promotion candidate review", () => {
   beforeEach(() => {

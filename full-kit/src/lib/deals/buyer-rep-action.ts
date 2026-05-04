@@ -1,6 +1,6 @@
 import type { DealStage } from "@prisma/client"
-
 import type { BuyerRepSignalType } from "./buyer-rep-detector"
+
 import { db } from "@/lib/prisma"
 
 export type ProposeBuyerRepInput = {

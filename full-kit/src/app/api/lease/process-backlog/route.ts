@@ -9,7 +9,10 @@ export async function POST(req: Request): Promise<Response> {
   const adminToken = req.headers.get("x-admin-token") ?? ""
   const expected = process.env.MSGRAPH_TEST_ADMIN_TOKEN ?? ""
   if (!expected || !constantTimeCompare(adminToken, expected)) {
-    return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 })
+    return NextResponse.json(
+      { ok: false, reason: "unauthorized" },
+      { status: 401 }
+    )
   }
   const body = await req.json().catch(() => ({}))
   const result = await processBacklogClosedDeals({

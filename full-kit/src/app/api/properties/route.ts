@@ -3,11 +3,11 @@ import { NextResponse } from "next/server"
 import type { Prisma, PropertyStatus, PropertyType } from "@prisma/client"
 import type { NextRequest } from "next/server"
 
-import { authenticateUser } from "@/lib/auth"
 import {
   requireApiUser,
   validateJsonMutationRequest,
 } from "@/lib/api-route-auth"
+import { authenticateUser } from "@/lib/auth"
 import { db } from "@/lib/prisma"
 import {
   PROPERTY_STATUS_VALUES,
@@ -145,7 +145,9 @@ export async function POST(request: Request): Promise<Response> {
         propertyKey,
         ...(propertyType ? { propertyType } : {}),
         status,
-        ...(squareFeet !== undefined ? { squareFeet: Math.round(squareFeet) } : {}),
+        ...(squareFeet !== undefined
+          ? { squareFeet: Math.round(squareFeet) }
+          : {}),
         ...(occupiedSquareFeet !== undefined
           ? { occupiedSquareFeet: Math.round(occupiedSquareFeet) }
           : {}),

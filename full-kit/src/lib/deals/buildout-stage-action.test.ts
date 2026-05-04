@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 import { db } from "@/lib/prisma"
 
 import { processBuildoutStageUpdate } from "./buildout-stage-action"
@@ -37,8 +38,6 @@ vi.mock("@/lib/contacts/sync-contact-role", () => ({
     actionId: null,
   })),
 }))
-
-import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 
 const dbAny = db as unknown as {
   communication: {
@@ -226,8 +225,9 @@ describe("processBuildoutStageUpdate", () => {
     expect(dbAny.deal.update).not.toHaveBeenCalled()
     // Stamps idempotency so re-runs no-op.
     expect(dbAny.communication.update).toHaveBeenCalled()
-    const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
-      .buildoutStageUpdate
+    const stamped =
+      dbAny.communication.update.mock.calls[0][0].data.metadata
+        .buildoutStageUpdate
     expect(stamped.skippedReason).toBe("sensitive-filter")
   })
 
@@ -264,8 +264,9 @@ describe("processBuildoutStageUpdate", () => {
     expect(result.status).toBe("deal-not-found")
     expect(dbAny.agentAction.create).not.toHaveBeenCalled()
     expect(dbAny.deal.update).not.toHaveBeenCalled()
-    const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
-      .buildoutStageUpdate
+    const stamped =
+      dbAny.communication.update.mock.calls[0][0].data.metadata
+        .buildoutStageUpdate
     expect(stamped.skippedReason).toBe("deal-not-found")
   })
 
@@ -285,8 +286,9 @@ describe("processBuildoutStageUpdate", () => {
     expect(result.expectedFromStage).toBe("marketing")
     expect(dbAny.agentAction.create).not.toHaveBeenCalled()
     expect(dbAny.deal.update).not.toHaveBeenCalled()
-    const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
-      .buildoutStageUpdate
+    const stamped =
+      dbAny.communication.update.mock.calls[0][0].data.metadata
+        .buildoutStageUpdate
     expect(stamped.skippedReason).toBe("stage-divergence")
   })
 
@@ -337,8 +339,9 @@ describe("processBuildoutStageUpdate", () => {
     // Idempotency-stamps so re-runs short-circuit on the already-processed
     // path rather than hitting the source check again.
     expect(dbAny.communication.update).toHaveBeenCalled()
-    const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
-      .buildoutStageUpdate
+    const stamped =
+      dbAny.communication.update.mock.calls[0][0].data.metadata
+        .buildoutStageUpdate
     expect(stamped.skippedReason).toBe("non-buildout-source")
     expect(stamped.observedSource).toBe("matt-outbound")
   })
@@ -353,8 +356,9 @@ describe("processBuildoutStageUpdate", () => {
     expect(result.status).toBe("non-buildout-source")
     expect(dbAny.deal.findFirst).not.toHaveBeenCalled()
     expect(dbAny.agentAction.create).not.toHaveBeenCalled()
-    const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
-      .buildoutStageUpdate
+    const stamped =
+      dbAny.communication.update.mock.calls[0][0].data.metadata
+        .buildoutStageUpdate
     expect(stamped.skippedReason).toBe("non-buildout-source")
   })
 
@@ -390,8 +394,7 @@ describe("processBuildoutStageUpdate", () => {
       dbAny.communication.findUnique.mockResolvedValue(
         commRow({
           subject: "Deal stage updated on Valley Commons",
-          body:
-            "Valley Commons was updated from Sourcing to Evaluating.\nGood luck!",
+          body: "Valley Commons was updated from Sourcing to Evaluating.\nGood luck!",
         })
       )
       // Even if a Deal exists at prospecting, the collapsed mapping must
@@ -414,8 +417,9 @@ describe("processBuildoutStageUpdate", () => {
       expect(dbAny.deal.update).not.toHaveBeenCalled()
       // Idempotency stamp written so re-runs short-circuit on already-processed.
       expect(dbAny.communication.update).toHaveBeenCalled()
-      const stamped = dbAny.communication.update.mock.calls[0][0].data.metadata
-        .buildoutStageUpdate
+      const stamped =
+        dbAny.communication.update.mock.calls[0][0].data.metadata
+          .buildoutStageUpdate
       expect(stamped.skippedReason).toBe("stage-collapsed")
     })
 
@@ -504,8 +508,8 @@ describe("processBuildoutStageUpdate", () => {
 
       await processBuildoutStageUpdate("comm-1")
 
-      const finalMeta = dbAny.communication.update.mock.calls[0][0].data
-        .metadata
+      const finalMeta =
+        dbAny.communication.update.mock.calls[0][0].data.metadata
       expect(finalMeta.unrelatedConcurrentKey).toBe("preserve-me")
       expect(finalMeta.buildoutStageUpdate).toBeDefined()
     })

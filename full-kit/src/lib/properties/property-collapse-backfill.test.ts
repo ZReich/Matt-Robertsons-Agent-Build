@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { db } from "@/lib/prisma"
+
 import { runPropertyCollapseBackfill } from "./property-collapse-backfill"
 
 vi.mock("server-only", () => ({}))
@@ -28,8 +30,6 @@ vi.mock("@/lib/prisma", () => ({
     $transaction: vi.fn(),
   },
 }))
-
-import { db } from "@/lib/prisma"
 
 type AnyMock = ReturnType<typeof vi.fn>
 

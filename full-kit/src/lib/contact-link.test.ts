@@ -56,7 +56,14 @@ describe("resolveDeterministicContactMatch", () => {
   })
 
   it("blocks empty or malformed email values without querying the database", async () => {
-    for (const value of ["", "   ", "not-an-email", null, undefined, "@a.com"]) {
+    for (const value of [
+      "",
+      "   ",
+      "not-an-email",
+      null,
+      undefined,
+      "@a.com",
+    ]) {
       const client = makeClient([])
       const result = await resolveDeterministicContactMatch(
         { email: value as string | null | undefined },

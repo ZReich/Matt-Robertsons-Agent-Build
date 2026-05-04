@@ -45,7 +45,9 @@ export async function POST(req: Request): Promise<Response> {
 
   const dryRun = body.dryRun === true
   const limit =
-    typeof body.limit === "number" && Number.isFinite(body.limit) && body.limit > 0
+    typeof body.limit === "number" &&
+    Number.isFinite(body.limit) &&
+    body.limit > 0
       ? body.limit
       : undefined
   const throttleMs =

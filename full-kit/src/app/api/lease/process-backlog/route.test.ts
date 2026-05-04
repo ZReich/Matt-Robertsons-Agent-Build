@@ -17,14 +17,11 @@ vi.mock("@/lib/ai/lease-pipeline-orchestrator", () => ({
 const VALID_TOKEN = "test-admin-token-abc"
 
 function makeRequest(body: unknown, token?: string): Request {
-  return new Request(
-    "https://example.test/api/lease/process-backlog",
-    {
-      method: "POST",
-      headers: token ? { "x-admin-token": token } : {},
-      body: JSON.stringify(body),
-    }
-  )
+  return new Request("https://example.test/api/lease/process-backlog", {
+    method: "POST",
+    headers: token ? { "x-admin-token": token } : {},
+    body: JSON.stringify(body),
+  })
 }
 
 describe("POST /api/lease/process-backlog", () => {
@@ -39,7 +36,10 @@ describe("POST /api/lease/process-backlog", () => {
 
   it("happy path — calls orchestrator with body opts and returns result", async () => {
     const response = await POST(
-      makeRequest({ batchSize: 20, throttleMs: 100, maxBatches: 5 }, VALID_TOKEN)
+      makeRequest(
+        { batchSize: 20, throttleMs: 100, maxBatches: 5 },
+        VALID_TOKEN
+      )
     )
 
     expect(response.status).toBe(200)

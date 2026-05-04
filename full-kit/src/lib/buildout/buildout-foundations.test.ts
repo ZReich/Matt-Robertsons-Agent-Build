@@ -207,7 +207,9 @@ describe("normalizeBuildoutProperty — cross-platform parity", () => {
       "New Lead\nFrom: Alex Wright\n303 N Broadway | Billings, MT 59101"
     const buildout = normalizeBuildoutProperty("US Bank Building", buildoutBody)
     const loopnet = normalizeBuildoutProperty("303 N Broadway", loopnetBody)
-    expect(buildout?.normalizedPropertyKey).toEqual(loopnet?.normalizedPropertyKey)
+    expect(buildout?.normalizedPropertyKey).toEqual(
+      loopnet?.normalizedPropertyKey
+    )
   })
 
   it("Crexi 'Regarding listing at' with county strips county and matches no-county form", () => {
@@ -219,7 +221,9 @@ describe("normalizeBuildoutProperty — cross-platform parity", () => {
       "Montana Paint Building",
       "2610 Montana Ave, Billings, MT 59101"
     )
-    expect(withCounty?.normalizedPropertyKey).toEqual(without?.normalizedPropertyKey)
+    expect(withCounty?.normalizedPropertyKey).toEqual(
+      without?.normalizedPropertyKey
+    )
   })
 
   it("LoopNet 'favorited' subject-only path produces a key that prefixes the full body-derived key", () => {

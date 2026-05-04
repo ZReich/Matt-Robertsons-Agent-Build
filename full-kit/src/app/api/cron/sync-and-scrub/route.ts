@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 
 import { scrubEmailBatch } from "@/lib/ai/scrub"
-import { constantTimeCompare } from "@/lib/msgraph/constant-time-compare"
 import { syncEmails } from "@/lib/msgraph"
+import { constantTimeCompare } from "@/lib/msgraph/constant-time-compare"
 
 export const dynamic = "force-dynamic"
 // Sync can take ~60s on first bootstrap, then near-instant on delta-empty
@@ -34,8 +34,10 @@ function authorize(headers: Headers): { ok: boolean; status?: number } {
   const auth = headers.get("authorization") ?? ""
   if (auth.startsWith(BEARER_PREFIX)) {
     const token = auth.slice(BEARER_PREFIX.length).trim()
-    if (cronSecret && constantTimeCompare(token, cronSecret)) return { ok: true }
-    if (adminToken && constantTimeCompare(token, adminToken)) return { ok: true }
+    if (cronSecret && constantTimeCompare(token, cronSecret))
+      return { ok: true }
+    if (adminToken && constantTimeCompare(token, adminToken))
+      return { ok: true }
   }
   // Local-dev convenience: also accept x-admin-token header so this can be
   // hit from the same place as the test routes.

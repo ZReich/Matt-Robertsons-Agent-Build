@@ -47,8 +47,7 @@ export function nextClientTypeForLease(
   if (!input.mattRepresented) return null
 
   const isPast =
-    input.closeDate !== null &&
-    input.closeDate.getTime() < input.now.getTime()
+    input.closeDate !== null && input.closeDate.getTime() < input.now.getTime()
 
   if (isPast) {
     if (input.mattRepresented === "tenant") return "past_buyer_client"

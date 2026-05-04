@@ -1,14 +1,13 @@
 import Link from "next/link"
 import { Reply } from "lucide-react"
 
-import type { Metadata } from "next"
 import type { PendingReplyStatus } from "@prisma/client"
+import type { Metadata } from "next"
 
 import { db } from "@/lib/prisma"
 import { cn } from "@/lib/utils"
 
 import { Card, CardContent } from "@/components/ui/card"
-
 import { PendingReplyCard } from "./_components/pending-reply-card"
 import { ProcessDailyListingsButton } from "./_components/process-daily-listings-button"
 
@@ -29,10 +28,14 @@ function paramString(v: string | string[] | undefined): string | undefined {
   return typeof v === "string" && v.trim() ? v : undefined
 }
 
-export default async function PendingRepliesPage({ params, searchParams }: Props) {
+export default async function PendingRepliesPage({
+  params,
+  searchParams,
+}: Props) {
   const { lang } = await params
   const sp = (await searchParams) ?? {}
-  const status = (paramString(sp.status) as PendingReplyStatus | undefined) ?? "pending"
+  const status =
+    (paramString(sp.status) as PendingReplyStatus | undefined) ?? "pending"
 
   const [replies, counts] = await Promise.all([
     db.pendingReply.findMany({
@@ -60,7 +63,13 @@ export default async function PendingRepliesPage({ params, searchParams }: Props
   const contactsArr = contactIds.length
     ? await db.contact.findMany({
         where: { id: { in: contactIds } },
-        select: { id: true, name: true, company: true, email: true, phone: true },
+        select: {
+          id: true,
+          name: true,
+          company: true,
+          email: true,
+          phone: true,
+        },
       })
     : []
   const contactMap = new Map(contactsArr.map((c) => [c.id, c]))
@@ -123,7 +132,9 @@ export default async function PendingRepliesPage({ params, searchParams }: Props
                 dismissedAt: r.dismissedAt?.toISOString() ?? null,
                 dismissReason: r.dismissReason,
                 property: r.property,
-                contact: r.contactId ? contactMap.get(r.contactId) ?? null : null,
+                contact: r.contactId
+                  ? (contactMap.get(r.contactId) ?? null)
+                  : null,
                 triggerCommunicationId: r.triggerCommunicationId,
                 suggestedProperties: parseSuggested(r.suggestedProperties),
               }}
@@ -142,7 +153,12 @@ function parseSuggested(value: unknown): Array<{
   score: number
 }> {
   if (!Array.isArray(value)) return []
-  const out: Array<{ propertyId: string; address: string; name: string | null; score: number }> = []
+  const out: Array<{
+    propertyId: string
+    address: string
+    name: string | null
+    score: number
+  }> = []
   for (const item of value) {
     if (!item || typeof item !== "object") continue
     const r = item as Record<string, unknown>

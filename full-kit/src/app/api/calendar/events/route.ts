@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
-import type { NextRequest } from "next/server"
 import type { Prisma } from "@prisma/client"
+import type { NextRequest } from "next/server"
 
 import { requireApiUser } from "@/lib/api-route-auth"
 import { db } from "@/lib/prisma"
@@ -39,9 +39,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   const includeMeetings = !kinds || kinds.includes("meeting")
   // CalendarEvent kinds excluding the synthetic "meeting" tag (which only
   // matters for filtering Meeting rows on the client side).
-  const eventKindFilter = kinds
-    ? kinds.filter((k) => k !== "meeting")
-    : null
+  const eventKindFilter = kinds ? kinds.filter((k) => k !== "meeting") : null
 
   const meetingWhere: Prisma.MeetingWhereInput = { archivedAt: null }
   if (from || to) {
@@ -149,8 +147,7 @@ export async function GET(request: NextRequest): Promise<Response> {
         ? {
             id: e.leaseRecord.id,
             leaseEndDate: e.leaseRecord.leaseEndDate?.toISOString() ?? null,
-            leaseStartDate:
-              e.leaseRecord.leaseStartDate?.toISOString() ?? null,
+            leaseStartDate: e.leaseRecord.leaseStartDate?.toISOString() ?? null,
             leaseTermMonths: e.leaseRecord.leaseTermMonths,
             rentAmount: e.leaseRecord.rentAmount?.toString() ?? null,
             rentPeriod: e.leaseRecord.rentPeriod,

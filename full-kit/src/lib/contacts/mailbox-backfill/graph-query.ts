@@ -47,8 +47,7 @@ export async function fetchMessagesForContactWindow(
   // would be parsed as a boolean. The inner backslash-quote escapes the
   // double-quotes against the outer KQL string delimiter.
   const safeEmail = email.replace(/"/g, '\\"')
-  const search =
-    `"from:\\"${safeEmail}\\" OR to:\\"${safeEmail}\\" OR cc:\\"${safeEmail}\\""`
+  const search = `"from:\\"${safeEmail}\\" OR to:\\"${safeEmail}\\" OR cc:\\"${safeEmail}\\""`
 
   // Graph rejects combining `$search` with `$filter` on /users/{}/messages
   // ("The query parameter '$filter' is not supported with '$search'."). So

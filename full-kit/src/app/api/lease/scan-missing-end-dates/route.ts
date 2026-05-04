@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server"
 
-import {
-  scanMissingLeaseEndDates,
-  type ScanMissingDealRow,
-} from "@/lib/lease/lease-end-date-scanner"
+import type { ScanMissingDealRow } from "@/lib/lease/lease-end-date-scanner"
+
+import { scanMissingLeaseEndDates } from "@/lib/lease/lease-end-date-scanner"
 import { constantTimeCompare } from "@/lib/msgraph/constant-time-compare"
 import { db } from "@/lib/prisma"
 
@@ -58,8 +57,7 @@ function parseDealRow(raw: RawDealRow): ScanMissingDealRow | null {
   if (searchTerms.length === 0) return null
   const closeDateRaw = asString(raw.closeDate)
   const closeDate = closeDateRaw ? new Date(closeDateRaw) : null
-  const expectedDealKind =
-    raw.expectedDealKind === "sale" ? "sale" : "lease"
+  const expectedDealKind = raw.expectedDealKind === "sale" ? "sale" : "lease"
   return {
     dealId,
     buildoutDealId: asString(raw.buildoutDealId),
@@ -68,7 +66,8 @@ function parseDealRow(raw: RawDealRow): ScanMissingDealRow | null {
     existingLeaseRecordId: asString(raw.existingLeaseRecordId),
     contactId: asString(raw.contactId),
     propertyId: asString(raw.propertyId),
-    closeDate: closeDate && !Number.isNaN(closeDate.getTime()) ? closeDate : null,
+    closeDate:
+      closeDate && !Number.isNaN(closeDate.getTime()) ? closeDate : null,
     expectedDealKind,
   }
 }

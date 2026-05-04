@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import type { HistoryBackfillCursorState } from "./email-history-backfill"
+import type { GraphEmailMessage } from "./email-types"
+
 import {
   enumerateMonthsDescending,
   runEmailHistoryBackfill,
-  type HistoryBackfillCursorState,
 } from "./email-history-backfill"
-
-import type { GraphEmailMessage } from "./email-types"
 
 vi.mock("./config", () => ({
   loadMsgraphConfig: vi.fn(() => ({
@@ -162,13 +162,22 @@ describe("runEmailHistoryBackfill", () => {
     const { cursorIO, ref } = makeCursorIO(null)
     const { fetchImpl } = makeScriptedFetch({
       "2026-03-01": [
-        { monthFilter: "2026-03-01", value: [makeMessage("a", "2026-03-15T00:00:00Z")] },
+        {
+          monthFilter: "2026-03-01",
+          value: [makeMessage("a", "2026-03-15T00:00:00Z")],
+        },
       ],
       "2026-02-01": [
-        { monthFilter: "2026-02-01", value: [makeMessage("b", "2026-02-15T00:00:00Z")] },
+        {
+          monthFilter: "2026-02-01",
+          value: [makeMessage("b", "2026-02-15T00:00:00Z")],
+        },
       ],
       "2026-01-01": [
-        { monthFilter: "2026-01-01", value: [makeMessage("c", "2026-01-15T00:00:00Z")] },
+        {
+          monthFilter: "2026-01-01",
+          value: [makeMessage("c", "2026-01-15T00:00:00Z")],
+        },
       ],
     })
     const processOneMessageImpl = makeProcessOneMessageImpl()
@@ -211,7 +220,10 @@ describe("runEmailHistoryBackfill", () => {
     })
     const { fetchImpl } = makeScriptedFetch({
       "2026-01-01": [
-        { monthFilter: "2026-01-01", value: [makeMessage("a", "2026-01-15T00:00:00Z")] },
+        {
+          monthFilter: "2026-01-01",
+          value: [makeMessage("a", "2026-01-15T00:00:00Z")],
+        },
       ],
     })
     const processOneMessageImpl = makeProcessOneMessageImpl()
@@ -245,7 +257,8 @@ describe("runEmailHistoryBackfill", () => {
         {
           monthFilter: "2026-04-01",
           value: [makeMessage("a", "2026-04-10T00:00:00Z")],
-          nextLink: "https://graph.microsoft.com/v1.0/__nextlink__2026-04-01__page2",
+          nextLink:
+            "https://graph.microsoft.com/v1.0/__nextlink__2026-04-01__page2",
         },
         {
           monthFilter: "2026-04-01",
@@ -402,7 +415,8 @@ describe("runEmailHistoryBackfill", () => {
         {
           monthFilter: "2026-03-01",
           value: firstPage,
-          nextLink: "https://graph.microsoft.com/v1.0/__nextlink__2026-03-01__page2",
+          nextLink:
+            "https://graph.microsoft.com/v1.0/__nextlink__2026-03-01__page2",
         },
         {
           monthFilter: "2026-03-01",

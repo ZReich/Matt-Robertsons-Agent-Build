@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 
-import type { Prisma, PendingReplyStatus } from "@prisma/client"
+import type { PendingReplyStatus, Prisma } from "@prisma/client"
 
-import { authenticateUser } from "@/lib/auth"
 import {
   requireApiUser,
   validateJsonMutationRequest,
 } from "@/lib/api-route-auth"
+import { authenticateUser } from "@/lib/auth"
 import { sendMailAsMatt } from "@/lib/msgraph/send-mail"
 import { db } from "@/lib/prisma"
 
@@ -23,7 +23,9 @@ export async function GET(_req: Request, ctx: RouteContext): Promise<Response> {
   const reply = await db.pendingReply.findUnique({
     where: { id },
     include: {
-      property: { select: { id: true, name: true, address: true, listingUrl: true } },
+      property: {
+        select: { id: true, name: true, address: true, listingUrl: true },
+      },
     },
   })
   if (!reply) return NextResponse.json({ error: "not found" }, { status: 404 })
@@ -73,7 +75,8 @@ export async function PATCH(
     }
     const data: Prisma.PendingReplyUpdateInput = {}
     if (typeof body.draftSubject === "string")
-      data.draftSubject = body.draftSubject.trim().slice(0, 998) || existing.draftSubject
+      data.draftSubject =
+        body.draftSubject.trim().slice(0, 998) || existing.draftSubject
     if (typeof body.draftBody === "string")
       // Cap the body at 64KB. Anything longer is almost certainly a paste
       // accident or a worst-case adversarial input.
@@ -139,7 +142,9 @@ export async function PATCH(
     }
     if (!existing.contactId) {
       return NextResponse.json(
-        { error: "no contact linked to this draft — cannot resolve a recipient" },
+        {
+          error: "no contact linked to this draft — cannot resolve a recipient",
+        },
         { status: 400 }
       )
     }

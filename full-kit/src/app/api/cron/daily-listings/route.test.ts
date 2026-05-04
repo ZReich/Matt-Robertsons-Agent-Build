@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { GET } from "./route"
+
 const processUnprocessedDailyListings = vi.fn()
 const setLastDailyListingsSweep = vi.fn()
 
@@ -12,8 +14,6 @@ vi.mock("@/lib/system-state/last-daily-listings-sweep", () => ({
   setLastDailyListingsSweep: (...args: unknown[]) =>
     setLastDailyListingsSweep(...args),
 }))
-
-import { GET } from "./route"
 
 const SECRET = "test-cron-secret-1234567890abcdef"
 const ORIGINAL_ENV = process.env.DAILY_LISTINGS_CRON_SECRET

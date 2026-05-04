@@ -1,13 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useState, type ChangeEvent } from "react"
 import { toast } from "sonner"
 
+import type { ChangeEvent } from "react"
+
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Table,
   TableBody,
@@ -16,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
 
 interface PreviewRow {
   rowIndex: number
@@ -155,13 +157,18 @@ export function PropertyImportForm() {
               className="hidden"
               onChange={onFile}
             />
-            <Button type="button" variant="outline" size="sm" onClick={onPasteSample}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onPasteSample}
+            >
               Paste sample
             </Button>
             <p className="text-xs text-muted-foreground">
-              Recognized headers: Name, Address, Unit, City, State, Zip, Property
-              Type, Status, SQFT, Occupied SQFT, List Price, Cap Rate, URL,
-              Flyer, Description
+              Recognized headers: Name, Address, Unit, City, State, Zip,
+              Property Type, Status, SQFT, Occupied SQFT, List Price, Cap Rate,
+              URL, Flyer, Description
             </p>
           </div>
           <Textarea
@@ -185,9 +192,7 @@ export function PropertyImportForm() {
       {preview ? (
         <Card>
           <CardHeader>
-            <CardTitle>
-              2. Review {preview.summary.totalRows} rows
-            </CardTitle>
+            <CardTitle>2. Review {preview.summary.totalRows} rows</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="flex flex-wrap gap-2">
@@ -211,7 +216,9 @@ export function PropertyImportForm() {
 
             {preview.parseErrors.length > 0 ? (
               <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs">
-                <p className="mb-1 font-medium text-destructive">Parse errors</p>
+                <p className="mb-1 font-medium text-destructive">
+                  Parse errors
+                </p>
                 <ul className="space-y-0.5">
                   {preview.parseErrors.map((e, i) => (
                     <li key={i}>

@@ -4,6 +4,7 @@ import { promises as fs } from "node:fs"
 import path from "node:path"
 
 import type Anthropic from "@anthropic-ai/sdk"
+import type { ScrubApiOutcome, ScrubApiUsage } from "./scrub-api-log"
 
 import { db } from "@/lib/prisma"
 
@@ -13,11 +14,7 @@ import {
   type LeaseExtraction,
   type LeaseExtractorInput,
 } from "./lease-types"
-import {
-  logScrubApiCall,
-  type ScrubApiOutcome,
-  type ScrubApiUsage,
-} from "./scrub-api-log"
+import { logScrubApiCall } from "./scrub-api-log"
 import { containsRawSensitiveData } from "./sensitive-filter"
 
 /**
@@ -41,12 +38,12 @@ const RENT_PERIOD_VALUES: ReadonlySet<"monthly" | "annual"> = new Set([
   "monthly",
   "annual",
 ])
-const MATT_REPRESENTED_VALUES: ReadonlySet<"owner" | "tenant" | "both"> = new Set([
-  "owner",
-  "tenant",
-  "both",
+const MATT_REPRESENTED_VALUES: ReadonlySet<"owner" | "tenant" | "both"> =
+  new Set(["owner", "tenant", "both"])
+const DEAL_KIND_VALUES: ReadonlySet<"lease" | "sale"> = new Set([
+  "lease",
+  "sale",
 ])
-const DEAL_KIND_VALUES: ReadonlySet<"lease" | "sale"> = new Set(["lease", "sale"])
 
 /**
  * If start/end and a `leaseTermMonths` value are all present, the months
@@ -153,8 +150,10 @@ export function validateLeaseExtraction(
   }
 
   // Date fields — null-or-`YYYY-MM-DD` and must round-trip.
-  const dates: { key: "closeDate" | "leaseStartDate" | "leaseEndDate"; value: string | null }[] =
-    []
+  const dates: {
+    key: "closeDate" | "leaseStartDate" | "leaseEndDate"
+    value: string | null
+  }[] = []
   for (const key of ["closeDate", "leaseStartDate", "leaseEndDate"] as const) {
     const v = r[key]
     if (v === null || v === undefined) {
@@ -189,7 +188,10 @@ export function validateLeaseExtraction(
   if (r.leaseTermMonths === null || r.leaseTermMonths === undefined) {
     leaseTermMonths = null
   } else if (typeof r.leaseTermMonths === "number") {
-    if (!Number.isFinite(r.leaseTermMonths) || !Number.isInteger(r.leaseTermMonths)) {
+    if (
+      !Number.isFinite(r.leaseTermMonths) ||
+      !Number.isInteger(r.leaseTermMonths)
+    ) {
       return { ok: false, reason: "leaseTermMonths_not_integer" }
     }
     if (r.leaseTermMonths <= 0) {
@@ -422,7 +424,10 @@ export const EXTRACT_TOOL = {
  */
 let EXTRACTOR_PROMPT_CACHE: string | null = null
 async function loadPromptBody(): Promise<string> {
-  if (process.env.NODE_ENV === "production" && EXTRACTOR_PROMPT_CACHE !== null) {
+  if (
+    process.env.NODE_ENV === "production" &&
+    EXTRACTOR_PROMPT_CACHE !== null
+  ) {
     return EXTRACTOR_PROMPT_CACHE
   }
   const promptPath = path.join(
@@ -458,7 +463,10 @@ async function writeExtractorLog({
 }: {
   modelUsed: string
   usage: ScrubApiUsage
-  outcome: Extract<ScrubApiOutcome, "ok" | "validation-failed" | "provider-error">
+  outcome: Extract<
+    ScrubApiOutcome,
+    "ok" | "validation-failed" | "provider-error"
+  >
 }): Promise<void> {
   try {
     await logScrubApiCall({

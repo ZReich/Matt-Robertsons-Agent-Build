@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 
+import { runCriteriaBackfill } from "@/lib/ai/criteria-extractor"
 import {
   requireApiUser,
   validateJsonMutationRequest,
 } from "@/lib/api-route-auth"
-import { runCriteriaBackfill } from "@/lib/ai/criteria-extractor"
 
 export async function POST(request: Request): Promise<Response> {
   const unauthorized = await requireApiUser()

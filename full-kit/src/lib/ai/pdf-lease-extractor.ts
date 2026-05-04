@@ -1,22 +1,19 @@
 import "server-only"
 
 import type Anthropic from "@anthropic-ai/sdk"
+import type { LeaseExtraction } from "./lease-types"
+import type { ScrubApiOutcome, ScrubApiUsage } from "./scrub-api-log"
 
 import { createAnthropicClient } from "./claude"
 import {
   EXTRACT_TOOL,
-  estimateExtractorUsd,
   LEASE_EXTRACTOR_VERSION,
+  estimateExtractorUsd,
   loadLeaseExtractorPrompt,
   resolveExtractorModel,
   validateLeaseExtraction,
 } from "./lease-extractor"
-import type { LeaseExtraction } from "./lease-types"
-import {
-  logScrubApiCall,
-  type ScrubApiOutcome,
-  type ScrubApiUsage,
-} from "./scrub-api-log"
+import { logScrubApiCall } from "./scrub-api-log"
 
 /**
  * Stage-2 lease/sale extractor — PDF fallback path.

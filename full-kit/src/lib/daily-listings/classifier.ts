@@ -17,7 +17,8 @@ export function isDailyListingsEmail(input: {
   metadata: unknown
 }): boolean {
   const subject = (input.subject ?? "").trim().toLowerCase()
-  const subjectMatch = subject === "daily listings" || subject.startsWith("daily listings ")
+  const subjectMatch =
+    subject === "daily listings" || subject.startsWith("daily listings ")
   if (!subjectMatch) return false
 
   const meta = input.metadata as MetadataLike | null

@@ -130,114 +130,115 @@ export function AgentQueue({ actions, onActionUpdate }: Props) {
           action.actionType === "create-deal" &&
           action.payload?.signalType === "loi"
         return (
-        <Card key={action.id}>
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <CardTitle className="text-base">{action.summary}</CardTitle>
-                <CardDescription className="mt-1 flex flex-wrap items-center gap-2">
-                  <span>
-                    {ACTION_TYPE_LABELS[action.actionType] ?? action.actionType}
-                  </span>
-                  {action.targetEntity && (
-                    <>
-                      <span className="text-muted-foreground/50">|</span>
-                      <span>{action.targetEntity}</span>
-                    </>
-                  )}
-                  <span className="text-muted-foreground/50">|</span>
-                  <span>
-                    {formatDistanceToNow(new Date(action.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </CardDescription>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <Badge
-                  className={TIER_COLORS[action.tier] ?? ""}
-                  variant="secondary"
-                >
-                  {action.tier}
-                </Badge>
-                {showHighConfidenceBadge && (
+          <Card key={action.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base">{action.summary}</CardTitle>
+                  <CardDescription className="mt-1 flex flex-wrap items-center gap-2">
+                    <span>
+                      {ACTION_TYPE_LABELS[action.actionType] ??
+                        action.actionType}
+                    </span>
+                    {action.targetEntity && (
+                      <>
+                        <span className="text-muted-foreground/50">|</span>
+                        <span>{action.targetEntity}</span>
+                      </>
+                    )}
+                    <span className="text-muted-foreground/50">|</span>
+                    <span>
+                      {formatDistanceToNow(new Date(action.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col items-end gap-1">
                   <Badge
-                    className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                    className={TIER_COLORS[action.tier] ?? ""}
                     variant="secondary"
-                    data-testid="high-confidence-badge"
                   >
-                    High confidence
+                    {action.tier}
                   </Badge>
-                )}
+                  {showHighConfidenceBadge && (
+                    <Badge
+                      className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                      variant="secondary"
+                      data-testid="high-confidence-badge"
+                    >
+                      High confidence
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardHeader>
+            </CardHeader>
 
-          <Separator />
-          <CardContent className="pt-3">
-            {action.sourceCommunication && (
-              <p className="mb-3 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-                Evidence: {action.sourceCommunication.subject ?? "Email"} -{" "}
-                {new Date(action.sourceCommunication.date).toLocaleString()}
-              </p>
-            )}
-            {action.targetTodo && (
-              <div className="mb-3 rounded-md border px-3 py-2 text-xs">
-                <p className="font-medium">
-                  Target todo: {action.targetTodo.title}
+            <Separator />
+            <CardContent className="pt-3">
+              {action.sourceCommunication && (
+                <p className="mb-3 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+                  Evidence: {action.sourceCommunication.subject ?? "Email"} -{" "}
+                  {new Date(action.sourceCommunication.date).toLocaleString()}
                 </p>
-                <p className="text-muted-foreground">
-                  Status: {action.targetTodo.status}
-                  {action.targetTodo.contactId
-                    ? ` | Contact: ${action.targetTodo.contactId}`
-                    : ""}
-                  {action.targetTodo.dealId
-                    ? ` | Deal: ${action.targetTodo.dealId}`
-                    : ""}
-                </p>
+              )}
+              {action.targetTodo && (
+                <div className="mb-3 rounded-md border px-3 py-2 text-xs">
+                  <p className="font-medium">
+                    Target todo: {action.targetTodo.title}
+                  </p>
+                  <p className="text-muted-foreground">
+                    Status: {action.targetTodo.status}
+                    {action.targetTodo.contactId
+                      ? ` | Contact: ${action.targetTodo.contactId}`
+                      : ""}
+                    {action.targetTodo.dealId
+                      ? ` | Deal: ${action.targetTodo.dealId}`
+                      : ""}
+                  </p>
+                </div>
+              )}
+              <Textarea
+                placeholder="Optional feedback for the agent..."
+                className="mb-3 h-16 resize-none text-sm"
+                value={feedbackMap[action.id] ?? ""}
+                onChange={(e) =>
+                  setFeedbackMap((prev) => ({
+                    ...prev,
+                    [action.id]: e.target.value,
+                  }))
+                }
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleAction(action, "approve")}
+                  disabled={loadingMap[action.id]}
+                >
+                  <Check className="mr-1 h-4 w-4" />
+                  Approve
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAction(action, "snooze")}
+                  disabled={loadingMap[action.id]}
+                >
+                  <Pause className="mr-1 h-4 w-4" />
+                  Snooze
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAction(action, "reject")}
+                  disabled={loadingMap[action.id]}
+                >
+                  <X className="mr-1 h-4 w-4" />
+                  Reject
+                </Button>
               </div>
-            )}
-            <Textarea
-              placeholder="Optional feedback for the agent..."
-              className="mb-3 h-16 resize-none text-sm"
-              value={feedbackMap[action.id] ?? ""}
-              onChange={(e) =>
-                setFeedbackMap((prev) => ({
-                  ...prev,
-                  [action.id]: e.target.value,
-                }))
-              }
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                onClick={() => handleAction(action, "approve")}
-                disabled={loadingMap[action.id]}
-              >
-                <Check className="mr-1 h-4 w-4" />
-                Approve
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleAction(action, "snooze")}
-                disabled={loadingMap[action.id]}
-              >
-                <Pause className="mr-1 h-4 w-4" />
-                Snooze
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleAction(action, "reject")}
-                disabled={loadingMap[action.id]}
-              >
-                <X className="mr-1 h-4 w-4" />
-                Reject
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
         )
       })}
     </div>

@@ -14,7 +14,9 @@ export interface ConflictResult {
   primaryContactId: string
 }
 
-export function detectMultiClientConflict(input: ConflictInput): ConflictResult | null {
+export function detectMultiClientConflict(
+  input: ConflictInput
+): ConflictResult | null {
   const lowered = new Set(input.recipientEmails.map((e) => e.toLowerCase()))
   const matched = input.candidateClientContacts
     .filter((c) => c.email && lowered.has(c.email.toLowerCase()))

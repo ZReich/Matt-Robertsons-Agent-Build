@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { db } from "@/lib/prisma"
+
+import { LEASE_EXTRACTOR_VERSION } from "./lease-extractor"
+import { extractLeaseFromPdf } from "./pdf-lease-extractor"
+
 vi.mock("server-only", () => ({}))
 
 // Hoisted fake Anthropic client so vi.mock can wire it before any
@@ -28,11 +33,6 @@ vi.mock("@/lib/prisma", () => ({
   },
 }))
 
-import { db } from "@/lib/prisma"
-
-import { LEASE_EXTRACTOR_VERSION } from "./lease-extractor"
-import { extractLeaseFromPdf } from "./pdf-lease-extractor"
-
 const VALID_LEASE = {
   contactName: "Brandon Miller",
   contactEmail: "brandon@example.com",
@@ -46,7 +46,8 @@ const VALID_LEASE = {
   mattRepresented: "owner" as const,
   dealKind: "lease" as const,
   confidence: 0.92,
-  reasoning: "Lease document, term Feb 1 2026 – Jan 31 2031, monthly rent $4,500.",
+  reasoning:
+    "Lease document, term Feb 1 2026 – Jan 31 2031, monthly rent $4,500.",
 }
 
 function buildToolUseResponse(
@@ -164,7 +165,9 @@ describe("extractLeaseFromPdf", () => {
     expect(textBlock.text).toContain("SUBJECT:")
     expect(textBlock.text).toContain("Lease executed — 303 N Broadway")
     expect(textBlock.text).toContain("BODY:")
-    expect(textBlock.text).toContain("Brandon signed today, lease starts Feb 1.")
+    expect(textBlock.text).toContain(
+      "Brandon signed today, lease starts Feb 1."
+    )
     expect(textBlock.text).toContain("CLASSIFICATION: closed_lease")
     expect(textBlock.text).toContain(
       `SIGNALS: ${JSON.stringify(["fully executed", "commencement"])}`
@@ -179,9 +182,10 @@ describe("extractLeaseFromPdf", () => {
       signals: [],
       subject: "no body",
     })
-    const textBlock =
-      mockMessagesCreate.mock.calls[0][0].messages[0].content[1]
-    expect(textBlock.text).toContain("(extracted from PDF only — no body excerpt)")
+    const textBlock = mockMessagesCreate.mock.calls[0][0].messages[0].content[1]
+    expect(textBlock.text).toContain(
+      "(extracted from PDF only — no body excerpt)"
+    )
   })
 
   it("logs ok with Haiku-priced USD on success", async () => {

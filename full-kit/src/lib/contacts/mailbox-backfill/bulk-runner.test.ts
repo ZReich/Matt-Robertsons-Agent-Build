@@ -342,7 +342,10 @@ describe("runBulkBackfill", () => {
     expect(result.failed).toBe(1)
     expect(result.succeeded).toBe(1)
     expect(result.failures).toEqual([
-      { contactId: "c1", error: expect.stringContaining("per_contact_timeout") },
+      {
+        contactId: "c1",
+        error: expect.stringContaining("per_contact_timeout"),
+      },
     ])
   })
 

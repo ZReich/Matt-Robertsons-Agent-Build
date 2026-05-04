@@ -1,6 +1,6 @@
 import "server-only"
 
-import { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 
@@ -55,7 +55,11 @@ export const DEFAULT_AUTOMATION_SETTINGS: AutomationSettings = {
   leaseExtractorMinConfidence: 0.6,
 }
 
-function isFiniteInClosedRange(v: unknown, min: number, max: number): v is number {
+function isFiniteInClosedRange(
+  v: unknown,
+  min: number,
+  max: number
+): v is number {
   return typeof v === "number" && Number.isFinite(v) && v >= min && v <= max
 }
 

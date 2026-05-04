@@ -15,7 +15,11 @@ export async function POST(request: Request): Promise<Response> {
   const invalidRequest = validateJsonMutationRequest(request)
   if (invalidRequest) return invalidRequest
 
-  let body: { communicationId?: unknown; sweep?: unknown; lookbackDays?: unknown }
+  let body: {
+    communicationId?: unknown
+    sweep?: unknown
+    lookbackDays?: unknown
+  }
   try {
     body = (await request.json()) as typeof body
   } catch {

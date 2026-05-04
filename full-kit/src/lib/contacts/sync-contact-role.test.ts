@@ -37,7 +37,12 @@ beforeEach(() => {
 describe("syncContactRoleFromDeals", () => {
   it("sets active_listing_client when contact has any active listing-side deal", async () => {
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "marketing", outcome: null, closedAt: null },
+      {
+        dealType: "seller_rep",
+        stage: "marketing",
+        outcome: null,
+        closedAt: null,
+      },
     ])
     const result = await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).toHaveBeenCalledWith({
@@ -50,7 +55,12 @@ describe("syncContactRoleFromDeals", () => {
 
   it("sets active_buyer_rep_client when contact has any active buyer-rep deal", async () => {
     dealFindMany.mockResolvedValue([
-      { dealType: "buyer_rep", stage: "showings", outcome: null, closedAt: null },
+      {
+        dealType: "buyer_rep",
+        stage: "showings",
+        outcome: null,
+        closedAt: null,
+      },
     ])
     await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).toHaveBeenCalledWith({
@@ -61,7 +71,12 @@ describe("syncContactRoleFromDeals", () => {
 
   it("prefers active_buyer_rep_client when contact has both flows active", async () => {
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "marketing", outcome: null, closedAt: null },
+      {
+        dealType: "seller_rep",
+        stage: "marketing",
+        outcome: null,
+        closedAt: null,
+      },
       { dealType: "buyer_rep", stage: "offer", outcome: null, closedAt: null },
     ])
     await syncContactRoleFromDeals("contact-1")
@@ -147,10 +162,10 @@ describe("syncContactRoleFromDeals", () => {
         closedAt: new Date("2026-04-01T00:00:00Z"),
       },
     ])
-    const result = await syncContactRoleFromDeals(
-      "contact-1",
-      { trigger: "deal_close", dealId: "deal-1" }
-    )
+    const result = await syncContactRoleFromDeals("contact-1", {
+      trigger: "deal_close",
+      dealId: "deal-1",
+    })
     expect(agentActionCreate).toHaveBeenCalledTimes(1)
     const args = agentActionCreate.mock.calls[0][0]
     expect(args.data.actionType).toBe("set-client-type")
@@ -173,7 +188,12 @@ describe("syncContactRoleFromDeals", () => {
       clientType: "active_listing_client",
     })
     dealFindMany.mockResolvedValue([
-      { dealType: "seller_rep", stage: "marketing", outcome: null, closedAt: null },
+      {
+        dealType: "seller_rep",
+        stage: "marketing",
+        outcome: null,
+        closedAt: null,
+      },
     ])
     const result = await syncContactRoleFromDeals("contact-1")
     expect(contactUpdate).not.toHaveBeenCalled()

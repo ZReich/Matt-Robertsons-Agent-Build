@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Sparkles } from "lucide-react"
 
@@ -45,7 +45,13 @@ export function ProcessDailyListingsButton() {
           draftsSent: acc.draftsSent + (r.draftsSent ?? 0),
           errors: acc.errors + (r.errors?.length ?? 0),
         }),
-        { parsed: 0, newProperties: 0, draftsCreated: 0, draftsSent: 0, errors: 0 }
+        {
+          parsed: 0,
+          newProperties: 0,
+          draftsCreated: 0,
+          draftsSent: 0,
+          errors: 0,
+        }
       )
       toast.success(
         `Swept ${json.processed}/${json.candidates} digests · ${totals.parsed} listings · ${totals.newProperties} new props · ${totals.draftsCreated} drafts · ${totals.draftsSent} sent${totals.errors ? " · " + totals.errors + " errors" : ""}`,

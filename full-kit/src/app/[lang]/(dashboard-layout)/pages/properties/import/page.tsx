@@ -4,7 +4,6 @@ import { ArrowLeft, FileUp } from "lucide-react"
 import type { Metadata } from "next"
 
 import { Button } from "@/components/ui/button"
-
 import { PropertyImportForm } from "./_components/property-import-form"
 
 export const metadata: Metadata = {

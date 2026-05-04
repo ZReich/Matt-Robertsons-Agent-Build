@@ -7,7 +7,6 @@ import type { Metadata } from "next"
 import { db } from "@/lib/prisma"
 
 import { Button } from "@/components/ui/button"
-
 import { PropertyForm } from "../../_components/property-form"
 
 export const metadata: Metadata = {

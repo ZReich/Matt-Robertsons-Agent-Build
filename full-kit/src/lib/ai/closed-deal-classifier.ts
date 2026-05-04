@@ -3,13 +3,15 @@ import "server-only"
 import { promises as fs } from "node:fs"
 import path from "node:path"
 
+import type { ScrubApiOutcome } from "./scrub-api-log"
+
 import { db } from "@/lib/prisma"
 
 import {
   type ClosedDealClassification,
   type ClosedDealClassificationKind,
 } from "./lease-types"
-import { logScrubApiCall, type ScrubApiOutcome } from "./scrub-api-log"
+import { logScrubApiCall } from "./scrub-api-log"
 import { containsRawSensitiveData } from "./sensitive-filter"
 
 /**
@@ -51,14 +53,13 @@ export type ClosedDealClassifierOutcome =
       sensitiveReasons?: string[]
     }
 
-const VALID_CLASSIFICATIONS: ReadonlySet<ClosedDealClassificationKind> = new Set<
-  ClosedDealClassificationKind
->([
-  "closed_lease",
-  "closed_sale",
-  "lease_in_progress",
-  "not_a_deal",
-])
+const VALID_CLASSIFICATIONS: ReadonlySet<ClosedDealClassificationKind> =
+  new Set<ClosedDealClassificationKind>([
+    "closed_lease",
+    "closed_sale",
+    "lease_in_progress",
+    "not_a_deal",
+  ])
 
 /**
  * Validate an arbitrary value as a `ClosedDealClassification`. Returns the
@@ -71,7 +72,9 @@ const VALID_CLASSIFICATIONS: ReadonlySet<ClosedDealClassificationKind> = new Set
  */
 export function validateClosedDealClassification(
   raw: unknown
-): { ok: true; value: ClosedDealClassification } | { ok: false; reason: string } {
+):
+  | { ok: true; value: ClosedDealClassification }
+  | { ok: false; reason: string } {
   if (!raw || typeof raw !== "object") {
     return { ok: false, reason: "not_an_object" }
   }
@@ -80,7 +83,9 @@ export function validateClosedDealClassification(
   if (typeof r.classification !== "string") {
     return { ok: false, reason: "classification_not_string" }
   }
-  if (!VALID_CLASSIFICATIONS.has(r.classification as ClosedDealClassificationKind)) {
+  if (
+    !VALID_CLASSIFICATIONS.has(r.classification as ClosedDealClassificationKind)
+  ) {
     return {
       ok: false,
       reason: `classification_invalid:${r.classification}`,
@@ -179,7 +184,10 @@ export function estimateClassifierUsd({
 let CLASSIFIER_PROMPT_CACHE: string | null = null
 async function loadClassifierPrompt(): Promise<string> {
   // Bypass cache in dev so prompt edits take effect without a restart.
-  if (process.env.NODE_ENV === "production" && CLASSIFIER_PROMPT_CACHE !== null) {
+  if (
+    process.env.NODE_ENV === "production" &&
+    CLASSIFIER_PROMPT_CACHE !== null
+  ) {
     return CLASSIFIER_PROMPT_CACHE
   }
   const promptPath = path.join(
@@ -332,7 +340,8 @@ export async function callClassifier(
       clearTimeout(timeout)
     }
     const isRetryable =
-      response.status === 429 || (response.status >= 500 && response.status < 600)
+      response.status === 429 ||
+      (response.status >= 500 && response.status < 600)
     if (!isRetryable || attempt === 1) break
     const delay = backoffMsFromResponse(response)
     await sleep(delay)
@@ -417,7 +426,10 @@ async function writeClassifierLog({
   modelUsed: string
   tokensIn: number
   tokensOut: number
-  outcome: Extract<ScrubApiOutcome, "ok" | "validation-failed" | "provider-error">
+  outcome: Extract<
+    ScrubApiOutcome,
+    "ok" | "validation-failed" | "provider-error"
+  >
 }): Promise<void> {
   try {
     await logScrubApiCall({

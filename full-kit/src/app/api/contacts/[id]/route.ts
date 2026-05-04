@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-
 import { Prisma } from "@prisma/client"
 
 import {
@@ -55,7 +54,9 @@ function sanitizeNotes(value: unknown): string | null | undefined {
   return trimmed.length === 0 ? null : trimmed
 }
 
-function sanitizeSearchCriteria(value: unknown): Prisma.InputJsonValue | null | undefined {
+function sanitizeSearchCriteria(
+  value: unknown
+): Prisma.InputJsonValue | null | undefined {
   if (value === null) return null
   if (typeof value !== "object" || value === undefined || Array.isArray(value))
     return undefined
@@ -91,7 +92,10 @@ function sanitizeSearchCriteria(value: unknown): Prisma.InputJsonValue | null | 
   return out as Prisma.InputJsonValue
 }
 
-export async function GET(_request: Request, ctx: RouteContext): Promise<Response> {
+export async function GET(
+  _request: Request,
+  ctx: RouteContext
+): Promise<Response> {
   const unauthorized = await requireApiUser()
   if (unauthorized) return unauthorized
   const { id } = await ctx.params

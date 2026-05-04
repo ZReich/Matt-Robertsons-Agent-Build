@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
 
-import { GraphError, constantTimeCompare, loadMsgraphConfig } from "@/lib/msgraph"
-import { runEmailHistoryBackfill } from "@/lib/msgraph/email-history-backfill"
-
 import type { EmailFolder } from "@/lib/msgraph/email-types"
+
+import {
+  GraphError,
+  constantTimeCompare,
+  loadMsgraphConfig,
+} from "@/lib/msgraph"
+import { runEmailHistoryBackfill } from "@/lib/msgraph/email-history-backfill"
 
 export const dynamic = "force-dynamic" // never cache
 

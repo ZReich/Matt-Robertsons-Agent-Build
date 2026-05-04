@@ -195,8 +195,9 @@ export function parsePropertyCsv(csv: string): PropertyImportParseResult {
       }),
       ...(propertyType && { propertyType }),
       ...(status && { status }),
-      ...(parseNumber(pickString(raw, ["sqft", "square_feet", "sf", "total_sqft"])) !==
-        undefined && {
+      ...(parseNumber(
+        pickString(raw, ["sqft", "square_feet", "sf", "total_sqft"])
+      ) !== undefined && {
         squareFeet: parseNumber(
           pickString(raw, ["sqft", "square_feet", "sf", "total_sqft"])
         ),
@@ -216,8 +217,9 @@ export function parsePropertyCsv(csv: string): PropertyImportParseResult {
           ])
         ),
       }),
-      ...(parseNumber(pickString(raw, ["price", "list_price", "asking_price"])) !==
-        undefined && {
+      ...(parseNumber(
+        pickString(raw, ["price", "list_price", "asking_price"])
+      ) !== undefined && {
         listPrice: parseNumber(
           pickString(raw, ["price", "list_price", "asking_price"])
         ),
@@ -259,9 +261,14 @@ function parseStatus(
   if (normalized === "active") return "active"
   if (normalized === "under_contract" || normalized === "pending")
     return "under_contract"
-  if (normalized === "closed" || normalized === "sold" || normalized === "leased")
+  if (
+    normalized === "closed" ||
+    normalized === "sold" ||
+    normalized === "leased"
+  )
     return "closed"
-  if (normalized === "archived" || normalized === "off_market") return "archived"
+  if (normalized === "archived" || normalized === "off_market")
+    return "archived"
   return undefined
 }
 

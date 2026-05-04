@@ -10,7 +10,7 @@ import {
   requireContactCandidateReviewer,
 } from "@/lib/contact-candidate-review-auth"
 import { db } from "@/lib/prisma"
-import { assertJsonRequest, ReviewerAuthError } from "@/lib/reviewer-auth"
+import { ReviewerAuthError, assertJsonRequest } from "@/lib/reviewer-auth"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 120
@@ -53,10 +53,7 @@ export async function POST(
     select: { communicationId: true, metadata: true },
   })
   if (!candidate) {
-    return NextResponse.json(
-      { error: "candidate not found" },
-      { status: 404 }
-    )
+    return NextResponse.json({ error: "candidate not found" }, { status: 404 })
   }
   const md =
     candidate.metadata &&
@@ -69,9 +66,7 @@ export async function POST(
     : []
   const ids = Array.from(
     new Set(
-      [candidate.communicationId, ...extra].filter(
-        (id): id is string => !!id
-      )
+      [candidate.communicationId, ...extra].filter((id): id is string => !!id)
     )
   )
   if (ids.length === 0) {

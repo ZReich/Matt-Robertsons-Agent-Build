@@ -85,7 +85,9 @@ export function DealStageEditor({
       }
       if (payload.detection) setDetection(payload.detection)
     } catch (error) {
-      setDetectionError(error instanceof Error ? error.message : "request failed")
+      setDetectionError(
+        error instanceof Error ? error.message : "request failed"
+      )
     } finally {
       setDetecting(false)
     }

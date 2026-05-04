@@ -11,6 +11,7 @@
 > to work with.
 >
 > The validation in `lease-extractor.ts` enforces:
+>
 > - `contactName` is a non-empty string
 > - `contactEmail` is null OR a vaguely-email-looking string
 > - `closeDate` / `leaseStartDate` / `leaseEndDate` are null OR `YYYY-MM-DD`
@@ -35,6 +36,7 @@ closed lease or a closed sale — and pull out the fields the CRM needs to
 create the lease/sale record.
 
 You do NOT:
+
 - Speculate about facts that are not literally in the email body or subject.
 - Try to be helpful by guessing rent, term, or addresses you cannot read.
 - Summarize, advise, or add commentary beyond the `reasoning` field.
@@ -189,6 +191,7 @@ future schema extension).
 ### `mattRepresented` (owner | tenant | both | null)
 
 Which side of the deal Matt represented:
+
 - `owner` — Matt represented the landlord (lease) or seller (sale).
   Common signals: Matt is greeted as "the listing broker", the property
   was on Matt's listing roster, the email is from the tenant/buyer's
@@ -215,6 +218,7 @@ so the human-review gate catches it.
 ### `confidence` (0..1)
 
 How sure you are that the extraction is accurate. Calibration:
+
 - `0.90+`: every populated field is directly stated in the body, the
   classifier and your reading agree, no ambiguous language.
 - `0.70 – 0.89`: most fields stated, one or two inferred from context

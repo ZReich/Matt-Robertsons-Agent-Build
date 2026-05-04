@@ -157,10 +157,9 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
     if (state.entityType !== "contact") return
     setDrainState({ kind: "draining" })
     try {
-      const res = await fetch(
-        `/api/contacts/${state.entityId}/scrub-drain`,
-        { method: "POST" }
-      )
+      const res = await fetch(`/api/contacts/${state.entityId}/scrub-drain`, {
+        method: "POST",
+      })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
         setDrainState({
@@ -382,8 +381,8 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
       {drainState.kind === "success" ? (
         <p className="-mt-1 mb-3 text-xs text-muted-foreground">
           Drained {drainState.totalSucceeded} message
-          {drainState.totalSucceeded === 1 ? "" : "s"} across {drainState.batches}{" "}
-          batch{drainState.batches === 1 ? "" : "es"}
+          {drainState.totalSucceeded === 1 ? "" : "s"} across{" "}
+          {drainState.batches} batch{drainState.batches === 1 ? "" : "es"}
           {drainState.totalFailed > 0
             ? `, ${drainState.totalFailed} failed`
             : ""}
@@ -424,9 +423,9 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
             <p className="mt-2 text-xs text-muted-foreground">
               Found {scanState.result.messagesDiscovered} message
               {scanState.result.messagesDiscovered === 1 ? "" : "s"} —{" "}
-              {scanState.result.ingested} imported,{" "}
-              {scanState.result.deduped} already on file,{" "}
-              {scanState.result.scrubQueued} queued for AI scrub
+              {scanState.result.ingested} imported, {scanState.result.deduped}{" "}
+              already on file, {scanState.result.scrubQueued} queued for AI
+              scrub
               {scanState.result.staleRescrubsEnqueued > 0
                 ? `. Re-extracting facts from ${scanState.result.staleRescrubsEnqueued} older message${scanState.result.staleRescrubsEnqueued === 1 ? "" : "s"}.`
                 : null}
@@ -479,118 +478,120 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
               action.actionType === "create-deal" &&
               payload.signalType === "loi"
             return (
-            <div
-              key={action.id}
-              className="rounded-md border border-border bg-background p-3"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold">{action.summary}</div>
-                  <div className="mt-1 text-[11px] uppercase text-muted-foreground">
-                    {formatActionType(action.actionType)}
+              <div
+                key={action.id}
+                className="rounded-md border border-border bg-background p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold">
+                      {action.summary}
+                    </div>
+                    <div className="mt-1 text-[11px] uppercase text-muted-foreground">
+                      {formatActionType(action.actionType)}
+                    </div>
                   </div>
-                </div>
-                {showHighConfidencePill ? (
-                  <span
-                    className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
-                    data-testid="high-confidence-pill"
-                  >
-                    High confidence
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-muted px-2 py-1 text-[11px] font-medium">
-                    Review
-                  </span>
-                )}
-              </div>
-              {action.evidence?.summary ? (
-                <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">
-                  {action.evidence.summary}
-                </p>
-              ) : null}
-              {action.evidence?.attachments?.length ? (
-                <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <Paperclip className="size-3" />
-                  {action.evidence.attachments.map((attachment, index) => (
+                  {showHighConfidencePill ? (
                     <span
-                      key={`${action.id}-attachment-${index}`}
-                      className="rounded-full border px-2 py-0.5"
-                      title={attachment.contentType}
+                      className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                      data-testid="high-confidence-pill"
                     >
-                      {attachment.name}
+                      High confidence
                     </span>
-                  ))}
-                  {action.evidence.attachmentsRemaining ? (
-                    <span className="rounded-full border px-2 py-0.5">
-                      +{action.evidence.attachmentsRemaining} more
+                  ) : (
+                    <span className="rounded-full bg-muted px-2 py-1 text-[11px] font-medium">
+                      Review
                     </span>
+                  )}
+                </div>
+                {action.evidence?.summary ? (
+                  <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">
+                    {action.evidence.summary}
+                  </p>
+                ) : null}
+                {action.evidence?.attachments?.length ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Paperclip className="size-3" />
+                    {action.evidence.attachments.map((attachment, index) => (
+                      <span
+                        key={`${action.id}-attachment-${index}`}
+                        className="rounded-full border px-2 py-0.5"
+                        title={attachment.contentType}
+                      >
+                        {attachment.name}
+                      </span>
+                    ))}
+                    {action.evidence.attachmentsRemaining ? (
+                      <span className="rounded-full border px-2 py-0.5">
+                        +{action.evidence.attachmentsRemaining} more
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+                {action.sourceCommunicationId ? (
+                  <div className="mt-3">
+                    <SourceCommunicationInline
+                      communicationId={action.sourceCommunicationId}
+                    />
+                  </div>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+                  {action.evidence?.outlookUrl ? (
+                    <a
+                      href={action.evidence.outlookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Outlook
+                    </a>
                   ) : null}
                 </div>
-              ) : null}
-              {action.sourceCommunicationId ? (
-                <div className="mt-3">
-                  <SourceCommunicationInline
-                    communicationId={action.sourceCommunicationId}
-                  />
-                </div>
-              ) : null}
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
-                {action.evidence?.outlookUrl ? (
-                  <a
-                    href={action.evidence.outlookUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    Outlook
-                  </a>
+                {[
+                  ...action.linkedContactCandidates,
+                  ...action.linkedDealCandidates,
+                ].length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {[
+                      ...action.linkedContactCandidates,
+                      ...action.linkedDealCandidates,
+                    ].map((candidate) => (
+                      <span
+                        key={`${action.id}-${candidate.kind}-${candidate.id}`}
+                        className="rounded-full border border-border px-2 py-1 text-[11px] text-muted-foreground"
+                      >
+                        {candidate.label}{" "}
+                        {Math.round(candidate.confidence * 100)}%
+                      </span>
+                    ))}
+                  </div>
                 ) : null}
-              </div>
-              {[
-                ...action.linkedContactCandidates,
-                ...action.linkedDealCandidates,
-              ].length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {[
-                    ...action.linkedContactCandidates,
-                    ...action.linkedDealCandidates,
-                  ].map((candidate) => (
-                    <span
-                      key={`${action.id}-${candidate.kind}-${candidate.id}`}
-                      className="rounded-full border border-border px-2 py-1 text-[11px] text-muted-foreground"
-                    >
-                      {candidate.label} {Math.round(candidate.confidence * 100)}
-                      %
-                    </span>
-                  ))}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    className="h-8"
+                    onClick={() => handleAction(action.id, "approve")}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={() => handleAction(action.id, "snooze")}
+                  >
+                    Snooze
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={() => handleAction(action.id, "reject")}
+                  >
+                    Reject
+                  </Button>
                 </div>
-              ) : null}
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  className="h-8"
-                  onClick={() => handleAction(action.id, "approve")}
-                >
-                  Approve
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8"
-                  onClick={() => handleAction(action.id, "snooze")}
-                >
-                  Snooze
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8"
-                  onClick={() => handleAction(action.id, "reject")}
-                >
-                  Reject
-                </Button>
               </div>
-            </div>
             )
           })}
         </div>

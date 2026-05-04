@@ -12,9 +12,9 @@ import { db } from "@/lib/prisma"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CandidateThreadSummary } from "@/components/contact-candidates/thread-summary"
 import { CandidateActions } from "./_components/candidate-actions"
 import { ContactCandidateSignOutButton } from "./_components/sign-out-button"
+import { CandidateThreadSummary } from "@/components/contact-candidates/thread-summary"
 import {
   contactCandidateSignInUrl,
   resolveContactCandidatePageAccess,
@@ -236,9 +236,11 @@ function CandidateCard({
     company: string | null
     email: string | null
   }>
-  cachedThreadSummary:
-    | { summary: string; generatedAt: string; modelUsed: string }
-    | null
+  cachedThreadSummary: {
+    summary: string
+    generatedAt: string
+    modelUsed: string
+  } | null
 }) {
   const preferredContactId =
     candidate.suggestedContactId ??
@@ -460,7 +462,6 @@ function bodySnippet(body: string | null | undefined): string | null {
   if (cleaned.length === 0) return null
   return cleaned.length > 280 ? cleaned.slice(0, 280) + "…" : cleaned
 }
-
 
 function metadataToString(value: unknown): string {
   return JSON.stringify(value ?? {}, null, 2)

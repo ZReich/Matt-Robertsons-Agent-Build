@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 
 import {
-  requireApiUser,
-  validateJsonMutationRequest,
-} from "@/lib/api-route-auth"
-import {
   ContactSummarizerError,
   getOrGenerateContactSummary,
 } from "@/lib/ai/contact-summarizer"
+import {
+  requireApiUser,
+  validateJsonMutationRequest,
+} from "@/lib/api-route-auth"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 120

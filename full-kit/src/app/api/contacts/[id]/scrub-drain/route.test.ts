@@ -30,9 +30,12 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
     ;(requireApiUser as any).mockResolvedValueOnce(
       NextResponse.json({ error: "unauthorized" }, { status: 401 })
     )
-    const res = await POST(makeReq() as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
+    const res = await POST(
+      makeReq() as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
+    )
     expect(res.status).toBe(401)
   })
 
@@ -41,9 +44,12 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
     const { db } = await import("@/lib/prisma")
     ;(requireApiUser as any).mockResolvedValueOnce(null)
     ;(db.contact.findUnique as any).mockResolvedValueOnce(null)
-    const res = await POST(makeReq() as any, {
-      params: Promise.resolve({ id: "missing" }),
-    } as any)
+    const res = await POST(
+      makeReq() as any,
+      {
+        params: Promise.resolve({ id: "missing" }),
+      } as any
+    )
     expect(res.status).toBe(404)
     const body = await res.json()
     expect(body.error).toBe("contact_not_found")
@@ -64,7 +70,6 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
         { communicationId: "comm-3" },
       ])
       .mockResolvedValueOnce([])
-
     ;(scrubEmailBatch as any).mockResolvedValueOnce({
       status: "ok",
       processed: 3,
@@ -79,9 +84,12 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
       mode: "strict",
     })
 
-    const res = await POST(makeReq() as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
+    const res = await POST(
+      makeReq() as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
+    )
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body).toEqual({
@@ -107,9 +115,12 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
     ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1" })
     ;(db.scrubQueue.findMany as any).mockResolvedValueOnce([])
 
-    const res = await POST(makeReq() as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
+    const res = await POST(
+      makeReq() as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
+    )
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.batches).toBe(0)
@@ -142,9 +153,12 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
       mode: "strict",
     })
 
-    const res = await POST(makeReq() as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
+    const res = await POST(
+      makeReq() as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
+    )
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.batches).toBe(1)
@@ -177,9 +191,12 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
     })
     ;(db.scrubQueue.count as any).mockResolvedValueOnce(42)
 
-    const res = await POST(makeReq() as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
+    const res = await POST(
+      makeReq() as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
+    )
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.batches).toBe(20)

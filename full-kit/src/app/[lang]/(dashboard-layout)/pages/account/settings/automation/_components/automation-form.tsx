@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -74,7 +74,8 @@ export function AutomationForm({ initial }: Props) {
                 When OFF (recommended starting state): inbound platform leads
                 generate a draft reply that sits in the Pending Replies queue
                 until you click Send. When ON: the AI draft is sent
-                automatically from Matt&apos;s mailbox the moment a lead arrives.
+                automatically from Matt&apos;s mailbox the moment a lead
+                arrives.
               </p>
             </div>
             <Switch
@@ -90,10 +91,10 @@ export function AutomationForm({ initial }: Props) {
                 Auto-send Daily Listings matches
               </Label>
               <p className="text-xs text-muted-foreground">
-                When ON: every morning, the Daily Listings email is parsed,
-                each new listing is scored against criteria-tagged contacts,
-                and matches above the threshold get a draft sent automatically.
-                When OFF: drafts are queued for review.
+                When ON: every morning, the Daily Listings email is parsed, each
+                new listing is scored against criteria-tagged contacts, and
+                matches above the threshold get a draft sent automatically. When
+                OFF: drafts are queued for review.
               </p>
             </div>
             <Switch
@@ -113,8 +114,8 @@ export function AutomationForm({ initial }: Props) {
                 re-engagement emails via Graph instead of queueing them as
                 Pending Replies. Defaults OFF — past-client outreach has a
                 different audience and risk profile than current-prospect
-                daily-match alerts. Recommend reviewing the first batch by
-                hand before flipping this on.
+                daily-match alerts. Recommend reviewing the first batch by hand
+                before flipping this on.
               </p>
             </div>
             <Switch
@@ -148,7 +149,9 @@ export function AutomationForm({ initial }: Props) {
                   autoMatchScoreThreshold: Number(e.target.value) || 50,
                 })
               }
-              onBlur={() => toggle("autoMatchScoreThreshold", form.autoMatchScoreThreshold)}
+              onBlur={() =>
+                toggle("autoMatchScoreThreshold", form.autoMatchScoreThreshold)
+              }
             />
             <p className="text-xs text-muted-foreground">
               Below this, matches are logged but no draft is created.
@@ -172,7 +175,9 @@ export function AutomationForm({ initial }: Props) {
                   dailyMatchPerContactCap: Number(e.target.value) || 1,
                 })
               }
-              onBlur={() => toggle("dailyMatchPerContactCap", form.dailyMatchPerContactCap)}
+              onBlur={() =>
+                toggle("dailyMatchPerContactCap", form.dailyMatchPerContactCap)
+              }
             />
             <p className="text-xs text-muted-foreground">
               Prevents spamming a contact whose criteria matches many new
@@ -207,9 +212,9 @@ export function AutomationForm({ initial }: Props) {
             <p className="text-xs text-muted-foreground">
               How many months ahead of <code>leaseEndDate</code> the daily
               renewal sweep starts firing. Default 6 — Matt&apos;s typical
-              re-engagement window. The first sweep that lands inside
-              this window per lease creates a Todo + calendar event +
-              draft re-engagement email.
+              re-engagement window. The first sweep that lands inside this
+              window per lease creates a Todo + calendar event + draft
+              re-engagement email.
             </p>
           </div>
         </CardContent>
@@ -218,8 +223,15 @@ export function AutomationForm({ initial }: Props) {
       <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
         <p className="mb-1 font-medium text-foreground">Heads up</p>
         <ul className="grid gap-1">
-          <li>• Auto-send requires the Azure app registration to have <code>Mail.Send</code> permission with admin consent. If you flip it on and Graph returns 403, the draft falls back to the queue.</li>
-          <li>• Sensitive emails (containing financial keywords) always skip auto-send regardless of these toggles.</li>
+          <li>
+            • Auto-send requires the Azure app registration to have{" "}
+            <code>Mail.Send</code> permission with admin consent. If you flip it
+            on and Graph returns 403, the draft falls back to the queue.
+          </li>
+          <li>
+            • Sensitive emails (containing financial keywords) always skip
+            auto-send regardless of these toggles.
+          </li>
           <li>• Toggles save on click; numeric inputs save on blur.</li>
         </ul>
       </div>
@@ -237,10 +249,10 @@ export function AutomationForm({ initial }: Props) {
             anything that trips the sensitive-content filter.
           </p>
           <p className="text-xs text-muted-foreground">
-            Costs roughly $0.001–0.003 per contact via DeepSeek. Pick how
-            many to process below — &quot;All&quot; covers the full database
-            (~2,300 today) for around $4–7. Re-runs are safe; already-tagged
-            contacts are skipped automatically.
+            Costs roughly $0.001–0.003 per contact via DeepSeek. Pick how many
+            to process below — &quot;All&quot; covers the full database (~2,300
+            today) for around $4–7. Re-runs are safe; already-tagged contacts
+            are skipped automatically.
           </p>
           <BackfillButton />
         </CardContent>
@@ -335,7 +347,8 @@ function BackfillButton() {
               disabled={running}
               onChange={(e) => {
                 const n = Number(e.target.value)
-                if (Number.isFinite(n)) setContactLimit(Math.max(1, Math.min(ALL_CONTACTS, n)))
+                if (Number.isFinite(n))
+                  setContactLimit(Math.max(1, Math.min(ALL_CONTACTS, n)))
               }}
             />
             <Button
@@ -350,8 +363,8 @@ function BackfillButton() {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            How many contacts to scan in one run. Use the &quot;All&quot;
-            button for the full ~2,300-contact sweep.
+            How many contacts to scan in one run. Use the &quot;All&quot; button
+            for the full ~2,300-contact sweep.
           </p>
         </div>
         <div className="grid gap-1.5">
@@ -367,7 +380,8 @@ function BackfillButton() {
             disabled={running}
             onChange={(e) => {
               const n = Number(e.target.value)
-              if (Number.isFinite(n)) setLookbackDays(Math.max(7, Math.min(365, n)))
+              if (Number.isFinite(n))
+                setLookbackDays(Math.max(7, Math.min(365, n)))
             }}
           />
           <p className="text-xs text-muted-foreground">

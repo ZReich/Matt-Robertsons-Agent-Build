@@ -1,8 +1,9 @@
+import { Prisma } from "@prisma/client"
+
 import type {
   AttachmentFetchMeta,
   AttachmentMeta,
 } from "@/lib/communications/attachment-types"
-import { Prisma } from "@prisma/client"
 import type {
   BuildoutEventExtract,
   CrexiLeadExtract,
@@ -20,9 +21,6 @@ import type {
 import type { NormalizedSender } from "./sender-normalize"
 
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
-import { processBuildoutStageUpdate } from "@/lib/deals/buildout-stage-action"
-import { proposeBuyerRepDeal } from "@/lib/deals/buyer-rep-action"
-import { classifyBuyerRepSignal } from "@/lib/deals/buyer-rep-detector"
 import {
   CONTACT_AUTO_PROMOTION_POLICY_VERSION,
   evaluateContactAutoPromotion,
@@ -30,6 +28,9 @@ import {
   hasRealAttachmentEvidenceFromMetadata,
   readContactAutoPromotionMode,
 } from "@/lib/contact-auto-promotion-policy"
+import { processBuildoutStageUpdate } from "@/lib/deals/buildout-stage-action"
+import { proposeBuyerRepDeal } from "@/lib/deals/buyer-rep-action"
+import { classifyBuyerRepSignal } from "@/lib/deals/buyer-rep-detector"
 import { db } from "@/lib/prisma"
 
 import { graphFetch } from "./client"
@@ -507,105 +508,109 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
 
   try {
     await db.$transaction(async (tx) => {
-    const sync = await tx.externalSync.create({
-      data: {
-        source: "msgraph-email",
-        externalId: p.message.id,
-        entityType: "communication",
-        status: "synced",
-        rawData: {
-          folder: p.folder,
-          graphSnapshot: pruneGraphSnapshot(
-            p.message
-          ) as unknown as Prisma.InputJsonValue,
-        } as Prisma.InputJsonValue,
-      },
-    })
-    const autoLead = await resolveAutoPlatformLeadContact(
-      tx,
-      p.extracted,
-      p.message,
-      dateIso
-    )
-    if (autoLead) {
-      resolvedContactId = autoLead.contactId
-      resolvedLeadContactId = autoLead.contactId
-      resolvedLeadCreated = autoLead.created
-      resolvedContactCreated = autoLead.created
-      metadata.leadContactId = autoLead.contactId
-      metadata.leadCreated = autoLead.created || undefined
-    }
-    const comm = await tx.communication.create({
-      data: {
-        channel: "email",
-        subject: p.message.subject ?? null,
-        body: storeBody ? (p.message.body?.content ?? null) : null,
-        date: new Date(dateIso),
-        direction,
-        category: "business",
-        externalMessageId: p.message.id,
-        conversationId: p.message.conversationId ?? null,
-        externalSyncId: sync.id,
-        contactId: resolvedContactId,
-        dealId: p.dealIdOverride ?? null,
-        createdBy: "msgraph-email",
-        tags: [],
-        metadata: metadata as Prisma.InputJsonValue,
-      },
-      select: { id: true },
-    })
-    resolvedCommunicationId = comm.id
-    await tx.externalSync.update({
-      where: { id: sync.id },
-      data: { entityId: comm.id },
-    })
-    resolvedContactCreated =
-      (await autoPromoteOrUpsertEmailSenderContact(tx, p, comm.id, dateIso)) ||
-      resolvedContactCreated
-    resolvedContactCreated =
-      (await autoPromoteOutboundSingleRecipient(tx, p, comm.id, dateIso)) ||
-      resolvedContactCreated
-    const auditTx = tx as Prisma.TransactionClient & {
-      emailFilterAudit?: Pick<
-        Prisma.TransactionClient["emailFilterAudit"],
-        "create"
-      >
-    }
-    if (auditTx.emailFilterAudit?.create) {
-      await auditTx.emailFilterAudit.create({
+      const sync = await tx.externalSync.create({
         data: {
-          runId: "inline-msgraph-sync",
-          chunkId: `${p.folder}-inline`,
-          externalMessageId: p.message.id,
-          internetMessageId: p.message.internetMessageId ?? null,
-          communicationId: comm.id,
-          externalSyncId: sync.id,
-          ruleId: p.acquisition.ruleId,
-          ruleVersion: p.acquisition.ruleVersion,
-          classification: p.classification.classification,
-          bodyDecision: p.acquisition.bodyDecision,
-          disposition: p.acquisition.disposition,
-          riskFlags: p.acquisition.riskFlags as Prisma.InputJsonValue,
-          rescueFlags: p.acquisition.rescueFlags as Prisma.InputJsonValue,
-          evidenceSnapshot: p.acquisition
-            .evidenceSnapshot as Prisma.InputJsonValue,
-          sampled: false,
-          reviewOutcome: "not_reviewed",
-          bodyAvailable: !!p.message.body?.content,
-          bodyLength: p.message.body?.content?.length ?? 0,
-          bodyContentType: p.message.body?.contentType ?? null,
-          redactionStatus: "not_required",
+          source: "msgraph-email",
+          externalId: p.message.id,
+          entityType: "communication",
+          status: "synced",
+          rawData: {
+            folder: p.folder,
+            graphSnapshot: pruneGraphSnapshot(
+              p.message
+            ) as unknown as Prisma.InputJsonValue,
+          } as Prisma.InputJsonValue,
         },
       })
-    }
-    // Enqueue for AI scrub — same transaction as the Communication
-    // insert so either both land or neither does. enqueueScrubForCommunication
-    // is a no-op for "noise" classification.
-    await enqueueScrubForCommunication(
-      tx,
-      comm.id,
-      p.classification.classification
-    )
+      const autoLead = await resolveAutoPlatformLeadContact(
+        tx,
+        p.extracted,
+        p.message,
+        dateIso
+      )
+      if (autoLead) {
+        resolvedContactId = autoLead.contactId
+        resolvedLeadContactId = autoLead.contactId
+        resolvedLeadCreated = autoLead.created
+        resolvedContactCreated = autoLead.created
+        metadata.leadContactId = autoLead.contactId
+        metadata.leadCreated = autoLead.created || undefined
+      }
+      const comm = await tx.communication.create({
+        data: {
+          channel: "email",
+          subject: p.message.subject ?? null,
+          body: storeBody ? (p.message.body?.content ?? null) : null,
+          date: new Date(dateIso),
+          direction,
+          category: "business",
+          externalMessageId: p.message.id,
+          conversationId: p.message.conversationId ?? null,
+          externalSyncId: sync.id,
+          contactId: resolvedContactId,
+          dealId: p.dealIdOverride ?? null,
+          createdBy: "msgraph-email",
+          tags: [],
+          metadata: metadata as Prisma.InputJsonValue,
+        },
+        select: { id: true },
+      })
+      resolvedCommunicationId = comm.id
+      await tx.externalSync.update({
+        where: { id: sync.id },
+        data: { entityId: comm.id },
+      })
+      resolvedContactCreated =
+        (await autoPromoteOrUpsertEmailSenderContact(
+          tx,
+          p,
+          comm.id,
+          dateIso
+        )) || resolvedContactCreated
+      resolvedContactCreated =
+        (await autoPromoteOutboundSingleRecipient(tx, p, comm.id, dateIso)) ||
+        resolvedContactCreated
+      const auditTx = tx as Prisma.TransactionClient & {
+        emailFilterAudit?: Pick<
+          Prisma.TransactionClient["emailFilterAudit"],
+          "create"
+        >
+      }
+      if (auditTx.emailFilterAudit?.create) {
+        await auditTx.emailFilterAudit.create({
+          data: {
+            runId: "inline-msgraph-sync",
+            chunkId: `${p.folder}-inline`,
+            externalMessageId: p.message.id,
+            internetMessageId: p.message.internetMessageId ?? null,
+            communicationId: comm.id,
+            externalSyncId: sync.id,
+            ruleId: p.acquisition.ruleId,
+            ruleVersion: p.acquisition.ruleVersion,
+            classification: p.classification.classification,
+            bodyDecision: p.acquisition.bodyDecision,
+            disposition: p.acquisition.disposition,
+            riskFlags: p.acquisition.riskFlags as Prisma.InputJsonValue,
+            rescueFlags: p.acquisition.rescueFlags as Prisma.InputJsonValue,
+            evidenceSnapshot: p.acquisition
+              .evidenceSnapshot as Prisma.InputJsonValue,
+            sampled: false,
+            reviewOutcome: "not_reviewed",
+            bodyAvailable: !!p.message.body?.content,
+            bodyLength: p.message.body?.content?.length ?? 0,
+            bodyContentType: p.message.body?.contentType ?? null,
+            redactionStatus: "not_required",
+          },
+        })
+      }
+      // Enqueue for AI scrub — same transaction as the Communication
+      // insert so either both land or neither does. enqueueScrubForCommunication
+      // is a no-op for "noise" classification.
+      await enqueueScrubForCommunication(
+        tx,
+        comm.id,
+        p.classification.classification
+      )
     })
   } catch (err) {
     // Race between live-ingest and the contact-mailbox backfill on the

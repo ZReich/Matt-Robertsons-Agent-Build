@@ -24,7 +24,9 @@ export async function processInBatches<T, R>(
   fn: (item: T) => Promise<R>
 ): Promise<PromiseSettledResult<R>[]> {
   if (batchSize < 1) {
-    throw new Error(`processInBatches: batchSize must be >= 1 (got ${batchSize})`)
+    throw new Error(
+      `processInBatches: batchSize must be >= 1 (got ${batchSize})`
+    )
   }
   const out: PromiseSettledResult<R>[] = []
   for (let i = 0; i < items.length; i += batchSize) {

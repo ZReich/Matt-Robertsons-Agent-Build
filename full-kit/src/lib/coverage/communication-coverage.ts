@@ -759,8 +759,10 @@ export async function applyCoverageReviewActionBatch(
     }
     if (result.unsupportedReason !== undefined)
       row.unsupportedReason = result.unsupportedReason
-    if (result.reviewStatus !== undefined) row.reviewStatus = result.reviewStatus
-    if (result.scrubQueueId !== undefined) row.scrubQueueId = result.scrubQueueId
+    if (result.reviewStatus !== undefined)
+      row.reviewStatus = result.reviewStatus
+    if (result.scrubQueueId !== undefined)
+      row.scrubQueueId = result.scrubQueueId
     results.push(row)
     if (APPLIED_BATCH_STATUSES.has(result.status)) applied++
     else if (result.status === "unsupported") unsupported++
@@ -820,10 +822,7 @@ async function applyDeterministicLinkContact(
     return unsupportedResult(input, review, "no_active_contact_match")
   }
 
-  if (
-    sourceEmail.contactId &&
-    sourceEmail.contactId !== resolution.contactId
-  ) {
+  if (sourceEmail.contactId && sourceEmail.contactId !== resolution.contactId) {
     return unsupportedResult(input, review, "conflicting_contact_link")
   }
   if (sourceEmail.contactId === resolution.contactId) {
@@ -1059,14 +1058,11 @@ async function runReviewMutation<T>(
         // a regressed/missing lock path; the status-guarded updateMany still
         // prevents corruption, but a silent catch would hide a broken lock
         // until something else exploded.
-        console.error(
-          "[coverage] runReviewMutation row lock failed",
-          {
-            reviewItemId,
-            message:
-              lockError instanceof Error ? lockError.message : String(lockError),
-          }
-        )
+        console.error("[coverage] runReviewMutation row lock failed", {
+          reviewItemId,
+          message:
+            lockError instanceof Error ? lockError.message : String(lockError),
+        })
       }
     }
     return fn(tx as CoverageDb)

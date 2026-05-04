@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { nextClientType } from "./role-lifecycle"
 import type { RoleLifecycleDeal } from "./role-lifecycle"
+
+import { nextClientType } from "./role-lifecycle"
 
 const NOW = new Date("2026-05-01T00:00:00Z")
 const EARLIER = new Date("2026-01-01T00:00:00Z")

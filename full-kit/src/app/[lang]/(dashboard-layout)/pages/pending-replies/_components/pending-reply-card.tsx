@@ -1,8 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { toast } from "sonner"
 import { Check, Clipboard, Pencil, Send, X } from "lucide-react"
 
@@ -28,12 +28,19 @@ export interface PendingReplyCardProps {
     approvedAt: string | null
     dismissedAt: string | null
     dismissReason: string | null
-    property:
-      | { id: string; name: string | null; address: string; listingUrl: string | null }
-      | null
-    contact:
-      | { id: string; name: string; company: string | null; email: string | null; phone: string | null }
-      | null
+    property: {
+      id: string
+      name: string | null
+      address: string
+      listingUrl: string | null
+    } | null
+    contact: {
+      id: string
+      name: string
+      company: string | null
+      email: string | null
+      phone: string | null
+    } | null
     triggerCommunicationId: string | null
     suggestedProperties: Array<{
       propertyId: string
@@ -134,7 +141,9 @@ export function PendingReplyCard({ lang, reply }: PendingReplyCardProps) {
       await navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`)
       toast.success("Draft copied to clipboard")
     } catch {
-      toast.error("Could not copy — your browser may have blocked clipboard access")
+      toast.error(
+        "Could not copy — your browser may have blocked clipboard access"
+      )
     }
   }
 
@@ -186,7 +195,10 @@ export function PendingReplyCard({ lang, reply }: PendingReplyCardProps) {
               <label className="mb-1 block text-xs font-medium text-muted-foreground">
                 Subject
               </label>
-              <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
+              <Input
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-muted-foreground">
@@ -203,11 +215,15 @@ export function PendingReplyCard({ lang, reply }: PendingReplyCardProps) {
         ) : (
           <>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Subject</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Subject
+              </p>
               <p className="text-sm font-medium">{subject}</p>
             </div>
             <div>
-              <p className="mb-1 text-xs font-medium text-muted-foreground">Body</p>
+              <p className="mb-1 text-xs font-medium text-muted-foreground">
+                Body
+              </p>
               <pre className="whitespace-pre-wrap rounded-md border bg-muted/30 p-3 text-sm font-sans">
                 {body}
               </pre>
@@ -235,14 +251,19 @@ export function PendingReplyCard({ lang, reply }: PendingReplyCardProps) {
             </p>
             <ul className="grid gap-1">
               {reply.suggestedProperties.map((s) => (
-                <li key={s.propertyId} className="flex items-center justify-between">
+                <li
+                  key={s.propertyId}
+                  className="flex items-center justify-between"
+                >
                   <Link
                     href={`/${lang}/pages/properties/${s.propertyId}`}
                     className="hover:underline"
                   >
                     {s.name ? `${s.name} — ${s.address}` : s.address}
                   </Link>
-                  <span className="text-muted-foreground">{s.score}% match</span>
+                  <span className="text-muted-foreground">
+                    {s.score}% match
+                  </span>
                 </li>
               ))}
             </ul>
@@ -289,7 +310,12 @@ export function PendingReplyCard({ lang, reply }: PendingReplyCardProps) {
               <Clipboard className="mr-1 size-4" /> Copy
             </Button>
             <div className="ml-auto flex items-center gap-2">
-              <Button size="sm" variant="ghost" onClick={dismiss} disabled={submitting}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={dismiss}
+                disabled={submitting}
+              >
                 <X className="mr-1 size-4" /> Dismiss
               </Button>
               <Button

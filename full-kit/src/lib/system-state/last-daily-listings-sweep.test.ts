@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import {
+  getLastDailyListingsSweep,
+  setLastDailyListingsSweep,
+} from "./last-daily-listings-sweep"
+
 vi.mock("server-only", () => ({}))
 
 const findUnique = vi.fn()
@@ -13,11 +18,6 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }))
-
-import {
-  getLastDailyListingsSweep,
-  setLastDailyListingsSweep,
-} from "./last-daily-listings-sweep"
 
 beforeEach(() => {
   findUnique.mockReset()

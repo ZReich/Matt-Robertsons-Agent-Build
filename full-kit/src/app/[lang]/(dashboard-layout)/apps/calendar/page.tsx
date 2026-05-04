@@ -1,15 +1,14 @@
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import type { Metadata } from "next"
-
-import { db } from "@/lib/prisma"
-
-import { CalendarGrid } from "./_components/calendar-grid"
-
 import type {
   CalendarEventDTO,
   CalendarMeetingDTO,
 } from "./_components/calendar-grid"
+
+import { db } from "@/lib/prisma"
+
+import { CalendarGrid } from "./_components/calendar-grid"
 
 export const metadata: Metadata = {
   title: "Calendar",
@@ -117,8 +116,7 @@ export default async function CalendarPage({ params }: Props) {
       ? {
           id: e.leaseRecord.id,
           leaseEndDate: e.leaseRecord.leaseEndDate?.toISOString() ?? null,
-          leaseStartDate:
-            e.leaseRecord.leaseStartDate?.toISOString() ?? null,
+          leaseStartDate: e.leaseRecord.leaseStartDate?.toISOString() ?? null,
           leaseTermMonths: e.leaseRecord.leaseTermMonths,
           rentAmount: e.leaseRecord.rentAmount?.toString() ?? null,
           rentPeriod: e.leaseRecord.rentPeriod,

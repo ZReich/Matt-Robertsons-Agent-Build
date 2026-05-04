@@ -27,7 +27,9 @@ describe("containsSensitiveContent", () => {
       "Attached is the bank statement for review."
     )
     expect(r.tripped).toBe(true)
-    expect(r.reasons.some((reason) => reason.includes("bank statement"))).toBe(true)
+    expect(r.reasons.some((reason) => reason.includes("bank statement"))).toBe(
+      true
+    )
   })
 
   it("flags routing number context but not raw 9-digit codes alone", () => {
@@ -79,7 +81,9 @@ describe("containsSensitiveContent", () => {
     )
     expect(r.tripped).toBe(true)
     expect(
-      r.reasons.some((reason) => reason.includes("loan") || reason.includes("promissory"))
+      r.reasons.some(
+        (reason) => reason.includes("loan") || reason.includes("promissory")
+      )
     ).toBe(true)
   })
 
@@ -91,16 +95,18 @@ describe("containsSensitiveContent", () => {
 
   it("flags 1099 / W-9 / K-1 tax document references", () => {
     expect(containsSensitiveContent("1099 for 2025", null).tripped).toBe(true)
-    expect(containsSensitiveContent(null, "Please return signed W-9").tripped).toBe(true)
+    expect(
+      containsSensitiveContent(null, "Please return signed W-9").tripped
+    ).toBe(true)
     expect(
       containsSensitiveContent(null, "Your K-1 is attached for taxes.").tripped
     ).toBe(true)
   })
 
   it("flags ITIN and checking/savings account references", () => {
-    expect(
-      containsSensitiveContent("New ITIN application", null).tripped
-    ).toBe(true)
+    expect(containsSensitiveContent("New ITIN application", null).tripped).toBe(
+      true
+    )
     expect(
       containsSensitiveContent(
         null,
@@ -116,9 +122,9 @@ describe("containsSensitiveContent", () => {
   })
 
   it("flags SSN with spaces in addition to dashes", () => {
-    expect(containsSensitiveContent(null, "His SSN is 123 45 6789").tripped).toBe(
-      true
-    )
+    expect(
+      containsSensitiveContent(null, "His SSN is 123 45 6789").tripped
+    ).toBe(true)
   })
 
   it("does not flag a 9-digit number outside banking context", () => {

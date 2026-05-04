@@ -40,13 +40,15 @@ describe("POST /api/contacts/[id]/email-backfill", () => {
       durationMs: 1000,
       windowsSearched: [],
     })
-    const req = new Request(
-      "http://localhost/api/contacts/c1/email-backfill",
-      { method: "POST" }
+    const req = new Request("http://localhost/api/contacts/c1/email-backfill", {
+      method: "POST",
+    })
+    const res = await POST(
+      req as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
     )
-    const res = await POST(req as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.status).toBe("succeeded")
@@ -66,13 +68,15 @@ describe("POST /api/contacts/[id]/email-backfill", () => {
       id: "r0",
       startedAt: new Date(Date.now() - 60_000),
     })
-    const req = new Request(
-      "http://localhost/api/contacts/c1/email-backfill",
-      { method: "POST" }
+    const req = new Request("http://localhost/api/contacts/c1/email-backfill", {
+      method: "POST",
+    })
+    const res = await POST(
+      req as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
     )
-    const res = await POST(req as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
     expect(res.status).toBe(429)
     const body = await res.json()
     expect(body.error).toBe("rate_limited")
@@ -89,13 +93,15 @@ describe("POST /api/contacts/[id]/email-backfill", () => {
     ;(requireApiUser as any).mockResolvedValueOnce(
       NextResponseModule.json({ error: "unauthorized" }, { status: 401 })
     )
-    const req = new Request(
-      "http://localhost/api/contacts/c1/email-backfill",
-      { method: "POST" }
+    const req = new Request("http://localhost/api/contacts/c1/email-backfill", {
+      method: "POST",
+    })
+    const res = await POST(
+      req as any,
+      {
+        params: Promise.resolve({ id: "c1" }),
+      } as any
     )
-    const res = await POST(req as any, {
-      params: Promise.resolve({ id: "c1" }),
-    } as any)
     expect(res.status).toBe(401)
   })
 })

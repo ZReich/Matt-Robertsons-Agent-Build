@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server"
 
 import {
+  processBuildoutStageUpdate,
+  processUnprocessedBuildoutStageUpdates,
+} from "@/lib/deals/buildout-stage-action"
+import {
   ReviewerAuthError,
   assertJsonRequest,
   assertSameOriginRequest,
   requireAgentReviewer,
 } from "@/lib/reviewer-auth"
-import {
-  processBuildoutStageUpdate,
-  processUnprocessedBuildoutStageUpdates,
-} from "@/lib/deals/buildout-stage-action"
 
 /**
  * POST /api/buildout/process-stage-updates

@@ -202,9 +202,7 @@ function computeSourceHash(
   // catches in-place edits to a comm's body/subject (e.g., Plaud
   // retranscribe, manual note correction). Without it, the cache would
   // never invalidate on body edits since the id-set is identical.
-  const tuples = comms
-    .map((c) => `${c.id}@${c.updatedAt.toISOString()}`)
-    .sort()
+  const tuples = comms.map((c) => `${c.id}@${c.updatedAt.toISOString()}`).sort()
   return crypto.createHash("sha256").update(tuples.join("|")).digest("hex")
 }
 

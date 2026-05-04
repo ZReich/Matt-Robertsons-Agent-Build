@@ -1,8 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import {
-  BackfillAlreadyRunningError,
-  backfillMailboxForContact,
-} from "./index"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+import { BackfillAlreadyRunningError, backfillMailboxForContact } from "./index"
 
 vi.mock("./graph-query", () => ({
   fetchMessagesForContactWindow: vi.fn(),
@@ -41,16 +39,23 @@ describe("backfillMailboxForContact", () => {
     ;(db.contact.findUnique as any).mockResolvedValueOnce(null)
     ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
 
-    const result = await backfillMailboxForContact("missing", { mode: "lifetime" })
+    const result = await backfillMailboxForContact("missing", {
+      mode: "lifetime",
+    })
     expect(result.status).toBe("failed")
     expect(db.backfillRun.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: "failed" }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "failed" }),
+      })
     )
   })
 
   it("returns skipped when contact has no email", async () => {
     const { db } = await import("@/lib/prisma")
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: null })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: null,
+    })
     ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
 
     const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
@@ -59,12 +64,17 @@ describe("backfillMailboxForContact", () => {
 
   it("returns skipped for deal-anchored with no anchor", async () => {
     const { db } = await import("@/lib/prisma")
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
     ;(db.communication.findMany as any).mockResolvedValueOnce([])
     ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
 
-    const result = await backfillMailboxForContact("c1", { mode: "deal-anchored" })
+    const result = await backfillMailboxForContact("c1", {
+      mode: "deal-anchored",
+    })
     expect(result.status).toBe("skipped")
   })
 
@@ -73,7 +83,10 @@ describe("backfillMailboxForContact", () => {
     const { fetchMessagesForContactWindow } = await import("./graph-query")
     const { ingestSingleBackfillMessage } = await import("./ingest-message")
 
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
     ;(db.contact.findMany as any).mockResolvedValueOnce([])
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
     ;(db.communication.findMany as any)
@@ -86,9 +99,21 @@ describe("backfillMailboxForContact", () => {
       { id: "m3" },
     ])
     ;(ingestSingleBackfillMessage as any)
-      .mockResolvedValueOnce({ communicationId: "comm-1", deduped: false, classification: "signal" })
-      .mockResolvedValueOnce({ communicationId: "comm-2", deduped: true, classification: "noise" })
-      .mockResolvedValueOnce({ communicationId: "comm-3", deduped: false, classification: "uncertain" })
+      .mockResolvedValueOnce({
+        communicationId: "comm-1",
+        deduped: false,
+        classification: "signal",
+      })
+      .mockResolvedValueOnce({
+        communicationId: "comm-2",
+        deduped: true,
+        classification: "noise",
+      })
+      .mockResolvedValueOnce({
+        communicationId: "comm-3",
+        deduped: false,
+        classification: "uncertain",
+      })
 
     const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
     expect(result.status).toBe("succeeded")
@@ -102,9 +127,14 @@ describe("backfillMailboxForContact", () => {
   it("does not re-enqueue when all existing comms are at current PROMPT_VERSION", async () => {
     const { db } = await import("@/lib/prisma")
     const { fetchMessagesForContactWindow } = await import("./graph-query")
-    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+    const { enqueueScrubForCommunication } = await import(
+      "@/lib/ai/scrub-queue"
+    )
 
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
     ;(db.contact.findMany as any).mockResolvedValueOnce([])
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
     ;(db.communication.findMany as any)
@@ -137,9 +167,14 @@ describe("backfillMailboxForContact", () => {
   it("re-enqueues comms whose scrub.promptVersion is older than current", async () => {
     const { db } = await import("@/lib/prisma")
     const { fetchMessagesForContactWindow } = await import("./graph-query")
-    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+    const { enqueueScrubForCommunication } = await import(
+      "@/lib/ai/scrub-queue"
+    )
 
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
     ;(db.contact.findMany as any).mockResolvedValueOnce([])
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
     ;(db.communication.findMany as any)
@@ -174,13 +209,21 @@ describe("backfillMailboxForContact", () => {
     expect(result.status).toBe("succeeded")
     expect(result.staleRescrubsEnqueued).toBe(2)
     expect(enqueueScrubForCommunication).toHaveBeenCalledTimes(2)
-    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(db, "stale-1", "signal")
-    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(db, "stale-2", "uncertain")
+    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(
+      db,
+      "stale-1",
+      "signal"
+    )
+    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(
+      db,
+      "stale-2",
+      "uncertain"
+    )
     // Existing scrub_queue rows are cleared first to avoid the unique-constraint conflict.
-    expect((db.scrubQueue.deleteMany as any)).toHaveBeenCalledWith({
+    expect(db.scrubQueue.deleteMany as any).toHaveBeenCalledWith({
       where: { communicationId: "stale-1" },
     })
-    expect((db.scrubQueue.deleteMany as any)).toHaveBeenCalledWith({
+    expect(db.scrubQueue.deleteMany as any).toHaveBeenCalledWith({
       where: { communicationId: "stale-2" },
     })
   })
@@ -188,9 +231,14 @@ describe("backfillMailboxForContact", () => {
   it("re-enqueues comms with no scrub metadata at all", async () => {
     const { db } = await import("@/lib/prisma")
     const { fetchMessagesForContactWindow } = await import("./graph-query")
-    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+    const { enqueueScrubForCommunication } = await import(
+      "@/lib/ai/scrub-queue"
+    )
 
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
     ;(db.contact.findMany as any).mockResolvedValueOnce([])
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
     ;(db.communication.findMany as any)
@@ -217,9 +265,14 @@ describe("backfillMailboxForContact", () => {
   it("does not re-enqueue stale comms classified as noise", async () => {
     const { db } = await import("@/lib/prisma")
     const { fetchMessagesForContactWindow } = await import("./graph-query")
-    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+    const { enqueueScrubForCommunication } = await import(
+      "@/lib/ai/scrub-queue"
+    )
 
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
     ;(db.contact.findMany as any).mockResolvedValueOnce([])
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
     ;(db.communication.findMany as any)
@@ -461,14 +514,22 @@ describe("backfillMailboxForContact", () => {
     const { fetchMessagesForContactWindow } = await import("./graph-query")
     const { ingestSingleBackfillMessage } = await import("./ingest-message")
 
-    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
     ;(db.contact.findMany as any).mockResolvedValueOnce([])
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
     ;(db.communication.findMany as any).mockResolvedValueOnce([])
     ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
-    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([{ id: "m1" }])
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([
+      { id: "m1" },
+    ])
 
-    const result = await backfillMailboxForContact("c1", { mode: "lifetime", dryRun: true })
+    const result = await backfillMailboxForContact("c1", {
+      mode: "lifetime",
+      dryRun: true,
+    })
     expect(ingestSingleBackfillMessage).not.toHaveBeenCalled()
     expect(result.messagesDiscovered).toBe(1)
     expect(result.ingested).toBe(0)

@@ -80,7 +80,10 @@ export function scorePropertyMatch(
   if (criteria.minSqft === undefined && criteria.maxSqft === undefined) {
     score += WEIGHT_SQFT
     reasons.push("no sqft preference")
-  } else if (property.squareFeet === null || property.squareFeet === undefined) {
+  } else if (
+    property.squareFeet === null ||
+    property.squareFeet === undefined
+  ) {
     score += Math.round(WEIGHT_SQFT * 0.3)
     reasons.push("sqft unknown on property")
   } else {

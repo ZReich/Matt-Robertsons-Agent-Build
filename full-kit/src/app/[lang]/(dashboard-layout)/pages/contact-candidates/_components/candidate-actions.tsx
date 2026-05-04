@@ -132,8 +132,8 @@ export function CandidateActions({
         {!hasMatchingContact ? (
           <p className="text-xs text-muted-foreground">
             No existing Contact matches this email or phone. Use{" "}
-            <span className="font-medium">Approve Contact</span> to create a
-            new one, or pick an existing Contact below to link to.
+            <span className="font-medium">Approve Contact</span> to create a new
+            one, or pick an existing Contact below to link to.
           </p>
         ) : null}
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">

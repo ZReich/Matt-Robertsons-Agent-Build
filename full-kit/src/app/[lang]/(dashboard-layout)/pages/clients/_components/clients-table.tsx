@@ -11,9 +11,8 @@ import {
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, ChevronUp, Search } from "lucide-react"
 
-import type { ColumnDef, SortingState } from "@tanstack/react-table"
-
 import type { ClientType } from "@prisma/client"
+import type { ColumnDef, SortingState } from "@tanstack/react-table"
 
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -126,7 +125,8 @@ export function ClientsTable({ clients }: ClientsTableProps) {
         header: "Type",
         cell: ({ getValue }) => {
           const value = getValue() as ClientType | null
-          if (!value) return <span className="text-sm text-muted-foreground">—</span>
+          if (!value)
+            return <span className="text-sm text-muted-foreground">—</span>
           return (
             <Badge variant="outline" className="text-xs">
               {CLIENT_TYPE_LABEL[value]}

@@ -522,9 +522,7 @@ describe("communication coverage service", () => {
         reasonCodes: ["orphaned_signal"],
         createdAt: new Date("2026-04-29T12:00:00Z"),
       }
-      const findMany = vi
-        .fn()
-        .mockResolvedValue([{ id: "should-not-be-used" }])
+      const findMany = vi.fn().mockResolvedValue([{ id: "should-not-be-used" }])
       const client = {
         operationalEmailReview: {
           findUnique: vi.fn().mockResolvedValue(review),
@@ -647,8 +645,8 @@ describe("communication coverage service", () => {
       },
       $queryRaw: queryRaw,
     }
-    client.$transaction = vi.fn(
-      async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+    client.$transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn(client)
     )
 
     const result = await applyCoverageReviewAction(
@@ -820,8 +818,8 @@ describe("communication coverage service", () => {
       },
       $queryRaw: queryRaw,
     }
-    client.$transaction = vi.fn(
-      async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+    client.$transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn(client)
     )
 
     const result = await applyCoverageReviewAction(
@@ -897,8 +895,8 @@ describe("communication coverage service", () => {
       },
       $queryRaw: queryRaw,
     }
-    client.$transaction = vi.fn(
-      async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+    client.$transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn(client)
     )
 
     const result = await applyCoverageReviewAction(
@@ -1673,11 +1671,13 @@ describe("communication coverage service", () => {
     })
 
     const client = {
-      $queryRaw: vi.fn().mockResolvedValue([
-        rawRow("comm-suppressed-1"),
-        rawRow("comm-suppressed-2"),
-        rawRow("comm-spillover"),
-      ]),
+      $queryRaw: vi
+        .fn()
+        .mockResolvedValue([
+          rawRow("comm-suppressed-1"),
+          rawRow("comm-suppressed-2"),
+          rawRow("comm-spillover"),
+        ]),
       operationalEmailReview: {
         // Every materialization returns terminal_suppressed for this fixture.
         findFirst: vi.fn().mockResolvedValue({
@@ -2161,8 +2161,8 @@ describe("communication coverage service", () => {
         upsert: vi.fn().mockResolvedValue({}),
       },
       $queryRaw: vi.fn().mockResolvedValue([]),
-      $transaction: vi.fn(
-        async (fn: (tx: unknown) => Promise<unknown>) => fn(client)
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn(client)
       ),
     }
 
@@ -2233,7 +2233,9 @@ describe("communication coverage service", () => {
         findUnique: vi.fn().mockResolvedValue({
           id: "comm-1",
           contactId: null,
-          metadata: { from: { address: "matt@robertson.com", isInternal: true } },
+          metadata: {
+            from: { address: "matt@robertson.com", isInternal: true },
+          },
         }),
       },
       contact: {

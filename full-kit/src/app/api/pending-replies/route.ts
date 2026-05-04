@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 
-import type { NextRequest } from "next/server"
 import type { PendingReplyStatus } from "@prisma/client"
+import type { NextRequest } from "next/server"
 
+import { generatePendingReply } from "@/lib/ai/auto-reply"
 import {
   requireApiUser,
   validateJsonMutationRequest,
 } from "@/lib/api-route-auth"
-import { generatePendingReply } from "@/lib/ai/auto-reply"
 import { db } from "@/lib/prisma"
 
 const STATUS_VALUES = new Set<PendingReplyStatus>([
@@ -57,14 +57,21 @@ export async function POST(request: Request): Promise<Response> {
   const invalidRequest = validateJsonMutationRequest(request)
   if (invalidRequest) return invalidRequest
 
-  let body: { propertyId?: unknown; contactId?: unknown; triggerCommunicationId?: unknown }
+  let body: {
+    propertyId?: unknown
+    contactId?: unknown
+    triggerCommunicationId?: unknown
+  }
   try {
     body = (await request.json()) as typeof body
   } catch {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 })
   }
 
-  if (typeof body.propertyId !== "string" || typeof body.contactId !== "string") {
+  if (
+    typeof body.propertyId !== "string" ||
+    typeof body.contactId !== "string"
+  ) {
     return NextResponse.json(
       { error: "propertyId and contactId are required strings" },
       { status: 400 }

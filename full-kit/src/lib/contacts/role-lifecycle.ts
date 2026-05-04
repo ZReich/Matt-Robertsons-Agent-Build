@@ -1,4 +1,4 @@
-import type { ClientType, DealType, DealOutcome } from "@prisma/client"
+import type { ClientType, DealOutcome, DealType } from "@prisma/client"
 
 /**
  * Minimal Deal shape required by `nextClientType`. Pure-function input —

@@ -1,5 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { db } from "@/lib/prisma"
+
+import {
+  LEASE_EXTRACTOR_VERSION,
+  callExtractor,
+  estimateExtractorUsd,
+  resolveExtractorModel,
+  runLeaseExtraction,
+  validateLeaseExtraction,
+} from "./lease-extractor"
+
 vi.mock("server-only", () => ({}))
 
 // Hoisted fake Anthropic client so vi.mock can wire it before any
@@ -16,17 +27,6 @@ const { mockMessagesCreate, MockAnthropicClass } = vi.hoisted(() => {
 vi.mock("@anthropic-ai/sdk", () => ({
   default: MockAnthropicClass,
 }))
-
-import { db } from "@/lib/prisma"
-
-import {
-  callExtractor,
-  estimateExtractorUsd,
-  LEASE_EXTRACTOR_VERSION,
-  resolveExtractorModel,
-  runLeaseExtraction,
-  validateLeaseExtraction,
-} from "./lease-extractor"
 
 vi.mock("@/lib/prisma", () => ({
   db: {
@@ -110,7 +110,10 @@ describe("validateLeaseExtraction — happy paths", () => {
 
 describe("validateLeaseExtraction — rejections", () => {
   it("rejects when contactName is empty", () => {
-    const r = validateLeaseExtraction({ ...VALID_LEASE, contactName: "  " }, "lease")
+    const r = validateLeaseExtraction(
+      { ...VALID_LEASE, contactName: "  " },
+      "lease"
+    )
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r.reason).toBe("contactName_missing_or_empty")
   })
@@ -230,7 +233,10 @@ describe("validateLeaseExtraction — rejections", () => {
   })
 
   it("rejects a missing/empty reasoning string", () => {
-    const r = validateLeaseExtraction({ ...VALID_LEASE, reasoning: "" }, "lease")
+    const r = validateLeaseExtraction(
+      { ...VALID_LEASE, reasoning: "" },
+      "lease"
+    )
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r.reason).toBe("reasoning_missing")
   })
@@ -468,12 +474,10 @@ describe("callExtractor (Anthropic Haiku tool-use wiring)", () => {
     // be called by the time the promise rejects.
     mockMessagesCreate.mockRejectedValueOnce(new Error("anthropic timeout"))
     const create = db.scrubApiCall.create as ReturnType<typeof vi.fn>
-    create.mockImplementationOnce(
-      async () => {
-        await new Promise((r) => setTimeout(r, 10))
-        return {} as never
-      }
-    )
+    create.mockImplementationOnce(async () => {
+      await new Promise((r) => setTimeout(r, 10))
+      return {} as never
+    })
 
     try {
       await callExtractor({
@@ -639,9 +643,7 @@ describe("runLeaseExtraction", () => {
       subject: "Lease executed — 303 N Broadway",
       body: "Brandon signed today, lease starts Feb 1.",
     })
-    const callExtractorFn = vi
-      .fn()
-      .mockResolvedValue(VALID_LEASE as never)
+    const callExtractorFn = vi.fn().mockResolvedValue(VALID_LEASE as never)
     const out = await runLeaseExtraction("c1", "closed_lease", {
       callExtractorFn,
       signals: ["fully executed"],

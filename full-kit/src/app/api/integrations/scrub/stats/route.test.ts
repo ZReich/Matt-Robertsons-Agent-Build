@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { authorizeScrubRequest } from "@/lib/ai"
 import { db } from "@/lib/prisma"
 
 import { GET } from "./route"
@@ -19,8 +20,6 @@ vi.mock("@/lib/ai", () => ({
   getScrubQueueStats: vi.fn(async () => ({})),
   isCachingLive: vi.fn(async () => false),
 }))
-
-import { authorizeScrubRequest } from "@/lib/ai"
 
 const mockedAuth = authorizeScrubRequest as unknown as ReturnType<typeof vi.fn>
 const mockedFindMany = db.scrubApiCall.findMany as unknown as ReturnType<
@@ -65,11 +64,7 @@ describe("scrub stats route — outcome bucketing", () => {
   })
 
   it("counts ok / scrubbed in scrubbedOk", async () => {
-    mockedFindMany.mockResolvedValue([
-      row("ok"),
-      row("ok"),
-      row("scrubbed"),
-    ])
+    mockedFindMany.mockResolvedValue([row("ok"), row("ok"), row("scrubbed")])
 
     const res = await GET(
       new Request("http://localhost/api/integrations/scrub/stats")

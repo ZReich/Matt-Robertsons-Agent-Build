@@ -36,7 +36,10 @@ function trimmedString(value: unknown): string | undefined {
   return t.length > 0 ? t : undefined
 }
 
-export async function GET(_request: Request, ctx: RouteContext): Promise<Response> {
+export async function GET(
+  _request: Request,
+  ctx: RouteContext
+): Promise<Response> {
   const unauthorized = await requireApiUser()
   if (unauthorized) return unauthorized
   const { id } = await ctx.params
@@ -89,11 +92,28 @@ export async function PATCH(
   // Track whether any address-component changed; if so, recompute propertyKey.
   let recomputeKey = false
 
-  for (const field of ["name", "unit", "city", "state", "zip", "description", "listingUrl", "flyerUrl", "notes", "externalId", "source"] as const) {
+  for (const field of [
+    "name",
+    "unit",
+    "city",
+    "state",
+    "zip",
+    "description",
+    "listingUrl",
+    "flyerUrl",
+    "notes",
+    "externalId",
+    "source",
+  ] as const) {
     if (Object.prototype.hasOwnProperty.call(body, field)) {
       const v = trimmedString(body[field])
       ;(update as Record<string, unknown>)[field] = v ?? null
-      if (field === "unit" || field === "city" || field === "state" || field === "zip") {
+      if (
+        field === "unit" ||
+        field === "city" ||
+        field === "state" ||
+        field === "zip"
+      ) {
         recomputeKey = true
       }
     }

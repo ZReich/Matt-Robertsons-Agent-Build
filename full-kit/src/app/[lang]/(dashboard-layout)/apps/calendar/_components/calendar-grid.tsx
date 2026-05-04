@@ -9,12 +9,11 @@ import { useDirection } from "@radix-ui/react-direction"
 
 import type { EventInput } from "@fullcalendar/core/index.js"
 import type { EventImpl } from "@fullcalendar/core/internal"
+import type { DrawerSubject } from "./event-detail-drawer"
 
 import { cn } from "@/lib/utils"
 
 import { EventDetailDrawer } from "./event-detail-drawer"
-
-import type { DrawerSubject } from "./event-detail-drawer"
 
 // =============================================================================
 // DTOs — shape returned by page.tsx (server component) to this client widget.

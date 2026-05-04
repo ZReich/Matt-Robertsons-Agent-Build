@@ -2,11 +2,11 @@ import { NextResponse } from "next/server"
 
 import type { Prisma, PropertyStatus, PropertyType } from "@prisma/client"
 
-import { authenticateUser } from "@/lib/auth"
 import {
   requireApiUser,
   validateJsonMutationRequest,
 } from "@/lib/api-route-auth"
+import { authenticateUser } from "@/lib/auth"
 import { db } from "@/lib/prisma"
 import {
   computePropertyKey,
@@ -23,7 +23,10 @@ function normalizeUnitKey(unit: string | null | undefined): string {
   return (unit ?? "").trim().toLowerCase()
 }
 
-function dedupeKeyFor(propertyKey: string, unit: string | null | undefined): string {
+function dedupeKeyFor(
+  propertyKey: string,
+  unit: string | null | undefined
+): string {
   return propertyKey + " | " + normalizeUnitKey(unit)
 }
 

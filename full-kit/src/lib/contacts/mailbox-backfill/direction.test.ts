@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
+
 import { inferDirection } from "./direction"
 
 const TARGET = "mrobertson@naibusinessproperties.com"
@@ -39,9 +40,9 @@ describe("inferDirection", () => {
   })
 
   it("empty from defaults to inbound", () => {
-    expect(
-      inferDirection({ from: "", knownSelfAddresses: PRIMARY_ONLY })
-    ).toBe("inbound")
+    expect(inferDirection({ from: "", knownSelfAddresses: PRIMARY_ONLY })).toBe(
+      "inbound"
+    )
   })
 
   it("treats configured aliases as outbound", () => {

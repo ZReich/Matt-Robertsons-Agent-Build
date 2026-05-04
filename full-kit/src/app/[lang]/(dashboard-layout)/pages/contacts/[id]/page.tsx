@@ -15,6 +15,7 @@ import {
   User,
 } from "lucide-react"
 
+import type { SearchCriteriaShape } from "@/components/contacts/contact-edit-panel"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
@@ -34,10 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ContactArcSummary } from "@/components/contacts/contact-arc-summary"
-import {
-  ContactEditPanel,
-  type SearchCriteriaShape,
-} from "@/components/contacts/contact-edit-panel"
+import { ContactEditPanel } from "@/components/contacts/contact-edit-panel"
 import { LeadAISuggestions } from "@/components/leads/lead-ai-suggestions"
 
 interface ContactDetailPageProps {
@@ -169,7 +167,9 @@ export default async function ContactDetailPage({
   // than blowing up the main profileFacts query with a relation join, since
   // most contacts have <20 facts and the join-overhead would be paid even
   // when the Personal tab isn't viewed.
-  const personalFacts = profileFacts.filter((f) => isPersonalCategory(f.category))
+  const personalFacts = profileFacts.filter((f) =>
+    isPersonalCategory(f.category)
+  )
   const personalFactSourceIds = Array.from(
     new Set(personalFacts.map((f) => f.sourceCommunicationId).filter(Boolean))
   )
@@ -250,7 +250,8 @@ export default async function ContactDetailPage({
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="personal">
-            Personal{personalFacts.length > 0 ? ` (${personalFacts.length})` : ""}
+            Personal
+            {personalFacts.length > 0 ? ` (${personalFacts.length})` : ""}
           </TabsTrigger>
           <TabsTrigger value="activity">Activity ({totalActivity})</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -426,9 +427,7 @@ export default async function ContactDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {contactComms.slice(0, 5).map((c) =>
-                  renderCommRow(c, lang)
-                )}
+                {contactComms.slice(0, 5).map((c) => renderCommRow(c, lang))}
               </CardContent>
             </Card>
           )}
@@ -445,8 +444,8 @@ export default async function ContactDetailPage({
                   travel, and other relationship texture here.
                 </p>
                 <p>
-                  If this contact has a long email history that predates the
-                  v6 scrub prompt, you can opt-in to re-scrub their inbox to
+                  If this contact has a long email history that predates the v6
+                  scrub prompt, you can opt-in to re-scrub their inbox to
                   backfill personal facts (operator action, costs Anthropic
                   credit).
                 </p>
@@ -456,10 +455,10 @@ export default async function ContactDetailPage({
             <>
               <Card>
                 <CardContent className="p-4 text-xs text-muted-foreground">
-                  Talking points pulled from prior emails. Each fact links
-                  back to the source so you can verify wording before a
-                  call. Sensitive context (medical, legal, financial
-                  distress) is filtered out at extraction time.
+                  Talking points pulled from prior emails. Each fact links back
+                  to the source so you can verify wording before a call.
+                  Sensitive context (medical, legal, financial distress) is
+                  filtered out at extraction time.
                 </CardContent>
               </Card>
               {groupedPersonalFacts.personal.map((group) => (
@@ -499,8 +498,7 @@ export default async function ContactDetailPage({
                           ) : null}
                           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             <span>
-                              Last seen{" "}
-                              {format(fact.lastSeenAt, "MMM d, yyyy")}
+                              Last seen {format(fact.lastSeenAt, "MMM d, yyyy")}
                             </span>
                             {sourceComm ? (
                               <>
@@ -529,7 +527,8 @@ export default async function ContactDetailPage({
                                       href={`/${lang}/pages/deals/${sourceComm.deal.id}`}
                                       className="hover:underline"
                                     >
-                                      {sourceComm.deal.propertyAddress ?? "deal"}
+                                      {sourceComm.deal.propertyAddress ??
+                                        "deal"}
                                     </Link>
                                   </>
                                 ) : null}
@@ -562,8 +561,8 @@ export default async function ContactDetailPage({
                     rendered.
                   </p>
                 ) : null}
-                {buildActivityFeed(contactComms, contactMeetings).map(
-                  (event) => renderActivityEvent(event, lang)
+                {buildActivityFeed(contactComms, contactMeetings).map((event) =>
+                  renderActivityEvent(event, lang)
                 )}
               </CardContent>
             </Card>
@@ -728,7 +727,10 @@ function renderCommRow(c: CommRow, lang: string): ReactNode {
 function renderActivityEvent(event: ActivityEvent, lang: string): ReactNode {
   if (event.kind === "comm") {
     return (
-      <div key={`comm:${event.comm.id}`} className="border-b py-2 last:border-b-0">
+      <div
+        key={`comm:${event.comm.id}`}
+        className="border-b py-2 last:border-b-0"
+      >
         {renderCommRow(event.comm, lang)}
       </div>
     )

@@ -110,9 +110,7 @@ describe("coverage counters route", () => {
       profileFacts: { saved: 0, reviewed: 0, dropped: 0 },
     })
 
-    const response = await GET(
-      makeRequest("?since=2026-04-01T00:00:00.000Z")
-    )
+    const response = await GET(makeRequest("?since=2026-04-01T00:00:00.000Z"))
 
     expect(response.status).toBe(200)
     expect(getCoverageObservabilityCounters).toHaveBeenCalledWith({

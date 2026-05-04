@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { fetchMessagesForContactWindow } from "./graph-query"
 
@@ -26,7 +26,9 @@ interface MockGraphPage {
 
 type FetchImpl = <T>(path: string, opts?: unknown) => Promise<T>
 
-function makePagedFetch(pages: MockGraphPage[]): FetchImpl & ReturnType<typeof vi.fn> {
+function makePagedFetch(
+  pages: MockGraphPage[]
+): FetchImpl & ReturnType<typeof vi.fn> {
   let idx = 0
   const fn = vi.fn(async () => {
     const page = pages[idx] ?? { value: [] }
@@ -55,7 +57,10 @@ describe("fetchMessagesForContactWindow", () => {
       receivedDateTime: "2023-06-01T00:00:00Z",
     })
     const fetchImpl = makePagedFetch([
-      { value: [msg("1"), msg("2")], "@odata.nextLink": "/users/matt@example.com/messages?$skiptoken=abc" },
+      {
+        value: [msg("1"), msg("2")],
+        "@odata.nextLink": "/users/matt@example.com/messages?$skiptoken=abc",
+      },
       { value: [msg("3")] },
     ])
     const out = await fetchMessagesForContactWindow({
@@ -176,7 +181,9 @@ describe("fetchMessagesForContactWindow", () => {
       window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
       fetchImpl,
     })
-    const opts = fetchImpl.mock.calls[0][1] as { headers?: Record<string, string> }
+    const opts = fetchImpl.mock.calls[0][1] as {
+      headers?: Record<string, string>
+    }
     expect(opts.headers?.ConsistencyLevel).toBe("eventual")
   })
 

@@ -90,7 +90,12 @@ export async function findRelatedLeadsForDeal(
 ): Promise<RelatedLead[]> {
   const deal = await db.deal.findUnique({
     where: { id: dealId },
-    select: { id: true, propertyKey: true, propertyAliases: true, contactId: true },
+    select: {
+      id: true,
+      propertyKey: true,
+      propertyAliases: true,
+      contactId: true,
+    },
   })
   if (!deal?.propertyKey) return []
 

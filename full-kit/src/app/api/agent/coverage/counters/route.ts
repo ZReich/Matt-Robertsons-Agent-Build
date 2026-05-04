@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { getCoverageObservabilityCounters } from "@/lib/coverage/coverage-observability"
-import {
-  ReviewerAuthError,
-  requireAgentReviewer,
-} from "@/lib/reviewer-auth"
+import { ReviewerAuthError, requireAgentReviewer } from "@/lib/reviewer-auth"
 
 export const dynamic = "force-dynamic"
 
@@ -25,10 +22,7 @@ export async function GET(request: Request): Promise<Response> {
     if (sinceParam) {
       const parsed = new Date(sinceParam)
       if (Number.isNaN(parsed.getTime())) {
-        return NextResponse.json(
-          { error: "invalid since" },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: "invalid since" }, { status: 400 })
       }
     }
     const counters = await getCoverageObservabilityCounters({

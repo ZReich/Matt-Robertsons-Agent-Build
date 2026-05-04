@@ -355,7 +355,13 @@ async function processDeal(
   }
 
   const txnResult = dryRun
-    ? await simulateTransaction(prisma, propertyKey, unit, deal, addressCandidate)
+    ? await simulateTransaction(
+        prisma,
+        propertyKey,
+        unit,
+        deal,
+        addressCandidate
+      )
     : await prisma.$transaction(txnFn)
 
   return {
@@ -384,7 +390,7 @@ async function simulateTransaction(
   propertyKey: string,
   unit: string | null,
   deal: DealRow,
-  addressCandidate: string
+  _addressCandidate: string
 ): Promise<{
   toPropertyId: string
   createdNewProperty: boolean

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
 
 import {
-  requireApiUser,
-  validateJsonMutationRequest,
-} from "@/lib/api-route-auth"
-import {
   DealStageDetectorError,
   detectDealStage,
   writeStageProposalAction,
 } from "@/lib/ai/deal-stage-detector"
+import {
+  requireApiUser,
+  validateJsonMutationRequest,
+} from "@/lib/api-route-auth"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 120

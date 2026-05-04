@@ -114,9 +114,7 @@ function makeLease(overrides: Partial<Record<string, unknown>> = {}) {
   }
 }
 
-function setupSettings(
-  overrides: Partial<Record<string, unknown>> = {}
-): void {
+function setupSettings(overrides: Partial<Record<string, unknown>> = {}): void {
   mockedDb.systemState.findUnique.mockResolvedValue({
     key: "app.automation_settings",
     value: {

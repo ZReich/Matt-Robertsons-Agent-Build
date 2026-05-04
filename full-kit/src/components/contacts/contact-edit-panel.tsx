@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import type { PropertyType } from "@prisma/client"
@@ -19,7 +19,11 @@ const PRESET_TAGS: { value: string; label: string; helper?: string }[] = [
   { value: "buyer", label: "Buyer", helper: "Acquiring property" },
   { value: "investor", label: "Investor" },
   { value: "referrer", label: "Referrer", helper: "Sends Matt deals" },
-  { value: "referral", label: "Referral", helper: "Came from someone Matt knows" },
+  {
+    value: "referral",
+    label: "Referral",
+    helper: "Came from someone Matt knows",
+  },
   { value: "christmas-mailer", label: "Christmas mailer" },
   { value: "do-not-contact", label: "Do not contact" },
 ]
@@ -110,7 +114,9 @@ export function ContactEditPanel({
   async function saveNotes() {
     setSavingNotes(true)
     try {
-      const ok = await patch({ notes: notes.trim().length === 0 ? null : notes })
+      const ok = await patch({
+        notes: notes.trim().length === 0 ? null : notes,
+      })
       if (ok) {
         toast.success("Notes saved")
         router.refresh()
@@ -390,10 +396,7 @@ export function ContactEditPanel({
                     if (e.key === "Enter") {
                       e.preventDefault()
                       const v = locationInput.trim()
-                      if (
-                        v &&
-                        !(criteria.locations ?? []).includes(v)
-                      ) {
+                      if (v && !(criteria.locations ?? []).includes(v)) {
                         setCriteria({
                           ...criteria,
                           locations: [...(criteria.locations ?? []), v],
@@ -424,7 +427,9 @@ export function ContactEditPanel({
             </div>
 
             <div>
-              <Label className="text-xs">Free-form notes about their criteria</Label>
+              <Label className="text-xs">
+                Free-form notes about their criteria
+              </Label>
               <Textarea
                 rows={3}
                 value={criteria.notes ?? ""}
@@ -455,10 +460,10 @@ export function ContactEditPanel({
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Tag this contact as <strong>buyer</strong>, <strong>tenant</strong>, or{" "}
-              <strong>investor</strong> above to capture what they&apos;re
-              looking for. Criteria-tagged contacts get matched against the
-              property catalog automatically.
+              Tag this contact as <strong>buyer</strong>,{" "}
+              <strong>tenant</strong>, or <strong>investor</strong> above to
+              capture what they&apos;re looking for. Criteria-tagged contacts
+              get matched against the property catalog automatically.
             </p>
           </CardContent>
         </Card>

@@ -73,7 +73,10 @@ export async function maybeFireAutoReplyForApprovedLead(
 
     const property = await db.property.findFirst({
       where: { propertyKey, archivedAt: null },
-      orderBy: [{ unit: { sort: "asc", nulls: "first" } }, { createdAt: "asc" }],
+      orderBy: [
+        { unit: { sort: "asc", nulls: "first" } },
+        { createdAt: "asc" },
+      ],
       select: { id: true },
     })
     if (!property) {
@@ -197,11 +200,7 @@ function readStampedPropertyKey(metadata: unknown): string | null {
   const top = typeof m.propertyKey === "string" ? m.propertyKey.trim() : ""
   if (top) return top
   const extracted = m.extracted
-  if (
-    extracted &&
-    typeof extracted === "object" &&
-    !Array.isArray(extracted)
-  ) {
+  if (extracted && typeof extracted === "object" && !Array.isArray(extracted)) {
     const e = extracted as Record<string, unknown>
     const nested = typeof e.propertyKey === "string" ? e.propertyKey.trim() : ""
     if (nested) return nested

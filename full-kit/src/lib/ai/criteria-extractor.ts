@@ -1,6 +1,8 @@
 import "server-only"
 
-import { Prisma, type PropertyType } from "@prisma/client"
+import { Prisma } from "@prisma/client"
+
+import type { PropertyType } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 
@@ -36,10 +38,22 @@ const CRITERIA_TOOL = {
         },
         description: "Property types the contact has indicated interest in.",
       },
-      minSqft: { type: "number", description: "Lower bound of size range in square feet, if mentioned." },
-      maxSqft: { type: "number", description: "Upper bound of size range in square feet, if mentioned." },
-      minPrice: { type: "number", description: "Lower bound budget in USD, if mentioned." },
-      maxPrice: { type: "number", description: "Upper bound budget in USD, if mentioned." },
+      minSqft: {
+        type: "number",
+        description: "Lower bound of size range in square feet, if mentioned.",
+      },
+      maxSqft: {
+        type: "number",
+        description: "Upper bound of size range in square feet, if mentioned.",
+      },
+      minPrice: {
+        type: "number",
+        description: "Lower bound budget in USD, if mentioned.",
+      },
+      maxPrice: {
+        type: "number",
+        description: "Upper bound budget in USD, if mentioned.",
+      },
       locations: {
         type: "array",
         items: { type: "string" },
@@ -88,7 +102,10 @@ export interface ExtractedCriteria {
 }
 
 class CriteriaExtractorError extends Error {
-  constructor(public reason: string, message: string) {
+  constructor(
+    public reason: string,
+    message: string
+  ) {
     super(message)
   }
 }
@@ -125,7 +142,9 @@ async function callDeepSeek(userPrompt: string): Promise<ExtractedCriteria> {
       tool_choice: { type: "function", function: { name: CRITERIA_TOOL.name } },
     }),
   })
-  const body = (await response.json().catch(() => ({}))) as ChatCompletionResponse
+  const body = (await response
+    .json()
+    .catch(() => ({}))) as ChatCompletionResponse
   if (!response.ok) {
     throw new CriteriaExtractorError(
       "provider_error",
@@ -137,10 +156,7 @@ async function callDeepSeek(userPrompt: string): Promise<ExtractedCriteria> {
       call.type === "function" && call.function?.name === CRITERIA_TOOL.name
   )
   if (!toolCall?.function?.arguments) {
-    throw new CriteriaExtractorError(
-      "provider_error",
-      "no tool call returned"
-    )
+    throw new CriteriaExtractorError("provider_error", "no tool call returned")
   }
   let parsed: unknown
   try {
@@ -217,13 +233,15 @@ export interface BackfillRunSummary {
  * Caps protect against runaway costs: contactLimit defaults to 100, and only
  * the most recent commsPerContact emails are fed to the model.
  */
-export async function runCriteriaBackfill(options: {
-  lookbackDays?: number
-  contactLimit?: number
-  commsPerContact?: number
-  minConfidence?: number
-  dryRun?: boolean
-} = {}): Promise<BackfillRunSummary> {
+export async function runCriteriaBackfill(
+  options: {
+    lookbackDays?: number
+    contactLimit?: number
+    commsPerContact?: number
+    minConfidence?: number
+    dryRun?: boolean
+  } = {}
+): Promise<BackfillRunSummary> {
   const {
     lookbackDays = 90,
     contactLimit = 100,
@@ -282,7 +300,13 @@ export async function runCriteriaBackfill(options: {
       where: { contactId: c.id, archivedAt: null, body: { not: null } },
       orderBy: { date: "desc" },
       take: commsPerContact,
-      select: { id: true, subject: true, body: true, direction: true, date: true },
+      select: {
+        id: true,
+        subject: true,
+        body: true,
+        direction: true,
+        date: true,
+      },
     })
 
     if (comms.length === 0) {
@@ -301,8 +325,8 @@ export async function runCriteriaBackfill(options: {
     // Use the strict variant — the broad keyword list rejects too many
     // routine CRE emails ("rent rolls", "OM", "tax return") that we want
     // the AI to read for buyer-intent extraction.
-    const tripped = comms.find((m) =>
-      containsRawSensitiveData(m.subject, m.body).tripped
+    const tripped = comms.find(
+      (m) => containsRawSensitiveData(m.subject, m.body).tripped
     )
     if (tripped) {
       results.push({
@@ -380,10 +404,14 @@ export async function runCriteriaBackfill(options: {
     const criteria: Record<string, unknown> = {}
     if (extracted.propertyTypes && extracted.propertyTypes.length > 0)
       criteria.propertyTypes = extracted.propertyTypes
-    if (typeof extracted.minSqft === "number") criteria.minSqft = extracted.minSqft
-    if (typeof extracted.maxSqft === "number") criteria.maxSqft = extracted.maxSqft
-    if (typeof extracted.minPrice === "number") criteria.minPrice = extracted.minPrice
-    if (typeof extracted.maxPrice === "number") criteria.maxPrice = extracted.maxPrice
+    if (typeof extracted.minSqft === "number")
+      criteria.minSqft = extracted.minSqft
+    if (typeof extracted.maxSqft === "number")
+      criteria.maxSqft = extracted.maxSqft
+    if (typeof extracted.minPrice === "number")
+      criteria.minPrice = extracted.minPrice
+    if (typeof extracted.maxPrice === "number")
+      criteria.maxPrice = extracted.maxPrice
     if (extracted.locations && extracted.locations.length > 0)
       criteria.locations = extracted.locations
     if (extracted.notes && extracted.notes.trim().length > 0)

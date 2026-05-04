@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server"
 
 import {
-  ReviewerAuthError,
-  assertJsonRequest,
-  assertSameOriginRequest,
-  requireAgentReviewer,
-} from "@/lib/reviewer-auth"
-import {
   AUTO_APPROVE_ACTION_TYPES,
   AgentActionReviewError,
   approveAgentAction,
 } from "@/lib/ai/agent-actions"
 import { db } from "@/lib/prisma"
+import {
+  ReviewerAuthError,
+  assertJsonRequest,
+  assertSameOriginRequest,
+  requireAgentReviewer,
+} from "@/lib/reviewer-auth"
 
 interface ApproveResult {
   actionId: string

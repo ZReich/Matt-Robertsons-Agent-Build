@@ -1,10 +1,10 @@
-import type { AgentAction, DealStage, DealOutcome } from "@prisma/client"
+import type { AgentAction, DealOutcome, DealStage } from "@prisma/client"
+import type { AgentActionReviewResult } from "./agent-actions"
 
 import { syncContactRoleFromDeals } from "@/lib/contacts/sync-contact-role"
 import { db } from "@/lib/prisma"
 
 import { AgentActionReviewError } from "./agent-actions"
-import type { AgentActionReviewResult } from "./agent-actions"
 
 const ALLOWED_UPDATE_FIELDS = new Set([
   "value",

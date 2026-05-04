@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import type {
+  AttachmentMeta,
+  ScanMissingDealRow,
+  SearchedMessage,
+} from "./lease-end-date-scanner"
+
 import { db } from "@/lib/prisma"
 
 import {
   buildGraphSearchValue,
   scanMissingLeaseEndDates,
-  type AttachmentMeta,
-  type ScanMissingDealRow,
-  type SearchedMessage,
 } from "./lease-end-date-scanner"
 
 vi.mock("server-only", () => ({}))
@@ -295,7 +298,12 @@ describe("scanMissingLeaseEndDates", () => {
         },
       ]),
       fetchMessageAttachmentsFn: vi.fn(async () => [
-        { id: "att-1", name: "lease.pdf", contentType: "application/pdf", size: 1 },
+        {
+          id: "att-1",
+          name: "lease.pdf",
+          contentType: "application/pdf",
+          size: 1,
+        },
       ]),
       downloadAttachmentFn: vi.fn(async () => pdfBlob()),
       extractLeaseFromPdfFn: extractLeaseFromPdfFn as never,
@@ -369,9 +377,7 @@ describe("scanMissingLeaseEndDates", () => {
 
   it("skips creating an LR when no contactId is available", async () => {
     const result = await scanMissingLeaseEndDates({
-      dealRows: [
-        dealRow({ existingLeaseRecordId: null, contactId: null }),
-      ],
+      dealRows: [dealRow({ existingLeaseRecordId: null, contactId: null })],
       throttleMs: 0,
       searchMessagesFn: vi.fn(async () => [
         {
@@ -382,7 +388,12 @@ describe("scanMissingLeaseEndDates", () => {
         },
       ]),
       fetchMessageAttachmentsFn: vi.fn(async () => [
-        { id: "att-1", name: "lease.pdf", contentType: "application/pdf", size: 1 },
+        {
+          id: "att-1",
+          name: "lease.pdf",
+          contentType: "application/pdf",
+          size: 1,
+        },
       ]),
       downloadAttachmentFn: vi.fn(async () => pdfBlob()),
       extractLeaseFromPdfFn: vi.fn(async () => ({

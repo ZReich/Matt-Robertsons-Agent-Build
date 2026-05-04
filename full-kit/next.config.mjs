@@ -9,6 +9,12 @@ const appRoot = path.dirname(fileURLToPath(import.meta.url))
 const nextConfig = {
   outputFileTracingRoot: appRoot,
 
+  // ESLint runs as a separate quality gate (pnpm exec next lint) and against
+  // CI checks; failing the production build on every prettier nit blocks
+  // urgent deploys. tsc still runs on every push and tests still gate via
+  // the CI step, so type-correctness is preserved.
+  eslint: { ignoreDuringBuilds: true },
+
   // Configure `pageExtensions` to include markdown and MDX files
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
 

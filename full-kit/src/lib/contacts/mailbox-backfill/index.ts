@@ -1,19 +1,17 @@
 import { Prisma } from "@prisma/client"
 
-import { db } from "@/lib/prisma"
-import { loadMsgraphConfig } from "@/lib/msgraph/config"
+import type { BackfillMode, BackfillWindow } from "./window-resolver"
+
 import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
 import { PROMPT_VERSION } from "@/lib/ai/scrub-types"
+import { loadMsgraphConfig } from "@/lib/msgraph/config"
+import { db } from "@/lib/prisma"
 import { processInBatches } from "@/lib/util/batch"
 
-import { detectMultiClientConflict } from "./multi-client-conflict"
 import { fetchMessagesForContactWindow } from "./graph-query"
 import { ingestSingleBackfillMessage } from "./ingest-message"
-import {
-  resolveBackfillWindows,
-  type BackfillMode,
-  type BackfillWindow,
-} from "./window-resolver"
+import { detectMultiClientConflict } from "./multi-client-conflict"
+import { resolveBackfillWindows } from "./window-resolver"
 
 /**
  * Returns true when the stored prompt version differs from the current one
@@ -163,8 +161,13 @@ export async function backfillMailboxForContact(
   try {
     const contact = await db.contact.findUnique({ where: { id: contactId } })
     if (!contact)
-      return await finalize("failed", { reason: "contact_not_found" }, "contact_not_found")
-    if (!contact.email) return await finalize("skipped", { reason: "no_email_on_file" })
+      return await finalize(
+        "failed",
+        { reason: "contact_not_found" },
+        "contact_not_found"
+      )
+    if (!contact.email)
+      return await finalize("skipped", { reason: "no_email_on_file" })
 
     const [deals, comms] = await Promise.all([
       db.deal.findMany({
@@ -181,7 +184,10 @@ export async function backfillMailboxForContact(
 
     const windows = resolveBackfillWindows({
       mode: opts.mode,
-      deals: deals.map((d) => ({ createdAt: d.createdAt, closedAt: d.closedAt })),
+      deals: deals.map((d) => ({
+        createdAt: d.createdAt,
+        closedAt: d.closedAt,
+      })),
       comms: comms.map((c) => ({ date: c.date })),
       now: new Date(),
     })
@@ -236,9 +242,15 @@ export async function backfillMailboxForContact(
       // where Matt sent one message BCC'ing two clients.
       const recipients = [
         message.from?.emailAddress?.address,
-        ...(message.toRecipients ?? []).map((r: any) => r.emailAddress?.address),
-        ...(message.ccRecipients ?? []).map((r: any) => r.emailAddress?.address),
-        ...(message.bccRecipients ?? []).map((r: any) => r.emailAddress?.address),
+        ...(message.toRecipients ?? []).map(
+          (r: any) => r.emailAddress?.address
+        ),
+        ...(message.ccRecipients ?? []).map(
+          (r: any) => r.emailAddress?.address
+        ),
+        ...(message.bccRecipients ?? []).map(
+          (r: any) => r.emailAddress?.address
+        ),
       ].filter(Boolean) as string[]
 
       const conflict = detectMultiClientConflict({
@@ -356,7 +368,9 @@ export async function backfillMailboxForContact(
       })
       for (const comm of existingComms) {
         const metadata =
-          comm.metadata && typeof comm.metadata === "object" && !Array.isArray(comm.metadata)
+          comm.metadata &&
+          typeof comm.metadata === "object" &&
+          !Array.isArray(comm.metadata)
             ? (comm.metadata as Record<string, unknown>)
             : {}
         const classification =
@@ -366,10 +380,13 @@ export async function backfillMailboxForContact(
         // Don't re-extract from noise — facts won't appear in noise messages.
         if (classification === "noise") continue
         // Only signal/uncertain are eligible to flow through the scrub queue.
-        if (classification !== "signal" && classification !== "uncertain") continue
+        if (classification !== "signal" && classification !== "uncertain")
+          continue
 
         const scrub =
-          metadata.scrub && typeof metadata.scrub === "object" && !Array.isArray(metadata.scrub)
+          metadata.scrub &&
+          typeof metadata.scrub === "object" &&
+          !Array.isArray(metadata.scrub)
             ? (metadata.scrub as Record<string, unknown>)
             : null
         const storedVersion =
@@ -385,7 +402,9 @@ export async function backfillMailboxForContact(
         // we don't change `enqueueScrubForCommunication`'s signature or add
         // an upsert path to it.
         try {
-          await db.scrubQueue.deleteMany({ where: { communicationId: comm.id } })
+          await db.scrubQueue.deleteMany({
+            where: { communicationId: comm.id },
+          })
           await enqueueScrubForCommunication(db, comm.id, classification)
           staleRescrubsEnqueued += 1
         } catch (err) {

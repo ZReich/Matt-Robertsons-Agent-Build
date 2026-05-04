@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { downloadAttachment } from "./download-attachment"
+import { getAccessToken } from "./token-manager"
+
 vi.mock("server-only", () => ({}))
 
 vi.mock("./token-manager", () => ({
   getAccessToken: vi.fn().mockResolvedValue("test-access-token"),
 }))
-
-import { downloadAttachment } from "./download-attachment"
-import { getAccessToken } from "./token-manager"
 
 const mockedGetAccessToken = getAccessToken as unknown as ReturnType<
   typeof vi.fn

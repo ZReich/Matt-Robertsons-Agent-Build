@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server"
 
+import type { CoverageActionStatus } from "@/lib/coverage/communication-coverage"
+import type { CoverageActionAuditOutcome } from "@/lib/coverage/coverage-observability"
+
 import {
   COVERAGE_POLICY_VERSION,
-  type CoverageActionStatus,
   CoverageValidationError,
   applyCoverageReviewAction,
   parseReviewActionPayload,
 } from "@/lib/coverage/communication-coverage"
-import {
-  type CoverageActionAuditOutcome,
-  recordCoverageActionAudit,
-} from "@/lib/coverage/coverage-observability"
+import { recordCoverageActionAudit } from "@/lib/coverage/coverage-observability"
 import {
   ReviewerAuthError,
   assertJsonRequest,

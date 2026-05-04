@@ -1,6 +1,7 @@
 import type { DealOutcome, DealStage } from "@prisma/client"
 
-const TRANSITION_RE = /was updated from\s+(\w+(?:\s\w+)*)\s+to\s+(\w+(?:\s\w+)*)/
+const TRANSITION_RE =
+  /was updated from\s+(\w+(?:\s\w+)*)\s+to\s+(\w+(?:\s\w+)*)/
 
 export type BuildoutStageTransition = {
   fromStageRaw: string

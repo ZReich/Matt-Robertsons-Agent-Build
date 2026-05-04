@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server"
 
+import type { LastDailyListingsSweep } from "@/lib/system-state/last-daily-listings-sweep"
+
 import { processUnprocessedDailyListings } from "@/lib/daily-listings/processor"
 import { constantTimeCompare } from "@/lib/msgraph/constant-time-compare"
-import {
-  setLastDailyListingsSweep,
-  type LastDailyListingsSweep,
-} from "@/lib/system-state/last-daily-listings-sweep"
+import { setLastDailyListingsSweep } from "@/lib/system-state/last-daily-listings-sweep"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 300

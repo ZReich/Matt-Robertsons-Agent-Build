@@ -117,8 +117,16 @@ export function formatProfileCategoryFallback(category: string): string {
 }
 
 export type GroupedFacts<T> = {
-  personal: Array<{ category: string; meta: ProfileFactCategoryMeta; facts: T[] }>
-  workflow: Array<{ category: string; meta: ProfileFactCategoryMeta; facts: T[] }>
+  personal: Array<{
+    category: string
+    meta: ProfileFactCategoryMeta
+    facts: T[]
+  }>
+  workflow: Array<{
+    category: string
+    meta: ProfileFactCategoryMeta
+    facts: T[]
+  }>
 }
 
 /**
@@ -148,7 +156,11 @@ export function groupFactsByDisplayCategory<T extends { category: string }>(
   for (const category of PERSONAL_CATEGORY_RENDER_ORDER) {
     const factList = buckets.get(category)
     if (!factList || factList.length === 0) continue
-    personal.push({ category, meta: getProfileFactMeta(category), facts: factList })
+    personal.push({
+      category,
+      meta: getProfileFactMeta(category),
+      facts: factList,
+    })
     seenPersonal.add(category)
   }
 

@@ -47,7 +47,9 @@ describe("parseDailyListings", () => {
 
   it("inherits the city across multiple category sub-sections", () => {
     const result = parseDailyListings(SAMPLE)
-    const missoulaListings = result.listings.filter((l) => l.city === "Missoula")
+    const missoulaListings = result.listings.filter(
+      (l) => l.city === "Missoula"
+    )
     expect(missoulaListings).toHaveLength(2)
     expect(missoulaListings.map((l) => l.propertyType)).toEqual([
       "office",
