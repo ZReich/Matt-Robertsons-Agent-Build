@@ -333,6 +333,73 @@ describe("backfillMailboxForContact", () => {
     })
   })
 
+  it("returns successfully when finalize hits P2025 (BackfillRun row reaped)", async () => {
+    // Bug 3 regression: the bulk endpoint's stuck-run reaper (or operator
+    // cleanup) can delete the BackfillRun row mid-run. The finalize update
+    // then throws P2025. We must log a warning and still return the
+    // in-memory BackfillResult, not blow up the whole request.
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { Prisma } = await import("@prisma/client")
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-reaped" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+    const p2025 = new Prisma.PrismaClientKnownRequestError(
+      "Record to update not found.",
+      { code: "P2025", clientVersion: "test" }
+    )
+    ;(db.backfillRun.update as any).mockRejectedValueOnce(p2025)
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    expect(result.status).toBe("succeeded")
+    expect(result.runId).toBe("run-reaped")
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("disappeared before finalize")
+    )
+
+    warnSpy.mockRestore()
+  })
+
+  it("rethrows non-P2025 errors from BackfillRun.update", async () => {
+    // Make sure the P2025 catch in finalize is narrow — any other error
+    // (e.g. transient DB outage) must still bubble up. The outer try/catch
+    // in the orchestrator will attempt to finalize as "failed" once the
+    // success-path finalize throws; we make BOTH update attempts fail so
+    // the error propagates out of the orchestrator.
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-x" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+    const dbDown = new Error("connection terminated unexpectedly")
+    ;(db.backfillRun.update as any)
+      .mockRejectedValueOnce(dbDown)
+      .mockRejectedValueOnce(dbDown)
+
+    await expect(
+      backfillMailboxForContact("c1", { mode: "lifetime" })
+    ).rejects.toBe(dbDown)
+  })
+
   it("dryRun does not call ingestSingleBackfillMessage", async () => {
     const { db } = await import("@/lib/prisma")
     const { fetchMessagesForContactWindow } = await import("./graph-query")

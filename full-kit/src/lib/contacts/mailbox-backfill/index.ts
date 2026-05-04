@@ -119,15 +119,33 @@ export async function backfillMailboxForContact(
       durationMs: Date.now() - startedAt,
       ...extra,
     }
-    await db.backfillRun.update({
-      where: { id: run.id },
-      data: {
-        finishedAt: new Date(),
-        status,
-        result: result as any,
-        errorMessage: errorMessage ?? null,
-      },
-    })
+    try {
+      await db.backfillRun.update({
+        where: { id: run.id },
+        data: {
+          finishedAt: new Date(),
+          status,
+          result: result as any,
+          errorMessage: errorMessage ?? null,
+        },
+      })
+    } catch (err) {
+      // P2025 — Record to update not found. The bulk endpoint's stuck-run
+      // reaper or an operator cleanup may have deleted the row mid-run
+      // (Phase 2 audit I1). The in-memory result is still valid for the
+      // caller; we just lose the audit log entry for this run. Don't fail
+      // the whole request over a missing audit row.
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2025"
+      ) {
+        console.warn(
+          `[backfill] BackfillRun ${run.id} disappeared before finalize — data may have been reaped`
+        )
+      } else {
+        throw err
+      }
+    }
     return result
   }
 
