@@ -60,6 +60,19 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
     | { kind: "rate_limited"; retryAfter: number }
     | { kind: "error"; message: string }
   >({ kind: "idle" })
+  const [drainState, setDrainState] = useState<
+    | { kind: "idle" }
+    | { kind: "draining" }
+    | {
+        kind: "success"
+        totalProcessed: number
+        totalSucceeded: number
+        totalFailed: number
+        batches: number
+        reachedCap: boolean
+      }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" })
   const autoTriggeredRef = useRef(false)
   const reviewableActions = useMemo(
     () => actions.filter((action) => !action.isSnoozed && !action.isStale),
@@ -137,6 +150,42 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
       }
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  async function handleDrainQueue() {
+    if (state.entityType !== "contact") return
+    setDrainState({ kind: "draining" })
+    try {
+      const res = await fetch(
+        `/api/contacts/${state.entityId}/scrub-drain`,
+        { method: "POST" }
+      )
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        setDrainState({
+          kind: "error",
+          message: body.error ?? `HTTP ${res.status}`,
+        })
+        toast.error("Drain failed", { description: body.error })
+        return
+      }
+      const body = (await res.json()) as {
+        totalProcessed: number
+        totalSucceeded: number
+        totalFailed: number
+        batches: number
+        reachedCap: boolean
+      }
+      setDrainState({ kind: "success", ...body })
+      toast.success("Queue drained", {
+        description: `${body.totalSucceeded} processed, ${body.totalFailed} failed across ${body.batches} batch${body.batches === 1 ? "" : "es"}${body.reachedCap ? " (cap reached — click again to continue)" : ""}`,
+      })
+      router.refresh()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "unknown_error"
+      setDrainState({ kind: "error", message })
+      toast.error("Drain failed", { description: message })
     }
   }
 
@@ -281,15 +330,72 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
         </span>
       </div>
       {canProcess ? (
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+          <Button
+            className="w-full sm:flex-1"
+            size="sm"
+            type="button"
+            onClick={() => processSuggestions()}
+            disabled={isProcessing}
+          >
+            {isProcessing ? "Processing..." : "Process with AI"}
+          </Button>
+          {state.entityType === "contact" ? (
+            <Button
+              className="w-full sm:flex-1"
+              variant="secondary"
+              size="sm"
+              type="button"
+              onClick={handleDrainQueue}
+              disabled={drainState.kind === "draining"}
+            >
+              {drainState.kind === "draining" ? (
+                <>
+                  <Loader2 className="mr-1 size-3.5 animate-spin" />
+                  Draining…
+                </>
+              ) : (
+                "Drain pending"
+              )}
+            </Button>
+          ) : null}
+        </div>
+      ) : state.entityType === "contact" ? (
         <Button
           className="mb-3 w-full"
+          variant="secondary"
           size="sm"
           type="button"
-          onClick={() => processSuggestions()}
-          disabled={isProcessing}
+          onClick={handleDrainQueue}
+          disabled={drainState.kind === "draining"}
         >
-          {isProcessing ? "Processing..." : "Process with AI"}
+          {drainState.kind === "draining" ? (
+            <>
+              <Loader2 className="mr-1 size-3.5 animate-spin" />
+              Draining…
+            </>
+          ) : (
+            "Drain pending"
+          )}
         </Button>
+      ) : null}
+      {drainState.kind === "success" ? (
+        <p className="-mt-1 mb-3 text-xs text-muted-foreground">
+          Drained {drainState.totalSucceeded} message
+          {drainState.totalSucceeded === 1 ? "" : "s"} across {drainState.batches}{" "}
+          batch{drainState.batches === 1 ? "" : "es"}
+          {drainState.totalFailed > 0
+            ? `, ${drainState.totalFailed} failed`
+            : ""}
+          {drainState.reachedCap
+            ? ". Cap reached — click again to continue."
+            : "."}
+        </p>
+      ) : null}
+      {drainState.kind === "error" ? (
+        <p className="-mt-1 mb-3 text-xs text-red-600">
+          Drain error: {drainState.message}
+        </p>
       ) : null}
 
       {state.entityType === "contact" ? (
