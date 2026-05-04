@@ -57,6 +57,11 @@ export async function fetchMessagesForContactWindow(
   const out: any[] = []
 
   while (nextPath) {
+    // Graph's @odata.nextLink is typically absolute
+    // (e.g. https://graph.microsoft.com/v1.0/users/.../messages?$skiptoken=...).
+    // graphFetch handles absolute URLs natively (and enforces the hostname is
+    // graph.microsoft.com), so we forward whatever Graph returns verbatim
+    // without trying to strip the base.
     const page: GraphPage = await fetchFn<GraphPage>(nextPath, {
       headers: { ConsistencyLevel: "eventual" }, // required for $search
     })
