@@ -649,15 +649,20 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
  * `(source, externalId)` unique on ExternalSync. Both protect the same
  * "this Graph message has already been ingested" invariant; either can
  * be the constraint that wins the race.
+ *
+ * Prisma surfaces the failing constraint differently per connector:
+ *  - PostgreSQL passes `meta.target` as a string (constraint name like
+ *    `external_sync_source_external_id_key`), or sometimes the column list.
+ *  - Other connectors / older Prisma versions pass a string[] of columns
+ *    (`["source", "external_id"]` or `["source", "externalId"]`).
+ * We normalise both shapes plus the raw error message and look for any of
+ * the known fingerprints.
  */
 function isExternalMessageOrSyncRace(
   err: Prisma.PrismaClientKnownRequestError
 ): boolean {
   const meta = err.meta as { target?: unknown } | undefined
   const target = meta?.target
-  // Prisma surfaces the constraint as either a string (constraint name) or
-  // a string[] (column list), depending on the connector and the index
-  // type. Handle both shapes plus an unstructured message fallback.
   const targets =
     typeof target === "string"
       ? [target]
@@ -665,12 +670,20 @@ function isExternalMessageOrSyncRace(
         ? target.filter((t): t is string => typeof t === "string")
         : []
   const hay = [...targets, err.message ?? ""].join(" ").toLowerCase()
+  // ExternalSync (source, external_id) match: covers both the snake_case
+  // column form (`source` + `external_id`) and the camelCase Prisma field
+  // form (`externalId`) plus the generated constraint name fingerprint.
+  const looksLikeExternalSyncRace =
+    hay.includes("external_sync_source_external_id_key") ||
+    hay.includes("externalsync_source_externalid_key") ||
+    hay.includes("source_externalid") ||
+    hay.includes("source_external_id") ||
+    (hay.includes("source") &&
+      (hay.includes("external_id") || hay.includes("externalid")))
   return (
     hay.includes("communications_external_message_id_unique") ||
     hay.includes("external_message_id") ||
-    hay.includes("externalsync_source_externalid_key") ||
-    hay.includes("source_externalid") ||
-    (hay.includes("source") && hay.includes("externalid"))
+    looksLikeExternalSyncRace
   )
 }
 

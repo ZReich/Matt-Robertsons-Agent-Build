@@ -552,6 +552,67 @@ describe("persistMessage scrub enqueue", () => {
     })
   })
 
+  it("treats a P2002 race on the ExternalSync (source, externalId) unique as deduped", async () => {
+    // Bug 2 regression: when two ingest paths race the same Graph message ID
+    // past the externalSync.findUnique existence check, the second tx may
+    // fail on the ExternalSync (source, external_id) unique BEFORE it ever
+    // gets to insert the Communication. Earlier versions of this code only
+    // matched the Communication.external_message_id constraint name; the
+    // ExternalSync race fingerprint (target=["source","external_id"] or the
+    // generated `external_sync_source_external_id_key` constraint name)
+    // bubbled up as an unexplained warning. The matcher must now cover it.
+    const { Prisma } = await import("@prisma/client")
+    const p2002Sync = new Prisma.PrismaClientKnownRequestError(
+      "Unique constraint failed on the constraint: `external_sync_source_external_id_key`",
+      {
+        code: "P2002",
+        clientVersion: "test",
+        meta: { target: ["source", "external_id"] },
+      }
+    )
+    ;(db.$transaction as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      p2002Sync
+    )
+
+    const result = await persistMessage({
+      message: {
+        id: "graph-race-sync",
+        receivedDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-race-sync",
+        subject: "Sync race",
+        body: { contentType: "text", content: "x" },
+      },
+      folder: "inbox",
+      normalizedSender: {
+        address: "buyer@example.com",
+        displayName: "Buyer",
+        isInternal: false,
+        normalizationFailed: false,
+      },
+      classification: {
+        classification: "signal",
+        source: "known-counterparty",
+        tier1Rule: "contact-replied",
+      },
+      acquisition: acquisition(),
+      hints,
+      extracted: null,
+      attachments: undefined,
+      contactId: "c-existing",
+      leadContactId: null,
+      leadCreated: false,
+    })
+
+    expect(result).toEqual({
+      inserted: false,
+      contactCreated: false,
+      leadContactId: null,
+      leadCreated: false,
+      communicationId: null,
+      contactId: "c-existing",
+    })
+  })
+
   it("rethrows P2002 on unrelated constraints (does not silently swallow)", async () => {
     const { Prisma } = await import("@prisma/client")
     const p2002Other = new Prisma.PrismaClientKnownRequestError(
