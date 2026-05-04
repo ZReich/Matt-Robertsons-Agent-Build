@@ -198,6 +198,12 @@ async function defaultSearchMessages(
 ): Promise<SearchedMessage[]> {
   const upn = process.env.MSGRAPH_TARGET_UPN
   if (!upn) throw new Error("MSGRAPH_TARGET_UPN not set")
+  // `buildGraphSearchValue` already returns the inner KQL: `"phrase1" OR "phrase2"`.
+  // Graph wants this wrapped in ONE pair of outer quotes when passed via the
+  // URL: `?$search="<inner>"`. We URL-encode the whole literal (inner quotes
+  // included). Double-wrapping (which the original code did) produces
+  // `?$search=""..."` which Graph rejects with "An identifier was expected
+  // at position 0".
   const search = buildGraphSearchValue(queryTerms)
   if (!search) return []
 
@@ -205,9 +211,10 @@ async function defaultSearchMessages(
   // Graph requires `ConsistencyLevel: eventual` on $search across the
   // /messages collection. Without it, the request is rejected with
   // `InefficientFilter`. The `$select` keeps the response small.
+  // Note: `$search` doesn't allow `$orderby` simultaneously — Graph 400s.
   const url =
     `${GRAPH_BASE_URL}/users/${encodeURIComponent(upn)}/messages` +
-    `?$search=${encodeURIComponent(`"${search}"`)}` +
+    `?$search=${encodeURIComponent(`"${search.replace(/"/g, '\\"')}"`)}` +
     `&$top=${encodeURIComponent(String(take))}` +
     `&$select=id,subject,receivedDateTime,hasAttachments`
 
