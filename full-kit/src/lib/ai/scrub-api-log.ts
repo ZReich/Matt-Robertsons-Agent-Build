@@ -46,22 +46,58 @@ export type ScrubApiPurpose =
   | "lease_extractor"
   | "pdf_lease_extractor"
 
-const HAIKU_INPUT_PER_M = 1
-const HAIKU_CACHE_READ_PER_M = 0.1
-const HAIKU_CACHE_WRITE_PER_M = 1.25
-const HAIKU_OUTPUT_PER_M = 5
+// Per-million-token USD prices, by model family. Cache rates are Anthropic-
+// specific (DeepSeek/OpenAI don't bill cache reads/writes separately the
+// same way, so cache fields are zero for them).
+type ModelPricing = {
+  input: number
+  cacheRead: number
+  cacheWrite: number
+  output: number
+}
+
+const HAIKU_PRICING: ModelPricing = {
+  input: 1,
+  cacheRead: 0.1,
+  cacheWrite: 1.25,
+  output: 5,
+}
+
+// DeepSeek-V3 / deepseek-chat pricing (USD per 1M tokens). DeepSeek doesn't
+// expose Anthropic-style cache write/read pricing — cache hits are reflected
+// via cacheReadTokens but priced at the same input rate (still much cheaper
+// than Haiku's input rate).
+const DEEPSEEK_PRICING: ModelPricing = {
+  input: 0.14,
+  cacheRead: 0.07,
+  cacheWrite: 0.14,
+  output: 0.28,
+}
+
+function pricingFor(modelUsed: string | null | undefined): ModelPricing {
+  const m = (modelUsed ?? "").toLowerCase()
+  if (m.includes("deepseek")) return DEEPSEEK_PRICING
+  if (m.includes("haiku") || m.includes("claude")) return HAIKU_PRICING
+  // Unknown model — assume Haiku rates so we over-estimate rather than
+  // accidentally under-budget.
+  return HAIKU_PRICING
+}
 
 let warnedMissingMetadataColumn = false
 
-export function estimateScrubCostUsd(usage: ScrubApiUsage): number {
+export function estimateScrubCostUsd(
+  usage: ScrubApiUsage,
+  modelUsed?: string | null
+): number {
+  const pricing = pricingFor(modelUsed)
   const cacheReadTokens = usage.cacheReadTokens ?? 0
   const cacheWriteTokens = usage.cacheWriteTokens ?? 0
   const uncachedInputTokens = Math.max(0, usage.tokensIn - cacheReadTokens)
   return (
-    (uncachedInputTokens / 1_000_000) * HAIKU_INPUT_PER_M +
-    (cacheReadTokens / 1_000_000) * HAIKU_CACHE_READ_PER_M +
-    (cacheWriteTokens / 1_000_000) * HAIKU_CACHE_WRITE_PER_M +
-    (usage.tokensOut / 1_000_000) * HAIKU_OUTPUT_PER_M
+    (uncachedInputTokens / 1_000_000) * pricing.input +
+    (cacheReadTokens / 1_000_000) * pricing.cacheRead +
+    (cacheWriteTokens / 1_000_000) * pricing.cacheWrite +
+    (usage.tokensOut / 1_000_000) * pricing.output
   )
 }
 
@@ -105,7 +141,7 @@ export async function logScrubApiCall({
     const usd =
       estimatedUsdOverride !== undefined
         ? estimatedUsdOverride
-        : estimateScrubCostUsd(usage)
+        : estimateScrubCostUsd(usage, modelUsed)
     const row = await db.scrubApiCall.create({
       data: {
         scrubQueueId: queueRowId ?? null,
