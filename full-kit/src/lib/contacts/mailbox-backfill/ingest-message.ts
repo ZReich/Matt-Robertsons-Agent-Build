@@ -15,6 +15,12 @@ export interface IngestSingleBackfillMessageInput {
   message: GraphEmailMessage
   contactId: string
   targetUpn: string
+  /**
+   * Lower-cased addresses that count as Matt sending it (primary UPN +
+   * any aliases). Used by direction inference. Optional for back-compat;
+   * defaults to `[targetUpn.toLowerCase()]` when omitted.
+   */
+  knownSelfAddresses?: ReadonlyArray<string>
   /** Optional dealId resolved by the orchestrator from window membership. */
   dealId?: string | null
 }
@@ -40,9 +46,16 @@ export async function ingestSingleBackfillMessage(
   input: IngestSingleBackfillMessageInput
 ): Promise<IngestSingleBackfillMessageResult> {
   const { message, contactId, targetUpn, dealId } = input
+  const knownSelfAddresses =
+    input.knownSelfAddresses && input.knownSelfAddresses.length > 0
+      ? input.knownSelfAddresses
+      : [targetUpn.toLowerCase()]
 
   const fromAddress = message.from?.emailAddress?.address ?? null
-  const direction = inferDirection({ from: fromAddress, targetUpn })
+  const direction = inferDirection({
+    from: fromAddress,
+    knownSelfAddresses,
+  })
   const folder: EmailFolder = direction === "outbound" ? "sentitems" : "inbox"
 
   const normalizedSender = normalizeSenderAddress(message.from, targetUpn)

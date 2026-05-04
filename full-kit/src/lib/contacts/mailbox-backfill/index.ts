@@ -204,6 +204,7 @@ export async function backfillMailboxForContact(
             message,
             contactId,
             targetUpn: cfg.targetUpn,
+            knownSelfAddresses: cfg.knownSelfAddresses,
             dealId,
           })
           if (result.deduped) {

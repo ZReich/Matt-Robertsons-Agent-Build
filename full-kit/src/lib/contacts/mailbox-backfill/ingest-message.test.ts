@@ -107,6 +107,47 @@ describe("ingestSingleBackfillMessage", () => {
     expect(classifyCall[1].folder).toBe("sentitems")
   })
 
+  it("treats messages from any configured alias as outbound", async () => {
+    const { persistMessage } = await import("@/lib/msgraph/emails")
+
+    await ingestSingleBackfillMessage({
+      ...baseInput,
+      knownSelfAddresses: [
+        "mrobertson@naibusinessproperties.com",
+        "matt.robertson@naibusinessproperties.com",
+        "matt@nai-old-domain.com",
+      ],
+      message: {
+        ...baseMessage,
+        from: {
+          emailAddress: { address: "MATT@nai-old-domain.com" },
+        },
+        sentDateTime: "2026-04-15T10:00:00Z",
+      } as any,
+    })
+
+    const persistCall = (persistMessage as any).mock.calls[0][0]
+    expect(persistCall.folder).toBe("sentitems")
+  })
+
+  it("falls back to [targetUpn] when knownSelfAddresses omitted (back-compat)", async () => {
+    const { persistMessage } = await import("@/lib/msgraph/emails")
+
+    // From an alias not in the (omitted) self list — should be inbound.
+    await ingestSingleBackfillMessage({
+      ...baseInput,
+      message: {
+        ...baseMessage,
+        from: {
+          emailAddress: { address: "matt.robertson@naibusinessproperties.com" },
+        },
+      } as any,
+    })
+
+    const persistCall = (persistMessage as any).mock.calls[0][0]
+    expect(persistCall.folder).toBe("inbox")
+  })
+
   it("defaults dealIdOverride to null when caller omits dealId", async () => {
     const { persistMessage } = await import("@/lib/msgraph/emails")
 

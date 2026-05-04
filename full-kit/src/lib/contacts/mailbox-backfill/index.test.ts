@@ -11,7 +11,10 @@ vi.mock("./ingest-message", () => ({
   ingestSingleBackfillMessage: vi.fn(),
 }))
 vi.mock("@/lib/msgraph/config", () => ({
-  loadMsgraphConfig: () => ({ targetUpn: "matt@example.com" }),
+  loadMsgraphConfig: () => ({
+    targetUpn: "matt@example.com",
+    knownSelfAddresses: ["matt@example.com"],
+  }),
 }))
 vi.mock("@/lib/prisma", () => ({
   db: {

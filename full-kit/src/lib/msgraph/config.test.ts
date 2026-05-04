@@ -17,6 +17,7 @@ describe("msgraph config", () => {
     // reset is needed — in-process mutation is observed directly.
     for (const key of REQUIRED_VARS) delete process.env[key]
     delete process.env.MSGRAPH_TEST_ROUTE_ENABLED
+    delete process.env.MSGRAPH_SELF_ADDRESSES
   })
 
   afterEach(() => {
@@ -69,6 +70,41 @@ describe("msgraph config", () => {
       expect(() => loadMsgraphConfig()).toThrow(missingVar)
     }
   )
+
+  it("defaults knownSelfAddresses to [targetUpn lower-cased] when MSGRAPH_SELF_ADDRESSES unset", async () => {
+    process.env.MSGRAPH_TENANT_ID = "t"
+    process.env.MSGRAPH_CLIENT_ID = "c"
+    process.env.MSGRAPH_CLIENT_SECRET = "s"
+    process.env.MSGRAPH_TARGET_UPN = "Matt@Example.com"
+    process.env.MSGRAPH_TEST_ADMIN_TOKEN = "x".repeat(32)
+
+    const { loadMsgraphConfig } = await import("./config")
+    const cfg = loadMsgraphConfig()
+
+    expect(cfg.knownSelfAddresses).toEqual(["matt@example.com"])
+  })
+
+  it("merges MSGRAPH_SELF_ADDRESSES aliases (lower-cased, deduped)", async () => {
+    process.env.MSGRAPH_TENANT_ID = "t"
+    process.env.MSGRAPH_CLIENT_ID = "c"
+    process.env.MSGRAPH_CLIENT_SECRET = "s"
+    process.env.MSGRAPH_TARGET_UPN = "matt@example.com"
+    process.env.MSGRAPH_TEST_ADMIN_TOKEN = "x".repeat(32)
+    process.env.MSGRAPH_SELF_ADDRESSES =
+      "Matt.Robertson@nai.com, MATT@example.com , matt@old-domain.com,"
+
+    const { loadMsgraphConfig } = await import("./config")
+    const cfg = loadMsgraphConfig()
+
+    // matt@example.com appears in both target and aliases — deduped. All
+    // entries lower-cased; trailing empty token from the dangling comma
+    // dropped.
+    expect(cfg.knownSelfAddresses).toEqual([
+      "matt@example.com",
+      "matt.robertson@nai.com",
+      "matt@old-domain.com",
+    ])
+  })
 
   it("rejects a short admin token", async () => {
     process.env.MSGRAPH_TENANT_ID = "t"
