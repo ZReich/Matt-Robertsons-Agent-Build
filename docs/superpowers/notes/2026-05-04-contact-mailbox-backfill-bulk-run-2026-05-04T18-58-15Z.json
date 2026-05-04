@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-05-04T18:58:15.194Z",
+  "mode": "deal-anchored",
+  "dryRun": true,
+  "explicitIdsCount": 5,
+  "result": {
+    "parentRunId": "cmorkayhj0000bghba723xiyr",
+    "totalContacts": 5,
+    "succeeded": 5,
+    "failed": 0,
+    "skipped": 0,
+    "totalMessagesIngested": 0,
+    "totalScrubQueued": 0,
+    "failures": [],
+    "skips": []
+  },
+  "perContactTimings": [
+    {
+      "contactId": "00ae0f29-49a6-40bc-9fe0-0d3038837d55",
+      "status": "succeeded",
+      "elapsedMs": 7643
+    },
+    {
+      "contactId": "01de0fe3-20db-4d9b-be01-8157d104054f",
+      "status": "succeeded",
+      "elapsedMs": 5128
+    },
+    {
+      "contactId": "058221ac-0ec0-43ed-9c4a-3d117dbd1ea0",
+      "status": "succeeded",
+      "elapsedMs": 1987
+    },
+    {
+      "contactId": "0772757d-3b5f-48e2-afe1-a646ea6038ab",
+      "status": "succeeded",
+      "elapsedMs": 1834
+    },
+    {
+      "contactId": "09324513-8f54-4530-a8e5-484c5b9b13b8",
+      "status": "succeeded",
+      "elapsedMs": 1842
+    }
+  ]
+}

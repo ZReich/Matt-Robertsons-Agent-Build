@@ -16,8 +16,13 @@ import { db } from "@/lib/prisma"
  * processes its slice with concurrency=5 (see scrub.ts).
  */
 
-const PER_BATCH = 200
-const MAX_BATCHES = 5 // upper bound: 1000 messages per call
+// PER_BATCH must stay small enough that the row-claim transaction in
+// scrubEmailBatch (one UPDATE per row inside a single Prisma $transaction)
+// completes within Prisma's default 5s txn timeout. 50 leaves ~10x headroom
+// at typical row-update latency. MAX_BATCHES=20 keeps the per-call ceiling
+// at 1000 messages even with the smaller per-batch.
+const PER_BATCH = 50
+const MAX_BATCHES = 20 // upper bound: 1000 messages per call
 // Generous max-duration so a full 1000-message drain has runway. Each
 // scrubEmailBatch slice does up to PER_BATCH provider calls, with internal
 // concurrency=5 — call it ~1.5s per message worst-case = 5 minutes for the

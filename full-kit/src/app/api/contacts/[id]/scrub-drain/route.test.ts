@@ -152,7 +152,7 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
     expect(scrubEmailBatch).toHaveBeenCalledTimes(1)
   })
 
-  it("caps at 5 batches and reports reachedCap=true if work remains", async () => {
+  it("caps at MAX_BATCHES and reports reachedCap=true if work remains", async () => {
     const { requireApiUser } = await import("@/lib/api-route-auth")
     const { db } = await import("@/lib/prisma")
     const { scrubEmailBatch } = await import("@/lib/ai/scrub")
@@ -182,8 +182,8 @@ describe("POST /api/contacts/[id]/scrub-drain", () => {
     } as any)
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.batches).toBe(5)
+    expect(body.batches).toBe(20)
     expect(body.reachedCap).toBe(true)
-    expect(scrubEmailBatch).toHaveBeenCalledTimes(5)
+    expect(scrubEmailBatch).toHaveBeenCalledTimes(20)
   })
 })

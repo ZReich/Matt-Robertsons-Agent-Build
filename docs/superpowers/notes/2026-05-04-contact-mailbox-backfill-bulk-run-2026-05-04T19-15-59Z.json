@@ -1,0 +1,269 @@
+{
+  "generatedAt": "2026-05-04T19:15:59.337Z",
+  "mode": "deal-anchored",
+  "dryRun": false,
+  "explicitIdsCount": 50,
+  "result": {
+    "parentRunId": "cmorkc7bf0000ta985gbo5qus",
+    "totalContacts": 50,
+    "succeeded": 50,
+    "failed": 0,
+    "skipped": 0,
+    "totalMessagesIngested": 829,
+    "totalScrubQueued": 711,
+    "failures": [],
+    "skips": []
+  },
+  "perContactTimings": [
+    {
+      "contactId": "00ae0f29-49a6-40bc-9fe0-0d3038837d55",
+      "status": "succeeded",
+      "elapsedMs": 2329
+    },
+    {
+      "contactId": "01de0fe3-20db-4d9b-be01-8157d104054f",
+      "status": "succeeded",
+      "elapsedMs": 11287
+    },
+    {
+      "contactId": "058221ac-0ec0-43ed-9c4a-3d117dbd1ea0",
+      "status": "succeeded",
+      "elapsedMs": 1920
+    },
+    {
+      "contactId": "0772757d-3b5f-48e2-afe1-a646ea6038ab",
+      "status": "succeeded",
+      "elapsedMs": 1710
+    },
+    {
+      "contactId": "09324513-8f54-4530-a8e5-484c5b9b13b8",
+      "status": "succeeded",
+      "elapsedMs": 1637
+    },
+    {
+      "contactId": "0b3da2e0-01a1-466c-b3fd-354a9ed0ad6b",
+      "status": "succeeded",
+      "elapsedMs": 1837
+    },
+    {
+      "contactId": "0cd13d7d-fb9a-41c7-af3d-3f5440d85234",
+      "status": "succeeded",
+      "elapsedMs": 1800
+    },
+    {
+      "contactId": "0ed00f57-32f4-4d91-a802-320ca6d25ed5",
+      "status": "succeeded",
+      "elapsedMs": 1946
+    },
+    {
+      "contactId": "10c6e5c7-e552-4e89-9160-2d683a94636e",
+      "status": "succeeded",
+      "elapsedMs": 1687
+    },
+    {
+      "contactId": "119855b5-7889-4cfb-8d1a-66e2876fcdf8",
+      "status": "succeeded",
+      "elapsedMs": 25184
+    },
+    {
+      "contactId": "155ed015-5b74-4ba6-b39f-2d76b7d14536",
+      "status": "succeeded",
+      "elapsedMs": 1833
+    },
+    {
+      "contactId": "1781f9a1-8986-4eb4-b672-ca8426fc3828",
+      "status": "succeeded",
+      "elapsedMs": 1638
+    },
+    {
+      "contactId": "1bbfcee6-d4e4-4aea-91bb-90c080a94300",
+      "status": "succeeded",
+      "elapsedMs": 2126
+    },
+    {
+      "contactId": "1be03410-ee2e-4467-9287-f6984a735e48",
+      "status": "succeeded",
+      "elapsedMs": 1749
+    },
+    {
+      "contactId": "1f3db414-4c7b-4341-bdd9-b14cf79f339c",
+      "status": "succeeded",
+      "elapsedMs": 182371
+    },
+    {
+      "contactId": "1f51c5ee-35e7-4d2c-b4e6-87e081b98425",
+      "status": "succeeded",
+      "elapsedMs": 2241
+    },
+    {
+      "contactId": "1fd8c0ca-6ee1-4656-911f-3d5dd7c5c1c8",
+      "status": "succeeded",
+      "elapsedMs": 3513
+    },
+    {
+      "contactId": "2065056c-bb9b-44ba-9790-bf9d190db536",
+      "status": "succeeded",
+      "elapsedMs": 53615
+    },
+    {
+      "contactId": "21b3d5e7-b176-45b5-8cd6-095dbccdeccf",
+      "status": "succeeded",
+      "elapsedMs": 135083
+    },
+    {
+      "contactId": "22f557ee-9023-4206-a910-46923bd78278",
+      "status": "succeeded",
+      "elapsedMs": 2101
+    },
+    {
+      "contactId": "242ac8f2-e831-409d-8083-726b79126020",
+      "status": "succeeded",
+      "elapsedMs": 1614
+    },
+    {
+      "contactId": "24c2f43a-5509-4a4d-b95a-2bab31ff45a1",
+      "status": "succeeded",
+      "elapsedMs": 1779
+    },
+    {
+      "contactId": "25efd8b7-38cf-4e3f-a4b1-a8a01ef99e10",
+      "status": "succeeded",
+      "elapsedMs": 2837
+    },
+    {
+      "contactId": "2afb5133-99e6-4b2b-ba73-d47beb20f8c0",
+      "status": "succeeded",
+      "elapsedMs": 91483
+    },
+    {
+      "contactId": "2b132ff5-b1b8-4b15-81d4-43ea5f819a2e",
+      "status": "succeeded",
+      "elapsedMs": 2077
+    },
+    {
+      "contactId": "2b1598ca-f251-4a88-9ccf-483ca32444db",
+      "status": "succeeded",
+      "elapsedMs": 4773
+    },
+    {
+      "contactId": "2f9aeb08-03ed-4959-8b7b-d89384b0b258",
+      "status": "succeeded",
+      "elapsedMs": 1608
+    },
+    {
+      "contactId": "30219a2b-ffd6-4c3e-9150-cc31fb9454a9",
+      "status": "succeeded",
+      "elapsedMs": 1637
+    },
+    {
+      "contactId": "31a16be4-d1d9-4853-bde1-04127a7a7068",
+      "status": "succeeded",
+      "elapsedMs": 1631
+    },
+    {
+      "contactId": "342fd857-bf8e-4215-8014-956e71c65d19",
+      "status": "succeeded",
+      "elapsedMs": 1647
+    },
+    {
+      "contactId": "39b6f603-0886-4df6-91f0-c145502f93e2",
+      "status": "succeeded",
+      "elapsedMs": 1633
+    },
+    {
+      "contactId": "3d98da9c-cfe9-473c-8c03-68b200270363",
+      "status": "succeeded",
+      "elapsedMs": 1677
+    },
+    {
+      "contactId": "3e0327b9-856f-47f2-b057-755aa4844a26",
+      "status": "succeeded",
+      "elapsedMs": 1669
+    },
+    {
+      "contactId": "40a0b762-3feb-4633-9f60-2a7b7ea5b2e9",
+      "status": "succeeded",
+      "elapsedMs": 1677
+    },
+    {
+      "contactId": "4144cee7-ea5d-4a91-8f45-7300c5ee174e",
+      "status": "succeeded",
+      "elapsedMs": 14252
+    },
+    {
+      "contactId": "415092d8-ee26-4fdc-b60a-5b0e97a9ee99",
+      "status": "succeeded",
+      "elapsedMs": 8838
+    },
+    {
+      "contactId": "42fd93e4-c237-4920-ae65-dd3d0fa87465",
+      "status": "succeeded",
+      "elapsedMs": 1697
+    },
+    {
+      "contactId": "43c3a8e0-3004-435c-a223-356b99b96341",
+      "status": "succeeded",
+      "elapsedMs": 1627
+    },
+    {
+      "contactId": "44c89fea-64c8-453b-bc0f-64baf35d2438",
+      "status": "succeeded",
+      "elapsedMs": 1606
+    },
+    {
+      "contactId": "463583ac-31f7-468c-bd69-efcb89ebd3db",
+      "status": "succeeded",
+      "elapsedMs": 1654
+    },
+    {
+      "contactId": "4857b6fc-527b-49cf-8fdb-636e6fe6494a",
+      "status": "succeeded",
+      "elapsedMs": 259315
+    },
+    {
+      "contactId": "4efd0f06-e6f3-408d-a329-00bd5d5dd679",
+      "status": "succeeded",
+      "elapsedMs": 2202
+    },
+    {
+      "contactId": "5411d800-3c1c-4e99-bc3b-5cc4a4297934",
+      "status": "succeeded",
+      "elapsedMs": 1650
+    },
+    {
+      "contactId": "55a197b5-5b49-4b1d-b7a3-ecf3a2013a44",
+      "status": "succeeded",
+      "elapsedMs": 112063
+    },
+    {
+      "contactId": "5609dc86-d7a3-44d4-bd55-b06a9b4e72c4",
+      "status": "succeeded",
+      "elapsedMs": 1885
+    },
+    {
+      "contactId": "59de6c83-0bd3-4a6a-b2c5-7837a7f80997",
+      "status": "succeeded",
+      "elapsedMs": 1634
+    },
+    {
+      "contactId": "5b549ffb-303b-440e-83b4-85a37aaf53c0",
+      "status": "succeeded",
+      "elapsedMs": 1679
+    },
+    {
+      "contactId": "6036532e-eacf-47f6-b6b4-3b3c62094a7d",
+      "status": "succeeded",
+      "elapsedMs": 55517
+    },
+    {
+      "contactId": "606de476-35e0-4761-b028-033c50d8ff0d",
+      "status": "succeeded",
+      "elapsedMs": 1921
+    },
+    {
+      "contactId": "6090a384-2d62-48b6-882b-cba9f8d7d261",
+      "status": "succeeded",
+      "elapsedMs": 1639
+    }
+  ]
+}
