@@ -6,7 +6,12 @@ vi.mock("@/lib/contacts/mailbox-backfill", () => ({
   backfillMailboxForContact: vi.fn(),
 }))
 vi.mock("@/lib/prisma", () => ({
-  db: { backfillRun: { findFirst: vi.fn() } },
+  db: {
+    backfillRun: {
+      findFirst: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+    },
+  },
 }))
 vi.mock("@/lib/api-route-auth", () => ({
   requireApiUser: vi.fn(),

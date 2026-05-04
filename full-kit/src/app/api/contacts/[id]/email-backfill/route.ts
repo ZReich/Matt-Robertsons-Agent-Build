@@ -8,6 +8,12 @@ import { requireApiUser } from "@/lib/api-route-auth"
 import { db } from "@/lib/prisma"
 
 const RATE_GUARD_WINDOW_MS = 10 * 60 * 1000
+// Backfill runs that have been "running" longer than this are considered
+// abandoned (orchestrator died, request aborted, etc.) and reaped so that
+// the partial unique on (contact_id) WHERE status='running' doesn't block
+// the contact forever. Largest observed real-world run was ~67s; 15min
+// gives 13x headroom.
+const STUCK_RUN_THRESHOLD_MS = 15 * 60 * 1000
 
 export async function POST(
   _req: Request,
@@ -17,6 +23,23 @@ export async function POST(
   if (unauthorized) return unauthorized
 
   const { id } = await ctx.params
+
+  // Reap any abandoned `running` rows for this contact before checking the
+  // rate-guard. Without this, a single aborted request (e.g., browser fetch
+  // cancelled) leaves the BackfillRun row stuck in `running` forever and
+  // every future "Scan mailbox" click hits the partial unique constraint.
+  await db.backfillRun.updateMany({
+    where: {
+      contactId: id,
+      status: "running",
+      startedAt: { lt: new Date(Date.now() - STUCK_RUN_THRESHOLD_MS) },
+    },
+    data: {
+      status: "failed",
+      finishedAt: new Date(),
+      errorMessage: "abandoned_no_finalize",
+    },
+  })
 
   const recent = await db.backfillRun.findFirst({
     where: {
