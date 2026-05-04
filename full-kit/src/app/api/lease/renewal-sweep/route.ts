@@ -21,14 +21,17 @@ function isOperatorTokenAuthorized(request: Request): boolean {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  if (!isOperatorTokenAuthorized(request)) {
+  const operatorAuthorized = isOperatorTokenAuthorized(request)
+  if (!operatorAuthorized) {
     const unauthorized = await requireApiUser()
     if (unauthorized) return unauthorized
+    // Same-origin/CSRF protection only applies to NextAuth browser sessions.
+    // Operator-token callers (CLI / cron) don't have an Origin header.
+    const invalidRequest = validateJsonMutationRequest(request)
+    if (invalidRequest) return invalidRequest
   }
-  const invalidRequest = validateJsonMutationRequest(request)
-  if (invalidRequest) return invalidRequest
 
-  let body: { lookaheadMonths?: unknown }
+  let body: { lookaheadMonths?: unknown; windowDays?: unknown }
   try {
     body = (await request.json()) as typeof body
   } catch {
@@ -51,6 +54,22 @@ export async function POST(request: Request): Promise<Response> {
     lookaheadMonths = Math.round(body.lookaheadMonths)
   }
 
-  const result = await runRenewalAlertSweep({ lookaheadMonths })
+  let windowDays: number | undefined
+  if (body.windowDays !== undefined) {
+    if (
+      typeof body.windowDays !== "number" ||
+      !Number.isFinite(body.windowDays) ||
+      body.windowDays < 1 ||
+      body.windowDays > 730
+    ) {
+      return NextResponse.json(
+        { error: "windowDays must be a number between 1 and 730" },
+        { status: 400 }
+      )
+    }
+    windowDays = Math.round(body.windowDays)
+  }
+
+  const result = await runRenewalAlertSweep({ lookaheadMonths, windowDays })
   return NextResponse.json(result)
 }

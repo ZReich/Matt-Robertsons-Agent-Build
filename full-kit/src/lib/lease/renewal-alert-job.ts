@@ -31,6 +31,9 @@ export interface RenewalAlertSweepOptions {
   lookaheadMonths?: number
   /** Override "now" — primarily for tests. */
   now?: Date
+  /** Override the sliding-window width in days. Default 7. Set to a large
+   * value (e.g. 365 for "everything in next year") for one-shot backfills. */
+  windowDays?: number
 }
 
 export interface RenewalAlertOutcome {
@@ -89,9 +92,14 @@ export async function runRenewalAlertSweep(
   )
   const now = opts.now ?? new Date()
 
-  // Sliding 7-day window ending at `now + lookaheadMonths`.
+  // Sliding window ending at `now + lookaheadMonths`. Width is opts.windowDays
+  // when set (operator-driven backfill mode), else SLIDING_WINDOW_DAYS (cron).
+  const windowDays =
+    typeof opts.windowDays === "number" && opts.windowDays >= 1
+      ? Math.round(opts.windowDays)
+      : SLIDING_WINDOW_DAYS
   const windowEnd = addMonths(now, lookaheadMonths)
-  const windowStart = addDays(windowEnd, -SLIDING_WINDOW_DAYS)
+  const windowStart = addDays(windowEnd, -windowDays)
 
   const candidates = await db.leaseRecord.findMany({
     where: {
@@ -159,22 +167,40 @@ export async function runRenewalAlertSweep(
           select: { id: true },
         })
 
-        const event = await tx.calendarEvent.create({
-          data: {
-            title,
-            startDate: now,
-            allDay: true,
-            eventKind: "lease_renewal_outreach",
-            contactId: lease.contactId,
-            dealId: lease.dealId ?? null,
-            propertyId: lease.propertyId ?? null,
+        // Upsert via find-then-create-or-update so a re-run after the LR
+        // status was reset (e.g. by a CSV re-import that flips status back
+        // to "active") doesn't trip the @@unique([leaseRecordId, eventKind])
+        // partial index.
+        const existingEvent = await tx.calendarEvent.findFirst({
+          where: {
             leaseRecordId: lease.id,
-            source: "system",
-            status: "upcoming",
-            createdBy: "lease-renewal-sweep",
+            eventKind: "lease_renewal_outreach",
           },
           select: { id: true },
         })
+        const eventData = {
+          title,
+          startDate: now,
+          allDay: true,
+          eventKind: "lease_renewal_outreach",
+          contactId: lease.contactId,
+          dealId: lease.dealId ?? null,
+          propertyId: lease.propertyId ?? null,
+          leaseRecordId: lease.id,
+          source: "system",
+          status: "upcoming",
+          createdBy: "lease-renewal-sweep",
+        }
+        const event = existingEvent
+          ? await tx.calendarEvent.update({
+              where: { id: existingEvent.id },
+              data: eventData,
+              select: { id: true },
+            })
+          : await tx.calendarEvent.create({
+              data: eventData,
+              select: { id: true },
+            })
 
         await tx.leaseRecord.update({
           where: { id: lease.id },

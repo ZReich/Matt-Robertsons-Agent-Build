@@ -17,7 +17,9 @@ vi.mock("@/lib/prisma", () => ({
       create: vi.fn(),
     },
     calendarEvent: {
+      findFirst: vi.fn(async () => null),
       create: vi.fn(),
+      update: vi.fn(),
     },
     pendingReply: {
       create: vi.fn(),
@@ -50,7 +52,11 @@ const mockedDb = db as unknown as {
     update: ReturnType<typeof vi.fn>
   }
   todo: { create: ReturnType<typeof vi.fn> }
-  calendarEvent: { create: ReturnType<typeof vi.fn> }
+  calendarEvent: {
+    findFirst: ReturnType<typeof vi.fn>
+    create: ReturnType<typeof vi.fn>
+    update: ReturnType<typeof vi.fn>
+  }
   pendingReply: {
     create: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>

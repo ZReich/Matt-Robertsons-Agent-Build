@@ -694,14 +694,26 @@ export async function ingestBuildoutDealCsv(
 
           const existingLease = await tx.leaseRecord.findFirst({
             where: { dealId, archivedAt: null },
-            select: { id: true },
+            select: { id: true, status: true },
           })
 
           let leaseRecordId: string
           if (existingLease) {
+            // Preserve downstream-managed status values so re-importing
+            // doesn't kick a lease out of "expiring_soon" / "renewed" /
+            // "terminated_early" back into "active". Only freshly-derived
+            // statuses ("active" / "expired") get overwritten.
+            const downstreamManaged = new Set([
+              "expiring_soon",
+              "renewed",
+              "terminated_early",
+            ])
+            const updateData = downstreamManaged.has(existingLease.status)
+              ? { ...leaseData, status: existingLease.status }
+              : leaseData
             await tx.leaseRecord.update({
               where: { id: existingLease.id },
-              data: leaseData,
+              data: updateData,
             })
             leaseRecordId = existingLease.id
           } else {
