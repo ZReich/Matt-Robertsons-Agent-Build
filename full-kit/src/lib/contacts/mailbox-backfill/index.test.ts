@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { backfillMailboxForContact } from "./index"
+import {
+  BackfillAlreadyRunningError,
+  backfillMailboxForContact,
+} from "./index"
 
 vi.mock("./graph-query", () => ({
   fetchMessagesForContactWindow: vi.fn(),
@@ -81,6 +84,28 @@ describe("backfillMailboxForContact", () => {
     expect(result.ingested).toBe(2)
     expect(result.deduped).toBe(1)
     expect(result.scrubQueued).toBe(2) // signal + uncertain, not noise
+  })
+
+  it("rethrows P2002 from backfillRun.create as BackfillAlreadyRunningError", async () => {
+    const { db } = await import("@/lib/prisma")
+    // Build a stand-in for Prisma.PrismaClientKnownRequestError shaped enough
+    // to trip the `instanceof` check in the orchestrator. Importing the real
+    // class would pull the prisma client into the test path; the orchestrator
+    // only inspects `code`.
+    const { Prisma } = await import("@prisma/client")
+    const p2002 = new Prisma.PrismaClientKnownRequestError(
+      "Unique constraint failed on the constraint: backfill_runs_one_running_per_contact",
+      { code: "P2002", clientVersion: "test" }
+    )
+    ;(db.backfillRun.create as any).mockRejectedValueOnce(p2002)
+
+    await expect(
+      backfillMailboxForContact("c-running", { mode: "lifetime" })
+    ).rejects.toBeInstanceOf(BackfillAlreadyRunningError)
+
+    // Importantly, the orchestrator does NOT finalize a phantom run when the
+    // initial create fails — there's no run row to update.
+    expect(db.backfillRun.update).not.toHaveBeenCalled()
   })
 
   it("dryRun does not call ingestSingleBackfillMessage", async () => {

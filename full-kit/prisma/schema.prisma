@@ -1241,6 +1241,11 @@ model BackfillRun {
   @@index([contactId, startedAt])
   @@index([parentId])
   @@index([status, startedAt])
+  // Note: a partial unique index `backfill_runs_one_running_per_contact`
+  // (UNIQUE on contact_id WHERE status='running' AND contact_id IS NOT NULL)
+  // is created via raw SQL in migration 20260504181020. Prisma's @@unique
+  // can't express partial-WHERE clauses, so it lives outside the schema —
+  // mirroring how `communications_external_message_id_unique` is handled.
   @@map("backfill_runs")
 }
 

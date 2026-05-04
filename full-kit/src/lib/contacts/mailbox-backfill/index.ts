@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client"
+
 import { db } from "@/lib/prisma"
 import { loadMsgraphConfig } from "@/lib/msgraph/config"
 
@@ -9,6 +11,22 @@ import {
   type BackfillMode,
   type BackfillWindow,
 } from "./window-resolver"
+
+/**
+ * Thrown when the partial unique index
+ * `backfill_runs_one_running_per_contact` rejects a concurrent backfill
+ * attempt for the same contact. Route handlers translate this to HTTP 429
+ * (the friendlier `findFirst` rate-guard returns 429 too — this error is
+ * the safety net for true concurrency that races past that check).
+ */
+export class BackfillAlreadyRunningError extends Error {
+  readonly contactId: string
+  constructor(contactId: string) {
+    super(`backfill already running for contact ${contactId}`)
+    this.name = "BackfillAlreadyRunningError"
+    this.contactId = contactId
+  }
+}
 
 export interface BackfillOptions {
   mode: BackfillMode
@@ -40,15 +58,29 @@ export async function backfillMailboxForContact(
   const startedAt = Date.now()
   const trigger = opts.trigger ?? "ui"
 
-  const run = await db.backfillRun.create({
-    data: {
-      contactId,
-      parentId: opts.parentRunId ?? null,
-      trigger,
-      mode: opts.mode,
-      status: "running",
-    },
-  })
+  let run: { id: string }
+  try {
+    run = await db.backfillRun.create({
+      data: {
+        contactId,
+        parentId: opts.parentRunId ?? null,
+        trigger,
+        mode: opts.mode,
+        status: "running",
+      },
+    })
+  } catch (err) {
+    // Partial unique `backfill_runs_one_running_per_contact` rejects
+    // concurrent runs for the same contact — translate to a typed error
+    // so the route can return 429 without finalizing a phantom run.
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      throw new BackfillAlreadyRunningError(contactId)
+    }
+    throw err
+  }
 
   const finalize = async (
     status: "succeeded" | "failed" | "skipped",

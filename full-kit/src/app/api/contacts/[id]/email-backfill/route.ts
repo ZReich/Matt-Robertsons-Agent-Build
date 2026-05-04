@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 
-import { backfillMailboxForContact } from "@/lib/contacts/mailbox-backfill"
+import {
+  BackfillAlreadyRunningError,
+  backfillMailboxForContact,
+} from "@/lib/contacts/mailbox-backfill"
 import { requireApiUser } from "@/lib/api-route-auth"
 import { db } from "@/lib/prisma"
 
@@ -32,9 +35,24 @@ export async function POST(
     )
   }
 
-  const result = await backfillMailboxForContact(id, {
-    mode: "lifetime",
-    trigger: "ui",
-  })
-  return NextResponse.json(result)
+  try {
+    const result = await backfillMailboxForContact(id, {
+      mode: "lifetime",
+      trigger: "ui",
+    })
+    return NextResponse.json(result)
+  } catch (err) {
+    // Concurrency safety net: the partial unique
+    // `backfill_runs_one_running_per_contact` blocked a second simultaneous
+    // run that raced past the `findFirst` rate-guard above. Surface as 429
+    // identical to the rate-limit branch (no Retry-After hint — the prior
+    // run could finish in seconds, the cooldown timer starts then).
+    if (err instanceof BackfillAlreadyRunningError) {
+      return NextResponse.json(
+        { error: "rate_limited", reason: "already_running" },
+        { status: 429 }
+      )
+    }
+    throw err
+  }
 }
