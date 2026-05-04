@@ -178,9 +178,16 @@ export async function runRenewalAlertSweep(
           },
           select: { id: true },
         })
+        // Place the outreach event at lease_end - lookaheadMonths so it
+        // shows up on the calendar at the correct future date (when Matt
+        // should actually be reaching out), not at "now". Falls back to
+        // `now` only if leaseEndDate is missing.
+        const outreachDate = lease.leaseEndDate
+          ? addMonths(new Date(lease.leaseEndDate), -lookaheadMonths)
+          : now
         const eventData = {
           title,
-          startDate: now,
+          startDate: outreachDate,
           allDay: true,
           eventKind: "lease_renewal_outreach",
           contactId: lease.contactId,
