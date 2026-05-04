@@ -169,11 +169,16 @@ export async function backfillMailboxForContact(
       if (opts.dryRun) continue
 
       for (const message of messages) {
-        // Determine recipient list for conflict detection.
+        // Determine recipient list for conflict detection. BCC is generally
+        // only visible on Matt's *sent* copies — Graph hides BCC from inbox
+        // messages where Matt was BCC'd. Including bccRecipients here is
+        // therefore harmless (an empty list on inbound) and catches the case
+        // where Matt sent one message BCC'ing two clients.
         const recipients = [
           message.from?.emailAddress?.address,
           ...(message.toRecipients ?? []).map((r: any) => r.emailAddress?.address),
           ...(message.ccRecipients ?? []).map((r: any) => r.emailAddress?.address),
+          ...(message.bccRecipients ?? []).map((r: any) => r.emailAddress?.address),
         ].filter(Boolean) as string[]
 
         const conflict = detectMultiClientConflict({
