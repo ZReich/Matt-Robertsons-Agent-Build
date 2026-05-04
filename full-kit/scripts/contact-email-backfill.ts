@@ -1,13 +1,25 @@
+/**
+ * NOTE: This CLI bypasses the admin-token check on the bulk HTTP endpoint
+ * because it imports `runBulkBackfill` directly. Anyone with shell access
+ * to the worktree can launch a bulk Graph sweep. This is acceptable because
+ * shell access already implies repo trust, but if you want HTTP-style guard,
+ * use POST /api/contacts/email-backfill-bulk with `x-admin-token` header.
+ *
+ * Non-dry-run executions additionally require an explicit `--confirm` flag
+ * so that an absent-minded `pnpm backfill:bulk` can't accidentally hit
+ * Graph against the entire client cohort.
+ */
+
 // CLI driver for the contact mailbox backfill bulk runner.
 //
 // Usage:
 //   cd full-kit
 //   set -a && source .env.local && set +a
-//   pnpm backfill:bulk                              # all zero-comm clients, deal-anchored
-//   pnpm backfill:bulk --lifetime                   # all zero-comm clients, full mailbox
 //   pnpm backfill:bulk --dry-run                    # discovery only, no ingest
-//   pnpm backfill:bulk --limit=5                    # first N of the default cohort
-//   pnpm backfill:bulk --ids=cid1,cid2              # explicit contacts
+//   pnpm backfill:bulk --confirm                    # all zero-comm clients, deal-anchored
+//   pnpm backfill:bulk --lifetime --confirm         # all zero-comm clients, full mailbox
+//   pnpm backfill:bulk --limit=5 --confirm          # first N of the default cohort
+//   pnpm backfill:bulk --ids=cid1,cid2 --confirm    # explicit contacts
 //
 // The `set -a && source .env.local && set +a` prefix is the same env-loading
 // pattern documented in CLAUDE.md and used by the other migration scripts.
@@ -21,7 +33,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import path from "node:path"
 
-import { runBulkBackfill } from "../src/lib/contacts/mailbox-backfill/bulk-runner"
+import {
+  type BulkResult,
+  runBulkBackfill,
+} from "../src/lib/contacts/mailbox-backfill/bulk-runner"
+import { db } from "../src/lib/prisma"
 
 function loadEnvLocal(): void {
   const candidates = [
@@ -68,6 +84,15 @@ async function main(): Promise<void> {
   loadEnvLocal()
 
   const dryRun = hasFlag("dry-run")
+  const confirm = hasFlag("confirm")
+  if (!dryRun && !confirm) {
+    console.error(
+      "[backfill] refusing to run without --confirm (or --dry-run). " +
+        "This sweep can hit Graph against the entire client cohort; pass " +
+        "--confirm to acknowledge."
+    )
+    process.exit(1)
+  }
   const mode: "lifetime" | "deal-anchored" = hasFlag("lifetime")
     ? "lifetime"
     : "deal-anchored"
@@ -92,7 +117,6 @@ async function main(): Promise<void> {
   // logging meaningful — the runner sees a fixed list and we can print
   // "[N/M] processing <id>" for each entry.
   if (!contactIds && limit !== undefined) {
-    const { db } = await import("../src/lib/prisma")
     const candidates = await db.contact.findMany({
       where: {
         clientType: {
@@ -122,94 +146,82 @@ async function main(): Promise<void> {
     limit,
   })
 
-  // Per-contact progress logging: monkey-patch the bulk runner via a thin
-  // wrapper. Easiest path is to re-wrap backfillMailboxForContact, but the
-  // bulk-runner imports it directly. Instead we just iterate the input ids
-  // ourselves when we have them, otherwise print a single "starting" line
-  // and let the runner work — the result JSON has per-contact detail.
-  let result
-  if (contactIds && contactIds.length > 0) {
-    // Process serially in our own loop so we can log progress, calling the
-    // bulk runner once per id. This adds one parent BackfillRun per contact
-    // which is noisier than ideal but gives the operator real-time feedback.
-    // If quiet mode is desired, the API endpoint or a single bulk call is
-    // available.
-    const aggregated = {
-      parentRunIds: [] as string[],
-      totalContacts: contactIds.length,
-      succeeded: 0,
-      failed: 0,
-      skipped: 0,
-      totalMessagesIngested: 0,
-      totalScrubQueued: 0,
-      failures: [] as Array<{ contactId: string; error: string }>,
-      skips: [] as Array<{ contactId: string; reason: string }>,
-      perContact: [] as Array<{
-        contactId: string
-        succeeded: number
-        failed: number
-        skipped: number
-        ingested: number
-        scrubQueued: number
-      }>,
-    }
+  // Per-contact progress logging via the runner's onProgress callback. This
+  // keeps the design invariant of one parent BackfillRun per bulk sweep
+  // (previously the CLI looped runBulkBackfill once per id, creating N parent
+  // rows). Per-contact timings are estimated in this CLI by recording the
+  // wall-clock between callback invocations — exact, since onProgress fires
+  // synchronously after each per-contact result.
+  const perContactTimings: Array<{
+    contactId: string
+    status: "succeeded" | "skipped" | "failed"
+    elapsedMs: number
+  }> = []
+  let lastProgressAt = Date.now()
 
-    for (let i = 0; i < contactIds.length; i++) {
-      const cid = contactIds[i]
-      const t0 = Date.now()
-      console.log(
-        `[backfill] [${i + 1}/${contactIds.length}] processing ${cid}`
-      )
-      const r = await runBulkBackfill({
-        contactIds: [cid],
-        mode,
-        dryRun,
-        trigger: "cli",
-        delayBetweenMs: 0,
-      })
-      aggregated.parentRunIds.push(r.parentRunId)
-      aggregated.succeeded += r.succeeded
-      aggregated.failed += r.failed
-      aggregated.skipped += r.skipped
-      aggregated.totalMessagesIngested += r.totalMessagesIngested
-      aggregated.totalScrubQueued += r.totalScrubQueued
-      aggregated.failures.push(...r.failures)
-      aggregated.skips.push(...r.skips)
-      aggregated.perContact.push({
-        contactId: cid,
-        succeeded: r.succeeded,
-        failed: r.failed,
-        skipped: r.skipped,
-        ingested: r.totalMessagesIngested,
-        scrubQueued: r.totalScrubQueued,
-      })
-      const took = ((Date.now() - t0) / 1000).toFixed(1)
-      const status =
-        r.succeeded > 0 ? "ok" : r.skipped > 0 ? "skipped" : "failed"
-      console.log(
-        `[backfill] [${i + 1}/${contactIds.length}] ${cid} ${status} in ${took}s — ingested=${r.totalMessagesIngested} scrub=${r.totalScrubQueued}`
-      )
-      // Throttle between contacts (skip after the last one).
-      if (i < contactIds.length - 1) {
-        await new Promise((res) => setTimeout(res, 500))
+  // SIGINT handler: if the operator hits Ctrl-C while a parent run is
+  // mid-flight, mark it failed before exiting so the next operator doesn't
+  // see a stuck `running` row for 15 minutes (until the bulk endpoint reaper
+  // sweeps it). We track the parent id via the first onProgress invocation —
+  // it isn't known until runBulkBackfill resolves, so for early Ctrl-C we
+  // rely on the reaper.
+  let parentRunId: string | undefined
+  let interrupted = false
+  const onSigint = async (): Promise<void> => {
+    interrupted = true
+    if (parentRunId) {
+      try {
+        await db.backfillRun.update({
+          where: { id: parentRunId },
+          data: {
+            status: "failed",
+            finishedAt: new Date(),
+            errorMessage: "interrupted_sigint",
+          },
+        })
+        console.error(`[backfill] SIGINT — finalized parent ${parentRunId}`)
+      } catch (err) {
+        console.error("[backfill] SIGINT — failed to finalize parent:", err)
       }
+    } else {
+      console.error(
+        "[backfill] SIGINT — no parent id captured yet; reaper will sweep"
+      )
     }
-    result = aggregated
-  } else {
-    console.log(
-      "[backfill] no --ids/--limit; delegating to default zero-comm cohort selector"
-    )
+    process.exit(130)
+  }
+  process.on("SIGINT", () => {
+    void onSigint()
+  })
+
+  let result: BulkResult
+  try {
     result = await runBulkBackfill({
+      contactIds,
       mode,
       dryRun,
       trigger: "cli",
       delayBetweenMs: 500,
+      onProgress: (done, total, contactId, status) => {
+        const now = Date.now()
+        const elapsedMs = now - lastProgressAt
+        lastProgressAt = now
+        perContactTimings.push({ contactId, status, elapsedMs })
+        const took = (elapsedMs / 1000).toFixed(1)
+        console.log(
+          `[backfill] [${done}/${total}] ${contactId} ${status} in ${took}s`
+        )
+      },
     })
+  } catch (err) {
+    if (interrupted) return
+    throw err
   }
+  parentRunId = result.parentRunId
 
   console.log("[backfill] complete", {
-    totalContacts:
-      "totalContacts" in result ? result.totalContacts : undefined,
+    parentRunId: result.parentRunId,
+    totalContacts: result.totalContacts,
     succeeded: result.succeeded,
     failed: result.failed,
     skipped: result.skipped,
@@ -242,6 +254,7 @@ async function main(): Promise<void> {
         dryRun,
         explicitIdsCount: contactIds?.length,
         result,
+        perContactTimings,
       },
       null,
       2

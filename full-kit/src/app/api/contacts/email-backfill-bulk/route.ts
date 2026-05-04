@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 
-import { runBulkBackfill } from "@/lib/contacts/mailbox-backfill/bulk-runner"
+import {
+  resolveBulkContactIds,
+  runBulkBackfill,
+} from "@/lib/contacts/mailbox-backfill/bulk-runner"
 import { constantTimeCompare } from "@/lib/msgraph/constant-time-compare"
 import { db } from "@/lib/prisma"
 
@@ -30,25 +33,6 @@ export async function POST(req: Request): Promise<Response> {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
 
-  // Reap any abandoned `running` rows across ALL contacts before delegating.
-  // Without this, a single previously aborted bulk run leaves dozens of
-  // BackfillRun rows stuck in `running` forever, and the per-contact partial
-  // unique constraint then makes every entry in this bulk run hit
-  // BackfillAlreadyRunningError. Per-contact route does the same reap scoped
-  // to one contactId; the bulk variant reaps unscoped because we can't know
-  // upfront which contacts the runner will touch.
-  await db.backfillRun.updateMany({
-    where: {
-      status: "running",
-      startedAt: { lt: new Date(Date.now() - STUCK_RUN_THRESHOLD_MS) },
-    },
-    data: {
-      status: "failed",
-      finishedAt: new Date(),
-      errorMessage: "abandoned_no_finalize",
-    },
-  })
-
   let body: {
     contactIds?: unknown
     mode?: unknown
@@ -77,8 +61,33 @@ export async function POST(req: Request): Promise<Response> {
 
   const dryRun = body.dryRun === true
 
+  // Resolve the cohort BEFORE the reaper so we can scope the reaper to just
+  // these contacts. The previous unscoped `updateMany` raced with legitimate
+  // long-running per-contact UI runs, marking them failed mid-flight.
+  const resolvedIds = await resolveBulkContactIds(contactIds)
+
+  // Reap abandoned `running` rows scoped to the cohort we're about to touch.
+  // Without this the per-contact partial-unique constraint (one running row
+  // per contact) makes any contact whose previous run died mid-loop fail
+  // immediately with BackfillAlreadyRunningError. Scoping to `resolvedIds`
+  // avoids stomping on UI-triggered backfills for unrelated contacts.
+  if (resolvedIds.length > 0) {
+    await db.backfillRun.updateMany({
+      where: {
+        status: "running",
+        contactId: { in: resolvedIds },
+        startedAt: { lt: new Date(Date.now() - STUCK_RUN_THRESHOLD_MS) },
+      },
+      data: {
+        status: "failed",
+        finishedAt: new Date(),
+        errorMessage: "abandoned_no_finalize",
+      },
+    })
+  }
+
   const result = await runBulkBackfill({
-    contactIds,
+    contactIds: resolvedIds,
     mode,
     delayBetweenMs,
     dryRun,
