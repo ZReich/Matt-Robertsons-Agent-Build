@@ -493,6 +493,110 @@ describe("persistMessage scrub enqueue", () => {
       })
     )
   })
+
+  it("treats a live-ingest race P2002 on external_message_id as deduped", async () => {
+    // Race scenario: live-ingest and the contact-mailbox backfill both pass
+    // the externalSync.findUnique existence check, then race to insert.
+    // The partial unique on `external_message_id` (or the
+    // (source, externalId) unique on ExternalSync) wins one and rejects
+    // the other with P2002. The loser must return the dedupe shape so the
+    // backfill orchestrator counts it as deduped, NOT as an unexplained
+    // warning that gets logged and dropped.
+    const { Prisma } = await import("@prisma/client")
+    const p2002 = new Prisma.PrismaClientKnownRequestError(
+      "Unique constraint failed on the fields: (`external_message_id`)",
+      {
+        code: "P2002",
+        clientVersion: "test",
+        meta: { target: ["external_message_id"] },
+      }
+    )
+    ;(db.$transaction as ReturnType<typeof vi.fn>).mockRejectedValueOnce(p2002)
+
+    const result = await persistMessage({
+      message: {
+        id: "graph-race-1",
+        receivedDateTime: "2026-04-24T12:00:00.000Z",
+        conversationId: "thread-race",
+        subject: "Race",
+        body: { contentType: "text", content: "x" },
+      },
+      folder: "inbox",
+      normalizedSender: {
+        address: "buyer@example.com",
+        displayName: "Buyer",
+        isInternal: false,
+        normalizationFailed: false,
+      },
+      classification: {
+        classification: "signal",
+        source: "known-counterparty",
+        tier1Rule: "contact-replied",
+      },
+      acquisition: acquisition(),
+      hints,
+      extracted: null,
+      attachments: undefined,
+      contactId: "c-existing",
+      leadContactId: null,
+      leadCreated: false,
+    })
+
+    expect(result).toEqual({
+      inserted: false,
+      contactCreated: false,
+      leadContactId: null,
+      leadCreated: false,
+      communicationId: null,
+      contactId: "c-existing",
+    })
+  })
+
+  it("rethrows P2002 on unrelated constraints (does not silently swallow)", async () => {
+    const { Prisma } = await import("@prisma/client")
+    const p2002Other = new Prisma.PrismaClientKnownRequestError(
+      "Unique constraint failed on the fields: (`some_unrelated_column`)",
+      {
+        code: "P2002",
+        clientVersion: "test",
+        meta: { target: ["some_unrelated_column"] },
+      }
+    )
+    ;(db.$transaction as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      p2002Other
+    )
+
+    await expect(
+      persistMessage({
+        message: {
+          id: "graph-race-2",
+          receivedDateTime: "2026-04-24T12:00:00.000Z",
+          conversationId: "thread-other",
+          subject: "Other",
+          body: { contentType: "text", content: "x" },
+        },
+        folder: "inbox",
+        normalizedSender: {
+          address: "buyer@example.com",
+          displayName: "Buyer",
+          isInternal: false,
+          normalizationFailed: false,
+        },
+        classification: {
+          classification: "signal",
+          source: "known-counterparty",
+          tier1Rule: "contact-replied",
+        },
+        acquisition: acquisition(),
+        hints,
+        extracted: null,
+        attachments: undefined,
+        contactId: null,
+        leadContactId: null,
+        leadCreated: false,
+      })
+    ).rejects.toBe(p2002Other)
+  })
 })
 
 describe("processOneMessage contact safety", () => {

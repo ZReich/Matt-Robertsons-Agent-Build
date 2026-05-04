@@ -2,7 +2,7 @@ import type {
   AttachmentFetchMeta,
   AttachmentMeta,
 } from "@/lib/communications/attachment-types"
-import type { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import type {
   BuildoutEventExtract,
   CrexiLeadExtract,
@@ -505,7 +505,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   let resolvedContactCreated = false
   let resolvedCommunicationId: string | null = null
 
-  await db.$transaction(async (tx) => {
+  try {
+    await db.$transaction(async (tx) => {
     const sync = await tx.externalSync.create({
       data: {
         source: "msgraph-email",
@@ -605,7 +606,32 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       comm.id,
       p.classification.classification
     )
-  })
+    })
+  } catch (err) {
+    // Race between live-ingest and the contact-mailbox backfill on the
+    // partial unique `communications_external_message_id_unique` (or on the
+    // ExternalSync `source+externalId` unique) — both pass the existence
+    // check then both try to insert. The transaction rolls back; we treat
+    // this as the dedupe path so the orchestrator counts it as deduped
+    // instead of an unexplained warning. We narrow on the constraint name
+    // so we don't accidentally swallow other unrelated P2002s (e.g. a
+    // future unique on a different column).
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002" &&
+      isExternalMessageOrSyncRace(err)
+    ) {
+      return {
+        inserted: false,
+        contactCreated: false,
+        leadContactId: p.leadContactId,
+        leadCreated: false,
+        communicationId: null,
+        contactId: p.contactId,
+      }
+    }
+    throw err
+  }
 
   return {
     inserted: true,
@@ -615,6 +641,37 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
     communicationId: resolvedCommunicationId,
     contactId: resolvedContactId,
   }
+}
+
+/**
+ * Identifies the live-ingest ↔ backfill race on either the
+ * `external_message_id` partial unique on Communication or the
+ * `(source, externalId)` unique on ExternalSync. Both protect the same
+ * "this Graph message has already been ingested" invariant; either can
+ * be the constraint that wins the race.
+ */
+function isExternalMessageOrSyncRace(
+  err: Prisma.PrismaClientKnownRequestError
+): boolean {
+  const meta = err.meta as { target?: unknown } | undefined
+  const target = meta?.target
+  // Prisma surfaces the constraint as either a string (constraint name) or
+  // a string[] (column list), depending on the connector and the index
+  // type. Handle both shapes plus an unstructured message fallback.
+  const targets =
+    typeof target === "string"
+      ? [target]
+      : Array.isArray(target)
+        ? target.filter((t): t is string => typeof t === "string")
+        : []
+  const hay = [...targets, err.message ?? ""].join(" ").toLowerCase()
+  return (
+    hay.includes("communications_external_message_id_unique") ||
+    hay.includes("external_message_id") ||
+    hay.includes("externalsync_source_externalid_key") ||
+    hay.includes("source_externalid") ||
+    (hay.includes("source") && hay.includes("externalid"))
+  )
 }
 
 async function autoPromoteOutboundSingleRecipient(
