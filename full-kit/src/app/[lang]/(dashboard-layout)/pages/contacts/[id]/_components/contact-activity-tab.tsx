@@ -129,15 +129,18 @@ export function ContactActivityTab({ contactId, lang }: Props) {
   const startedRef = useRef(false)
 
   useEffect(() => {
+    // StrictMode in dev runs the effect, runs cleanup, then runs again.
+    // The startedRef guard ensures we only fire ONE fetch per contactId
+    // even across the double-invoke. We deliberately don't abort or guard
+    // setState on unmount — React 18+ silently drops setState on unmounted
+    // components, and on re-mount we want the result to land if it has.
     if (startedRef.current) return
     startedRef.current = true
 
-    const ac = new AbortController()
     setState({ status: "loading" })
     void (async () => {
       try {
         const res = await fetch(`/api/contacts/${contactId}/activity`, {
-          signal: ac.signal,
           cache: "no-store",
         })
         if (!res.ok) {
@@ -151,7 +154,6 @@ export function ContactActivityTab({ contactId, lang }: Props) {
           meetings: json.meetings.map((m) => ({ ...m, date: new Date(m.date) })),
         })
       } catch (err) {
-        if (ac.signal.aborted) return
         // Reset startedRef so a tab toggle can retry once the user clicks
         // away and back. Cheap retry path without a dedicated button.
         startedRef.current = false
@@ -161,8 +163,6 @@ export function ContactActivityTab({ contactId, lang }: Props) {
         })
       }
     })()
-
-    return () => ac.abort()
   }, [contactId])
 
   if (state.status === "idle" || state.status === "loading") {
