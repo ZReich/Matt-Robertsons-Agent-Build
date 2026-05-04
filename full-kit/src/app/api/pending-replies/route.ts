@@ -21,10 +21,17 @@ export async function GET(request: NextRequest): Promise<Response> {
   if (unauthorized) return unauthorized
 
   const status = request.nextUrl.searchParams.get("status")
-  const where =
-    status && STATUS_VALUES.has(status as PendingReplyStatus)
-      ? { status: status as PendingReplyStatus }
-      : {}
+  const leaseRecordId = request.nextUrl.searchParams.get("leaseRecordId")
+  const where: {
+    status?: PendingReplyStatus
+    leaseRecordId?: string
+  } = {}
+  if (status && STATUS_VALUES.has(status as PendingReplyStatus)) {
+    where.status = status as PendingReplyStatus
+  }
+  if (leaseRecordId) {
+    where.leaseRecordId = leaseRecordId
+  }
 
   const replies = await db.pendingReply.findMany({
     where,

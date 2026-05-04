@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
+import { toast } from "sonner"
+import { Check, Pencil, Send, Sparkles, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Sheet,
   SheetContent,
@@ -13,6 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Textarea } from "@/components/ui/textarea"
 
 import type {
   CalendarEventDTO,
@@ -295,7 +299,10 @@ function CalendarEventBody({
 
         {event.eventKind === "lease_renewal_outreach" &&
           event.leaseRecordId && (
-            <RenewalReplyLink lang={lang} leaseRecordId={event.leaseRecordId} />
+            <RenewalReplyInline
+              lang={lang}
+              leaseRecordId={event.leaseRecordId}
+            />
           )}
 
         {error && (
@@ -325,33 +332,321 @@ function CalendarEventBody({
 }
 
 // =============================================================================
-// Renewal reply quick-link — fetches the LeaseRecord's renewalReplies on
-// demand and surfaces a button. We do this client-side so page.tsx doesn't
-// have to pre-fetch every renewal draft for every event.
+// Renewal reply inline preview — fetches the latest PendingReply tied to the
+// LeaseRecord and renders the draft body inline with Send / Edit / Dismiss
+// actions. Mirrors the leads-page pattern (see GenerateAutoReply) so the user
+// never has to leave the calendar to act on a draft.
 // =============================================================================
 
-function RenewalReplyLink({
+interface InlinePendingReply {
+  id: string
+  status: string
+  draftSubject: string
+  draftBody: string
+  contactId: string | null
+  property: {
+    id: string
+    name: string | null
+    address: string
+  } | null
+}
+
+function RenewalReplyInline({
   lang,
   leaseRecordId,
 }: {
   lang: string
   leaseRecordId: string
 }) {
-  // The plan calls for navigating to /pages/pending-replies/{id}, but that
-  // detail page is a future stream. For now we link to the listing filtered
-  // by the lease record (the listing route already exists at
-  // /pages/pending-replies and supports a status query param). When
-  // PendingReply detail pages ship we'll swap this to a direct link.
-  const href = `/${lang}/pages/pending-replies?leaseRecordId=${encodeURIComponent(leaseRecordId)}`
+  const [loading, setLoading] = useState(true)
+  const [reply, setReply] = useState<InlinePendingReply | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  // Editable buffers (only used while editing).
+  const [editing, setEditing] = useState(false)
+  const [subject, setSubject] = useState("")
+  const [body, setBody] = useState("")
+  const [busy, setBusy] = useState<"send" | "dismiss" | "save" | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    fetch(
+      `/api/pending-replies?leaseRecordId=${encodeURIComponent(leaseRecordId)}`
+    )
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`fetch failed (${res.status})`)
+        const json = (await res.json()) as { replies: InlinePendingReply[] }
+        if (cancelled) return
+        // Prefer the most recent pending draft; fall back to the most recent of
+        // any status (so users see history instead of an empty UI).
+        const pending = json.replies.find((r) => r.status === "pending")
+        const chosen = pending ?? json.replies[0] ?? null
+        setReply(chosen)
+        if (chosen) {
+          setSubject(chosen.draftSubject)
+          setBody(chosen.draftBody)
+        }
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return
+        setError(e instanceof Error ? e.message : "fetch failed")
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [leaseRecordId])
+
+  async function patch(
+    action: "edit" | "send" | "dismiss",
+    extra: Record<string, unknown> = {}
+  ): Promise<boolean> {
+    if (!reply) return false
+    const res = await fetch(`/api/pending-replies/${reply.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, ...extra }),
+    })
+    const json = (await res.json()) as {
+      ok?: boolean
+      error?: string
+      details?: string
+    }
+    if (!res.ok || !json.ok) {
+      const detail = json.details ? ` — ${json.details.slice(0, 200)}` : ""
+      toast.error(`${json.error ?? action + " failed"}${detail}`)
+      return false
+    }
+    return true
+  }
+
+  async function saveEdits() {
+    if (!reply) return
+    setBusy("save")
+    try {
+      const ok = await patch("edit", { draftSubject: subject, draftBody: body })
+      if (ok) {
+        toast.success("Draft updated")
+        setReply({ ...reply, draftSubject: subject, draftBody: body })
+        setEditing(false)
+      }
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function send() {
+    if (!reply) return
+    if (
+      !window.confirm(
+        "Send this re-engagement email now from Matt's mailbox via Microsoft Graph?"
+      )
+    )
+      return
+    setBusy("send")
+    try {
+      // If editing, persist edits first so the sent body matches what's on screen.
+      if (editing && (subject !== reply.draftSubject || body !== reply.draftBody)) {
+        const editOk = await patch("edit", {
+          draftSubject: subject,
+          draftBody: body,
+        })
+        if (!editOk) return
+      }
+      const ok = await patch("send")
+      if (ok) {
+        toast.success("Sent")
+        setReply({ ...reply, status: "approved" })
+        setEditing(false)
+      }
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function dismiss() {
+    if (!reply) return
+    const reason = window.prompt("Dismiss reason (optional)") ?? ""
+    setBusy("dismiss")
+    try {
+      const ok = await patch("dismiss", { dismissReason: reason })
+      if (ok) {
+        toast.success("Dismissed")
+        setReply({ ...reply, status: "dismissed" })
+        setEditing(false)
+      }
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+        Loading drafted reply…
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+        Could not load drafted reply: {error}
+      </div>
+    )
+  }
+
+  if (!reply) {
+    return (
+      <div className="rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+        No draft has been generated for this lease yet.
+      </div>
+    )
+  }
+
+  const isPending = reply.status === "pending"
+
   return (
     <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-      <p className="text-sm font-medium">Renewal outreach drafted</p>
-      <p className="mt-1 text-xs">
-        We&apos;ve drafted a re-engagement email tied to this lease.
-      </p>
-      <Button asChild size="sm" variant="default" className="mt-3">
-        <Link href={href}>Open the auto-drafted reply</Link>
-      </Button>
+      <div className="flex items-center justify-between gap-2">
+        <p className="flex items-center gap-1 text-sm font-medium">
+          <Sparkles className="size-4" /> Auto-drafted re-engagement
+        </p>
+        <Badge variant="outline" className="capitalize">
+          {reply.status}
+        </Badge>
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {editing ? (
+          <>
+            <div>
+              <label className="mb-1 block text-xs font-medium">Subject</label>
+              <Input
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                disabled={busy !== null}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium">Body</label>
+              <Textarea
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={12}
+                disabled={busy !== null}
+                className="font-mono text-xs"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <p className="text-xs font-medium opacity-70">Subject</p>
+              <p className="text-sm font-medium">{reply.draftSubject}</p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-medium opacity-70">Body</p>
+              <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded border border-amber-200 bg-white/60 p-2 text-xs font-sans text-amber-950 dark:border-amber-800 dark:bg-black/30 dark:text-amber-100">
+                {reply.draftBody}
+              </pre>
+            </div>
+          </>
+        )}
+      </div>
+
+      {isPending ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {editing ? (
+            <>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={saveEdits}
+                disabled={busy !== null}
+              >
+                {busy === "save" ? "Saving…" : "Save edits"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setEditing(false)
+                  setSubject(reply.draftSubject)
+                  setBody(reply.draftBody)
+                }}
+                disabled={busy !== null}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setEditing(true)}
+              disabled={busy !== null}
+            >
+              <Pencil className="mr-1 size-4" /> Edit
+            </Button>
+          )}
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={dismiss}
+              disabled={busy !== null}
+            >
+              <X className="mr-1 size-4" />
+              {busy === "dismiss" ? "Dismissing…" : "Dismiss"}
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={send}
+              disabled={busy !== null}
+            >
+              {busy === "send" ? (
+                "Sending…"
+              ) : (
+                <>
+                  <Send className="mr-1 size-4" /> Send
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-3 text-xs opacity-70">
+          {reply.status === "approved" ? (
+            <>
+              <Check className="me-1 inline size-3" /> Already actioned. Open the{" "}
+              <Link
+                href={`/${lang}/pages/pending-replies?leaseRecordId=${encodeURIComponent(leaseRecordId)}`}
+                className="underline"
+              >
+                full history
+              </Link>
+              .
+            </>
+          ) : (
+            <>
+              Dismissed. Open the{" "}
+              <Link
+                href={`/${lang}/pages/pending-replies?leaseRecordId=${encodeURIComponent(leaseRecordId)}`}
+                className="underline"
+              >
+                full history
+              </Link>
+              .
+            </>
+          )}
+        </p>
+      )}
     </div>
   )
 }
