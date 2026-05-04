@@ -152,13 +152,21 @@ export async function backfillMailboxForContact(
 
     // Pre-load all client contacts for conflict detection.
     // 286-contact scale per Task 1; safe to load fully.
-    const allClients = await db.contact.findMany({
-      where: {
-        clientType: { not: null },
-        email: { not: null },
-      },
-      select: { id: true, email: true },
-    })
+    // Exclude Matt himself even if he's a Contact row marked as a client —
+    // he is the mailbox owner, so he is on every email and would otherwise
+    // make every backfilled message look like a multi-client cc'd thread.
+    const selfAddresses = new Set(
+      (cfg.knownSelfAddresses ?? [cfg.targetUpn]).map((a) => a.toLowerCase())
+    )
+    const allClients = (
+      await db.contact.findMany({
+        where: {
+          clientType: { not: null },
+          email: { not: null },
+        },
+        select: { id: true, email: true },
+      })
+    ).filter((c) => c.email && !selfAddresses.has(c.email.toLowerCase()))
 
     for (const window of windows) {
       const messages = await fetchMessagesForContactWindow({
