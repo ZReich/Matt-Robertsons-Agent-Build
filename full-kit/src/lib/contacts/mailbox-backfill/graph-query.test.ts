@@ -1,0 +1,195 @@
+import { describe, it, expect, vi } from "vitest"
+
+import { fetchMessagesForContactWindow } from "./graph-query"
+
+// Mock loadMsgraphConfig so the module can resolve targetUpn without a real env.
+vi.mock("@/lib/msgraph/config", () => ({
+  loadMsgraphConfig: vi.fn(() => ({
+    tenantId: "t",
+    clientId: "c",
+    clientSecret: "s",
+    targetUpn: "matt@example.com",
+    testAdminToken: "x".repeat(32),
+    testRouteEnabled: false,
+  })),
+}))
+
+// Mock graphFetch (default) — most tests inject fetchImpl directly.
+vi.mock("@/lib/msgraph/client", () => ({
+  graphFetch: vi.fn(),
+}))
+
+interface MockGraphPage {
+  value: unknown[]
+  "@odata.nextLink"?: string
+}
+
+type FetchImpl = <T>(path: string, opts?: unknown) => Promise<T>
+
+function makePagedFetch(pages: MockGraphPage[]): FetchImpl & ReturnType<typeof vi.fn> {
+  let idx = 0
+  const fn = vi.fn(async () => {
+    const page = pages[idx] ?? { value: [] }
+    idx += 1
+    return page
+  }) as unknown as FetchImpl & ReturnType<typeof vi.fn>
+  return fn
+}
+
+describe("fetchMessagesForContactWindow", () => {
+  it("returns empty array for window with no results", async () => {
+    const fetchImpl = makePagedFetch([{ value: [] }])
+    const out = await fetchMessagesForContactWindow({
+      email: "alice@buyer.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    expect(out).toEqual([])
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+  })
+
+  it("paginates until @odata.nextLink absent", async () => {
+    const msg = (id: string) => ({
+      id,
+      subject: "x",
+      receivedDateTime: "2023-06-01T00:00:00Z",
+    })
+    const fetchImpl = makePagedFetch([
+      { value: [msg("1"), msg("2")], "@odata.nextLink": "/users/matt@example.com/messages?$skiptoken=abc" },
+      { value: [msg("3")] },
+    ])
+    const out = await fetchMessagesForContactWindow({
+      email: "alice@buyer.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    expect(out).toHaveLength(3)
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it("follows absolute @odata.nextLink URLs returned by real Graph", async () => {
+    // Real Graph returns absolute URLs in @odata.nextLink. graphFetch (the
+    // production fetch impl) handles absolute URLs natively (validating the
+    // hostname is graph.microsoft.com); fetchMessagesForContactWindow forwards
+    // the value as-is to the fetch impl, which is the contract this test
+    // pins down.
+    const msg = (id: string) => ({
+      id,
+      subject: "x",
+      receivedDateTime: "2023-06-01T00:00:00Z",
+    })
+    const absoluteNext =
+      "https://graph.microsoft.com/v1.0/users/matt@example.com/messages?$skiptoken=ABC123"
+    const fetchImpl = makePagedFetch([
+      { value: [msg("1")], "@odata.nextLink": absoluteNext },
+      { value: [msg("2")] },
+    ])
+    const out = await fetchMessagesForContactWindow({
+      email: "alice@buyer.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    expect(out).toHaveLength(2)
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+    // The second call must receive the absolute URL verbatim — graphFetch
+    // parses it through `new URL(path)` when it starts with "http(s)://".
+    const secondCallPath = fetchImpl.mock.calls[1][0] as string
+    expect(secondCallPath).toBe(absoluteNext)
+  })
+
+  it("builds correct $search query for from/to/cc on the first request", async () => {
+    const fetchImpl = makePagedFetch([{ value: [] }])
+    await fetchMessagesForContactWindow({
+      email: "alice@buyer.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    const firstCallPath = fetchImpl.mock.calls[0][0] as string
+    // We KQL-quote each email so it parses as a literal phrase. Decode the
+    // URLSearchParams encoding before asserting on the human-readable form.
+    const decoded = decodeURIComponent(firstCallPath)
+    expect(decoded).toContain('from:\\"alice@buyer.com\\"')
+    expect(decoded).toContain('to:\\"alice@buyer.com\\"')
+    expect(decoded).toContain('cc:\\"alice@buyer.com\\"')
+  })
+
+  it("KQL-quotes emails with special chars (e.g. +plus addressing)", async () => {
+    // Without quoting, `weird+plus@example.com` would be split on `+` by KQL
+    // and `OR/AND/NOT` substrings inside the local-part would be parsed as
+    // boolean operators. The escaped double-quotes force KQL to treat the
+    // entire email as a literal phrase.
+    const fetchImpl = makePagedFetch([{ value: [] }])
+    await fetchMessagesForContactWindow({
+      email: "weird+plus@example.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    const firstCallPath = fetchImpl.mock.calls[0][0] as string
+    const decoded = decodeURIComponent(firstCallPath)
+    expect(decoded).toContain('from:\\"weird+plus@example.com\\"')
+    expect(decoded).toContain('to:\\"weird+plus@example.com\\"')
+    expect(decoded).toContain('cc:\\"weird+plus@example.com\\"')
+  })
+
+  it("filters messages by window bounds client-side (Graph rejects $search + $filter)", async () => {
+    // Graph's /users/{}/messages endpoint rejects combining $search with
+    // $filter ("The query parameter '$filter' is not supported with
+    // '$search'."), so we send $search alone and filter receivedDateTime
+    // in-process. This test pins down both halves: the URL must NOT include
+    // $filter, and the function must drop messages outside the window.
+    const msg = (id: string, receivedDateTime: string) => ({
+      id,
+      subject: "x",
+      receivedDateTime,
+    })
+    const fetchImpl = makePagedFetch([
+      {
+        value: [
+          msg("before", "2022-12-15T00:00:00Z"), // before window
+          msg("inside-1", "2023-03-01T00:00:00Z"), // in window
+          msg("inside-2", "2023-09-15T12:00:00Z"), // in window
+          msg("after", "2024-06-01T00:00:00Z"), // after window
+          msg("no-date", ""), // missing date — dropped
+        ],
+      },
+    ])
+    const out = await fetchMessagesForContactWindow({
+      email: "alice@buyer.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    expect(out.map((m) => m.id)).toEqual(["inside-1", "inside-2"])
+
+    const firstCallPath = fetchImpl.mock.calls[0][0] as string
+    const decoded = decodeURIComponent(firstCallPath)
+    expect(decoded).toContain("$search=")
+    expect(decoded).not.toContain("$filter")
+    // receivedDateTime is fine inside $select (we need it returned); what we
+    // must avoid is using it as a filter expression like "receivedDateTime ge".
+    expect(decoded).not.toMatch(/receivedDateTime\s+(ge|le|gt|lt|eq)/)
+  })
+
+  it("includes ConsistencyLevel: eventual header (required for $search)", async () => {
+    const fetchImpl = makePagedFetch([{ value: [] }])
+    await fetchMessagesForContactWindow({
+      email: "alice@buyer.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    const opts = fetchImpl.mock.calls[0][1] as { headers?: Record<string, string> }
+    expect(opts.headers?.ConsistencyLevel).toBe("eventual")
+  })
+
+  it("targets the configured user's mailbox", async () => {
+    const fetchImpl = makePagedFetch([{ value: [] }])
+    await fetchMessagesForContactWindow({
+      email: "alice@buyer.com",
+      window: { start: new Date("2023-01-01"), end: new Date("2024-01-01") },
+      fetchImpl,
+    })
+    const firstCallPath = fetchImpl.mock.calls[0][0] as string
+    expect(firstCallPath).toContain("/users/")
+    expect(firstCallPath).toContain("matt%40example.com")
+    expect(firstCallPath).toContain("/messages")
+  })
+})

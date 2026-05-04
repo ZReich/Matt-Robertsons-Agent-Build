@@ -528,18 +528,29 @@ describe("applyScrubResult", () => {
     expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
   })
 
-  it("locks the profile fact category vocabulary to the RALPLAN taxonomy", () => {
-    // Negative control: this test fails if any old name (constraint, schedule,
-    // personal, relationship, other) is reintroduced. The list must stay
-    // exactly aligned with RALPLAN Phase 5.
+  it("locks the profile fact category vocabulary to the v6 taxonomy", () => {
+    // Negative control: this test fails if any old name (constraint,
+    // schedule, relationship, other) is reintroduced or if a new personal
+    // category is added without consciously updating the display map in
+    // src/lib/contacts/profile-fact-display.ts.
     expect([...PROFILE_FACT_CATEGORIES].sort()).toEqual(
       [
+        // Workflow / transactional (RALPLAN Phase 5)
         "preference",
         "communication_style",
         "schedule_constraint",
         "deal_interest",
         "objection",
         "important_date",
+        // Personal / relationship-building (added v6)
+        "family",
+        "pets",
+        "hobbies",
+        "vehicles",
+        "sports",
+        "travel",
+        "food",
+        "personal_milestone",
       ].sort()
     )
   })

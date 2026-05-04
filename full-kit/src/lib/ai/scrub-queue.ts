@@ -87,8 +87,13 @@ export async function claimScrubQueueRows({
       ? Prisma.sql`AND communication_id IN (${Prisma.join(communicationIds)})`
       : Prisma.empty
 
-  return db.$transaction(async (tx) => {
-    const rows = await tx.$queryRaw<RawClaimedRow[]>`
+  // Bump the per-transaction timeout from Prisma's 5s default — at large
+  // batch sizes (e.g. drain endpoint with 50 rows) the per-row UPDATE loop
+  // legitimately takes longer than 5s on the pooled Supabase connection.
+  // 30s gives 6x headroom even for the largest claim slice we permit.
+  return db.$transaction(
+    async (tx) => {
+      const rows = await tx.$queryRaw<RawClaimedRow[]>`
       SELECT id, communication_id
         FROM scrub_queue
        WHERE (status = 'pending'
@@ -98,33 +103,35 @@ export async function claimScrubQueueRows({
        LIMIT ${limit}
        FOR UPDATE SKIP LOCKED
     `
-    if (rows.length === 0) return []
+      if (rows.length === 0) return []
 
-    // Rotate a fresh lease token PER ROW so the fencing primitive stays
-    // per-row-unique — two workers claiming different rows must never
-    // share a token, and two successive claims of the same row must
-    // produce different tokens.
-    const lockedUntil = new Date(Date.now() + leaseMs)
-    const claims: ClaimedScrubQueueRow[] = []
-    for (const row of rows) {
-      const leaseToken = randomUUID()
-      await tx.scrubQueue.update({
-        where: { id: row.id },
-        data: {
-          status: "in_flight",
-          lockedUntil,
+      // Rotate a fresh lease token PER ROW so the fencing primitive stays
+      // per-row-unique — two workers claiming different rows must never
+      // share a token, and two successive claims of the same row must
+      // produce different tokens.
+      const lockedUntil = new Date(Date.now() + leaseMs)
+      const claims: ClaimedScrubQueueRow[] = []
+      for (const row of rows) {
+        const leaseToken = randomUUID()
+        await tx.scrubQueue.update({
+          where: { id: row.id },
+          data: {
+            status: "in_flight",
+            lockedUntil,
+            leaseToken,
+            attempts: { increment: 1 },
+          },
+        })
+        claims.push({
+          id: row.id,
+          communicationId: row.communication_id,
           leaseToken,
-          attempts: { increment: 1 },
-        },
-      })
-      claims.push({
-        id: row.id,
-        communicationId: row.communication_id,
-        leaseToken,
-      })
-    }
-    return claims
-  })
+        })
+      }
+      return claims
+    },
+    { timeout: 30_000 }
+  )
 }
 
 export async function markScrubQueueFailed(

@@ -2,7 +2,7 @@ import type {
   AttachmentFetchMeta,
   AttachmentMeta,
 } from "@/lib/communications/attachment-types"
-import type { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 import type {
   BuildoutEventExtract,
   CrexiLeadExtract,
@@ -400,6 +400,14 @@ export interface ProcessedMessage {
   contactId: string | null
   leadContactId: string | null
   leadCreated: boolean
+  /**
+   * Optional dealId to set on the Communication at insert time. Used by the
+   * mailbox backfill flow to attribute historical messages to a deal that the
+   * caller resolved from temporal window membership. Live ingest leaves this
+   * undefined (→ null) and dealId is assigned later via downstream pipelines.
+   * Only consulted on the initial Communication insert, never on dedupe-update.
+   */
+  dealIdOverride?: string | null
 }
 
 /** Persist one processed message as a Communication + ExternalSync pair, in a txn. */
@@ -497,7 +505,8 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
   let resolvedContactCreated = false
   let resolvedCommunicationId: string | null = null
 
-  await db.$transaction(async (tx) => {
+  try {
+    await db.$transaction(async (tx) => {
     const sync = await tx.externalSync.create({
       data: {
         source: "msgraph-email",
@@ -538,6 +547,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
         conversationId: p.message.conversationId ?? null,
         externalSyncId: sync.id,
         contactId: resolvedContactId,
+        dealId: p.dealIdOverride ?? null,
         createdBy: "msgraph-email",
         tags: [],
         metadata: metadata as Prisma.InputJsonValue,
@@ -596,7 +606,32 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
       comm.id,
       p.classification.classification
     )
-  })
+    })
+  } catch (err) {
+    // Race between live-ingest and the contact-mailbox backfill on the
+    // partial unique `communications_external_message_id_unique` (or on the
+    // ExternalSync `source+externalId` unique) — both pass the existence
+    // check then both try to insert. The transaction rolls back; we treat
+    // this as the dedupe path so the orchestrator counts it as deduped
+    // instead of an unexplained warning. We narrow on the constraint name
+    // so we don't accidentally swallow other unrelated P2002s (e.g. a
+    // future unique on a different column).
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002" &&
+      isExternalMessageOrSyncRace(err)
+    ) {
+      return {
+        inserted: false,
+        contactCreated: false,
+        leadContactId: p.leadContactId,
+        leadCreated: false,
+        communicationId: null,
+        contactId: p.contactId,
+      }
+    }
+    throw err
+  }
 
   return {
     inserted: true,
@@ -606,6 +641,50 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
     communicationId: resolvedCommunicationId,
     contactId: resolvedContactId,
   }
+}
+
+/**
+ * Identifies the live-ingest ↔ backfill race on either the
+ * `external_message_id` partial unique on Communication or the
+ * `(source, externalId)` unique on ExternalSync. Both protect the same
+ * "this Graph message has already been ingested" invariant; either can
+ * be the constraint that wins the race.
+ *
+ * Prisma surfaces the failing constraint differently per connector:
+ *  - PostgreSQL passes `meta.target` as a string (constraint name like
+ *    `external_sync_source_external_id_key`), or sometimes the column list.
+ *  - Other connectors / older Prisma versions pass a string[] of columns
+ *    (`["source", "external_id"]` or `["source", "externalId"]`).
+ * We normalise both shapes plus the raw error message and look for any of
+ * the known fingerprints.
+ */
+function isExternalMessageOrSyncRace(
+  err: Prisma.PrismaClientKnownRequestError
+): boolean {
+  const meta = err.meta as { target?: unknown } | undefined
+  const target = meta?.target
+  const targets =
+    typeof target === "string"
+      ? [target]
+      : Array.isArray(target)
+        ? target.filter((t): t is string => typeof t === "string")
+        : []
+  const hay = [...targets, err.message ?? ""].join(" ").toLowerCase()
+  // ExternalSync (source, external_id) match: covers both the snake_case
+  // column form (`source` + `external_id`) and the camelCase Prisma field
+  // form (`externalId`) plus the generated constraint name fingerprint.
+  const looksLikeExternalSyncRace =
+    hay.includes("external_sync_source_external_id_key") ||
+    hay.includes("externalsync_source_externalid_key") ||
+    hay.includes("source_externalid") ||
+    hay.includes("source_external_id") ||
+    (hay.includes("source") &&
+      (hay.includes("external_id") || hay.includes("externalid")))
+  return (
+    hay.includes("communications_external_message_id_unique") ||
+    hay.includes("external_message_id") ||
+    looksLikeExternalSyncRace
+  )
 }
 
 async function autoPromoteOutboundSingleRecipient(

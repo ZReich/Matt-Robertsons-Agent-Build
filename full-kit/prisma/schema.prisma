@@ -443,6 +443,7 @@ model Contact {
   pendingReplies PendingReply[]               @relation("PendingReplyContact")
   leaseRecords   LeaseRecord[]
   calendarEvents CalendarEvent[]
+  backfillRuns   BackfillRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1219,6 +1220,33 @@ model OperationalEmailReview {
   @@index([type, status])
   @@index([createdFromRunId])
   @@map("operational_email_reviews")
+}
+
+model BackfillRun {
+  id          String    @id @default(cuid())
+  contactId   String?   @map("contact_id")
+  parentId    String?   @map("parent_id") // links per-contact runs to a bulk parent
+  trigger     String    // "ui" | "bulk" | "cli"
+  mode        String    // "lifetime" | "deal-anchored"
+  startedAt   DateTime  @default(now()) @map("started_at")
+  finishedAt  DateTime? @map("finished_at")
+  status      String    // "running" | "succeeded" | "failed" | "skipped"
+  result      Json?
+  errorMessage String?  @map("error_message")
+
+  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  parent      BackfillRun? @relation("BackfillRunChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    BackfillRun[] @relation("BackfillRunChildren")
+
+  @@index([contactId, startedAt])
+  @@index([parentId])
+  @@index([status, startedAt])
+  // Note: a partial unique index `backfill_runs_one_running_per_contact`
+  // (UNIQUE on contact_id WHERE status='running' AND contact_id IS NOT NULL)
+  // is created via raw SQL in migration 20260504181020. Prisma's @@unique
+  // can't express partial-WHERE clauses, so it lives outside the schema —
+  // mirroring how `communications_external_message_id_unique` is handled.
+  @@map("backfill_runs")
 }
 
 /// Audit ledger for reviewer-driven coverage actions and outbound-todo

@@ -7,11 +7,14 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
+  Loader2,
   Paperclip,
+  Search,
   Sparkles,
 } from "lucide-react"
 
 import type { AiSuggestionState } from "@/lib/ai/suggestions"
+import type { BackfillResult } from "@/lib/contacts/mailbox-backfill"
 
 import { DEFAULT_AGENT_ACTION_SNOOZE_MS } from "@/lib/ai/review-constants"
 
@@ -50,6 +53,26 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
   const router = useRouter()
   const [actions, setActions] = useState(state.actions)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [scanState, setScanState] = useState<
+    | { kind: "idle" }
+    | { kind: "scanning" }
+    | { kind: "success"; result: BackfillResult }
+    | { kind: "rate_limited"; retryAfter: number }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" })
+  const [drainState, setDrainState] = useState<
+    | { kind: "idle" }
+    | { kind: "draining" }
+    | {
+        kind: "success"
+        totalProcessed: number
+        totalSucceeded: number
+        totalFailed: number
+        batches: number
+        reachedCap: boolean
+      }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" })
   const autoTriggeredRef = useRef(false)
   const reviewableActions = useMemo(
     () => actions.filter((action) => !action.isSnoozed && !action.isStale),
@@ -127,6 +150,79 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
       }
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  async function handleDrainQueue() {
+    if (state.entityType !== "contact") return
+    setDrainState({ kind: "draining" })
+    try {
+      const res = await fetch(
+        `/api/contacts/${state.entityId}/scrub-drain`,
+        { method: "POST" }
+      )
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        setDrainState({
+          kind: "error",
+          message: body.error ?? `HTTP ${res.status}`,
+        })
+        toast.error("Drain failed", { description: body.error })
+        return
+      }
+      const body = (await res.json()) as {
+        totalProcessed: number
+        totalSucceeded: number
+        totalFailed: number
+        batches: number
+        reachedCap: boolean
+      }
+      setDrainState({ kind: "success", ...body })
+      toast.success("Queue drained", {
+        description: `${body.totalSucceeded} processed, ${body.totalFailed} failed across ${body.batches} batch${body.batches === 1 ? "" : "es"}${body.reachedCap ? " (cap reached — click again to continue)" : ""}`,
+      })
+      router.refresh()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "unknown_error"
+      setDrainState({ kind: "error", message })
+      toast.error("Drain failed", { description: message })
+    }
+  }
+
+  async function handleScanMailbox() {
+    if (state.entityType !== "contact") return
+    setScanState({ kind: "scanning" })
+    try {
+      const res = await fetch(
+        `/api/contacts/${state.entityId}/email-backfill`,
+        { method: "POST" }
+      )
+      if (res.status === 429) {
+        const body = (await res.json().catch(() => ({}))) as {
+          retryAfter?: number
+        }
+        setScanState({
+          kind: "rate_limited",
+          retryAfter: body.retryAfter ?? 0,
+        })
+        return
+      }
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        setScanState({
+          kind: "error",
+          message: body.error ?? `HTTP ${res.status}`,
+        })
+        return
+      }
+      const result = (await res.json()) as BackfillResult
+      setScanState({ kind: "success", result })
+      router.refresh()
+    } catch (err) {
+      setScanState({
+        kind: "error",
+        message: err instanceof Error ? err.message : "unknown_error",
+      })
     }
   }
 
@@ -234,15 +330,120 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
         </span>
       </div>
       {canProcess ? (
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+          <Button
+            className="w-full sm:flex-1"
+            size="sm"
+            type="button"
+            onClick={() => processSuggestions()}
+            disabled={isProcessing}
+          >
+            {isProcessing ? "Processing..." : "Process with AI"}
+          </Button>
+          {state.entityType === "contact" ? (
+            <Button
+              className="w-full sm:flex-1"
+              variant="secondary"
+              size="sm"
+              type="button"
+              onClick={handleDrainQueue}
+              disabled={drainState.kind === "draining"}
+            >
+              {drainState.kind === "draining" ? (
+                <>
+                  <Loader2 className="mr-1 size-3.5 animate-spin" />
+                  Draining…
+                </>
+              ) : (
+                "Drain pending"
+              )}
+            </Button>
+          ) : null}
+        </div>
+      ) : state.entityType === "contact" ? (
         <Button
           className="mb-3 w-full"
+          variant="secondary"
           size="sm"
           type="button"
-          onClick={() => processSuggestions()}
-          disabled={isProcessing}
+          onClick={handleDrainQueue}
+          disabled={drainState.kind === "draining"}
         >
-          {isProcessing ? "Processing..." : "Process with AI"}
+          {drainState.kind === "draining" ? (
+            <>
+              <Loader2 className="mr-1 size-3.5 animate-spin" />
+              Draining…
+            </>
+          ) : (
+            "Drain pending"
+          )}
         </Button>
+      ) : null}
+      {drainState.kind === "success" ? (
+        <p className="-mt-1 mb-3 text-xs text-muted-foreground">
+          Drained {drainState.totalSucceeded} message
+          {drainState.totalSucceeded === 1 ? "" : "s"} across {drainState.batches}{" "}
+          batch{drainState.batches === 1 ? "" : "es"}
+          {drainState.totalFailed > 0
+            ? `, ${drainState.totalFailed} failed`
+            : ""}
+          {drainState.reachedCap
+            ? ". Cap reached — click again to continue."
+            : "."}
+        </p>
+      ) : null}
+      {drainState.kind === "error" ? (
+        <p className="-mt-1 mb-3 text-xs text-red-600">
+          Drain error: {drainState.message}
+        </p>
+      ) : null}
+
+      {state.entityType === "contact" ? (
+        <div className="mb-3">
+          <Button
+            className="w-full"
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={handleScanMailbox}
+            disabled={scanState.kind === "scanning"}
+          >
+            {scanState.kind === "scanning" ? (
+              <>
+                <Loader2 className="mr-1 size-3.5 animate-spin" />
+                Scanning mailbox…
+              </>
+            ) : (
+              <>
+                <Search className="mr-1 size-3.5" />
+                Scan mailbox
+              </>
+            )}
+          </Button>
+          {scanState.kind === "success" ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Found {scanState.result.messagesDiscovered} message
+              {scanState.result.messagesDiscovered === 1 ? "" : "s"} —{" "}
+              {scanState.result.ingested} imported,{" "}
+              {scanState.result.deduped} already on file,{" "}
+              {scanState.result.scrubQueued} queued for AI scrub
+              {scanState.result.staleRescrubsEnqueued > 0
+                ? `. Re-extracting facts from ${scanState.result.staleRescrubsEnqueued} older message${scanState.result.staleRescrubsEnqueued === 1 ? "" : "s"}.`
+                : null}
+            </p>
+          ) : null}
+          {scanState.kind === "rate_limited" ? (
+            <p className="mt-2 text-xs text-amber-600">
+              Recently scanned — retry in{" "}
+              {Math.max(1, Math.ceil(scanState.retryAfter / 60))} min
+            </p>
+          ) : null}
+          {scanState.kind === "error" ? (
+            <p className="mt-2 text-xs text-red-600">
+              Error: {scanState.message}
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {visibleActions.length === 0 ? (
