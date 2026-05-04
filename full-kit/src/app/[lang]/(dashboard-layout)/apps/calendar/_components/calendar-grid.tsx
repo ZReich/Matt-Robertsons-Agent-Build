@@ -252,7 +252,7 @@ export function CalendarGrid({
           eventDisplay="block"
           events={events}
           headerToolbar={{
-            start: "prev,next today",
+            start: "prevYear,prev,next,nextYear today",
             center: "title",
             end: "multiMonthYear,dayGridMonth,dayGridWeek",
           }}
