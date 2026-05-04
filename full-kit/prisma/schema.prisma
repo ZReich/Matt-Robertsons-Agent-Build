@@ -633,10 +633,11 @@ model Communication {
 
   @@index([channel])
   @@index([date])
-  @@index([contactId])
+  // Single-column @@index([contactId]) and @@index([dealId]) were dropped —
+  // Postgres uses the leading column of the composites below, so the
+  // single-column versions only added write-amp on the email-sync hot path.
   @@index([contactId, date(sort: Desc)])
   @@index([contactId, archivedAt])
-  @@index([dealId])
   @@index([dealId, date(sort: Desc)])
   @@index([direction])
   @@index([category])

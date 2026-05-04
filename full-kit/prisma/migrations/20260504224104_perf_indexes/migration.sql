@@ -55,3 +55,12 @@ CREATE INDEX IF NOT EXISTS "deals_stage_archived_at_idx"
 -- meeting_id so it doesn't help contactId-first lookups.
 CREATE INDEX IF NOT EXISTS "meeting_attendees_contact_id_idx"
   ON "meeting_attendees" ("contact_id");
+
+-- Drop redundant single-column indexes superseded by the composites above.
+-- Postgres uses the leading column of `(contact_id, date DESC)` and
+-- `(deal_id, date DESC)` for any contactId/dealId-only lookup, so the
+-- bare single-column indexes only added write-amp on the email-sync hot
+-- path. Both originals were created in
+-- `20260413222315_add_cre_business_tables/migration.sql`.
+DROP INDEX IF EXISTS "communications_contact_id_idx";
+DROP INDEX IF EXISTS "communications_deal_id_idx";
