@@ -400,6 +400,14 @@ export interface ProcessedMessage {
   contactId: string | null
   leadContactId: string | null
   leadCreated: boolean
+  /**
+   * Optional dealId to set on the Communication at insert time. Used by the
+   * mailbox backfill flow to attribute historical messages to a deal that the
+   * caller resolved from temporal window membership. Live ingest leaves this
+   * undefined (→ null) and dealId is assigned later via downstream pipelines.
+   * Only consulted on the initial Communication insert, never on dedupe-update.
+   */
+  dealIdOverride?: string | null
 }
 
 /** Persist one processed message as a Communication + ExternalSync pair, in a txn. */
@@ -538,6 +546,7 @@ export async function persistMessage(p: ProcessedMessage): Promise<{
         conversationId: p.message.conversationId ?? null,
         externalSyncId: sync.id,
         contactId: resolvedContactId,
+        dealId: p.dealIdOverride ?? null,
         createdBy: "msgraph-email",
         tags: [],
         metadata: metadata as Prisma.InputJsonValue,
