@@ -230,11 +230,11 @@ export function CalendarGrid({
           <LegendDot color={EVENT_KIND_COLORS.meeting.bg} label="Meetings" />
           <LegendDot
             color={EVENT_KIND_COLORS.lease_renewal.bg}
-            label="Lease renewal"
+            label="Lease ends"
           />
           <LegendDot
             color={EVENT_KIND_COLORS.lease_renewal_outreach.bg}
-            label="Renewal due"
+            label="Reach out (renewal)"
           />
           <LegendDot color={EVENT_KIND_COLORS.follow_up.bg} label="Follow-up" />
           <LegendDot

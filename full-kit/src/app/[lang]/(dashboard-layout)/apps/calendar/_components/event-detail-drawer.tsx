@@ -36,8 +36,8 @@ interface Props {
 
 const KIND_LABELS: Record<string, string> = {
   meeting: "Meeting",
-  lease_renewal: "Lease renewal",
-  lease_renewal_outreach: "Renewal outreach",
+  lease_renewal: "Lease ends",
+  lease_renewal_outreach: "Reach out (renewal)",
   follow_up: "Follow-up",
   anniversary: "Anniversary",
 }
@@ -276,9 +276,11 @@ function CalendarEventBody({
               )}
               {event.leaseRecord.rentAmount && (
                 <li>
-                  Rent: ${event.leaseRecord.rentAmount}
-                  {event.leaseRecord.rentPeriod &&
-                    ` / ${event.leaseRecord.rentPeriod}`}
+                  Rate: ${event.leaseRecord.rentAmount} / SF / yr
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    (Buildout&apos;s &ldquo;Average Lease Rate&rdquo; — per
+                    square foot per year, not total annual rent)
+                  </span>
                 </li>
               )}
               {event.leaseRecord.mattRepresented && (
