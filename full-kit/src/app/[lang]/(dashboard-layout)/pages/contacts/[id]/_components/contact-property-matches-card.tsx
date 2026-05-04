@@ -27,7 +27,24 @@ export function ContactPropertyMatchesCardFallback() {
 
 export async function ContactPropertyMatchesCard({ contactId, lang }: Props) {
   const propertyMatches = await findMatchesForContact(contactId, { limit: 8 })
-  if (propertyMatches.length === 0) return null
+  if (propertyMatches.length === 0) {
+    // Empty state instead of returning null — keeps layout stable across
+    // the Suspense skeleton transition and signals to the user that the
+    // matching engine ran but produced nothing (vs the section silently
+    // not existing).
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Matching properties
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          No matching properties for this contact&apos;s search criteria.
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>

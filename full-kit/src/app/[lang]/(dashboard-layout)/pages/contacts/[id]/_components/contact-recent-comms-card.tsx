@@ -41,7 +41,23 @@ export async function ContactRecentCommsCard({ contactId, lang }: Props) {
     },
   })
 
-  if (recent.length === 0) return null
+  if (recent.length === 0) {
+    // Empty state instead of returning null — Suspense skeleton →
+    // null caused a layout pop. Showing the section header even when
+    // empty makes the page structure stable across loads.
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Recent Communications
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          No communications recorded yet.
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>

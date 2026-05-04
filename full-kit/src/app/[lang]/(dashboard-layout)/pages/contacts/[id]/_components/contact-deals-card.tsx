@@ -43,7 +43,25 @@ export async function ContactDealsCard({ contactId, lang }: Props) {
     },
   })
 
-  if (deals.length === 0) return null
+  if (deals.length === 0) {
+    // Empty-state card (instead of `return null`) so the skeleton
+    // resolves to something visible. Returning null caused a layout pop
+    // — skeleton shown during Suspense → component returns null →
+    // everything below jumps up. The empty state is also a UX win since
+    // the user can see the section exists.
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Deals
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          No deals yet.
+        </CardContent>
+      </Card>
+    )
+  }
 
   const stageRank = new Map<string, number>(
     DEAL_STAGES.map((stage, idx) => [stage, idx])

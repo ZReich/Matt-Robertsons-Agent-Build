@@ -43,7 +43,23 @@ export async function ContactUpcomingMeetingsCard({ contactId }: Props) {
     .map((row) => row.meeting)
     .filter((m): m is NonNullable<typeof m> => m !== null)
 
-  if (meetings.length === 0) return null
+  if (meetings.length === 0) {
+    // Empty state instead of returning null — Suspense skeleton →
+    // null caused a layout pop. Render the section header with a
+    // placeholder so the page structure stays stable.
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Upcoming
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          No upcoming meetings scheduled.
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>

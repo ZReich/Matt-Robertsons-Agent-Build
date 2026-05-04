@@ -60,8 +60,31 @@ export async function ContactRelationshipProfileCard({ contactId }: Props) {
   })
 
   const nonPersonal = facts.filter((f) => !isPersonalCategory(f.category))
-  if (nonPersonal.length === 0) return null
   const hasPersonal = facts.some((f) => isPersonalCategory(f.category))
+
+  if (nonPersonal.length === 0) {
+    // Empty state instead of returning null. The skeleton resolving to
+    // nothing pops the layout up; an empty card keeps the section
+    // visible and makes it obvious that the AI extractor has run.
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Relationship Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>No workflow / transactional facts extracted yet.</p>
+          {hasPersonal ? (
+            <p className="text-xs">
+              Personal context (family, hobbies, etc.) shown on the Personal
+              tab.
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
