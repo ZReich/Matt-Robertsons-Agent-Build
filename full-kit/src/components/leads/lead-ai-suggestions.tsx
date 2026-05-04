@@ -321,6 +321,9 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
               {scanState.result.ingested} imported,{" "}
               {scanState.result.deduped} already on file,{" "}
               {scanState.result.scrubQueued} queued for AI scrub
+              {scanState.result.staleRescrubsEnqueued > 0
+                ? `. Re-extracting facts from ${scanState.result.staleRescrubsEnqueued} older message${scanState.result.staleRescrubsEnqueued === 1 ? "" : "s"}.`
+                : null}
             </p>
           ) : null}
           {scanState.kind === "rate_limited" ? (

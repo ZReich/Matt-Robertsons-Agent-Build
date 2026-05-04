@@ -23,7 +23,14 @@ vi.mock("@/lib/prisma", () => ({
     communication: { findMany: vi.fn() },
     backfillRun: { create: vi.fn(), update: vi.fn() },
     operationalEmailReview: { create: vi.fn() },
+    scrubQueue: { deleteMany: vi.fn(), create: vi.fn() },
   },
+}))
+vi.mock("@/lib/ai/scrub-queue", () => ({
+  enqueueScrubForCommunication: vi.fn(),
+}))
+vi.mock("@/lib/ai/scrub-types", () => ({
+  PROMPT_VERSION: "v6",
 }))
 
 describe("backfillMailboxForContact", () => {
@@ -69,7 +76,9 @@ describe("backfillMailboxForContact", () => {
     ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
     ;(db.contact.findMany as any).mockResolvedValueOnce([])
     ;(db.deal.findMany as any).mockResolvedValueOnce([])
-    ;(db.communication.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([]) // initial anchor lookup
+      .mockResolvedValueOnce([]) // stale-rescrub scan
     ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
     ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([
       { id: "m1" },
@@ -87,6 +96,150 @@ describe("backfillMailboxForContact", () => {
     expect(result.ingested).toBe(2)
     expect(result.deduped).toBe(1)
     expect(result.scrubQueued).toBe(2) // signal + uncertain, not noise
+    expect(result.staleRescrubsEnqueued).toBe(0)
+  })
+
+  it("does not re-enqueue when all existing comms are at current PROMPT_VERSION", async () => {
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "old-1",
+          metadata: {
+            classification: "signal",
+            scrub: { promptVersion: "v6" },
+          },
+        },
+        {
+          id: "old-2",
+          metadata: {
+            classification: "uncertain",
+            scrub: { promptVersion: "v6" },
+          },
+        },
+      ])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    expect(result.status).toBe("succeeded")
+    expect(result.staleRescrubsEnqueued).toBe(0)
+    expect(enqueueScrubForCommunication).not.toHaveBeenCalled()
+  })
+
+  it("re-enqueues comms whose scrub.promptVersion is older than current", async () => {
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "stale-1",
+          metadata: {
+            classification: "signal",
+            scrub: { promptVersion: "v5" },
+          },
+        },
+        {
+          id: "current-1",
+          metadata: {
+            classification: "signal",
+            scrub: { promptVersion: "v6" },
+          },
+        },
+        {
+          id: "stale-2",
+          metadata: {
+            classification: "uncertain",
+            scrub: { promptVersion: "v4" },
+          },
+        },
+      ])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    expect(result.status).toBe("succeeded")
+    expect(result.staleRescrubsEnqueued).toBe(2)
+    expect(enqueueScrubForCommunication).toHaveBeenCalledTimes(2)
+    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(db, "stale-1", "signal")
+    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(db, "stale-2", "uncertain")
+    // Existing scrub_queue rows are cleared first to avoid the unique-constraint conflict.
+    expect((db.scrubQueue.deleteMany as any)).toHaveBeenCalledWith({
+      where: { communicationId: "stale-1" },
+    })
+    expect((db.scrubQueue.deleteMany as any)).toHaveBeenCalledWith({
+      where: { communicationId: "stale-2" },
+    })
+  })
+
+  it("re-enqueues comms with no scrub metadata at all", async () => {
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "never-scrubbed-1",
+          metadata: { classification: "signal" }, // no `scrub` key at all
+        },
+      ])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    expect(result.status).toBe("succeeded")
+    expect(result.staleRescrubsEnqueued).toBe(1)
+    expect(enqueueScrubForCommunication).toHaveBeenCalledWith(
+      db,
+      "never-scrubbed-1",
+      "signal"
+    )
+  })
+
+  it("does not re-enqueue stale comms classified as noise", async () => {
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { enqueueScrubForCommunication } = await import("@/lib/ai/scrub-queue")
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({ id: "c1", email: "a@b.com" })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "noise-stale",
+          metadata: {
+            classification: "noise",
+            scrub: { promptVersion: "v5" },
+          },
+        },
+      ])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    expect(result.status).toBe("succeeded")
+    expect(result.staleRescrubsEnqueued).toBe(0)
+    expect(enqueueScrubForCommunication).not.toHaveBeenCalled()
   })
 
   it("rethrows P2002 from backfillRun.create as BackfillAlreadyRunningError", async () => {

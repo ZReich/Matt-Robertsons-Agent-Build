@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 import { loadMsgraphConfig } from "@/lib/msgraph/config"
+import { enqueueScrubForCommunication } from "@/lib/ai/scrub-queue"
+import { PROMPT_VERSION } from "@/lib/ai/scrub-types"
 
 import { detectMultiClientConflict } from "./multi-client-conflict"
 import { fetchMessagesForContactWindow } from "./graph-query"
@@ -11,6 +13,21 @@ import {
   type BackfillMode,
   type BackfillWindow,
 } from "./window-resolver"
+
+/**
+ * Returns true when the stored prompt version differs from the current one
+ * (or when no version is recorded). We deliberately use "different" rather
+ * than "older" — the format is just `v<N>` and a strict ordering would
+ * require version parsing. If the operator ever rolls back PROMPT_VERSION
+ * intentionally, re-extraction is still desirable.
+ */
+export function isPromptVersionStale(
+  stored: string | null | undefined,
+  current: string
+): boolean {
+  if (!stored) return true
+  return stored !== current
+}
 
 /**
  * Thrown when the partial unique index
@@ -45,6 +62,7 @@ export interface BackfillResult {
   ingested: number
   deduped: number
   scrubQueued: number
+  staleRescrubsEnqueued: number
   multiClientConflicts: number
   durationMs: number
 }
@@ -96,6 +114,7 @@ export async function backfillMailboxForContact(
       ingested: 0,
       deduped: 0,
       scrubQueued: 0,
+      staleRescrubsEnqueued: 0,
       multiClientConflicts: 0,
       durationMs: Date.now() - startedAt,
       ...extra,
@@ -260,12 +279,68 @@ export async function backfillMailboxForContact(
       }
     }
 
+    // Re-extract facts from communications whose last scrub was performed
+    // under an older PROMPT_VERSION. Operator-triggered re-scrub keeps the
+    // Personal tab in sync with prompt changes (e.g. v6 added the Family /
+    // Pets / Hobbies / Sports / Vehicles / Travel / Food / Milestones
+    // categories — v5-scrubbed messages would otherwise never surface those
+    // facts). Skipped entirely on dryRun.
+    let staleRescrubsEnqueued = 0
+    if (!opts.dryRun) {
+      const existingComms = await db.communication.findMany({
+        where: { contactId },
+        select: { id: true, metadata: true },
+      })
+      for (const comm of existingComms) {
+        const metadata =
+          comm.metadata && typeof comm.metadata === "object" && !Array.isArray(comm.metadata)
+            ? (comm.metadata as Record<string, unknown>)
+            : {}
+        const classification =
+          typeof metadata.classification === "string"
+            ? (metadata.classification as string)
+            : null
+        // Don't re-extract from noise — facts won't appear in noise messages.
+        if (classification === "noise") continue
+        // Only signal/uncertain are eligible to flow through the scrub queue.
+        if (classification !== "signal" && classification !== "uncertain") continue
+
+        const scrub =
+          metadata.scrub && typeof metadata.scrub === "object" && !Array.isArray(metadata.scrub)
+            ? (metadata.scrub as Record<string, unknown>)
+            : null
+        const storedVersion =
+          scrub && typeof scrub.promptVersion === "string"
+            ? (scrub.promptVersion as string)
+            : null
+        if (!isPromptVersionStale(storedVersion, PROMPT_VERSION)) continue
+
+        // ScrubQueue.communicationId is unique — `enqueueScrubForCommunication`
+        // would throw P2002 on an existing row. Delete the prior row first
+        // (whether previously done, failed, or skipped_sensitive) so the
+        // re-enqueue creates a fresh pending entry. This is least-invasive:
+        // we don't change `enqueueScrubForCommunication`'s signature or add
+        // an upsert path to it.
+        try {
+          await db.scrubQueue.deleteMany({ where: { communicationId: comm.id } })
+          await enqueueScrubForCommunication(db, comm.id, classification)
+          staleRescrubsEnqueued += 1
+        } catch (err) {
+          console.warn(
+            `[backfill] stale-rescrub re-enqueue failed for comm ${comm.id}:`,
+            err
+          )
+        }
+      }
+    }
+
     return await finalize("succeeded", {
       windowsSearched: windows,
       messagesDiscovered,
       ingested,
       deduped,
       scrubQueued,
+      staleRescrubsEnqueued,
       multiClientConflicts,
     })
   } catch (err: any) {
