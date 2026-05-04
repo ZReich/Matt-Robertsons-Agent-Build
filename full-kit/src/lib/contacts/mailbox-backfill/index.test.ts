@@ -400,6 +400,62 @@ describe("backfillMailboxForContact", () => {
     ).rejects.toBe(dbDown)
   })
 
+  it("parallel ingest: one bad message in a batch does not block siblings; counters reflect successes only", async () => {
+    // Regression: the per-message loop is now bounded-concurrency
+    // (processInBatches with size=5). A single failing message must:
+    //   • not reject the whole slice (Promise.allSettled inside the helper)
+    //   • not advance counters for itself
+    //   • not block subsequent messages from advancing counters
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { ingestSingleBackfillMessage } = await import("./ingest-message")
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-batch" })
+    // 10 messages — at concurrency=5 this is 2 slices.
+    const messages = Array.from({ length: 10 }, (_, i) => ({ id: `m${i}` }))
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce(messages)
+
+    // Indices 2 and 7 throw — one in each slice. The remaining 8 succeed
+    // as alternating signal/noise so we can also assert scrubQueued.
+    ;(ingestSingleBackfillMessage as any).mockImplementation(
+      async ({ message }: { message: { id: string } }) => {
+        const idx = Number(message.id.replace("m", ""))
+        if (idx === 2 || idx === 7) {
+          throw new Error(`boom-${idx}`)
+        }
+        return {
+          communicationId: `comm-${idx}`,
+          deduped: false,
+          classification: idx % 2 === 0 ? "signal" : "noise",
+        }
+      }
+    )
+
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    warnSpy.mockRestore()
+
+    expect(result.status).toBe("succeeded")
+    expect(result.messagesDiscovered).toBe(10)
+    // 10 attempted - 2 failures = 8 ingested.
+    expect(result.ingested).toBe(8)
+    expect(result.deduped).toBe(0)
+    // Of the 8 successful ones (indices 0,1,3,4,5,6,8,9):
+    //   even indices (0,4,6,8) -> signal -> 4 scrub-queued
+    expect(result.scrubQueued).toBe(4)
+    // ingestSingleBackfillMessage called for every input.
+    expect((ingestSingleBackfillMessage as any).mock.calls).toHaveLength(10)
+  })
+
   it("dryRun does not call ingestSingleBackfillMessage", async () => {
     const { db } = await import("@/lib/prisma")
     const { fetchMessagesForContactWindow } = await import("./graph-query")
