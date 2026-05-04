@@ -21,6 +21,10 @@ import type { ReactNode } from "react"
 import { readCachedSummary } from "@/lib/ai/contact-summarizer"
 import { getAiSuggestionState } from "@/lib/ai/suggestions"
 import { getOutlookDeeplinkForSource } from "@/lib/communications/outlook-deeplink"
+import {
+  groupFactsByDisplayCategory,
+  isPersonalCategory,
+} from "@/lib/contacts/profile-fact-display"
 import { findMatchesForContact } from "@/lib/matching/queries"
 import { DEAL_STAGES } from "@/lib/pipeline/stage-probability"
 import { db } from "@/lib/prisma"
@@ -159,6 +163,36 @@ export default async function ContactDetailPage({
   const totalActivity = totalCommCount + contactMeetings.length
   const commsTruncated = totalCommCount > contactComms.length
 
+  // Personal-tab data: split out personal-category facts and resolve their
+  // source communications so each fact links back to where it was extracted
+  // from. We deliberately fetch the source comms in one extra query rather
+  // than blowing up the main profileFacts query with a relation join, since
+  // most contacts have <20 facts and the join-overhead would be paid even
+  // when the Personal tab isn't viewed.
+  const personalFacts = profileFacts.filter((f) => isPersonalCategory(f.category))
+  const personalFactSourceIds = Array.from(
+    new Set(personalFacts.map((f) => f.sourceCommunicationId).filter(Boolean))
+  )
+  const personalFactSourceComms =
+    personalFactSourceIds.length > 0
+      ? await db.communication.findMany({
+          where: { id: { in: personalFactSourceIds } },
+          select: {
+            id: true,
+            subject: true,
+            date: true,
+            channel: true,
+            externalMessageId: true,
+            createdBy: true,
+            deal: { select: { id: true, propertyAddress: true } },
+          },
+        })
+      : []
+  const personalFactSourceById = new Map(
+    personalFactSourceComms.map((c) => [c.id, c])
+  )
+  const groupedPersonalFacts = groupFactsByDisplayCategory(personalFacts)
+
   return (
     <section className="container max-w-3xl grid gap-6 p-6">
       {/* Header */}
@@ -215,6 +249,9 @@ export default async function ContactDetailPage({
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="personal">
+            Personal{personalFacts.length > 0 ? ` (${personalFacts.length})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="activity">Activity ({totalActivity})</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
@@ -258,7 +295,7 @@ export default async function ContactDetailPage({
 
           <LeadAISuggestions state={aiSuggestions} lang={lang} />
 
-          {profileFacts.length > 0 && (
+          {profileFacts.some((f) => !isPersonalCategory(f.category)) && (
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -266,28 +303,36 @@ export default async function ContactDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {Object.entries(groupProfileFacts(profileFacts)).map(
-                  ([category, facts]) => (
-                    <div key={category} className="space-y-1">
-                      <div className="text-xs font-medium uppercase text-muted-foreground">
-                        {formatProfileCategory(category)}
-                      </div>
-                      <ul className="space-y-1">
-                        {facts.map((fact) => (
-                          <li key={fact.id} className="space-y-0.5 text-sm">
-                            <div>{fact.fact}</div>
-                            <div className="text-xs text-muted-foreground">
-                              Source: {fact.sourceCommunicationId}
-                              {profileFactEvidence(fact.metadata)
-                                ? ` - ${profileFactEvidence(fact.metadata)}`
-                                : ""}
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                {Object.entries(
+                  groupProfileFacts(
+                    profileFacts.filter((f) => !isPersonalCategory(f.category))
                   )
-                )}
+                ).map(([category, facts]) => (
+                  <div key={category} className="space-y-1">
+                    <div className="text-xs font-medium uppercase text-muted-foreground">
+                      {formatProfileCategory(category)}
+                    </div>
+                    <ul className="space-y-1">
+                      {facts.map((fact) => (
+                        <li key={fact.id} className="space-y-0.5 text-sm">
+                          <div>{fact.fact}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Source: {fact.sourceCommunicationId}
+                            {profileFactEvidence(fact.metadata)
+                              ? ` - ${profileFactEvidence(fact.metadata)}`
+                              : ""}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+                {personalFacts.length > 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Personal context (family, hobbies, etc.) shown on the
+                    Personal tab.
+                  </p>
+                ) : null}
               </CardContent>
             </Card>
           )}
@@ -386,6 +431,118 @@ export default async function ContactDetailPage({
                 )}
               </CardContent>
             </Card>
+          )}
+        </TabsContent>
+
+        {/* Personal — relationship-building texture (family, hobbies, etc.) */}
+        <TabsContent value="personal" className="mt-4 grid gap-4">
+          {personalFacts.length === 0 ? (
+            <Card>
+              <CardContent className="space-y-2 p-6 text-sm text-muted-foreground">
+                <p>
+                  No personal context extracted yet. As emails come in, the
+                  scrub queue surfaces facts about family, pets, hobbies,
+                  travel, and other relationship texture here.
+                </p>
+                <p>
+                  If this contact has a long email history that predates the
+                  v6 scrub prompt, you can opt-in to re-scrub their inbox to
+                  backfill personal facts (operator action, costs Anthropic
+                  credit).
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <Card>
+                <CardContent className="p-4 text-xs text-muted-foreground">
+                  Talking points pulled from prior emails. Each fact links
+                  back to the source so you can verify wording before a
+                  call. Sensitive context (medical, legal, financial
+                  distress) is filtered out at extraction time.
+                </CardContent>
+              </Card>
+              {groupedPersonalFacts.personal.map((group) => (
+                <Card key={group.category}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      {group.meta.label}
+                    </CardTitle>
+                    {group.meta.hint ? (
+                      <p className="text-xs text-muted-foreground">
+                        {group.meta.hint}
+                      </p>
+                    ) : null}
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {group.facts.map((fact) => {
+                      const sourceComm = personalFactSourceById.get(
+                        fact.sourceCommunicationId
+                      )
+                      const deeplink = sourceComm
+                        ? getOutlookDeeplinkForSource(
+                            sourceComm.externalMessageId,
+                            sourceComm.createdBy
+                          )
+                        : null
+                      const evidence = profileFactEvidence(fact.metadata)
+                      return (
+                        <div
+                          key={fact.id}
+                          className="space-y-1 rounded-md border p-3 text-sm"
+                        >
+                          <div className="font-medium">{fact.fact}</div>
+                          {evidence ? (
+                            <div className="text-xs italic text-muted-foreground">
+                              &ldquo;{evidence}&rdquo;
+                            </div>
+                          ) : null}
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <span>
+                              Last seen{" "}
+                              {format(fact.lastSeenAt, "MMM d, yyyy")}
+                            </span>
+                            {sourceComm ? (
+                              <>
+                                <span>·</span>
+                                {deeplink ? (
+                                  <a
+                                    href={deeplink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                                  >
+                                    {sourceComm.subject?.trim() ||
+                                      `(${sourceComm.channel})`}
+                                    <ExternalLink className="size-3 opacity-70" />
+                                  </a>
+                                ) : (
+                                  <span>
+                                    {sourceComm.subject?.trim() ||
+                                      `(${sourceComm.channel})`}
+                                  </span>
+                                )}
+                                {sourceComm.deal ? (
+                                  <>
+                                    <span>·</span>
+                                    <Link
+                                      href={`/${lang}/pages/deals/${sourceComm.deal.id}`}
+                                      className="hover:underline"
+                                    >
+                                      {sourceComm.deal.propertyAddress ?? "deal"}
+                                    </Link>
+                                  </>
+                                ) : null}
+                              </>
+                            ) : null}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
+              ))}
+            </>
           )}
         </TabsContent>
 
