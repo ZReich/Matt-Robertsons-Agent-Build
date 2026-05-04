@@ -1,10 +1,11 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
 import { format } from "date-fns"
 import { Calendar } from "lucide-react"
 
 import type { ReactNode } from "react"
 import type { CommRow } from "./contact-comm-row"
-
-import { db } from "@/lib/prisma"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -14,6 +15,17 @@ interface Props {
   contactId: string
   lang: string
 }
+
+// Why this is a client component:
+//
+// Previously this was an async server component awaited inline in
+// `page.tsx` — which meant the contact's 200 communications were fetched
+// on EVERY page load, even when the user only opened Overview. Now we
+// fetch from `/api/contacts/[id]/activity` from the client on mount.
+//
+// Radix `<TabsContent>` unmounts non-active tabs after hydration, so this
+// component only mounts once the user clicks the Activity tab. The
+// `useEffect` therefore only fires the fetch when the tab actually opens.
 
 export function ContactActivityTabFallback() {
   return (
@@ -38,6 +50,14 @@ type ActivityEvent =
   | { kind: "comm"; date: Date; comm: CommRow }
   | { kind: "meeting"; date: Date; meeting: MeetingRow }
 
+// API response (dates come over the wire as ISO strings; we revive Date
+// objects on parse so downstream renderers stay simple).
+type ActivityApiResponse = {
+  comms: Array<Omit<CommRow, "date"> & { date: string }>
+  totalCommCount: number
+  meetings: Array<Omit<MeetingRow, "date"> & { date: string }>
+}
+
 function buildActivityFeed(
   comms: CommRow[],
   meetings: MeetingRow[]
@@ -50,8 +70,6 @@ function buildActivityFeed(
       meeting,
     })),
   ]
-  // Sort by date desc with id tiebreaker so render order is stable across
-  // re-renders when two events share a millisecond.
   events.sort((a, b) => {
     const dt = b.date.getTime() - a.date.getTime()
     if (dt !== 0) return dt
@@ -92,49 +110,79 @@ function renderActivityEvent(event: ActivityEvent, lang: string): ReactNode {
   )
 }
 
-export async function ContactActivityTab({ contactId, lang }: Props) {
-  const COMM_LIMIT = 200
-  const [contactComms, totalCommCount, attendees] = await Promise.all([
-    db.communication.findMany({
-      where: { contactId, archivedAt: null },
-      orderBy: { date: "desc" },
-      take: COMM_LIMIT,
-      select: {
-        id: true,
-        channel: true,
-        subject: true,
-        date: true,
-        direction: true,
-        createdBy: true,
-        externalMessageId: true,
-        deal: { select: { id: true, propertyAddress: true } },
-      },
-    }),
-    db.communication.count({
-      where: { contactId, archivedAt: null },
-    }),
-    db.meetingAttendee.findMany({
-      where: { contactId, meeting: { archivedAt: null } },
-      orderBy: { meeting: { date: "desc" } },
-      select: {
-        meeting: {
-          select: {
-            id: true,
-            title: true,
-            date: true,
-            location: true,
-          },
-        },
-      },
-    }),
-  ])
+type LoadState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | {
+      status: "loaded"
+      comms: CommRow[]
+      totalCommCount: number
+      meetings: MeetingRow[]
+    }
+  | { status: "error"; error: string }
 
-  const meetings = attendees
-    .map((row) => row.meeting)
-    .filter((m): m is NonNullable<typeof m> => m !== null)
+export function ContactActivityTab({ contactId, lang }: Props) {
+  const [state, setState] = useState<LoadState>({ status: "idle" })
+  // Track whether we've ever fired the fetch so StrictMode's double-effect
+  // in dev doesn't fire two requests. The abort below handles the same
+  // issue for the in-flight case.
+  const startedRef = useRef(false)
 
+  useEffect(() => {
+    if (startedRef.current) return
+    startedRef.current = true
+
+    const ac = new AbortController()
+    setState({ status: "loading" })
+    void (async () => {
+      try {
+        const res = await fetch(`/api/contacts/${contactId}/activity`, {
+          signal: ac.signal,
+          cache: "no-store",
+        })
+        if (!res.ok) {
+          throw new Error(`Activity fetch failed (${res.status})`)
+        }
+        const json = (await res.json()) as ActivityApiResponse
+        setState({
+          status: "loaded",
+          totalCommCount: json.totalCommCount,
+          comms: json.comms.map((c) => ({ ...c, date: new Date(c.date) })),
+          meetings: json.meetings.map((m) => ({ ...m, date: new Date(m.date) })),
+        })
+      } catch (err) {
+        if (ac.signal.aborted) return
+        // Reset startedRef so a tab toggle can retry once the user clicks
+        // away and back. Cheap retry path without a dedicated button.
+        startedRef.current = false
+        setState({
+          status: "error",
+          error: err instanceof Error ? err.message : "Unknown error",
+        })
+      }
+    })()
+
+    return () => ac.abort()
+  }, [contactId])
+
+  if (state.status === "idle" || state.status === "loading") {
+    return <ContactActivityTabFallback />
+  }
+
+  if (state.status === "error") {
+    return (
+      <Card>
+        <CardContent className="space-y-2 p-4 text-sm">
+          <p className="font-medium text-red-700">Couldn&apos;t load activity.</p>
+          <p className="text-muted-foreground">{state.error}</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const { comms, totalCommCount, meetings } = state
   const totalActivity = totalCommCount + meetings.length
-  const commsTruncated = totalCommCount > contactComms.length
+  const commsTruncated = totalCommCount > comms.length
 
   if (totalActivity === 0) {
     return (
@@ -149,11 +197,11 @@ export async function ContactActivityTab({ contactId, lang }: Props) {
       <CardContent className="space-y-1 p-4">
         {commsTruncated ? (
           <p className="mb-2 rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-            Showing latest {contactComms.length} communications of{" "}
-            {totalCommCount} total. Older communications are not rendered.
+            Showing latest {comms.length} communications of {totalCommCount}{" "}
+            total. Older communications are not rendered.
           </p>
         ) : null}
-        {buildActivityFeed(contactComms, meetings).map((event) =>
+        {buildActivityFeed(comms, meetings).map((event) =>
           renderActivityEvent(event, lang)
         )}
       </CardContent>

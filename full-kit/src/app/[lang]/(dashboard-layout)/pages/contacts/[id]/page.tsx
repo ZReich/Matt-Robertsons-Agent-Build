@@ -7,16 +7,14 @@ import type { Metadata } from "next"
 
 import { readCachedSummary } from "@/lib/ai/contact-summarizer"
 import { getAiSuggestionState } from "@/lib/ai/suggestions"
+import { PERSONAL_CATEGORY_RENDER_ORDER } from "@/lib/contacts/profile-fact-display"
 import { db } from "@/lib/prisma"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  ContactActivityTab,
-  ContactActivityTabFallback,
-} from "./_components/contact-activity-tab"
+import { ContactActivityTab } from "./_components/contact-activity-tab"
 import {
   ContactDealsCard,
   ContactDealsCardFallback,
@@ -70,14 +68,34 @@ export default async function ContactDetailPage({
 }: ContactDetailPageProps) {
   const { id, lang } = await params
 
-  // Header-critical data: just the contact row + the two AI summary blobs
-  // that ContactArcSummary / LeadAISuggestions hydrate from. Everything else
-  // streams in below via Suspense boundaries so the user sees the page
-  // shell within ~100ms instead of waiting for ~9 parallel queries.
-  const [contact, aiSuggestions, cachedArcSummary] = await Promise.all([
+  // Header-critical data: contact row, AI summary blobs the header cards
+  // hydrate from, plus the two `(N)` badge counts the user wants on the
+  // Activity / Personal tab triggers. The counts use the new composite
+  // indexes (contact_id, archived_at) and (contact_id, status) and are
+  // cheap enough to keep upfront — they fit in the same Promise.all wave
+  // as the contact lookup.
+  //
+  // Everything else streams in below via Suspense so the user sees the
+  // page shell within ~100ms instead of waiting on ~9 parallel queries.
+  const [
+    contact,
+    aiSuggestions,
+    cachedArcSummary,
+    totalActivityCount,
+    personalFactCount,
+  ] = await Promise.all([
     db.contact.findUnique({ where: { id } }),
     getAiSuggestionState({ entityType: "contact", entityId: id }),
     readCachedSummary(id),
+    db.communication.count({ where: { contactId: id, archivedAt: null } }),
+    db.contactProfileFact.count({
+      where: {
+        contactId: id,
+        status: "active",
+        category: { in: [...PERSONAL_CATEGORY_RENDER_ORDER] },
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+    }),
   ])
 
   if (!contact) notFound()
@@ -126,8 +144,14 @@ export default async function ContactDetailPage({
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="personal">Personal</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="personal">
+            {personalFactCount > 0
+              ? `Personal (${personalFactCount})`
+              : "Personal"}
+          </TabsTrigger>
+          <TabsTrigger value="activity">
+            Activity ({totalActivityCount})
+          </TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
         </TabsList>
 
@@ -198,11 +222,12 @@ export default async function ContactDetailPage({
           </Suspense>
         </TabsContent>
 
-        {/* Activity Tab — Prisma-backed chronological feed */}
+        {/* Activity Tab — client-fetched feed. Radix unmounts non-active
+            TabsContent so this component (and its fetch) only mounts once
+            the user actually clicks the Activity tab — Overview no longer
+            pays the cost of the 200-row activity query. */}
         <TabsContent value="activity" className="mt-4">
-          <Suspense fallback={<ContactActivityTabFallback />}>
-            <ContactActivityTab contactId={contact.id} lang={lang} />
-          </Suspense>
+          <ContactActivityTab contactId={contact.id} lang={lang} />
         </TabsContent>
 
         {/* Notes & profile */}
