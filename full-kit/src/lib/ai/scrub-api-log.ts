@@ -7,6 +7,8 @@ export type ScrubApiUsage = {
   cacheWriteTokens?: number
 }
 
+type ScrubApiMetadata = Record<string, unknown>
+
 /**
  * "pending-validation" is the initial state written immediately after a
  * successful Anthropic response, BEFORE validation or DB commit — so the
@@ -56,6 +58,8 @@ const HAIKU_CACHE_READ_PER_M = 0.1
 const HAIKU_CACHE_WRITE_PER_M = 1.25
 const HAIKU_OUTPUT_PER_M = 5
 
+let warnedMissingMetadataColumn = false
+
 export function estimateScrubCostUsd(usage: ScrubApiUsage): number {
   const cacheReadTokens = usage.cacheReadTokens ?? 0
   const cacheWriteTokens = usage.cacheWriteTokens ?? 0
@@ -84,6 +88,7 @@ export async function logScrubApiCall({
   usage,
   outcome,
   estimatedUsdOverride,
+  metadata,
 }: {
   queueRowId?: string | null
   communicationId?: string | null
@@ -91,6 +96,7 @@ export async function logScrubApiCall({
   modelUsed: string
   usage: ScrubApiUsage
   outcome: ScrubApiOutcome
+  metadata?: ScrubApiMetadata
   /**
    * Optional pre-computed USD estimate. Use when the caller has its own
    * pricing model (e.g. the closed-deal classifier on DeepSeek, which
@@ -120,12 +126,45 @@ export async function logScrubApiCall({
       },
       select: { id: true },
     })
+    if (row.id && metadata && Object.keys(metadata).length > 0) {
+      await writeScrubApiCallMetadata(row.id, metadata)
+    }
     return row.id
   } catch (err) {
     // Don't kill the scrub because telemetry couldn't land.
     // Under-counting spend is strictly better than losing scrub output.
     console.error("[scrub] failed to write ScrubApiCall row:", err)
     return null
+  }
+}
+
+async function writeScrubApiCallMetadata(
+  rowId: string,
+  metadata: ScrubApiMetadata
+): Promise<void> {
+  try {
+    await db.$executeRawUnsafe(
+      `UPDATE "scrub_api_calls"
+       SET "metadata" = COALESCE("metadata", '{}'::jsonb) || $1::jsonb
+       WHERE "id" = $2`,
+      JSON.stringify(metadata),
+      rowId
+    )
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    if (
+      message.includes(`column "metadata" does not exist`) ||
+      message.includes("42703")
+    ) {
+      if (!warnedMissingMetadataColumn) {
+        warnedMissingMetadataColumn = true
+        console.error(
+          "[scrub] scrub_api_calls.metadata column is missing; metadata not written"
+        )
+      }
+      return
+    }
+    console.error("[scrub] failed to write ScrubApiCall metadata:", err)
   }
 }
 

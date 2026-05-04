@@ -1160,6 +1160,7 @@ model ScrubApiCall {
   cacheReadTokens  Int      @default(0) @map("cache_read_tokens")
   cacheWriteTokens Int      @default(0) @map("cache_write_tokens")
   outcome          String
+  metadata         Json     @default("{}")
   /// Optional discriminator for the call's pipeline component. Reserved
   /// for the planned migration away from outcome-prefix namespacing
   /// (`classifier-*`, `extractor-*`); see CONVENTION comment in

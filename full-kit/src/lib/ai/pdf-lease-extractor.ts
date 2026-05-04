@@ -92,6 +92,7 @@ async function writePdfExtractorLog(args: {
     | "extractor-pdf-provider-error"
     | "extractor-pdf-skipped"
   >
+  metadata?: Record<string, unknown>
 }): Promise<void> {
   try {
     await logScrubApiCall({
@@ -99,6 +100,7 @@ async function writePdfExtractorLog(args: {
       modelUsed: args.modelUsed,
       usage: args.usage,
       outcome: args.outcome,
+      metadata: args.metadata,
       // Skips are zero-cost; success/error use the same Haiku pricing
       // as the body extractor — by design (spec acceptance: "no new
       // pricing constants").
@@ -107,6 +109,11 @@ async function writePdfExtractorLog(args: {
   } catch (err) {
     console.error("[extractor-pdf] failed to write ScrubApiCall row:", err)
   }
+}
+
+function providerErrorDetails(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err)
+  return message.slice(0, 200)
 }
 
 function buildUserText(input: PdfLeaseExtractorInput): string {
@@ -215,15 +222,17 @@ export async function extractLeaseFromPdf(
       ],
     })
   } catch (err) {
+    const details = providerErrorDetails(err)
     await writePdfExtractorLog({
       modelUsed: model,
       usage: { tokensIn: 0, tokensOut: 0 },
       outcome: "extractor-pdf-provider-error",
+      metadata: { details },
     })
     return {
       ok: false,
       reason: "provider_error",
-      details: err instanceof Error ? err.message : String(err),
+      details,
     }
   }
 

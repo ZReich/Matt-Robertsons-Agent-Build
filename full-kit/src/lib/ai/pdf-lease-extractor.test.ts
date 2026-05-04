@@ -20,6 +20,7 @@ vi.mock("@anthropic-ai/sdk", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   db: {
+    $executeRawUnsafe: vi.fn().mockResolvedValue(1),
     scrubApiCall: {
       create: vi.fn().mockResolvedValue({ id: "log-pdf-1" }),
       update: vi.fn(),
@@ -94,9 +95,11 @@ describe("extractLeaseFromPdf", () => {
     delete process.env.ANTHROPIC_LEASE_EXTRACTOR_MODEL
     mockMessagesCreate.mockReset()
     ;(db.scrubApiCall.create as ReturnType<typeof vi.fn>).mockClear()
+    ;(db.$executeRawUnsafe as ReturnType<typeof vi.fn>).mockClear()
     ;(db.scrubApiCall.create as ReturnType<typeof vi.fn>).mockResolvedValue({
       id: "log-pdf-1",
     })
+    ;(db.$executeRawUnsafe as ReturnType<typeof vi.fn>).mockResolvedValue(1)
   })
 
   afterEach(() => {
@@ -275,6 +278,11 @@ describe("extractLeaseFromPdf", () => {
     expect(create).toHaveBeenCalledTimes(1)
     expect(create.mock.calls[0][0].data.outcome).toBe(
       "extractor-pdf-provider-error"
+    )
+    expect(db.$executeRawUnsafe).toHaveBeenCalledWith(
+      expect.stringContaining('"metadata"'),
+      JSON.stringify({ details: "anthropic 503" }),
+      "log-pdf-1"
     )
   })
 
