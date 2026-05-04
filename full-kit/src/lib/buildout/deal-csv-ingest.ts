@@ -10,7 +10,10 @@ import type {
 import { Prisma } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
-import { computePropertyKey } from "@/lib/properties/property-utils"
+import {
+  computePropertyKey,
+  extractPropertyUnit,
+} from "@/lib/properties/property-utils"
 
 /**
  * Buildout Deal Pipeline Report CSV ingest.
@@ -402,15 +405,22 @@ async function resolveOrCreateProperty(
     city: input.city,
     state: input.state,
   })
+  // Extract unit/suite from the deal title so multi-suite buildings
+  // ("West Park Promenade | Unit 110", "1601 Lewis | Suite 104") dedupe to
+  // distinct Property rows. Without this, every suite collapses onto a single
+  // Property and the @@unique([propertyKey, unit]) constraint forces the
+  // ingest to either reuse the wrong row or throw on create.
+  const unit = extractPropertyUnit(addressCandidate)
 
   const existing = await tx.property.findFirst({
-    where: { propertyKey, unit: null },
+    where: { propertyKey, unit: unit ?? null },
   })
   if (existing) return { id: existing.id, created: false }
 
   const created = await tx.property.create({
     data: {
       address: addressCandidate.slice(0, 250),
+      ...(unit ? { unit } : {}),
       ...(input.city ? { city: input.city } : {}),
       ...(input.state ? { state: input.state } : {}),
       propertyKey,
@@ -570,7 +580,7 @@ export async function ingestBuildoutDealCsv(
 
         if (!canonicalContact) {
           throw new Error(
-            "no resolvable contact (need at least one party with name/email)"
+            `unresolvable_contact: deal "${row.dealName}" had no usable seller or buyer party (both were placeholder NULLs in the CSV: --, n/a, etc.)`
           )
         }
 
@@ -589,6 +599,12 @@ export async function ingestBuildoutDealCsv(
         )
         if (property?.created) summary.propertiesCreated++
         else if (property) summary.propertiesLinked++
+
+        if (!property?.id) {
+          throw new Error(
+            `unresolvable_property: deal "${row.dealName}" had no addressable property (Deal Title and Deal Name both empty)`
+          )
+        }
 
         const dealStage = mapStage(row.stage)
         const dealOutcome = mapDealOutcome(row.stage)
@@ -742,5 +758,30 @@ export async function ingestBuildoutDealCsv(
     }
   }
 
+  if (summary.ingestErrors.length > 0) {
+    const byReason = bucketByErrorPrefix(summary.ingestErrors.map((e) => e.reason))
+    console.warn(
+      `[buildout-csv-import] ${summary.ingestErrors.length} ingest errors:`,
+      byReason
+    )
+  }
+
   return summary
+}
+
+/**
+ * Groups error message strings by the prefix before the first colon.
+ * E.g. "unresolvable_contact: ..." → { unresolvable_contact: N }
+ * Errors with no colon prefix fall into "other".
+ */
+export function bucketByErrorPrefix(
+  reasons: string[]
+): Record<string, number> {
+  const counts: Record<string, number> = {}
+  for (const reason of reasons) {
+    const colonIdx = reason.indexOf(":")
+    const key = colonIdx > 0 ? reason.slice(0, colonIdx) : "other"
+    counts[key] = (counts[key] ?? 0) + 1
+  }
+  return counts
 }

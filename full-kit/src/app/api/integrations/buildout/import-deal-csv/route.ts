@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
 
 import { constantTimeCompare, loadMsgraphConfig } from "@/lib/msgraph"
-import { ingestBuildoutDealCsv } from "@/lib/buildout/deal-csv-ingest"
+import {
+  bucketByErrorPrefix,
+  ingestBuildoutDealCsv,
+} from "@/lib/buildout/deal-csv-ingest"
 
 export const dynamic = "force-dynamic"
 
@@ -53,7 +56,16 @@ export async function POST(request: Request): Promise<Response> {
   const summary = await ingestBuildoutDealCsv(body.csv, {
     dryRun: body.dryRun === true,
   })
-  return NextResponse.json({ ok: true, dryRun: body.dryRun === true, summary })
+  const errorSummary = {
+    total: summary.ingestErrors.length,
+    byReason: bucketByErrorPrefix(summary.ingestErrors.map((e) => e.reason)),
+  }
+  return NextResponse.json({
+    ok: true,
+    dryRun: body.dryRun === true,
+    ...summary,
+    errorSummary,
+  })
 }
 
 export async function GET(): Promise<Response> {
