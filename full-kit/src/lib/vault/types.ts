@@ -174,6 +174,14 @@ export interface TodoMeta extends VaultNoteMeta {
   /** When the AI generated this todo, the model's one-line "why" — surfaced
    * in the UI so the user understands what triggered it. */
   ai_rationale?: string
+  /** When this Todo was auto-promoted from a pending AgentAction, the action
+   * type drives which inline approve/reject buttons are rendered on the
+   * Todo card (e.g. "auto-reply" → Send draft / Edit / Reject). Mirrors
+   * the persisted `todos.metadata.actionType` JSON field. */
+  agent_action_type?: string
+  /** ID of the AgentAction this Todo was promoted from. The inline buttons
+   * POST to /api/agent/actions/{id}/{approve,reject,snooze}. */
+  agent_action_id?: string
 }
 
 /** Email template frontmatter (vault/templates/*.md) */

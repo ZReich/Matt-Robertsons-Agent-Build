@@ -141,6 +141,13 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
   const contact = todo.contact?.name ?? todo.communication?.contact?.name
   const deal =
     todo.deal?.propertyAddress ?? todo.communication?.deal?.propertyAddress
+  // metadata.actionType is the marker the Todos UI uses to render inline
+  // approve/reject buttons (auto-reply → Send draft, delete-* → Confirm
+  // delete, etc.). Set by the auto-promotion sweep at
+  // src/lib/ai/agent-action-auto-promotion.ts.
+  const meta = asMetadataRecord(todo.metadata)
+  const agentActionType =
+    typeof meta.actionType === "string" ? meta.actionType : undefined
   return {
     path: prismaTodoPath(todo.id),
     meta: {
@@ -159,6 +166,8 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
       ...(todo.agentAction?.summary
         ? { ai_rationale: todo.agentAction.summary }
         : {}),
+      ...(agentActionType ? { agent_action_type: agentActionType } : {}),
+      ...(todo.agentActionId ? { agent_action_id: todo.agentActionId } : {}),
       created: todo.createdAt.toISOString(),
       updated: todo.updatedAt.toISOString(),
     },
@@ -167,6 +176,13 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
       todo.communication?.subject ??
       (todo.agentActionId ? "Created from an approved AI suggestion." : ""),
   }
+}
+
+function asMetadataRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>
+  }
+  return {}
 }
 
 function mapPrismaStatusToVault(status: TodoStatus): TodoMeta["status"] {

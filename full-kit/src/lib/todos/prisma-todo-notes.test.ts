@@ -204,6 +204,7 @@ function prismaTodo(overrides = {}) {
     createdAt: new Date("2026-04-27T10:00:00.000Z"),
     updatedAt: new Date("2026-04-27T11:00:00.000Z"),
     dedupeKey: null,
+    metadata: {},
     contact: null,
     deal: null,
     communication: null,
