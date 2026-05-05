@@ -1,6 +1,7 @@
 import type { ExtractedSignals, PlaudRecordingTurn } from "./types"
 
 const DEFAULT_MODEL = "deepseek-chat"
+const DEFAULT_AI_TIMEOUT_MS = 45_000
 // Cap input text we send to the extractor to avoid runaway token cost on a
 // pathologically long transcript. ~60k chars ≈ 15k tokens, well within
 // DeepSeek's context window with room for prompt and output.
@@ -55,22 +56,37 @@ async function callDeepSeek(opts: {
     process.env.OPENAI_BASE_URL?.replace(/\/$/, "") ??
     "https://api.openai.com/v1"
   const model = process.env.OPENAI_SCRUB_MODEL || DEFAULT_MODEL
-  const res = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${apiKey}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: opts.system },
-        { role: "user", content: opts.user },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0,
-    }),
-  })
+  const abort = new AbortController()
+  const timeout = setTimeout(() => abort.abort(), DEFAULT_AI_TIMEOUT_MS)
+  let res: Response
+  try {
+    res = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      signal: abort.signal,
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: opts.system },
+          { role: "user", content: opts.user },
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0,
+      }),
+    })
+  } catch (err) {
+    if (abort.signal.aborted) {
+      throw new Error(
+        `DeepSeek call timed out after ${DEFAULT_AI_TIMEOUT_MS}ms`
+      )
+    }
+    throw err
+  } finally {
+    clearTimeout(timeout)
+  }
   if (!res.ok) {
     let detail = res.statusText
     try {
@@ -213,7 +229,10 @@ export async function cleanTranscript(input: {
   // with anything that links a turn back to its original audio offset.
   const cleanedTurns: PlaudRecordingTurn[] = cleaned.map((turn, i) => ({
     speaker: input.speakerTurns[i].speaker,
-    content: typeof turn.content === "string" ? turn.content : input.speakerTurns[i].content,
+    content:
+      typeof turn.content === "string"
+        ? turn.content
+        : input.speakerTurns[i].content,
     startMs: input.speakerTurns[i].startMs,
     endMs: input.speakerTurns[i].endMs,
   }))
@@ -277,4 +296,3 @@ export async function extractSignals(input: {
     }
   }
 }
-

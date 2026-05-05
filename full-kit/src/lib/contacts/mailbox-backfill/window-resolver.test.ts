@@ -33,6 +33,23 @@ describe("resolveBackfillWindows", () => {
     expect(windows[0].source).toBe("deal")
   })
 
+  it("deal-anchored handles imported historical deals whose CRM createdAt is after closedAt", () => {
+    const deals = [
+      { createdAt: new Date("2026-05-02"), closedAt: new Date("2021-01-04") },
+    ]
+    const windows = resolveBackfillWindows({
+      mode: "deal-anchored",
+      deals,
+      comms: [],
+      now: NOW,
+    })
+
+    expect(windows).toHaveLength(1)
+    expect(windows[0].start.toISOString()).toBe("2020-05-02T00:00:00.000Z")
+    expect(windows[0].end.toISOString()).toBe("2028-05-02T00:00:00.000Z")
+    expect(windows[0].start.getTime()).toBeLessThan(windows[0].end.getTime())
+  })
+
   it("deal-anchored open deal extends end to now+24mo", () => {
     const deals = [{ createdAt: new Date("2024-06-01"), closedAt: null }]
     const windows = resolveBackfillWindows({

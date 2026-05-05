@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import type * as ClientModule from "./client"
 import type { PlaudRecording } from "./types"
+
+import { syncPlaud } from "./sync"
 
 const {
   listRecordingsMock,
@@ -11,7 +14,7 @@ const {
   cleanMock,
   extractMock,
   suggestContactsMock,
-  sensitiveMock,
+  suggestDealsMock,
   dbMock,
 } = vi.hoisted(() => ({
   listRecordingsMock: vi.fn(),
@@ -22,7 +25,7 @@ const {
   cleanMock: vi.fn(),
   extractMock: vi.fn(),
   suggestContactsMock: vi.fn().mockReturnValue([]),
-  sensitiveMock: vi.fn().mockReturnValue({ tripped: false, reasons: [] }),
+  suggestDealsMock: vi.fn().mockReturnValue([]),
   dbMock: {
     externalSync: {
       findUnique: vi.fn(),
@@ -43,9 +46,12 @@ const {
       upsert: vi.fn().mockResolvedValue({}),
     },
     communication: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn().mockResolvedValue({ id: "comm-1" }),
+      update: vi.fn().mockResolvedValue({ id: "comm-1" }),
     },
-    $queryRaw: vi.fn(),
+    $executeRaw: vi.fn(),
     $transaction: vi.fn(),
   },
 }))
@@ -55,8 +61,7 @@ vi.mock("./auth", () => ({
 }))
 
 vi.mock("./client", async () => {
-  const actual =
-    await vi.importActual<typeof import("./client")>("./client")
+  const actual = await vi.importActual<typeof ClientModule>("./client")
   return {
     ...actual,
     listRecordings: listRecordingsMock,
@@ -74,16 +79,18 @@ vi.mock("./ai-passes", () => ({
 
 vi.mock("./matcher", () => ({
   suggestContacts: suggestContactsMock,
-  suggestDeals: vi.fn().mockReturnValue([]),
+  suggestDeals: suggestDealsMock,
 }))
 
-vi.mock("@/lib/ai/sensitive-filter", () => ({
-  containsSensitiveContent: sensitiveMock,
+vi.mock("./vault-import", () => ({
+  importVaultPlaudNotes: vi.fn().mockResolvedValue({
+    imported: 0,
+    skipped: 0,
+    errors: 0,
+  }),
 }))
 
 vi.mock("@/lib/prisma", () => ({ db: dbMock }))
-
-import { syncPlaud } from "./sync"
 
 const mkRec = (overrides: Partial<PlaudRecording> = {}): PlaudRecording => ({
   id: "rec-1",
@@ -101,20 +108,15 @@ const mkRec = (overrides: Partial<PlaudRecording> = {}): PlaudRecording => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  dbMock.communication.findUnique.mockResolvedValue(null)
+  dbMock.communication.findMany.mockResolvedValue([])
+  dbMock.communication.create.mockResolvedValue({ id: "comm-1" })
+  dbMock.communication.update.mockResolvedValue({ id: "comm-1" })
   process.env.PLAUD_CREDENTIAL_KEY = "0".repeat(64)
   process.env.PLAUD_CRON_SECRET = "x".repeat(32)
   process.env.PLAUD_BEARER_TOKEN = "tok"
-  // Default: lock is acquired; no high-water-mark exists yet.
-  dbMock.$queryRaw.mockImplementation(
-    async (templateOrParts: TemplateStringsArray | string) => {
-      const sql = Array.isArray(templateOrParts)
-        ? Array.from(templateOrParts).join("?")
-        : (templateOrParts as string)
-      if (sql.includes("pg_try_advisory_lock")) return [{ got: true }]
-      if (sql.includes("pg_advisory_unlock")) return [{}]
-      return []
-    }
-  )
+  // Default: lease is acquired/released; no high-water-mark exists yet.
+  dbMock.$executeRaw.mockResolvedValue(1)
   dbMock.$transaction.mockImplementation(
     async (fn: (tx: typeof dbMock) => Promise<unknown>) => fn(dbMock)
   )
@@ -133,9 +135,7 @@ beforeEach(() => {
   })
   getRecordingDetailMock.mockImplementation(async ({ recordingId }) => ({
     recordingId,
-    turns: [
-      { speaker: "Speaker 1", content: "hi", startMs: 0, endMs: 1000 },
-    ],
+    turns: [{ speaker: "Speaker 1", content: "hi", startMs: 0, endMs: 1000 }],
     aiContentRaw: null,
     summaryList: [],
   }))
@@ -175,21 +175,198 @@ describe("syncPlaud", () => {
     expect(result.skipped).toBe(1)
   })
 
-  it("returns already_running when advisory lock not acquired", async () => {
-    dbMock.$queryRaw.mockImplementationOnce(async () => [{ got: false }])
+  it("reprocesses legacy AI-skipped rows instead of skipping forever", async () => {
+    dbMock.communication.findMany.mockResolvedValueOnce([])
+    listRecordingsMock.mockResolvedValueOnce({ items: [mkRec({ id: "old" })] })
+    listRecordingsMock.mockResolvedValueOnce({ items: [] })
+    dbMock.externalSync.findUnique.mockResolvedValue({
+      id: "es-old",
+      status: "synced",
+    })
+    dbMock.communication.findUnique.mockResolvedValue({
+      metadata: {
+        source: "plaud",
+        aiSkipReason: "sensitive_keywords",
+        attachedAt: "2026-05-01T00:00:00.000Z",
+      },
+    })
+
+    const result = await syncPlaud()
+
+    expect(result.added).toBe(1)
+    expect(extractMock).toHaveBeenCalled()
+    expect(dbMock.communication.update).toHaveBeenCalled()
+    const update = dbMock.communication.update.mock.calls[0][0]
+    expect(update.where.externalSyncId).toBe("es-1")
+    expect(update.data.metadata.aiSkipReason).toBeUndefined()
+    expect(update.data.metadata.attachedAt).toBe("2026-05-01T00:00:00.000Z")
+    expect(update.data.metadata.extractedSignals).toBeTruthy()
+  })
+
+  it("preserves linked deal review state when reprocessing legacy AI-skipped rows", async () => {
+    listRecordingsMock.mockResolvedValueOnce({ items: [] })
+    dbMock.communication.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "comm-linked",
+          subject: "Legacy linked transcript",
+          date: new Date("2026-05-01T15:00:00Z"),
+          durationSeconds: 300,
+          dealId: "deal-linked",
+          metadata: {
+            source: "plaud",
+            aiSkipReason: "sensitive_keywords",
+            dealReviewStatus: "linked",
+          },
+          externalSync: {
+            rawData: {
+              recording: {
+                id: "rec-linked",
+                filename: "Legacy linked transcript",
+                startTime: "2026-05-01T15:00:00.000Z",
+                durationSeconds: 300,
+              },
+              transcript: {
+                turns: [
+                  {
+                    speaker: "Speaker 1",
+                    content: "hi",
+                    startMs: 0,
+                    endMs: 1000,
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ])
+
+    const result = await syncPlaud()
+
+    expect(result.legacyReprocessed).toBe(1)
+    const update = dbMock.communication.update.mock.calls[0][0]
+    expect(update.data.metadata.dealReviewStatus).toBe("linked")
+  })
+
+  it("manual sync recording cap ignores background suggestion-refresh errors", async () => {
+    listRecordingsMock.mockResolvedValueOnce({
+      items: [mkRec({ id: "new-after-refresh-errors" })],
+    })
+    listRecordingsMock.mockResolvedValueOnce({ items: [] })
+    dbMock.communication.findMany
+      .mockResolvedValueOnce(
+        Array.from({ length: 3 }, (_, i) => ({
+          id: `comm-refresh-error-${i}`,
+          subject: "Needs refresh",
+          body: "Speaker 1: Michelle",
+          date: new Date("2026-05-01T15:00:00Z"),
+          durationSeconds: 300,
+          contactId: null,
+          dealId: null,
+          metadata: {
+            source: "plaud",
+            extractedSignals: {
+              counterpartyName: "Michelle",
+              topic: null,
+              mentionedCompanies: [],
+              mentionedProperties: [],
+              tailSynopsis: null,
+            },
+            suggestions: [],
+          },
+          externalSync: { rawData: null },
+        }))
+      )
+      .mockResolvedValueOnce([])
+    dbMock.communication.update
+      .mockRejectedValueOnce(new Error("refresh failed 1"))
+      .mockRejectedValueOnce(new Error("refresh failed 2"))
+      .mockRejectedValueOnce(new Error("refresh failed 3"))
+      .mockResolvedValue({ id: "comm-new" })
+    dbMock.externalSync.findUnique.mockResolvedValue(null)
+
+    const result = await syncPlaud({ manual: true })
+
+    expect(result.suggestionRefreshErrors).toBe(3)
+    expect(result.added).toBe(1)
+    expect(getRecordingDetailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ recordingId: "new-after-refresh-errors" })
+    )
+  })
+
+  it("refreshes stored suggestions for already-processed Plaud rows", async () => {
+    listRecordingsMock.mockResolvedValueOnce({ items: [] })
+    dbMock.communication.findMany
+      .mockResolvedValueOnce([
+        {
+          id: "comm-old-suggestion",
+          subject: "Call with Michelle",
+          body: "Speaker 1: call with Michelle about a land lease.",
+          date: new Date("2026-05-01T15:00:00Z"),
+          durationSeconds: 300,
+          contactId: null,
+          dealId: null,
+          metadata: {
+            source: "plaud",
+            plaudId: "rec-old-suggestion",
+            plaudFilename: "Call with Michelle",
+            extractedSignals: {
+              counterpartyName: "Michelle",
+              topic: "land lease",
+              mentionedCompanies: [],
+              mentionedProperties: [],
+              tailSynopsis: null,
+            },
+            suggestions: [],
+          },
+          externalSync: { rawData: null },
+        },
+      ])
+      .mockResolvedValueOnce([])
+    suggestContactsMock.mockReturnValueOnce([
+      {
+        contactId: "contact-michelle",
+        score: 43,
+        reason: 'AI extracted counterparty "Michelle"; verify before attaching',
+        source: "counterparty_candidate",
+      },
+    ])
+
+    const result = await syncPlaud()
+
+    expect(result.suggestionsRefreshed).toBe(1)
+    expect(dbMock.communication.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "comm-old-suggestion" },
+        data: expect.objectContaining({
+          metadata: expect.objectContaining({
+            suggestions: [
+              expect.objectContaining({
+                contactId: "contact-michelle",
+                source: "counterparty_candidate",
+              }),
+            ],
+          }),
+        }),
+      })
+    )
+  })
+
+  it("returns already_running when sync lease not acquired", async () => {
+    dbMock.$executeRaw.mockResolvedValueOnce(0)
     const result = await syncPlaud()
     expect(result.skipped).toBe("already_running")
     expect(listRecordingsMock).not.toHaveBeenCalled()
   })
 
-  it("releases the advisory lock even on internal error", async () => {
+  it("releases the sync lease even on internal error", async () => {
     listRecordingsMock.mockRejectedValueOnce(new Error("network down"))
     await expect(syncPlaud()).rejects.toThrow(/network down/)
-    // unlock query was issued
-    const calls = dbMock.$queryRaw.mock.calls.map((c) =>
+    const calls = dbMock.$executeRaw.mock.calls.map((c) =>
       Array.isArray(c[0]) ? c[0].join("?") : String(c[0])
     )
-    expect(calls.some((s) => s.includes("pg_advisory_unlock"))).toBe(true)
+    expect(calls.some((s) => s.includes("DELETE FROM system_state"))).toBe(true)
   })
 
   it("advances the high-water-mark to the latest startTime seen", async () => {
@@ -229,22 +406,6 @@ describe("syncPlaud", () => {
     expect(listRecordingsMock).toHaveBeenCalledTimes(1)
   })
 
-  it("skips AI pass-2 when sensitive filter trips, marks aiSkipReason", async () => {
-    sensitiveMock.mockReturnValue({
-      tripped: true,
-      reasons: ["keyword:wire instructions"],
-    })
-    listRecordingsMock.mockResolvedValueOnce({ items: [mkRec()] })
-    listRecordingsMock.mockResolvedValueOnce({ items: [] })
-    dbMock.externalSync.findUnique.mockResolvedValue(null)
-
-    await syncPlaud()
-    expect(extractMock).not.toHaveBeenCalled()
-    const create = dbMock.communication.create.mock.calls[0][0]
-    expect(create.data.metadata.aiSkipReason).toBe("sensitive_keywords")
-    expect(create.data.metadata.extractedSignals).toBeNull()
-  })
-
   it("counts per-recording errors without aborting the sync", async () => {
     listRecordingsMock.mockResolvedValueOnce({
       items: [
@@ -272,7 +433,9 @@ describe("syncPlaud", () => {
 
   it("paginates across multiple pages", async () => {
     listRecordingsMock
-      .mockResolvedValueOnce({ items: [mkRec({ id: "p1-1" }), mkRec({ id: "p1-2" })] })
+      .mockResolvedValueOnce({
+        items: [mkRec({ id: "p1-1" }), mkRec({ id: "p1-2" })],
+      })
       .mockResolvedValueOnce({ items: [mkRec({ id: "p2-1" })] })
       .mockResolvedValueOnce({ items: [] })
     dbMock.externalSync.findUnique.mockResolvedValue(null)
@@ -324,26 +487,25 @@ describe("syncPlaud", () => {
     expect(dbMock.systemState.upsert).not.toHaveBeenCalled()
   })
 
-  it("recovers from unlock failure without masking the original result", async () => {
-    let unlockCalled = false
-    dbMock.$queryRaw.mockImplementation(
+  it("recovers from lease release failure without masking the original result", async () => {
+    let releaseCalled = false
+    dbMock.$executeRaw.mockImplementation(
       async (templateOrParts: TemplateStringsArray | string) => {
         const sql = Array.isArray(templateOrParts)
           ? Array.from(templateOrParts).join("?")
           : (templateOrParts as string)
-        if (sql.includes("pg_try_advisory_lock")) return [{ got: true }]
-        if (sql.includes("pg_advisory_unlock")) {
-          unlockCalled = true
+        if (sql.includes("INSERT INTO system_state")) return 1
+        if (sql.includes("DELETE FROM system_state")) {
+          releaseCalled = true
           throw new Error("connection lost")
         }
-        return []
+        return 1
       }
     )
     listRecordingsMock.mockResolvedValueOnce({ items: [] })
     const result = await syncPlaud()
-    // Original result still surfaces despite unlock failure.
     expect(result.added).toBe(0)
-    expect(unlockCalled).toBe(true)
+    expect(releaseCalled).toBe(true)
   })
 
   it("does not store rawTurns in Communication.metadata (kept on ExternalSync.rawData only)", async () => {
@@ -430,7 +592,12 @@ describe("syncPlaud", () => {
         rawData: {
           status: 1,
           data_result: [
-            { speaker: "Speaker 1", content: "Hi", start_time: 0, end_time: 1000 },
+            {
+              speaker: "Speaker 1",
+              content: "Hi",
+              start_time: 0,
+              end_time: 1000,
+            },
           ],
           data_result_summ: '{"markdown":"summary"}',
         },

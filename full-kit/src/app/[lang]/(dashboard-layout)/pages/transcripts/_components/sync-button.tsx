@@ -27,6 +27,8 @@ export function SyncButton() {
         errors?: number
         queued?: number
         pending?: number
+        timedOut?: boolean
+        legacyReprocessed?: number
         error?: string
       }
       if (res.status === 409) {
@@ -42,11 +44,14 @@ export function SyncButton() {
       const errors = body.errors ?? 0
       const queued = body.queued ?? 0
       const pending = body.pending ?? 0
+      const legacyReprocessed = body.legacyReprocessed ?? 0
       const parts = [`added ${added}`, `skipped ${skipped}`]
+      if (legacyReprocessed) parts.push(`reprocessed ${legacyReprocessed}`)
       if (queued) parts.push(`queued ${queued} for transcription`)
       if (pending) parts.push(`${pending} still transcribing`)
       if (errors) parts.push(`errors ${errors}`)
-      setMessage(`Sync complete — ${parts.join(", ")}`)
+      if (body.timedOut) parts.push("paused at time limit")
+      setMessage(`Sync complete -- ${parts.join(", ")}`)
       startTransition(() => router.refresh())
     } catch (err) {
       setMessage(
@@ -63,7 +68,7 @@ export function SyncButton() {
         {pending ? (
           <>
             <Loader2 className="me-2 size-4 animate-spin" />
-            Syncing…
+            Syncing...
           </>
         ) : (
           <>

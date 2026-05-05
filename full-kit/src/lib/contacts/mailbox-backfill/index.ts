@@ -87,6 +87,12 @@ const STALE_RESCRUB_PER_CLICK_CAP = 25
 
 const POLICY_VERSION = "mailbox-backfill@1"
 
+function normalizeMailboxSearchEmail(value: string | null): string | null {
+  if (!value) return null
+  const match = value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+  return match ? match[0].toLowerCase() : null
+}
+
 /**
  * Per-message ingest concurrency. The bottleneck inside processOne is DB
  * writes (Communication insert + occasional OperationalEmailReview) plus a
@@ -186,8 +192,10 @@ export async function backfillMailboxForContact(
         { reason: "contact_not_found" },
         "contact_not_found"
       )
-    if (!contact.email)
-      return await finalize("skipped", { reason: "no_email_on_file" })
+    const contactEmail = normalizeMailboxSearchEmail(contact.email)
+    if (!contactEmail) {
+      return await finalize("skipped", { reason: "no_searchable_email" })
+    }
 
     const [deals, comms] = await Promise.all([
       db.deal.findMany({
@@ -353,7 +361,7 @@ export async function backfillMailboxForContact(
 
     for (const window of windows) {
       const messages = await fetchMessagesForContactWindow({
-        email: contact.email,
+        email: contactEmail,
         window,
       })
       messagesDiscovered += messages.length

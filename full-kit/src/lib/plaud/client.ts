@@ -1,9 +1,5 @@
-import {
-  PLAUD_BASE_URLS,
-  type PlaudRecording,
-  type PlaudRegion,
-  type PlaudTranscript,
-} from "./types"
+import type { PlaudRecording, PlaudRegion, PlaudTranscript } from "./types"
+import { PLAUD_BASE_URLS } from "./types"
 
 /**
  * Errors from the Plaud HTTP API. Carries the HTTP status when available
@@ -24,6 +20,7 @@ export class PlaudApiError extends Error {
 
 const DEFAULT_RETRY_DELAY_MS = 500
 const DEFAULT_MAX_RETRIES = 5
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000
 const MAX_BACKOFF_MS = 30_000
 const MAX_UPSTREAM_MSG_LEN = 200
 const MAX_JWT_PAYLOAD_LEN = 4096
@@ -39,6 +36,7 @@ interface FetchOpts {
   region: PlaudRegion
   retryDelayMs?: number
   maxRetries?: number
+  timeoutMs?: number
 }
 
 /**
@@ -64,7 +62,9 @@ async function authedRequest(
     region: initialRegion,
     retryDelayMs = DEFAULT_RETRY_DELAY_MS,
     maxRetries = DEFAULT_MAX_RETRIES,
+    timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
     headers = {},
+    signal,
     ...rest
   } = init
 
@@ -73,13 +73,37 @@ async function authedRequest(
 
   while (true) {
     const url = `${PLAUD_BASE_URLS[region]}${endpointPath}`
-    const res = await fetch(url, {
-      ...rest,
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    const abort = new AbortController()
+    const timeout = setTimeout(() => abort.abort(), timeoutMs)
+    if (signal) {
+      if (signal.aborted) {
+        abort.abort()
+      } else {
+        signal.addEventListener("abort", () => abort.abort(), { once: true })
+      }
+    }
+    let res: Response
+    try {
+      res = await fetch(url, {
+        ...rest,
+        signal: abort.signal,
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${token}`,
+        },
+      })
+    } catch (err) {
+      if (abort.signal.aborted) {
+        throw new PlaudApiError(
+          408,
+          endpointPath,
+          `request timed out after ${timeoutMs}ms`
+        )
+      }
+      throw err
+    } finally {
+      clearTimeout(timeout)
+    }
 
     if (res.status === 429 || res.status >= 500) {
       attempt += 1
@@ -90,10 +114,7 @@ async function authedRequest(
           `retry budget exhausted (${maxRetries} attempts)`
         )
       }
-      const delay = Math.min(
-        retryDelayMs * 2 ** (attempt - 1),
-        MAX_BACKOFF_MS
-      )
+      const delay = Math.min(retryDelayMs * 2 ** (attempt - 1), MAX_BACKOFF_MS)
       await sleep(delay)
       continue
     }
@@ -103,13 +124,11 @@ async function authedRequest(
       throw new PlaudApiError(res.status, endpointPath, detail)
     }
 
-    const data = (await res.json().catch(() => null)) as
-      | {
-          status?: number
-          data?: { domains?: { api?: string } }
-          msg?: string
-        }
-      | null
+    const data = (await res.json().catch(() => null)) as {
+      status?: number
+      data?: { domains?: { api?: string } }
+      msg?: string
+    } | null
 
     // Region redirect: switch base and retry.
     if (data && data.status === -302) {
@@ -238,7 +257,9 @@ function asNumber(v: unknown, fallback = 0): number {
   return typeof v === "number" && Number.isFinite(v) ? v : fallback
 }
 function asStringArray(v: unknown): string[] {
-  return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []
+  return Array.isArray(v)
+    ? v.filter((x): x is string => typeof x === "string")
+    : []
 }
 function asPlaudFlag(v: unknown): boolean {
   if (v === true || v === 1) return true
@@ -485,8 +506,7 @@ export async function saveTranscriptionResult(opts: {
       } else if (
         parsed.content &&
         typeof parsed.content === "object" &&
-        typeof (parsed.content as Record<string, unknown>).markdown ===
-          "string"
+        typeof (parsed.content as Record<string, unknown>).markdown === "string"
       ) {
         aiContent = (parsed.content as { markdown: string }).markdown
       } else if (typeof parsed.summary === "string") {
@@ -567,11 +587,7 @@ export async function loginWithPassword(opts: {
   }
   const data = (await res.json().catch(() => null)) as LoginResponse | null
   if (!data) {
-    throw new PlaudApiError(
-      0,
-      "/auth/access-token",
-      "non-JSON login response"
-    )
+    throw new PlaudApiError(0, "/auth/access-token", "non-JSON login response")
   }
   if (data.status !== 0) {
     throw new PlaudApiError(

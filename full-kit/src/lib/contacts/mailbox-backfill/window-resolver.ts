@@ -40,8 +40,12 @@ export function resolveBackfillWindows(input: ResolveInput): BackfillWindow[] {
   const raw: BackfillWindow[] = []
 
   for (const d of input.deals) {
-    const start = addMonths(d.createdAt, -24)
-    const endAnchor = d.closedAt ?? input.now
+    const anchorTimes = [d.createdAt, d.closedAt ?? input.now].map((date) =>
+      date.getTime()
+    )
+    const startAnchor = new Date(Math.min(...anchorTimes))
+    const endAnchor = new Date(Math.max(...anchorTimes))
+    const start = addMonths(startAnchor, -24)
     const end = addMonths(endAnchor, 24)
     raw.push({ start, end, source: "deal" })
   }

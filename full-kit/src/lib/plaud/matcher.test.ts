@@ -1,13 +1,9 @@
 import { describe, expect, it } from "vitest"
 
+import type { ContactRef, DealRef } from "./matcher"
 import type { PlaudRecording } from "./types"
 
-import {
-  suggestContacts,
-  suggestDeals,
-  type ContactRef,
-  type DealRef,
-} from "./matcher"
+import { suggestContacts, suggestDeals } from "./matcher"
 
 const baseRec: PlaudRecording = {
   id: "rec-1",
@@ -138,7 +134,11 @@ describe("suggestContacts", () => {
 
   it("returns up to 3 deduped suggestions, taking the highest source per contact", () => {
     const result = suggestContacts({
-      recording: { ...baseRec, filename: "Bob Smith call", tagIds: ["tag-bob"] },
+      recording: {
+        ...baseRec,
+        filename: "Bob Smith call",
+        tagIds: ["tag-bob"],
+      },
       cleanedText: "",
       extractedSignals: {
         ...emptySignals,
@@ -310,6 +310,31 @@ describe("suggestContacts", () => {
     expect(result.find((s) => s.source === "filename")).toBeUndefined()
   })
 
+  it("surfaces ambiguous AI counterparty names as review candidates", () => {
+    const result = suggestContacts({
+      recording: baseRec,
+      cleanedText: "",
+      extractedSignals: {
+        ...emptySignals,
+        counterpartyName: "Michelle",
+      },
+      contacts: [
+        { id: "c-m1", fullName: "Michelle Fleming", aliases: [] },
+        { id: "c-m2", fullName: "Michelle Donahey", aliases: [] },
+        { id: "c-other", fullName: "Sarah Jones", aliases: [] },
+      ],
+      scheduledMeetings: [],
+      tagToContactMap: {},
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map((s) => s.source)).toEqual([
+      "counterparty_candidate",
+      "counterparty_candidate",
+    ])
+    expect(result[0]?.score).toBeLessThan(60)
+  })
+
   it("suggests a deal when extractedSignals.mentionedProperties matches Deal.propertyAddress", () => {
     const deals: DealRef[] = [
       {
@@ -344,6 +369,39 @@ describe("suggestContacts", () => {
     expect(result[0]?.contactId).toBe("c-bob")
   })
 
+  it("returns multiple deal candidates when a property mention ties across active deals", () => {
+    const deals: DealRef[] = [
+      {
+        id: "d-1",
+        contactId: "c-bob",
+        contactName: "Bob Smith",
+        propertyAddress: "123 Main St",
+        propertyAliases: [],
+      },
+      {
+        id: "d-2",
+        contactId: "c-sarah",
+        contactName: "Sarah Jones",
+        propertyAddress: "123 Main St",
+        propertyAliases: [],
+      },
+    ]
+    const result = suggestDeals({
+      recording: baseRec,
+      cleanedText: "",
+      extractedSignals: {
+        ...emptySignals,
+        mentionedProperties: ["123 Main St"],
+      },
+      contacts: [],
+      deals,
+      scheduledMeetings: [],
+      tagToContactMap: {},
+    })
+    expect(result.map((s) => s.dealId).sort()).toEqual(["d-1", "d-2"])
+    expect(result[0]?.reason).toContain("multiple active deals")
+  })
+
   it("suggests a deal when counterpartyName matches the deal's primary contact", () => {
     const deals: DealRef[] = [
       {
@@ -368,6 +426,40 @@ describe("suggestContacts", () => {
     })
     expect(result[0]?.dealId).toBe("d-bob")
     expect(result[0]?.source).toBe("deal_contact_name")
+  })
+
+  it("returns multiple deal candidates when one contact has multiple active deals", () => {
+    const deals: DealRef[] = [
+      {
+        id: "d-bob-1",
+        contactId: "c-bob",
+        contactName: "Bob Smith",
+        propertyAddress: "123 Main",
+        propertyAliases: [],
+      },
+      {
+        id: "d-bob-2",
+        contactId: "c-bob",
+        contactName: "Bob Smith",
+        propertyAddress: "456 Oak",
+        propertyAliases: [],
+      },
+    ]
+    const result = suggestDeals({
+      recording: baseRec,
+      cleanedText: "",
+      extractedSignals: {
+        ...emptySignals,
+        counterpartyName: "Bob Smith",
+      },
+      contacts: [],
+      deals,
+      scheduledMeetings: [],
+      tagToContactMap: {},
+    })
+
+    expect(result.map((s) => s.dealId)).toEqual(["d-bob-1", "d-bob-2"])
+    expect(result.every((s) => s.source === "deal_contact_name")).toBe(true)
   })
 
   it("returns empty array when no deals corpus", () => {

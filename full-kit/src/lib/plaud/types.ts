@@ -70,6 +70,7 @@ export interface ExtractedSignals {
 
 export type MatchSource =
   | "tail_synopsis"
+  | "counterparty_candidate"
   | "filename"
   | "folder_tag"
   | "meeting_proximity"

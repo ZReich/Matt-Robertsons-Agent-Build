@@ -1,6 +1,7 @@
 # Plaud upstream API shape
 
-Captured 2026-05-04 from two unofficial reverse-engineered clients.
+Captured 2026-05-04 from two unofficial reverse-engineered clients and
+re-checked 2026-05-05 against Plaud's public docs.
 This file is the source of truth for the Plaud HTTP shapes used by this
 integration. The spec at `docs/superpowers/specs/2026-05-04-plaud-integration-design.md`
 was written against an older memory note and contained drift; where this
@@ -14,10 +15,17 @@ file disagrees with the spec, **this file wins**.
   - `src/plaud/_endpoints.py`, `src/plaud/api/recordings.py`,
     `src/plaud/api/transcriptions.py`, `src/plaud/models.py`,
     `tests/conftest.py`
+- Official Plaud docs/support pages checked 2026-05-05:
+  - `https://docs.plaud.ai/documentation/get_started/overview`
+  - `https://support.plaud.ai/hc/en-us/articles/56061278749209-FAQs-for-Plaud-OAuth-API`
+  - These describe existing-account OAuth/API access as private beta /
+    waitlist-only, so this integration remains an unsupported Plaud Web
+    adapter until Plaud publishes a GA transcript API.
 
 ## Region routing
 
 Two regional bases:
+
 - `us` → `https://api.plaud.ai`
 - `eu` → `https://api-euc1.plaud.ai`
 
@@ -110,10 +118,18 @@ returns the rich shape including `trans_result` and `ai_content`.
         "is_summary": 1,
         "filetag_id_list": ["tag_work"],
         "trans_result": [
-          { "speaker": "Alice", "content": "Good morning everyone.",
-            "start_time": 0, "end_time": 3000 },
-          { "speaker": "Bob", "content": "Morning! Let's start with updates.",
-            "start_time": 3100, "end_time": 6000 }
+          {
+            "speaker": "Alice",
+            "content": "Good morning everyone.",
+            "start_time": 0,
+            "end_time": 3000
+          },
+          {
+            "speaker": "Bob",
+            "content": "Morning! Let's start with updates.",
+            "start_time": 3100,
+            "end_time": 6000
+          }
         ],
         "ai_content": "{\"markdown\":\"## Meeting Summary\\n\\n…\"}",
         "summary_list": []
@@ -150,13 +166,13 @@ deeper deep-link is out of scope for v1.
 
 Use this list to spot inconsistencies during code review:
 
-| Spec said | Reality |
-|---|---|
+| Spec said                                                                            | Reality                                                                                                                                   |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `POST /web/login` with JSON `{email,password}` returning `{access_token,expires_at}` | `POST /auth/access-token` with **form-encoded** `username,password` returning `{status,access_token,token_type}`; expiry decoded from JWT |
-| `GET /web/recordings?since=...&cursor=...` | `GET /file/simple/web?skip=&limit=&is_trash=0&sort_by=start_time&is_desc=true` (no `since`, no cursor) |
-| `GET /web/recordings/{id}/transcript` | `POST /file/list` with body `[id]` |
-| `duration` in seconds | `duration` in **milliseconds** |
-| `next_cursor` pagination | `skip`/`limit` offset pagination |
+| `GET /web/recordings?since=...&cursor=...`                                           | `GET /file/simple/web?skip=&limit=&is_trash=0&sort_by=start_time&is_desc=true` (no `since`, no cursor)                                    |
+| `GET /web/recordings/{id}/transcript`                                                | `POST /file/list` with body `[id]`                                                                                                        |
+| `duration` in seconds                                                                | `duration` in **milliseconds**                                                                                                            |
+| `next_cursor` pagination                                                             | `skip`/`limit` offset pagination                                                                                                          |
 
 ## Error shapes
 

@@ -4,17 +4,12 @@ import { ArrowLeft, ExternalLink } from "lucide-react"
 
 import type { Metadata } from "next"
 
-import { db } from "@/lib/prisma"
 import { parseAiContent } from "@/lib/plaud/client"
 import { projectSafeMetadata } from "@/lib/plaud/metadata-view"
+import { db } from "@/lib/prisma"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { TranscriptDetail } from "./_components/transcript-detail"
 
@@ -101,7 +96,8 @@ export default async function TranscriptDetailPage({ params }: Props) {
             {row.subject || "(untitled recording)"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {new Date(row.date).toLocaleString()} · {fmtDuration(row.durationSeconds)}
+            {new Date(row.date).toLocaleString()} ·{" "}
+            {fmtDuration(row.durationSeconds)}
             {row.contact ? ` · attached to ${row.contact.name}` : ""}
           </p>
         </div>
@@ -116,16 +112,6 @@ export default async function TranscriptDetailPage({ params }: Props) {
           </a>
         </Button>
       </div>
-
-      {meta.aiSkipReason === "sensitive_keywords" ? (
-        <Card>
-          <CardContent className="py-4 text-sm">
-            <strong>AI processing skipped — possible sensitive content.</strong>{" "}
-            Match suggestions and AI summary are disabled. Raw transcript is
-            still available below.
-          </CardContent>
-        </Card>
-      ) : null}
 
       <TranscriptDetail
         commId={row.id}
@@ -152,13 +138,14 @@ export default async function TranscriptDetailPage({ params }: Props) {
           }
         })}
         lang={lang}
-        sensitive={meta.aiSkipReason === "sensitive_keywords"}
       />
 
       {extractedSignals && extractedSignals.tailSynopsis ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Matt's notes (end of call)</CardTitle>
+            <CardTitle className="text-sm">
+              Matt&apos;s notes (end of call)
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-sm whitespace-pre-wrap">
             {extractedSignals.tailSynopsis}

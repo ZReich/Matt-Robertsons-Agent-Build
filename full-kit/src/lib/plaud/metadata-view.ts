@@ -23,7 +23,6 @@ export interface SafeTranscriptMetadata {
     topic: string | null
     tailSynopsis: string | null
   } | null
-  aiSkipReason: "sensitive_keywords" | undefined
   suggestions: Array<{
     contactId: string
     score: number
@@ -55,23 +54,22 @@ function asStringArray(v: unknown): string[] {
     : []
 }
 
-export function projectSafeMetadata(
-  raw: unknown
-): SafeTranscriptMetadata {
-  const meta = (raw && typeof raw === "object" && !Array.isArray(raw)
-    ? (raw as Record<string, unknown>)
-    : {}) as Record<string, unknown>
+export function projectSafeMetadata(raw: unknown): SafeTranscriptMetadata {
+  const meta = (
+    raw && typeof raw === "object" && !Array.isArray(raw)
+      ? (raw as Record<string, unknown>)
+      : {}
+  ) as Record<string, unknown>
 
   const cleanedTurnsRaw = Array.isArray(meta.cleanedTurns)
     ? (meta.cleanedTurns as Array<Record<string, unknown>>)
     : []
-  const cleanedTurns = cleanedTurnsRaw
-    .map((t) => ({
-      speaker: typeof t.speaker === "string" ? t.speaker : "",
-      content: typeof t.content === "string" ? t.content : "",
-      startMs: typeof t.startMs === "number" ? t.startMs : 0,
-      endMs: typeof t.endMs === "number" ? t.endMs : 0,
-    }))
+  const cleanedTurns = cleanedTurnsRaw.map((t) => ({
+    speaker: typeof t.speaker === "string" ? t.speaker : "",
+    content: typeof t.content === "string" ? t.content : "",
+    startMs: typeof t.startMs === "number" ? t.startMs : 0,
+    endMs: typeof t.endMs === "number" ? t.endMs : 0,
+  }))
 
   const sigRaw = meta.extractedSignals
   const extractedSignals =
@@ -139,10 +137,6 @@ export function projectSafeMetadata(
     cleanedTurns,
     aiSummaryRaw: asString(meta.aiSummaryRaw),
     extractedSignals,
-    aiSkipReason:
-      meta.aiSkipReason === "sensitive_keywords"
-        ? "sensitive_keywords"
-        : undefined,
     suggestions,
     dealSuggestions,
     attachedAt: asString(meta.attachedAt) ?? undefined,

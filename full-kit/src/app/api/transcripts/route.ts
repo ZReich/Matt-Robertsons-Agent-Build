@@ -49,7 +49,10 @@ export async function GET(request: Request): Promise<Response> {
   const status = statusParam as StatusFilter
   const q = url.searchParams.get("q")?.trim() ?? ""
   const limit = Math.min(
-    Math.max(Number(url.searchParams.get("limit") ?? DEFAULT_LIMIT) || DEFAULT_LIMIT, 1),
+    Math.max(
+      Number(url.searchParams.get("limit") ?? DEFAULT_LIMIT) || DEFAULT_LIMIT,
+      1
+    ),
     MAX_LIMIT
   )
   const cursor = url.searchParams.get("cursor") ?? undefined
@@ -106,6 +109,12 @@ export async function GET(request: Request): Promise<Response> {
   const hasNext = rows.length > limit
   const items = (hasNext ? rows.slice(0, limit) : rows).map((r) => {
     const meta = (r.metadata ?? {}) as Record<string, unknown>
+    const extractedSignals =
+      meta.extractedSignals &&
+      typeof meta.extractedSignals === "object" &&
+      !Array.isArray(meta.extractedSignals)
+        ? (meta.extractedSignals as Record<string, unknown>)
+        : null
     const suggestions = Array.isArray(meta.suggestions)
       ? (meta.suggestions as Array<{
           contactId: string
@@ -121,8 +130,13 @@ export async function GET(request: Request): Promise<Response> {
       durationSeconds: r.durationSeconds,
       contactId: r.contactId,
       archivedAt: r.archivedAt,
+      backfillPending: meta.aiSkipReason === "sensitive_keywords",
+      extractedCounterparty:
+        typeof extractedSignals?.counterpartyName === "string"
+          ? extractedSignals.counterpartyName
+          : null,
+      aiProcessed: Boolean(meta.extractedSignals || meta.aiCleanError),
       topSuggestion: suggestions[0] ?? null,
-      hasAiSkip: meta.aiSkipReason === "sensitive_keywords",
     }
   })
   return NextResponse.json({

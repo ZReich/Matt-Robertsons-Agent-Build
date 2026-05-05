@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { enqueueScrubForCommunicationIfMissing } from "@/lib/ai/scrub-queue"
 import { db } from "@/lib/prisma"
 import {
   ReviewerAuthError,
@@ -47,10 +48,7 @@ export async function POST(
     return NextResponse.json({ error: "invalid_json" }, { status: 400 })
   }
   const dealId = (body as { dealId?: unknown })?.dealId
-  if (
-    dealId !== null &&
-    (typeof dealId !== "string" || dealId.length === 0)
-  ) {
+  if (dealId !== null && (typeof dealId !== "string" || dealId.length === 0)) {
     return NextResponse.json({ error: "invalid_dealId" }, { status: 400 })
   }
 
@@ -76,6 +74,9 @@ export async function POST(
     return NextResponse.json({ error: "not_found" }, { status: 404 })
   }
   if (existing.dealId === dealId) {
+    if (dealId !== null) {
+      await enqueueScrubForCommunicationIfMissing(db, id, "signal")
+    }
     return NextResponse.json({ ok: true, alreadyAttached: true })
   }
 
@@ -87,9 +88,7 @@ export async function POST(
       }>)
     : []
   const matchedSuggestion =
-    dealId === null
-      ? null
-      : dealSuggestions.find((s) => s.dealId === dealId)
+    dealId === null ? null : dealSuggestions.find((s) => s.dealId === dealId)
   const newMeta: Record<string, unknown> = {
     ...meta,
     dealAttachedAt: new Date().toISOString(),
@@ -106,12 +105,17 @@ export async function POST(
     delete newMeta.dealAttachedFromSuggestion
   }
 
-  await db.communication.update({
-    where: { id },
-    data: {
-      dealId: dealId,
-      metadata: newMeta as object,
-    },
+  await db.$transaction(async (tx) => {
+    await tx.communication.update({
+      where: { id },
+      data: {
+        dealId: dealId,
+        metadata: newMeta as object,
+      },
+    })
+    if (dealId !== null) {
+      await enqueueScrubForCommunicationIfMissing(tx, id, "signal")
+    }
   })
 
   return NextResponse.json({ ok: true })

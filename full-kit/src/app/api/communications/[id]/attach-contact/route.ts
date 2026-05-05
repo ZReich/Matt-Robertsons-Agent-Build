@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { enqueueScrubForCommunicationIfMissing } from "@/lib/ai/scrub-queue"
 import { db } from "@/lib/prisma"
 import {
   ReviewerAuthError,
@@ -74,6 +75,7 @@ export async function POST(
   // attachedAt/attachedBy/attachedFromSuggestion don't get clobbered by
   // a double click.
   if (existing.contactId === contactId) {
+    await enqueueScrubForCommunicationIfMissing(db, id, "signal")
     return NextResponse.json({ ok: true, alreadyAttached: true })
   }
 
@@ -104,12 +106,15 @@ export async function POST(
     delete newMeta.attachedFromSuggestion
   }
 
-  await db.communication.update({
-    where: { id },
-    data: {
-      contactId,
-      metadata: newMeta as object,
-    },
+  await db.$transaction(async (tx) => {
+    await tx.communication.update({
+      where: { id },
+      data: {
+        contactId,
+        metadata: newMeta as object,
+      },
+    })
+    await enqueueScrubForCommunicationIfMissing(tx, id, "signal")
   })
 
   return NextResponse.json({ ok: true })

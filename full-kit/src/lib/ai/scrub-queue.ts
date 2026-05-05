@@ -20,10 +20,41 @@ type RawClaimedRow = {
   communication_id: string
 }
 
+export async function enqueueScrubForCommunicationIfMissing(
+  tx: DbLike,
+  communicationId: string,
+  classification: Classification
+): Promise<void> {
+  await enqueueScrubForCommunicationInternal(
+    tx,
+    communicationId,
+    classification,
+    {
+      skipDuplicates: true,
+    }
+  )
+}
+
 export async function enqueueScrubForCommunication(
   tx: DbLike,
   communicationId: string,
   classification: Classification
+): Promise<void> {
+  await enqueueScrubForCommunicationInternal(
+    tx,
+    communicationId,
+    classification,
+    {
+      skipDuplicates: false,
+    }
+  )
+}
+
+async function enqueueScrubForCommunicationInternal(
+  tx: DbLike,
+  communicationId: string,
+  classification: Classification,
+  opts: { skipDuplicates: boolean }
 ): Promise<void> {
   if (classification !== "signal" && classification !== "uncertain") return
 
@@ -34,10 +65,19 @@ export async function enqueueScrubForCommunication(
   // inbox and act manually.
   const comm = await tx.communication.findUnique({
     where: { id: communicationId },
-    select: { subject: true, body: true },
+    select: { subject: true, body: true, metadata: true },
   })
   if (comm) {
-    const sensitivity = containsSensitiveContent(comm.subject, comm.body)
+    const meta =
+      comm.metadata &&
+      typeof comm.metadata === "object" &&
+      !Array.isArray(comm.metadata)
+        ? (comm.metadata as Record<string, unknown>)
+        : {}
+    const isPlaudTranscript = meta.source === "plaud"
+    const sensitivity = isPlaudTranscript
+      ? { tripped: false, reasons: [] }
+      : containsSensitiveContent(comm.subject, comm.body)
     if (sensitivity.tripped) {
       // Two paths depending on opt-in flag:
       //  - default (flag off): skip entirely. The email's body never reaches
@@ -47,22 +87,41 @@ export async function enqueueScrubForCommunication(
       //    Haiku via scrubWithSensitiveProvider, keeping the body off
       //    DeepSeek (a non-US model).
       if (!isSensitiveRoutingEnabled()) {
-        await tx.scrubQueue.create({
-          data: {
-            communicationId,
-            status: "skipped_sensitive",
-            lastError: `sensitive_filter: ${sensitivity.reasons.slice(0, 3).join(", ")}`,
-          },
-        })
+        const data = {
+          communicationId,
+          status: "skipped_sensitive" as const,
+          lastError: `sensitive_filter: ${sensitivity.reasons.slice(0, 3).join(", ")}`,
+        }
+        if (opts.skipDuplicates) {
+          await tx.scrubQueue.upsert({
+            where: { communicationId },
+            create: data,
+            update: data,
+          })
+        } else {
+          await tx.scrubQueue.create({ data })
+        }
         return
       }
       // Fall through to enqueue. The worker re-checks at scrubOne time.
     }
   }
 
-  await tx.scrubQueue.create({
-    data: { communicationId, status: "pending" },
-  })
+  const data = { communicationId, status: "pending" as const }
+  if (opts.skipDuplicates) {
+    await tx.scrubQueue.upsert({
+      where: { communicationId },
+      create: data,
+      update: {
+        status: "pending",
+        lockedUntil: null,
+        leaseToken: null,
+        lastError: null,
+      },
+    })
+  } else {
+    await tx.scrubQueue.create({ data })
+  }
 }
 
 export async function claimScrubQueueRows({

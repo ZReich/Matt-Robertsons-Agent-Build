@@ -7,8 +7,8 @@ import { db } from "@/lib/prisma"
 import { cn } from "@/lib/utils"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { TranscriptsTable } from "./_components/transcripts-table"
 import { SyncButton } from "./_components/sync-button"
+import { TranscriptsTable } from "./_components/transcripts-table"
 
 export const metadata: Metadata = {
   title: "Transcripts",
@@ -16,8 +16,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic"
 
-const STATUSES = ["needs_review", "matched", "archived"] as const
-type Status = (typeof STATUSES)[number]
+type Status = "needs_review" | "matched" | "archived"
 
 interface Props {
   params: Promise<{ lang: string }>
@@ -28,10 +27,7 @@ function paramString(v: string | string[] | undefined): string | undefined {
   return typeof v === "string" && v.trim() ? v : undefined
 }
 
-export default async function TranscriptsPage({
-  params,
-  searchParams,
-}: Props) {
+export default async function TranscriptsPage({ params, searchParams }: Props) {
   const { lang } = await params
   const sp = (await searchParams) ?? {}
   const statusParam = paramString(sp.status)
@@ -55,7 +51,7 @@ export default async function TranscriptsPage({
             { metadata: { path: ["dealReviewStatus"], equals: "needed" } },
           ],
         }
-    : status === "matched"
+      : status === "matched"
         ? {
             contactId: { not: null },
             archivedAt: null,
@@ -133,6 +129,12 @@ export default async function TranscriptsPage({
 
   const items = rows.map((r) => {
     const meta = (r.metadata ?? {}) as Record<string, unknown>
+    const extractedSignals =
+      meta.extractedSignals &&
+      typeof meta.extractedSignals === "object" &&
+      !Array.isArray(meta.extractedSignals)
+        ? (meta.extractedSignals as Record<string, unknown>)
+        : null
     const suggestions = Array.isArray(meta.suggestions)
       ? (meta.suggestions as Array<{
           contactId: string
@@ -151,6 +153,12 @@ export default async function TranscriptsPage({
       contactId: r.contactId,
       contactName: r.contact?.name ?? null,
       archivedAt: r.archivedAt?.toISOString() ?? null,
+      backfillPending: meta.aiSkipReason === "sensitive_keywords",
+      extractedCounterparty:
+        typeof extractedSignals?.counterpartyName === "string"
+          ? extractedSignals.counterpartyName
+          : null,
+      aiProcessed: Boolean(meta.extractedSignals || meta.aiCleanError),
       topSuggestion: top
         ? {
             contactId: top.contactId,
@@ -160,7 +168,6 @@ export default async function TranscriptsPage({
             reason: top.reason,
           }
         : null,
-      hasAiSkip: meta.aiSkipReason === "sensitive_keywords",
     }
   })
 
@@ -174,8 +181,8 @@ export default async function TranscriptsPage({
           <h1 className="text-xl font-semibold">Transcripts</h1>
           <p className="text-sm text-muted-foreground">
             Plaud call recordings imported into the CRM. Review the
-            top-suggested contact for each one and attach with one click —
-            or pick another contact, or archive.
+            top-suggested contact for each one and attach with one click — or
+            pick another contact, or archive.
           </p>
         </div>
         <SyncButton />

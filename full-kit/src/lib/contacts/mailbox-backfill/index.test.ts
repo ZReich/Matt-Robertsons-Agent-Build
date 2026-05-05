@@ -62,6 +62,45 @@ describe("backfillMailboxForContact", () => {
     expect(result.status).toBe("skipped")
   })
 
+  it("extracts a searchable address from display-form contact email fields", async () => {
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: '"Amber Townsley" <amber_townsley@example.com>',
+    })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+
+    expect(result.status).toBe("succeeded")
+    expect(fetchMessagesForContactWindow).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "amber_townsley@example.com" })
+    )
+  })
+
+  it("skips contact rows without a searchable email address", async () => {
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "Singh Contracting",
+    })
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+
+    expect(result.status).toBe("skipped")
+    expect(result.reason).toBe("no_searchable_email")
+    expect(fetchMessagesForContactWindow).not.toHaveBeenCalled()
+  })
+
   it("returns skipped for deal-anchored with no anchor", async () => {
     const { db } = await import("@/lib/prisma")
     ;(db.contact.findUnique as any).mockResolvedValueOnce({

@@ -6,6 +6,7 @@ import {
   backfillScrubQueue,
   claimScrubQueueRows,
   enqueueScrubForCommunication,
+  enqueueScrubForCommunicationIfMissing,
   getScrubCoverageStats,
 } from "./scrub-queue"
 
@@ -14,6 +15,7 @@ vi.mock("@/lib/prisma", () => ({
     scrubQueue: {
       createMany: vi.fn(),
       create: vi.fn(),
+      upsert: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
       groupBy: vi.fn(),
@@ -49,6 +51,53 @@ describe("scrub-queue", () => {
     expect(db.scrubQueue.create).toHaveBeenCalledTimes(2)
     expect(db.scrubQueue.create).toHaveBeenCalledWith({
       data: { communicationId: "comm-1", status: "pending" },
+    })
+  })
+
+  it("enqueues Plaud transcripts for scrub even when transcript text trips sensitive keywords", async () => {
+    ;(
+      db.communication.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      subject: "wire transfer",
+      body: "routing number and bank account discussion",
+      metadata: { source: "plaud" },
+    })
+
+    await enqueueScrubForCommunicationIfMissing(db, "comm-plaud", "signal")
+
+    expect(db.scrubQueue.upsert).toHaveBeenCalledWith({
+      where: { communicationId: "comm-plaud" },
+      create: { communicationId: "comm-plaud", status: "pending" },
+      update: {
+        status: "pending",
+        lockedUntil: null,
+        leaseToken: null,
+        lastError: null,
+      },
+    })
+    expect(db.scrubQueue.create).not.toHaveBeenCalled()
+  })
+
+  it("revives existing failed or sensitive queue rows when attaching a Plaud transcript", async () => {
+    ;(
+      db.communication.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      subject: "wire transfer",
+      body: "routing number and bank account discussion",
+      metadata: { source: "plaud" },
+    })
+
+    await enqueueScrubForCommunicationIfMissing(db, "comm-stuck", "signal")
+
+    expect(db.scrubQueue.upsert).toHaveBeenCalledWith({
+      where: { communicationId: "comm-stuck" },
+      create: { communicationId: "comm-stuck", status: "pending" },
+      update: {
+        status: "pending",
+        lockedUntil: null,
+        leaseToken: null,
+        lastError: null,
+      },
     })
   })
 

@@ -44,7 +44,6 @@ async function handle(request: Request): Promise<Response> {
     // Surface a generic message — credentials and transcript bodies must
     // never leak to a public response. Server-side error is logged below;
     // PlaudApiError already sanitizes `message`, so it's safe to include.
-    // eslint-disable-next-line no-console
     console.error(
       "[plaud-sync-route] failed:",
       err instanceof Error ? `${err.name}: ${err.message}` : "unknown",

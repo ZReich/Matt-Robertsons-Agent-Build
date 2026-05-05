@@ -52,6 +52,7 @@ const SOURCE_ORDER: ReadonlyArray<MatchSource> = [
   "folder_tag",
   "meeting_proximity",
   "transcript_open",
+  "counterparty_candidate",
 ]
 
 const SOURCE_RANK: Record<MatchSource, number> = SOURCE_ORDER.reduce(
@@ -163,11 +164,44 @@ function matchAgainstContacts(
   return best
 }
 
+function contactMatchScore(contact: ContactRef, text: string): number {
+  if (!contact.fullName && (!contact.aliases || contact.aliases.length === 0)) {
+    return 0
+  }
+  const candidates = [contact.fullName, ...contact.aliases].filter(Boolean)
+  let best = 0
+  for (const cand of candidates) {
+    const score = nameMatchScore(cand, text)
+    if (score > best) best = score
+  }
+  return best
+}
+
+function collectContactCandidates(
+  text: string,
+  contacts: ContactRef[],
+  threshold: number,
+  limit: number
+): Array<{ contact: ContactRef; score: number }> {
+  if (!text) return []
+  return contacts
+    .map((contact) => ({ contact, score: contactMatchScore(contact, text) }))
+    .filter((candidate) => candidate.score >= threshold)
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        a.contact.fullName.localeCompare(b.contact.fullName) ||
+        a.contact.id.localeCompare(b.contact.id)
+    )
+    .slice(0, limit)
+}
+
 // Tail synopsis is high-confidence (Matt explicitly names the person), so
 // require a near-full name match. Filename / opening can hit on a partial
 // name ("Sarah lease talk" → c-sarah) so use a looser threshold.
 const SYNOPSIS_THRESHOLD = 0.85
 const PARTIAL_THRESHOLD = 0.5
+const REVIEW_CANDIDATE_THRESHOLD = 0.5
 
 /**
  * Cross-reference deals against the extracted signals. Returns up to 3
@@ -184,24 +218,33 @@ export function suggestDeals(input: MatcherInput): DealMatchSuggestion[] {
   const mentionedProps = input.extractedSignals.mentionedProperties ?? []
   for (const mention of mentionedProps) {
     if (!mention) continue
-    let best: { deal: DealRef; score: number } | null = null
+    let bestScore = 0
+    const bestDeals: DealRef[] = []
     for (const d of deals) {
       const candidates = [d.propertyAddress, ...d.propertyAliases].filter(
         (s): s is string => Boolean(s)
       )
       for (const cand of candidates) {
         const score = nameMatchScore(cand, mention)
-        if (score >= PARTIAL_THRESHOLD && (!best || score > best.score)) {
-          best = { deal: d, score }
+        if (score < PARTIAL_THRESHOLD) continue
+        if (score > bestScore) {
+          bestScore = score
+          bestDeals.length = 0
+          bestDeals.push(d)
+        } else if (score === bestScore) {
+          bestDeals.push(d)
         }
       }
     }
-    if (best) {
+    for (const deal of bestDeals) {
       all.push({
-        dealId: best.deal.id,
-        contactId: best.deal.contactId,
-        score: 70 + Math.round(best.score * 25),
-        reason: `transcript mentions "${mention}" — matches deal property "${best.deal.propertyAddress}"`,
+        dealId: deal.id,
+        contactId: deal.contactId,
+        score: 70 + Math.round(bestScore * 25),
+        reason:
+          bestDeals.length > 1
+            ? `transcript mentions "${mention}" — multiple active deals match this property; verify the right deal`
+            : `transcript mentions "${mention}" — matches deal property "${deal.propertyAddress}"`,
         source: "mentioned_property",
       })
     }
@@ -210,20 +253,15 @@ export function suggestDeals(input: MatcherInput): DealMatchSuggestion[] {
   // 2. counterpartyName → deal's primary contact
   const cp = input.extractedSignals.counterpartyName
   if (cp) {
-    let best: { deal: DealRef; score: number } | null = null
     for (const d of deals) {
       if (!d.contactName) continue
       const score = nameMatchScore(d.contactName, cp)
-      if (score >= SYNOPSIS_THRESHOLD && (!best || score > best.score)) {
-        best = { deal: d, score }
-      }
-    }
-    if (best) {
+      if (score < SYNOPSIS_THRESHOLD) continue
       all.push({
-        dealId: best.deal.id,
-        contactId: best.deal.contactId,
-        score: 60 + Math.round(best.score * 20),
-        reason: `counterparty "${cp}" is the primary contact on this deal`,
+        dealId: d.id,
+        contactId: d.contactId,
+        score: 60 + Math.round(score * 20),
+        reason: `counterparty "${cp}" is the primary contact on this deal; verify the deal when this contact has multiple active deals`,
         source: "deal_contact_name",
       })
     }
@@ -282,6 +320,20 @@ export function suggestContacts(input: MatcherInput): MatchSuggestion[] {
         reason: `matched "${m.contact.fullName}" from your end-of-call synopsis`,
         source: "tail_synopsis",
       })
+    } else if (input.extractedSignals.counterpartyName) {
+      for (const candidate of collectContactCandidates(
+        input.extractedSignals.counterpartyName,
+        input.contacts,
+        REVIEW_CANDIDATE_THRESHOLD,
+        3
+      )) {
+        all.push({
+          contactId: candidate.contact.id,
+          score: 35 + Math.round(candidate.score * 20),
+          reason: `AI extracted counterparty "${input.extractedSignals.counterpartyName}"; verify which contact before attaching`,
+          source: "counterparty_candidate",
+        })
+      }
     }
   }
 
@@ -344,11 +396,7 @@ export function suggestContacts(input: MatcherInput): MatchSuggestion[] {
   // 5. Transcript opening — first ~200 chars NLP-style match.
   if (input.cleanedText) {
     const opening = input.cleanedText.slice(0, OPENING_PREFIX_LEN)
-    const m = matchAgainstContacts(
-      opening,
-      input.contacts,
-      PARTIAL_THRESHOLD
-    )
+    const m = matchAgainstContacts(opening, input.contacts, PARTIAL_THRESHOLD)
     if (m) {
       all.push({
         contactId: m.contact.id,

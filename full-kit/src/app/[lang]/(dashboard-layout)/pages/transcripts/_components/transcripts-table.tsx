@@ -5,7 +5,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Archive, Check, ExternalLink, Loader2 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -32,8 +31,10 @@ interface Item {
   contactId: string | null
   contactName: string | null
   archivedAt: string | null
+  backfillPending: boolean
+  extractedCounterparty: string | null
+  aiProcessed: boolean
   topSuggestion: TopSuggestion | null
-  hasAiSkip: boolean
 }
 
 interface Props {
@@ -53,13 +54,7 @@ function fmtDate(iso: string): string {
   return new Date(iso).toLocaleString()
 }
 
-function ConfidencePill({
-  score,
-  source,
-}: {
-  score: number
-  source: string
-}) {
+function ConfidencePill({ score, source }: { score: number; source: string }) {
   const cls =
     score >= 80
       ? "bg-green-500/15 text-green-700 dark:text-green-400"
@@ -76,6 +71,35 @@ function ConfidencePill({
   )
 }
 
+function SuggestionState({ item }: { item: Item }) {
+  if (item.topSuggestion) {
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="font-medium">
+          {item.topSuggestion.contactName ?? item.topSuggestion.contactId}
+        </span>
+        <ConfidencePill
+          score={item.topSuggestion.score}
+          source={item.topSuggestion.source}
+        />
+      </div>
+    )
+  }
+  if (item.backfillPending) {
+    return <span className="text-muted-foreground">backfill pending</span>
+  }
+  if (item.aiProcessed) {
+    return (
+      <span className="text-muted-foreground">
+        {item.extractedCounterparty
+          ? `AI saw "${item.extractedCounterparty}" - no confident match`
+          : "AI processed - no confident match"}
+      </span>
+    )
+  }
+  return <span className="text-muted-foreground">not processed yet</span>
+}
+
 export function TranscriptsTable({ items, lang, status }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
@@ -84,14 +108,11 @@ export function TranscriptsTable({ items, lang, status }: Props) {
   async function attach(commId: string, contactId: string): Promise<void> {
     setBusyId(commId)
     try {
-      const res = await fetch(
-        `/api/communications/${commId}/attach-contact`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ contactId }),
-        }
-      )
+      const res = await fetch(`/api/communications/${commId}/attach-contact`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ contactId }),
+      })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
         alert(`Attach failed: ${body.error ?? res.statusText}`)
@@ -148,36 +169,22 @@ export function TranscriptsTable({ items, lang, status }: Props) {
                 >
                   {item.filename}
                 </Link>
-                {item.hasAiSkip ? (
-                  <Badge variant="outline" className="ms-2 text-xs">
-                    AI skipped
-                  </Badge>
-                ) : null}
               </TableCell>
               <TableCell className="text-sm">
                 {fmtDuration(item.durationSeconds)}
               </TableCell>
               <TableCell className="text-sm">
                 {status === "matched" ? (
-                  item.contactName ?? "—"
-                ) : item.topSuggestion ? (
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium">
-                      {item.topSuggestion.contactName ??
-                        item.topSuggestion.contactId}
-                    </span>
-                    <ConfidencePill
-                      score={item.topSuggestion.score}
-                      source={item.topSuggestion.source}
-                    />
-                  </div>
+                  (item.contactName ?? "—")
                 ) : (
-                  <span className="text-muted-foreground">no suggestion</span>
+                  <SuggestionState item={item} />
                 )}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  {status === "needs_review" && item.topSuggestion ? (
+                  {status === "needs_review" &&
+                  item.topSuggestion &&
+                  item.topSuggestion.source !== "counterparty_candidate" ? (
                     <Button
                       size="sm"
                       variant="default"
@@ -194,6 +201,12 @@ export function TranscriptsTable({ items, lang, status }: Props) {
                           Accept
                         </>
                       )}
+                    </Button>
+                  ) : status === "needs_review" && item.topSuggestion ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/${lang}/pages/transcripts/${item.id}`}>
+                        Review
+                      </Link>
                     </Button>
                   ) : null}
                   <Button asChild size="sm" variant="outline">

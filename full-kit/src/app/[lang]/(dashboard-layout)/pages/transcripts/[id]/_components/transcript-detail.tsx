@@ -5,12 +5,7 @@ import { useRouter } from "next/navigation"
 import { Briefcase, Loader2, UserPlus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
 interface Suggestion {
@@ -42,7 +37,6 @@ interface Props {
   suggestions: Suggestion[]
   dealSuggestions: DealSuggestion[]
   lang: string
-  sensitive: boolean
 }
 
 interface ContactSearchResult {
@@ -50,14 +44,19 @@ interface ContactSearchResult {
   name: string
   company: string | null
   email: string | null
+  phone?: string | null
+  role?: string | null
 }
 
 interface DealSearchResult {
   id: string
   propertyAddress: string | null
   stage: string | null
+  dealType?: string | null
   contactName: string | null
   contactCompany: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
 }
 
 export function TranscriptDetail({
@@ -68,7 +67,6 @@ export function TranscriptDetail({
   suggestions,
   dealSuggestions,
   lang,
-  sensitive,
 }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
@@ -83,14 +81,11 @@ export function TranscriptDetail({
   async function attach(contactId: string): Promise<void> {
     setBusy(true)
     try {
-      const res = await fetch(
-        `/api/communications/${commId}/attach-contact`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ contactId }),
-        }
-      )
+      const res = await fetch(`/api/communications/${commId}/attach-contact`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ contactId }),
+      })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
         alert(`Attach failed: ${body.error ?? res.statusText}`)
@@ -106,14 +101,11 @@ export function TranscriptDetail({
   async function attachDeal(dealId: string): Promise<void> {
     setBusy(true)
     try {
-      const res = await fetch(
-        `/api/communications/${commId}/attach-deal`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ dealId }),
-        }
-      )
+      const res = await fetch(`/api/communications/${commId}/attach-deal`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ dealId }),
+      })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
         alert(`Attach to deal failed: ${body.error ?? res.statusText}`)
@@ -128,14 +120,11 @@ export function TranscriptDetail({
   async function skipDeal(): Promise<void> {
     setBusy(true)
     try {
-      const res = await fetch(
-        `/api/communications/${commId}/attach-deal`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ dealId: null }),
-        }
-      )
+      const res = await fetch(`/api/communications/${commId}/attach-deal`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ dealId: null }),
+      })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
         alert(`Deal review failed: ${body.error ?? res.statusText}`)
@@ -149,7 +138,7 @@ export function TranscriptDetail({
 
   async function searchContacts(q: string): Promise<void> {
     setQuery(q)
-    if (q.trim().length < 2) {
+    if (q.trim().length < 1) {
       setResults([])
       return
     }
@@ -171,7 +160,7 @@ export function TranscriptDetail({
 
   async function searchDeals(q: string): Promise<void> {
     setDealQuery(q)
-    if (q.trim().length < 2) {
+    if (q.trim().length < 1) {
       setDealResults([])
       return
     }
@@ -189,60 +178,7 @@ export function TranscriptDetail({
     }
   }
 
-  if (sensitive) {
-    return (
-      <div className="grid gap-4">
-        {dealSuggestions.length > 0 || currentDealId ? (
-          <DealCard
-            lang={lang}
-            currentDealId={currentDealId}
-            currentDealLabel={currentDealLabel}
-            dealSuggestions={dealSuggestions}
-            busy={busy}
-            onAttachDeal={attachDeal}
-            dealQuery={dealQuery}
-            dealResults={dealResults}
-            dealSearchPending={dealSearchPending}
-            onDealQuery={searchDeals}
-            onSkipDeal={skipDeal}
-          />
-        ) : (
-          <DealSearchCard
-            query={dealQuery}
-            results={dealResults}
-            pending={dealSearchPending}
-            busy={busy}
-            onQuery={searchDeals}
-            onAttach={attachDeal}
-            onSkip={skipDeal}
-          />
-        )}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Attach to contact</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Contact suggestions disabled for this transcript (possible
-              sensitive content). Use the search below to attach a contact
-              manually.
-            </p>
-            <ContactSearch
-              query={query}
-              results={results}
-              pending={searchPending}
-              busy={busy}
-              onQuery={searchContacts}
-              onAttach={attach}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  const showDealCard =
-    dealSuggestions.length > 0 || Boolean(currentDealId)
+  const showDealCard = dealSuggestions.length > 0 || Boolean(currentDealId)
 
   return (
     <div className="grid gap-4">
@@ -272,80 +208,83 @@ export function TranscriptDetail({
         />
       )}
       <Card>
-      <CardHeader>
-        <CardTitle className="text-sm">
-          {currentContactId
-            ? "Attached"
-            : suggestions.length > 0
-              ? "Suggested contacts"
-              : "Attach to contact"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {currentContactId ? (
-          <p className="text-sm text-muted-foreground">
-            This transcript is attached. To re-assign, search for a different
-            contact below.
-          </p>
-        ) : null}
+        <CardHeader>
+          <CardTitle className="text-sm">
+            {currentContactId
+              ? "Attached"
+              : suggestions.length > 0
+                ? "Suggested contacts"
+                : "Attach to contact"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          {currentContactId ? (
+            <p className="text-sm text-muted-foreground">
+              This transcript is attached. To re-assign, search for a different
+              contact below.
+            </p>
+          ) : null}
 
-        {suggestions.length === 0 && !currentContactId ? (
-          <p className="text-sm text-muted-foreground">
-            No automatic suggestions for this transcript. Use search below.
-          </p>
-        ) : null}
+          {suggestions.length === 0 && !currentContactId ? (
+            <p className="text-sm text-muted-foreground">
+              No automatic suggestions for this transcript. Use search below.
+            </p>
+          ) : null}
 
-        {suggestions.map((s) => (
-          <div
-            key={s.contactId + s.source}
-            className="rounded-lg border p-3 flex items-center justify-between gap-3"
-          >
-            <div className="text-sm grid gap-0.5">
-              <div className="font-medium">
-                {s.contactName ?? `(unknown contact ${s.contactId.slice(0, 8)})`}
-              </div>
-              {s.contactCompany ? (
-                <div className="text-muted-foreground text-xs">
-                  {s.contactCompany}
-                </div>
-              ) : null}
-              <div className="text-xs text-muted-foreground">{s.reason}</div>
-              <div className="text-xs">
-                <span className="rounded bg-muted px-1.5 py-0.5">
-                  {s.score} · {s.source.replace("_", " ")}
-                </span>
-              </div>
-            </div>
-            <Button
-              size="sm"
-              variant={currentContactId === s.contactId ? "outline" : "default"}
-              disabled={busy || currentContactId === s.contactId}
-              onClick={() => attach(s.contactId)}
+          {suggestions.map((s) => (
+            <div
+              key={s.contactId + s.source}
+              className="rounded-lg border p-3 flex items-center justify-between gap-3"
             >
-              {busy ? (
-                <Loader2 className="size-3 animate-spin" />
-              ) : currentContactId === s.contactId ? (
-                "Attached"
-              ) : (
-                <>
-                  <UserPlus className="me-1 size-3" />
-                  Attach
-                </>
-              )}
-            </Button>
-          </div>
-        ))}
+              <div className="text-sm grid gap-0.5">
+                <div className="font-medium">
+                  {s.contactName ??
+                    `(unknown contact ${s.contactId.slice(0, 8)})`}
+                </div>
+                {s.contactCompany ? (
+                  <div className="text-muted-foreground text-xs">
+                    {s.contactCompany}
+                  </div>
+                ) : null}
+                <div className="text-xs text-muted-foreground">{s.reason}</div>
+                <div className="text-xs">
+                  <span className="rounded bg-muted px-1.5 py-0.5">
+                    {s.score} · {s.source.replace("_", " ")}
+                  </span>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant={
+                  currentContactId === s.contactId ? "outline" : "default"
+                }
+                disabled={busy || currentContactId === s.contactId}
+                onClick={() => attach(s.contactId)}
+              >
+                {busy ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : currentContactId === s.contactId ? (
+                  "Attached"
+                ) : (
+                  <>
+                    <UserPlus className="me-1 size-3" />
+                    Attach
+                  </>
+                )}
+              </Button>
+            </div>
+          ))}
 
-        <ContactSearch
-          query={query}
-          results={results}
-          pending={searchPending}
-          busy={busy}
-          onQuery={searchContacts}
-          onAttach={attach}
-        />
-      </CardContent>
-    </Card>
+          <ContactSearch
+            query={query}
+            results={results}
+            pending={searchPending}
+            busy={busy}
+            onQuery={searchContacts}
+            onAttach={attach}
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -532,16 +471,27 @@ function DealSearch({
     <div className="grid gap-2">
       <div className="flex gap-2">
         <Input
-          placeholder="Search deals by property or contact"
+          placeholder="Search deals by address, contact, company, phone, or stage"
           value={query}
           onChange={(e) => onQuery(e.target.value)}
         />
-        <Button type="button" variant="outline" disabled={busy} onClick={onSkip}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={busy}
+          onClick={onSkip}
+        >
           No deal
         </Button>
       </div>
       {pending ? (
         <p className="text-xs text-muted-foreground">Searching...</p>
+      ) : null}
+      {!pending && query.trim().length > 0 && results.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          No deals found. Try a contact name, company, phone, address, unit, or
+          property nickname.
+        </p>
       ) : null}
       {results.length > 0 ? (
         <div className="grid gap-1">
@@ -557,7 +507,14 @@ function DealSearch({
                 {r.propertyAddress ?? "(deal without address)"}
               </div>
               <div className="text-xs text-muted-foreground">
-                {[r.contactName, r.contactCompany, r.stage]
+                {[
+                  r.contactName,
+                  r.contactCompany,
+                  r.contactEmail,
+                  r.contactPhone,
+                  r.stage,
+                  r.dealType,
+                ]
                   .filter(Boolean)
                   .join(" - ") || "No contact"}
               </div>
@@ -587,12 +544,17 @@ function ContactSearch({
   return (
     <div className="grid gap-2">
       <Input
-        placeholder="Search contacts by name, company, or email"
+        placeholder="Search contacts by name, company, email, phone, tag, or note"
         value={query}
         onChange={(e) => onQuery(e.target.value)}
       />
       {pending ? (
-        <p className="text-xs text-muted-foreground">Searching…</p>
+        <p className="text-xs text-muted-foreground">Searching...</p>
+      ) : null}
+      {!pending && query.trim().length > 0 && results.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          No contacts found. Try a name, company, email, phone, tag, or note.
+        </p>
       ) : null}
       {results.length > 0 ? (
         <div className="grid gap-1">
@@ -606,7 +568,9 @@ function ContactSearch({
             >
               <div className="font-medium">{r.name}</div>
               <div className="text-xs text-muted-foreground">
-                {[r.company, r.email].filter(Boolean).join(" · ") || "—"}
+                {[r.company, r.email, r.phone, r.role]
+                  .filter(Boolean)
+                  .join(" · ") || "—"}
               </div>
             </button>
           ))}
