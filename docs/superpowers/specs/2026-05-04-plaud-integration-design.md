@@ -1,7 +1,53 @@
 # Plaud Integration Design
 
 Date: 2026-05-04
-Status: Brainstorming complete, awaiting user review
+Status: Implemented; amendments below
+
+## Amendments after upstream verification (2026-05-04)
+
+The original spec was drafted against an 11-day-old memory note and
+contains drift from the actual reverse-engineered API shape. The
+**authoritative** description of the upstream API now lives at
+`full-kit/src/lib/plaud/UPSTREAM_NOTES.md` (pinned to upstream commits
+`dd5774b3` and `1e52c316`). Where this spec disagrees with that file,
+that file wins. Specifically these sections of the spec are superseded:
+
+- **Auth (Section "1. Auth")** — Login is `POST /auth/access-token` with
+  `application/x-www-form-urlencoded` body (`username` + `password`),
+  returning `{status, msg, access_token, token_type}`. Success requires
+  `status === 0`. The token is a JWT; expiry is decoded from `exp`,
+  not the response body.
+- **Client (Section "2. Client")** — Recording list uses `skip`/`limit`
+  pagination (no `since` query param, no cursor). Detail comes via
+  `POST /file/list` with body `[id]`. `duration` field is in
+  **milliseconds**, not seconds.
+- **Configuration (env vars)** — A `CRON_SECRET` env var is also
+  accepted (in addition to `PLAUD_CRON_SECRET`) so Vercel's auto-injected
+  cron auth header works. The route accepts whichever is present.
+
+All other sections (sync orchestrator, AI passes, matcher, UI, audit
+plan) are accurate as built.
+
+## Implementation status
+
+| Module | Status | Test count |
+|---|---|---:|
+| `crypto/at-rest.ts` (AES-256-GCM helper) | ✅ | 15 |
+| `plaud/config.ts` + `types.ts` | ✅ | 19 |
+| `plaud/client.ts` (HTTP, retry, region redirect) | ✅ | 44 |
+| `plaud/auth.ts` (token resolver, encrypted cache) | ✅ | 21 |
+| `plaud/ai-passes.ts` (DeepSeek 2-pass) | ✅ | 21 |
+| `plaud/matcher.ts` (pure suggester) | ✅ | 20 |
+| `plaud/sync.ts` (orchestrator) | ✅ | 14 |
+| `plaud/metadata-view.ts` (UI projection) | ✅ | — |
+| 7 API routes (sync, tags, transcripts, attach, archive, contacts) | ✅ | — |
+| Transcripts list + detail UI | ✅ | — |
+| Vercel cron + nav entry | ✅ | — |
+
+Full suite: 1335 passing, 1 skipped. `tsc --noEmit` clean.
+
+## Original design follows
+
 
 ## Goal
 

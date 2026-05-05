@@ -6,6 +6,7 @@ import type { Metadata } from "next"
 
 import { db } from "@/lib/prisma"
 import { parseAiContent } from "@/lib/plaud/client"
+import { projectSafeMetadata } from "@/lib/plaud/metadata-view"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -34,19 +35,15 @@ export default async function TranscriptDetailPage({ params }: Props) {
       contact: { select: { id: true, name: true } },
     },
   })
-  const meta = (row?.metadata ?? {}) as Record<string, unknown>
-  if (!row || row.channel !== "call" || meta.source !== "plaud") {
+  const rawMeta = (row?.metadata ?? {}) as Record<string, unknown>
+  if (!row || row.channel !== "call" || rawMeta.source !== "plaud") {
     notFound()
   }
-
-  const suggestions = Array.isArray(meta.suggestions)
-    ? (meta.suggestions as Array<{
-        contactId: string
-        score: number
-        source: string
-        reason: string
-      }>)
-    : []
+  // Project to the same allow-list shape the API exposes — keeps the
+  // server-rendered tree free of internal AI error blobs and unfiltered
+  // upstream fields, regardless of what tampered metadata might contain.
+  const meta = projectSafeMetadata(rawMeta)
+  const suggestions = meta.suggestions
 
   const sugContactIds = suggestions.map((s) => s.contactId)
   const sugContacts = sugContactIds.length
@@ -57,38 +54,9 @@ export default async function TranscriptDetailPage({ params }: Props) {
     : []
   const sugMap = new Map(sugContacts.map((c) => [c.id, c]))
 
-  const cleanedTurns = Array.isArray(meta.cleanedTurns)
-    ? (meta.cleanedTurns as Array<{
-        speaker: string
-        content: string
-        startMs: number
-        endMs: number
-      }>)
-    : []
-  // Runtime-validate before trusting the cast — a tampered or legacy
-  // metadata blob could have extractedSignals as a non-object scalar.
-  const rawSig = meta.extractedSignals
-  const extractedSignals =
-    rawSig && typeof rawSig === "object" && !Array.isArray(rawSig)
-      ? {
-          counterpartyName:
-            typeof (rawSig as Record<string, unknown>).counterpartyName ===
-            "string"
-              ? ((rawSig as Record<string, unknown>).counterpartyName as string)
-              : null,
-          topic:
-            typeof (rawSig as Record<string, unknown>).topic === "string"
-              ? ((rawSig as Record<string, unknown>).topic as string)
-              : null,
-          tailSynopsis:
-            typeof (rawSig as Record<string, unknown>).tailSynopsis === "string"
-              ? ((rawSig as Record<string, unknown>).tailSynopsis as string)
-              : null,
-        }
-      : null
-  const aiSummary = parseAiContent(
-    typeof meta.aiSummaryRaw === "string" ? meta.aiSummaryRaw : ""
-  )
+  const cleanedTurns = meta.cleanedTurns
+  const extractedSignals = meta.extractedSignals
+  const aiSummary = parseAiContent(meta.aiSummaryRaw ?? "")
 
   return (
     <section className="container grid gap-6 p-6">

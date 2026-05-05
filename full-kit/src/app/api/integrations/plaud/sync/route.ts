@@ -71,11 +71,19 @@ async function authorize(
   | { ok: true; manual: boolean; status?: never }
   | { ok: false; manual?: never; status: number }
 > {
-  const cronSecret = process.env.PLAUD_CRON_SECRET
+  // Accept either secret. Vercel auto-injects Authorization: Bearer ${CRON_SECRET}
+  // for scheduled cron requests; the integration-specific PLAUD_CRON_SECRET
+  // is for local dev / manual invocations from cron-like callers. Mirrors
+  // the daily-listings route pattern.
+  const plaudCronSecret = process.env.PLAUD_CRON_SECRET
+  const vercelCronSecret = process.env.CRON_SECRET
   const auth = request.headers.get("authorization") ?? ""
-  if (cronSecret && auth.startsWith(BEARER_PREFIX)) {
+  if (auth.startsWith(BEARER_PREFIX)) {
     const token = auth.slice(BEARER_PREFIX.length).trim()
-    if (constantTimeCompare(token, cronSecret)) {
+    if (plaudCronSecret && constantTimeCompare(token, plaudCronSecret)) {
+      return { ok: true, manual: false }
+    }
+    if (vercelCronSecret && constantTimeCompare(token, vercelCronSecret)) {
       return { ok: true, manual: false }
     }
   }

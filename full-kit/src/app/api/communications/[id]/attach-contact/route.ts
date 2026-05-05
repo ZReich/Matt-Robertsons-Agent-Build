@@ -85,21 +85,23 @@ export async function POST(
       }>)
     : []
   const matchedSuggestion = suggestions.find((s) => s.contactId === contactId)
-  // Preserve a prior attachedFromSuggestion if one exists; only overwrite
-  // when the current click matches a current suggestion.
-  const newMeta = {
+  // Re-attach to a different contact: refresh attachedAt/attachedBy and
+  // either overwrite attachedFromSuggestion (if Matt clicked a current
+  // suggestion) or drop the stale one (so the audit trail isn't
+  // ambiguous about which suggestion produced this attachment).
+  const newMeta: Record<string, unknown> = {
     ...meta,
     attachedAt: new Date().toISOString(),
     attachedBy: reviewer.label,
-    ...(matchedSuggestion
-      ? {
-          attachedFromSuggestion: {
-            contactId: matchedSuggestion.contactId,
-            score: matchedSuggestion.score,
-            source: matchedSuggestion.source,
-          },
-        }
-      : {}),
+  }
+  if (matchedSuggestion) {
+    newMeta.attachedFromSuggestion = {
+      contactId: matchedSuggestion.contactId,
+      score: matchedSuggestion.score,
+      source: matchedSuggestion.source,
+    }
+  } else {
+    delete newMeta.attachedFromSuggestion
   }
 
   await db.communication.update({

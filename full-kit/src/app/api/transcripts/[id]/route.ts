@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { projectSafeMetadata } from "@/lib/plaud/metadata-view"
 import { db } from "@/lib/prisma"
 import {
   ReviewerAuthError,
@@ -43,35 +44,7 @@ export async function GET(
   if (!row || row.channel !== "call" || meta.source !== "plaud") {
     return NextResponse.json({ error: "not_found" }, { status: 404 })
   }
-  // Allow-list metadata fields. Internal AI error blobs and the raw
-  // ExternalSync.rawData (full upstream payload) are NOT exposed to the
-  // browser. Operators can pull those server-side via Prisma if they
-  // need to debug.
-  const safeMeta = {
-    source: meta.source,
-    plaudId: meta.plaudId,
-    plaudFilename: meta.plaudFilename,
-    plaudTagIds: Array.isArray(meta.plaudTagIds) ? meta.plaudTagIds : [],
-    cleanedTurns: Array.isArray(meta.cleanedTurns) ? meta.cleanedTurns : [],
-    aiSummaryRaw:
-      typeof meta.aiSummaryRaw === "string" ? meta.aiSummaryRaw : null,
-    extractedSignals:
-      meta.extractedSignals && typeof meta.extractedSignals === "object"
-        ? meta.extractedSignals
-        : null,
-    aiSkipReason:
-      meta.aiSkipReason === "sensitive_keywords"
-        ? "sensitive_keywords"
-        : undefined,
-    suggestions: Array.isArray(meta.suggestions) ? meta.suggestions : [],
-    attachedAt: typeof meta.attachedAt === "string" ? meta.attachedAt : undefined,
-    attachedBy: typeof meta.attachedBy === "string" ? meta.attachedBy : undefined,
-    attachedFromSuggestion:
-      meta.attachedFromSuggestion &&
-      typeof meta.attachedFromSuggestion === "object"
-        ? meta.attachedFromSuggestion
-        : undefined,
-  }
+  const safeMeta = projectSafeMetadata(meta)
   return NextResponse.json({
     id: row.id,
     filename: row.subject ?? "",
