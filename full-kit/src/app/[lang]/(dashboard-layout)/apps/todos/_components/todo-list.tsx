@@ -21,6 +21,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TodoDetailDrawer } from "@/components/todos/todo-detail-drawer"
 
+import { TodoInlineActions } from "./todo-inline-actions"
+
 type TodoNote = VaultNote<TodoMeta>
 
 interface TodoListProps {
@@ -103,10 +105,22 @@ function TodoItem({
     }
   }
 
+  // Wrapper is a <div> rather than a <button> so we can render inline
+  // approve/reject buttons inside without nesting interactive controls.
+  // The card-level click + keyboard handlers preserve the original
+  // "click anywhere to open detail" affordance.
   return (
-    <button
+    <div
       onClick={onSelect}
-      className={`flex items-start gap-3 p-4 rounded-lg border bg-card transition-all w-full text-left hover:bg-accent/50 ${done ? "opacity-60" : ""}`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onSelect()
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      className={`flex items-start gap-3 p-4 rounded-lg border bg-card transition-all w-full text-left hover:bg-accent/50 cursor-pointer ${done ? "opacity-60" : ""}`}
     >
       <div
         onClick={toggle}
@@ -156,6 +170,16 @@ function TodoItem({
           )}
           {hasNotes && <FileText className="size-3 text-muted-foreground" />}
         </div>
+        {note.meta.agent_action_type &&
+          note.meta.agent_action_id &&
+          !done && (
+            <TodoInlineActions
+              todoPath={note.path}
+              agentActionId={note.meta.agent_action_id}
+              agentActionType={note.meta.agent_action_type}
+              onResolved={() => setDone(true)}
+            />
+          )}
       </div>
 
       {note.meta.priority && !done && (
@@ -166,7 +190,7 @@ function TodoItem({
           {note.meta.priority}
         </Badge>
       )}
-    </button>
+    </div>
   )
 }
 

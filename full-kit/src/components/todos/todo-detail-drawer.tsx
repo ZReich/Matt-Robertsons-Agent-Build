@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/sheet"
 import { AttachmentSummaryInline } from "@/components/communications/attachment-summary-inline"
 import { SourceCommunicationInline } from "@/components/communications/source-communication-inline"
+import { TodoInlineActions } from "@/app/[lang]/(dashboard-layout)/apps/todos/_components/todo-inline-actions"
 
 type TodoNote = VaultNote<TodoMeta>
 
@@ -408,6 +409,28 @@ export function TodoDetailDrawer({
               No additional context for this todo.
             </p>
           )}
+
+          {/* Inline approve/reject buttons for auto-promoted agent actions.
+              Surfaces here as well as the list card so the operator can
+              act after reading the rich body context. */}
+          {!isDone &&
+            meta.agent_action_type &&
+            meta.agent_action_id && (
+              <>
+                <Separator />
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    Actions
+                  </h4>
+                  <TodoInlineActions
+                    todoPath={todo.path}
+                    agentActionId={meta.agent_action_id}
+                    agentActionType={meta.agent_action_type}
+                    onResolved={() => onOpenChange(false)}
+                  />
+                </div>
+              </>
+            )}
 
           {/* Notes / Body Content */}
           {todo.content?.trim() && (
