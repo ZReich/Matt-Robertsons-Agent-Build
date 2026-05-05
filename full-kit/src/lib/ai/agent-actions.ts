@@ -7,6 +7,13 @@ import {
   moveDealStageFromAction,
   updateDealFromAction,
 } from "./agent-actions-deal"
+import {
+  autoReplyFromAction,
+  deleteContactFromAction,
+  deleteDealFromAction,
+  deletePropertyFromAction,
+  updateMeetingFromAction,
+} from "./agent-actions-extra"
 import { AI_FEEDBACK_SOURCE_TYPES } from "./feedback-source-types"
 
 export class AgentActionReviewError extends Error {
@@ -103,6 +110,16 @@ export async function approveAgentAction({
       return updateDealFromAction(action, reviewer)
     case "create-deal":
       return createDealFromAction(action, reviewer)
+    case "auto-reply":
+      return autoReplyFromAction(action, reviewer)
+    case "update-meeting":
+      return updateMeetingFromAction(action, reviewer)
+    case "delete-contact":
+      return deleteContactFromAction(action, reviewer)
+    case "delete-property":
+      return deletePropertyFromAction(action, reviewer)
+    case "delete-deal":
+      return deleteDealFromAction(action, reviewer)
     default:
       throw new AgentActionReviewError(
         `unsupported action type: ${action.actionType}`,
