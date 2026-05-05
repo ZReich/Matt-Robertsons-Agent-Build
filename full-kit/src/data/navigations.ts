@@ -72,6 +72,11 @@ export const navigationsData: NavigationType[] = [
         iconName: "Reply",
       },
       {
+        title: "Transcripts",
+        href: "/pages/transcripts",
+        iconName: "Mic",
+      },
+      {
         title: "Todos",
         href: "/apps/todos",
         iconName: "ListTodo",
