@@ -65,13 +65,27 @@ export default async function TranscriptDetailPage({ params }: Props) {
         endMs: number
       }>)
     : []
-  const extractedSignals = (meta.extractedSignals ?? null) as {
-    counterpartyName: string | null
-    topic: string | null
-    mentionedCompanies: string[]
-    mentionedProperties: string[]
-    tailSynopsis: string | null
-  } | null
+  // Runtime-validate before trusting the cast — a tampered or legacy
+  // metadata blob could have extractedSignals as a non-object scalar.
+  const rawSig = meta.extractedSignals
+  const extractedSignals =
+    rawSig && typeof rawSig === "object" && !Array.isArray(rawSig)
+      ? {
+          counterpartyName:
+            typeof (rawSig as Record<string, unknown>).counterpartyName ===
+            "string"
+              ? ((rawSig as Record<string, unknown>).counterpartyName as string)
+              : null,
+          topic:
+            typeof (rawSig as Record<string, unknown>).topic === "string"
+              ? ((rawSig as Record<string, unknown>).topic as string)
+              : null,
+          tailSynopsis:
+            typeof (rawSig as Record<string, unknown>).tailSynopsis === "string"
+              ? ((rawSig as Record<string, unknown>).tailSynopsis as string)
+              : null,
+        }
+      : null
   const aiSummary = parseAiContent(
     typeof meta.aiSummaryRaw === "string" ? meta.aiSummaryRaw : ""
   )

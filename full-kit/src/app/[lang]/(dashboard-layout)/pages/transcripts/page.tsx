@@ -53,6 +53,9 @@ export default async function TranscriptsPage({
         : { archivedAt: { not: null } }
 
   const [rows, counts] = await Promise.all([
+    // take: 100 — sufficient for the daily-review cadence Matt does. Add
+    // cursor pagination here if the backlog ever exceeds 100 unmatched
+    // recordings; the API route at /api/transcripts already supports it.
     db.communication.findMany({
       where: { ...baseFilter, ...statusFilter },
       orderBy: [{ date: "desc" }, { id: "desc" }],
