@@ -114,7 +114,15 @@ export async function matchEntitiesForAction(
           take: 5,
           select: { id: true, name: true },
         })
-        if (candidates.length > 0) {
+        if (candidates.length > 1) {
+          // Ambiguous: don't guess. Surface a low-confidence "name_ambiguous"
+          // signal and leave contactId null so the operator picks. Auditing
+          // flagged that quietly attaching the most-recently-updated of N
+          // homonym contacts (e.g. two "John Smith"s) is a confidence bug —
+          // the cascade also drops the deal-lookup since we have no contact.
+          signals.push("name_ambiguous")
+          score = Math.max(score, 0.3)
+        } else if (candidates.length === 1) {
           contactId = candidates[0].id
           if (tokens.length >= 2) {
             signals.push("name_token_overlap")
@@ -174,7 +182,13 @@ export async function matchEntitiesForAction(
     }
   }
 
-  if (!contactId && !propertyId && !dealId) return EMPTY_RESULT
+  // Preserve signals (e.g. "name_ambiguous") even when no entity attached —
+  // the consumer surfaces them so the operator understands the matcher's
+  // reasoning. Only return the canonical empty result when there's truly
+  // nothing to report.
+  if (!contactId && !propertyId && !dealId && signals.length === 0) {
+    return EMPTY_RESULT
+  }
 
   return { contactId, dealId, propertyId, matchScore: score, matchSignals: signals }
 }

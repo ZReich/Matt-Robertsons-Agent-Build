@@ -148,6 +148,15 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
   const meta = asMetadataRecord(todo.metadata)
   const agentActionType =
     typeof meta.actionType === "string" ? meta.actionType : undefined
+  // matchScore + matchSignals are written by the auto-promotion sweep
+  // (src/lib/ai/agent-action-auto-promotion.ts) when it links a Todo to
+  // a contact/deal heuristically. Surface them so the card can render a
+  // "Weak match" chip when the confidence is low.
+  const matchScore =
+    typeof meta.matchScore === "number" ? meta.matchScore : undefined
+  const matchSignals = Array.isArray(meta.matchSignals)
+    ? (meta.matchSignals.filter((s) => typeof s === "string") as string[])
+    : undefined
   return {
     path: prismaTodoPath(todo.id),
     meta: {
@@ -168,6 +177,10 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
         : {}),
       ...(agentActionType ? { agent_action_type: agentActionType } : {}),
       ...(todo.agentActionId ? { agent_action_id: todo.agentActionId } : {}),
+      ...(matchScore !== undefined ? { match_score: matchScore } : {}),
+      ...(matchSignals && matchSignals.length > 0
+        ? { match_signals: matchSignals }
+        : {}),
       created: todo.createdAt.toISOString(),
       updated: todo.updatedAt.toISOString(),
     },

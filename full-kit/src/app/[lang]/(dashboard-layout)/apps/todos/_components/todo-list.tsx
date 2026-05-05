@@ -19,6 +19,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { TodoDetailDrawer } from "@/components/todos/todo-detail-drawer"
 
 import { TodoInlineActions } from "./todo-inline-actions"
@@ -109,6 +114,13 @@ function TodoItem({
   // approve/reject buttons inside without nesting interactive controls.
   // The card-level click + keyboard handlers preserve the original
   // "click anywhere to open detail" affordance.
+  // A weak match (matchScore < 0.7) means the entity matcher attached
+  // contact/deal context with low confidence (e.g. ambiguous name, partial
+  // token match). Surface a chip so the operator verifies before acting.
+  const matchScore = note.meta.match_score
+  const isWeakMatch = typeof matchScore === "number" && matchScore < 0.7
+  const matchSignals = note.meta.match_signals ?? []
+
   return (
     <div
       onClick={onSelect}
@@ -120,13 +132,31 @@ function TodoItem({
       }}
       role="button"
       tabIndex={0}
-      className={`flex items-start gap-3 p-4 rounded-lg border bg-card transition-all w-full text-left hover:bg-accent/50 cursor-pointer ${done ? "opacity-60" : ""}`}
+      className={`flex items-start gap-3 p-4 rounded-lg border bg-card transition-all w-full text-left hover:bg-accent/50 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${done ? "opacity-60" : ""}`}
     >
       <div
         onClick={toggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            e.stopPropagation()
+            if (!done && !loading) {
+              setLoading(true)
+              setDone(true)
+              fetch("/api/vault/todos", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: note.path, status: "done" }),
+              })
+                .catch(() => setDone(false))
+                .finally(() => setLoading(false))
+            }
+          }
+        }}
         role="checkbox"
         aria-checked={done}
-        className="mt-0.5 shrink-0 text-muted-foreground hover:text-green-600 transition-colors"
+        tabIndex={0}
+        className="mt-0.5 shrink-0 text-muted-foreground hover:text-green-600 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded"
       >
         {done ? (
           <CheckCircle2 className="size-4 text-green-600" />
@@ -167,6 +197,30 @@ function TodoItem({
             <Badge variant="outline" className="text-xs py-0">
               {dealName}
             </Badge>
+          )}
+          {isWeakMatch && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="text-xs py-0 border-yellow-400 text-yellow-700 bg-yellow-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Weak match
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="text-xs">
+                  Confidence{" "}
+                  {Math.round((matchScore ?? 0) * 100)}% — verify before acting.
+                  {matchSignals.length > 0 ? (
+                    <div className="mt-1 text-muted-foreground">
+                      Signals: {matchSignals.join(", ")}
+                    </div>
+                  ) : null}
+                </div>
+              </TooltipContent>
+            </Tooltip>
           )}
           {hasNotes && <FileText className="size-3 text-muted-foreground" />}
         </div>

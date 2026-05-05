@@ -182,6 +182,13 @@ export interface TodoMeta extends VaultNoteMeta {
   /** ID of the AgentAction this Todo was promoted from. The inline buttons
    * POST to /api/agent/actions/{id}/{approve,reject,snooze}. */
   agent_action_id?: string
+  /** Heuristic confidence (0–1) from the entity matcher when the Todo was
+   * auto-promoted from an AgentAction. Surfaced in the UI as a "Weak match"
+   * chip when below 0.7 so the operator knows to verify before acting. */
+  match_score?: number
+  /** Signals that contributed to the match (e.g. "name_token_overlap",
+   * "email_exact", "name_ambiguous"). Rendered in the weak-match tooltip. */
+  match_signals?: string[]
 }
 
 /** Email template frontmatter (vault/templates/*.md) */

@@ -134,4 +134,24 @@ describe("matchEntitiesForAction", () => {
     await matchEntitiesForAction({ agentActionPayload: { name: "Nobody" } })
     expect(db.deal.findFirst).not.toHaveBeenCalled()
   })
+
+  it("returns null contactId with name_ambiguous signal when multiple contacts share a name", async () => {
+    // Two "John Smith"s in the database. Quietly attaching the most recent
+    // would be a confidence bug — surface the ambiguity instead.
+    ;(db.contact.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "contact-a", name: "John Smith" },
+      { id: "contact-b", name: "John Smith" },
+    ])
+
+    const result = await matchEntitiesForAction({
+      agentActionPayload: { contactName: "John Smith" },
+    })
+
+    expect(result.contactId).toBeNull()
+    expect(result.dealId).toBeNull()
+    expect(result.matchSignals).toContain("name_ambiguous")
+    expect(result.matchScore).toBe(0.3)
+    // Cascade: with no contact, no deal lookup either.
+    expect(db.deal.findFirst).not.toHaveBeenCalled()
+  })
 })
