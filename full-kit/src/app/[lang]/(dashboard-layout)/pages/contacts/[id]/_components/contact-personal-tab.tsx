@@ -9,8 +9,16 @@ import {
 } from "@/lib/contacts/profile-fact-display"
 import { db } from "@/lib/prisma"
 
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+import { ProfileFactReviewActions } from "./profile-fact-review-actions"
 
 interface Props {
   contactId: string
@@ -51,14 +59,20 @@ function profileFactEvidence(metadata: unknown): string | null {
 }
 
 export async function ContactPersonalTab({ contactId, lang }: Props) {
-  // Single round-trip: fetch active facts + their source communications in
-  // one query via Prisma's `include`. Previously this was two sequential
-  // findMany calls (facts, then comms-by-id). The relation was added in
-  // migration `20260504225537_profile_fact_source_comm_fk`.
+  // Single round-trip: fetch active + review facts + their source
+  // communications in one query via Prisma's `include`. Previously this
+  // was two sequential findMany calls (facts, then comms-by-id). The
+  // relation was added in migration
+  // `20260504225537_profile_fact_source_comm_fk`.
+  //
+  // `status: { in: ["active", "review"] }` (audit fix May 2026): the v7
+  // extractor writes inferred-fact rows at status="review" with confidence
+  // 0.3-0.85. Filtering to "active" only made every inferred fact
+  // invisible — the v7 prompt was a no-op. "dismissed" rows stay hidden.
   const profileFacts = await db.contactProfileFact.findMany({
     where: {
       contactId,
-      status: "active",
+      status: { in: ["active", "review"] },
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
     include: {
@@ -132,11 +146,30 @@ export async function ContactPersonalTab({ contactId, lang }: Props) {
                   )
                 : null
               const evidence = profileFactEvidence(fact.metadata)
+              const isInferred = fact.status === "review"
               return (
                 <div
                   key={fact.id}
-                  className="space-y-1 rounded-md border p-3 text-sm"
+                  className={`space-y-1 rounded-md border p-3 text-sm ${
+                    isInferred ? "border-amber-300 bg-amber-50/40" : ""
+                  }`}
                 >
+                  {isInferred ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          className="border-amber-400 text-amber-700 bg-amber-50 text-[10px] py-0 px-1.5"
+                        >
+                          Inferred — review
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        AI inferred this from contextual signals; click to
+                        confirm or dismiss.
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : null}
                   <div className="font-medium">{fact.fact}</div>
                   {evidence ? (
                     <div className="text-xs italic text-muted-foreground">
@@ -181,6 +214,12 @@ export async function ContactPersonalTab({ contactId, lang }: Props) {
                       </>
                     ) : null}
                   </div>
+                  {isInferred ? (
+                    <ProfileFactReviewActions
+                      contactId={contactId}
+                      factId={fact.id}
+                    />
+                  ) : null}
                 </div>
               )
             })}

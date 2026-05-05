@@ -1,8 +1,16 @@
 import { isPersonalCategory } from "@/lib/contacts/profile-fact-display"
 import { db } from "@/lib/prisma"
 
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+import { ProfileFactReviewActions } from "./profile-fact-review-actions"
 
 interface Props {
   contactId: string
@@ -23,7 +31,7 @@ export function ContactRelationshipProfileCardFallback() {
 }
 
 function groupProfileFacts<
-  T extends { category: string; id: string; fact: string },
+  T extends { category: string; id: string; fact: string; status: string },
 >(facts: T[]): Record<string, T[]> {
   return facts.reduce<Record<string, T[]>>((groups, fact) => {
     const key = fact.category || "other"
@@ -50,10 +58,14 @@ function profileFactEvidence(metadata: unknown): string | null {
 }
 
 export async function ContactRelationshipProfileCard({ contactId }: Props) {
+  // status: { in: ["active", "review"] } (audit fix May 2026): see the
+  // matching comment in contact-personal-tab.tsx — review-status rows are
+  // v7 inferred facts that need operator confirmation. They render with an
+  // "Inferred — review" badge and inline Confirm / Dismiss buttons.
   const facts = await db.contactProfileFact.findMany({
     where: {
       contactId,
-      status: "active",
+      status: { in: ["active", "review"] },
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
     orderBy: [{ category: "asc" }, { lastSeenAt: "desc" }],
@@ -100,18 +112,50 @@ export async function ContactRelationshipProfileCard({ contactId }: Props) {
               <div className="text-xs font-medium uppercase text-muted-foreground">
                 {formatProfileCategory(category)}
               </div>
-              <ul className="space-y-1">
-                {group.map((fact) => (
-                  <li key={fact.id} className="space-y-0.5 text-sm">
-                    <div>{fact.fact}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Source: {fact.sourceCommunicationId}
-                      {profileFactEvidence(fact.metadata)
-                        ? ` - ${profileFactEvidence(fact.metadata)}`
-                        : ""}
-                    </div>
-                  </li>
-                ))}
+              <ul className="space-y-2">
+                {group.map((fact) => {
+                  const isInferred = fact.status === "review"
+                  return (
+                    <li
+                      key={fact.id}
+                      className={`space-y-0.5 text-sm ${
+                        isInferred
+                          ? "rounded-md border border-amber-300 bg-amber-50/40 p-2"
+                          : ""
+                      }`}
+                    >
+                      {isInferred ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="outline"
+                              className="border-amber-400 text-amber-700 bg-amber-50 text-[10px] py-0 px-1.5"
+                            >
+                              Inferred — review
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            AI inferred this from contextual signals; click
+                            to confirm or dismiss.
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : null}
+                      <div>{fact.fact}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Source: {fact.sourceCommunicationId}
+                        {profileFactEvidence(fact.metadata)
+                          ? ` - ${profileFactEvidence(fact.metadata)}`
+                          : ""}
+                      </div>
+                      {isInferred ? (
+                        <ProfileFactReviewActions
+                          contactId={contactId}
+                          factId={fact.id}
+                        />
+                      ) : null}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )
