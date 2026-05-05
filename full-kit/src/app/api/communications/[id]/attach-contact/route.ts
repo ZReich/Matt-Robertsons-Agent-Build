@@ -59,13 +59,24 @@ export async function POST(
 
   const existing = await db.communication.findUnique({
     where: { id },
-    select: { id: true, channel: true, metadata: true },
+    select: { id: true, channel: true, contactId: true, metadata: true },
   })
   if (!existing) {
     return NextResponse.json({ error: "not_found" }, { status: 404 })
   }
-
+  // Scope to Plaud-source call communications only — same reasoning as
+  // the archive route.
   const meta = (existing.metadata ?? {}) as Record<string, unknown>
+  if (existing.channel !== "call" || meta.source !== "plaud") {
+    return NextResponse.json({ error: "not_found" }, { status: 404 })
+  }
+  // Idempotency: re-POSTing with the same contactId is a no-op so
+  // attachedAt/attachedBy/attachedFromSuggestion don't get clobbered by
+  // a double click.
+  if (existing.contactId === contactId) {
+    return NextResponse.json({ ok: true, alreadyAttached: true })
+  }
+
   const suggestions = Array.isArray(meta.suggestions)
     ? (meta.suggestions as Array<{
         contactId: string
@@ -74,6 +85,8 @@ export async function POST(
       }>)
     : []
   const matchedSuggestion = suggestions.find((s) => s.contactId === contactId)
+  // Preserve a prior attachedFromSuggestion if one exists; only overwrite
+  // when the current click matches a current suggestion.
   const newMeta = {
     ...meta,
     attachedAt: new Date().toISOString(),

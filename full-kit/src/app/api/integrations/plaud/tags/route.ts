@@ -29,9 +29,20 @@ export async function GET(request: Request): Promise<Response> {
     return errorResponse(err)
   }
   const row = await db.systemState.findUnique({ where: { key: TAG_MAP_KEY } })
-  return NextResponse.json({
-    map: (row?.value as Record<string, string> | null) ?? {},
-  })
+  // Filter through the same allow-list as the POST writer so a tampered
+  // row can't expose unexpected shapes to the UI.
+  const safe: Record<string, string> = Object.create(null)
+  if (
+    row?.value &&
+    typeof row.value === "object" &&
+    !Array.isArray(row.value)
+  ) {
+    for (const [k, v] of Object.entries(row.value as Record<string, unknown>)) {
+      if (k === "__proto__" || k === "constructor" || k === "prototype") continue
+      if (typeof v === "string" && v.length > 0) safe[k] = v
+    }
+  }
+  return NextResponse.json({ map: { ...safe } })
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -61,6 +72,16 @@ export async function POST(request: Request): Promise<Response> {
     (typeof contactId !== "string" || contactId.length === 0)
   ) {
     return NextResponse.json({ error: "invalid_contactId" }, { status: 400 })
+  }
+
+  if (typeof contactId === "string") {
+    const contact = await db.contact.findUnique({
+      where: { id: contactId },
+      select: { id: true, archivedAt: true },
+    })
+    if (!contact || contact.archivedAt) {
+      return NextResponse.json({ error: "contact_not_found" }, { status: 422 })
+    }
   }
 
   // Read-modify-write inside a transaction so concurrent updates don't lose

@@ -37,14 +37,40 @@ export async function GET(
     where: { id },
     include: {
       contact: { select: { id: true, name: true } },
-      externalSync: {
-        select: { id: true, source: true, externalId: true, rawData: true },
-      },
     },
   })
   const meta = (row?.metadata ?? {}) as Record<string, unknown>
   if (!row || row.channel !== "call" || meta.source !== "plaud") {
     return NextResponse.json({ error: "not_found" }, { status: 404 })
+  }
+  // Allow-list metadata fields. Internal AI error blobs and the raw
+  // ExternalSync.rawData (full upstream payload) are NOT exposed to the
+  // browser. Operators can pull those server-side via Prisma if they
+  // need to debug.
+  const safeMeta = {
+    source: meta.source,
+    plaudId: meta.plaudId,
+    plaudFilename: meta.plaudFilename,
+    plaudTagIds: Array.isArray(meta.plaudTagIds) ? meta.plaudTagIds : [],
+    cleanedTurns: Array.isArray(meta.cleanedTurns) ? meta.cleanedTurns : [],
+    aiSummaryRaw:
+      typeof meta.aiSummaryRaw === "string" ? meta.aiSummaryRaw : null,
+    extractedSignals:
+      meta.extractedSignals && typeof meta.extractedSignals === "object"
+        ? meta.extractedSignals
+        : null,
+    aiSkipReason:
+      meta.aiSkipReason === "sensitive_keywords"
+        ? "sensitive_keywords"
+        : undefined,
+    suggestions: Array.isArray(meta.suggestions) ? meta.suggestions : [],
+    attachedAt: typeof meta.attachedAt === "string" ? meta.attachedAt : undefined,
+    attachedBy: typeof meta.attachedBy === "string" ? meta.attachedBy : undefined,
+    attachedFromSuggestion:
+      meta.attachedFromSuggestion &&
+      typeof meta.attachedFromSuggestion === "object"
+        ? meta.attachedFromSuggestion
+        : undefined,
   }
   return NextResponse.json({
     id: row.id,
@@ -54,8 +80,7 @@ export async function GET(
     body: row.body,
     contactId: row.contactId,
     archivedAt: row.archivedAt,
-    metadata: meta,
+    metadata: safeMeta,
     contact: row.contact,
-    externalSync: row.externalSync,
   })
 }

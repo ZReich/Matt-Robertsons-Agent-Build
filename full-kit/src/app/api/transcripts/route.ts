@@ -73,10 +73,13 @@ export async function GET(request: Request): Promise<Response> {
       : {}),
   }
 
+  // Composite ordering [date desc, id desc] makes cursor pagination
+  // stable across rows that share a date (cursor-by-id alone would skip
+  // or duplicate rows in date-tie windows).
   const rows = await db.communication.findMany({
     where,
-    orderBy: { date: "desc" },
-    take: limit + 1, // +1 to compute hasNext
+    orderBy: [{ date: "desc" }, { id: "desc" }],
+    take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     select: {
       id: true,

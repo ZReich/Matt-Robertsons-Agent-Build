@@ -10,6 +10,10 @@ import {
 
 export const dynamic = "force-dynamic"
 // First sync can pull ~90 days of recordings → AI passes per recording add up.
+// 300s requires Vercel Pro or higher; on Hobby this is silently capped at
+// 60s. The orchestrator's MAX_PAGES + per-recording errors-don't-abort
+// design means a 60s cap just means more pages are processed across
+// multiple cron ticks, not data loss.
 export const maxDuration = 300
 
 const BEARER_PREFIX = "Bearer "
