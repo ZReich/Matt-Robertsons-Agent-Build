@@ -1,8 +1,16 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { format, isBefore, startOfDay } from "date-fns"
-import { CheckCircle2, Circle, FileText, Sparkles, User } from "lucide-react"
+import {
+  Building,
+  CheckCircle2,
+  Circle,
+  FileText,
+  Sparkles,
+  User,
+} from "lucide-react"
 
 import type { TodoResolvedContext } from "@/lib/vault/resolve-context"
 import type { TodoMeta, VaultNote } from "@/lib/vault/shared"
@@ -61,6 +69,13 @@ function isDoneOrDismissed(note: TodoNote) {
   return isTodoDoneOrDismissed(note.meta.status)
 }
 
+/** Trim long property addresses so the chip stays one line on narrow cards.
+ * Full address is preserved in the title attribute for hover. */
+function truncateAddress(address: string, max = 30): string {
+  if (address.length <= max) return address
+  return address.slice(0, max - 1).trimEnd() + "…"
+}
+
 function sortTodos(todos: TodoNote[]): TodoNote[] {
   return [...todos].sort((a, b) => {
     const pa = PRIORITY_ORDER[a.meta.priority ?? "medium"] ?? 2
@@ -81,6 +96,7 @@ function TodoItem({
   context?: TodoResolvedContext
   onSelect: () => void
 }) {
+  const router = useRouter()
   const [done, setDone] = useState(note.meta.status === "done")
   const [loading, setLoading] = useState(false)
   const today = startOfDay(new Date())
@@ -192,6 +208,23 @@ function TodoItem({
               <User className="size-3" />
               {contactName}
             </span>
+          )}
+          {note.meta.property && (
+            <Badge
+              variant="outline"
+              className="text-xs py-0 inline-flex items-center gap-1 cursor-pointer hover:bg-accent"
+              onClick={(e) => {
+                // Stop propagation so the card-level onClick doesn't open
+                // the detail drawer when the operator means to navigate to
+                // the property page.
+                e.stopPropagation()
+                router.push(`/en/pages/properties/${note.meta.property!.id}`)
+              }}
+              title={note.meta.property.address}
+            >
+              <Building className="size-3" />
+              {truncateAddress(note.meta.property.address)}
+            </Badge>
           )}
           {dealName && (
             <Badge variant="outline" className="text-xs py-0">

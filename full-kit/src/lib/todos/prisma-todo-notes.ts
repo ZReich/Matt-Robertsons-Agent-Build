@@ -68,6 +68,32 @@ export type PrismaTodoNotesWithContexts = {
   contexts: ReturnType<typeof resolvePrismaTodoContexts>
 }
 
+/**
+ * Lookup map of `propertyId` → `{ id, address }`. Built from a single
+ * batched `db.property.findMany` over the property IDs that appear in the
+ * `metadata.propertyId` field of the visible Todos. Empty when no Todo
+ * carries a property reference, in which case no DB query is issued.
+ */
+type PropertyLookup = Map<string, { id: string; address: string }>
+
+async function loadPropertyLookup(
+  todos: TodoWithContext[]
+): Promise<PropertyLookup> {
+  const propertyIds = new Set<string>()
+  for (const todo of todos) {
+    const meta = asMetadataRecord(todo.metadata)
+    const id = typeof meta.propertyId === "string" ? meta.propertyId : null
+    if (id) propertyIds.add(id)
+  }
+  if (propertyIds.size === 0) return new Map()
+
+  const rows = await db.property.findMany({
+    where: { id: { in: Array.from(propertyIds) } },
+    select: { id: true, address: true },
+  })
+  return new Map(rows.map((row) => [row.id, row]))
+}
+
 export async function listPrismaTodoNotesWithContexts(): Promise<PrismaTodoNotesWithContexts> {
   return listPrismaTodoNotesWithContextsWhere({ archivedAt: null })
 }
@@ -109,7 +135,8 @@ export async function updatePrismaTodoFromVaultPath(
       },
       include: TODO_CONTEXT_INCLUDE,
     })
-    return toVaultTodoNote(todo)
+    const propertyLookup = await loadPropertyLookup([todo])
+    return toVaultTodoNote(todo, propertyLookup)
   } catch (err) {
     if (isPrismaRecordNotFoundError(err)) return null
     throw err
@@ -137,7 +164,10 @@ function isPrismaRecordNotFoundError(err: unknown) {
   return (err as { code?: string } | null)?.code === "P2025"
 }
 
-function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
+function toVaultTodoNote(
+  todo: TodoWithContext,
+  propertyLookup: PropertyLookup
+): VaultNote<TodoMeta> {
   const contact = todo.contact?.name ?? todo.communication?.contact?.name
   const deal =
     todo.deal?.propertyAddress ?? todo.communication?.deal?.propertyAddress
@@ -157,6 +187,12 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
   const matchSignals = Array.isArray(meta.matchSignals)
     ? (meta.matchSignals.filter((s) => typeof s === "string") as string[])
     : undefined
+  // metadata.propertyId is written by the auto-promotion sweep when the
+  // entity matcher links a Todo to a Property. Property has no FK on Todo
+  // today, so we resolve it server-side from the batched lookup map.
+  const propertyId =
+    typeof meta.propertyId === "string" ? meta.propertyId : undefined
+  const property = propertyId ? propertyLookup.get(propertyId) : undefined
   return {
     path: prismaTodoPath(todo.id),
     meta: {
@@ -181,6 +217,7 @@ function toVaultTodoNote(todo: TodoWithContext): VaultNote<TodoMeta> {
       ...(matchSignals && matchSignals.length > 0
         ? { match_signals: matchSignals }
         : {}),
+      ...(property ? { property } : {}),
       created: todo.createdAt.toISOString(),
       updated: todo.updatedAt.toISOString(),
     },
@@ -233,8 +270,10 @@ async function listPrismaTodoNotesWithContextsWhere(
     include: TODO_CONTEXT_INCLUDE,
   })
 
+  const propertyLookup = await loadPropertyLookup(todos)
+
   return {
-    notes: todos.map(toVaultTodoNote),
+    notes: todos.map((todo) => toVaultTodoNote(todo, propertyLookup)),
     contexts: resolvePrismaTodoContexts(todos),
   }
 }

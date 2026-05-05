@@ -189,6 +189,12 @@ export interface TodoMeta extends VaultNoteMeta {
   /** Signals that contributed to the match (e.g. "name_token_overlap",
    * "email_exact", "name_ambiguous"). Rendered in the weak-match tooltip. */
   match_signals?: string[]
+  /** Property linked by the entity matcher via `metadata.propertyId`.
+   * Surfaced as a chip on the Todo card so the operator can jump to the
+   * property page. Property has no FK on the Todo model today; this is
+   * resolved server-side from `metadata.propertyId` and embedded into
+   * the meta passed to the client. */
+  property?: { id: string; address: string }
 }
 
 /** Email template frontmatter (vault/templates/*.md) */
