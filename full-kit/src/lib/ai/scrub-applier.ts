@@ -241,8 +241,14 @@ function shouldPersistProfileFacts(): boolean {
   return mode === "live_only" || mode === "targeted_replay" || mode === "write"
 }
 
+// Sensitive content the extractor must never auto-save as a profile fact.
+// Includes protected-class signals, medical/health, legal trouble, financial
+// distress, and addiction-related content. Widened May 2026 (audit fix #6)
+// to add bereavement / serious health terms — the v7 prompt's looser
+// inference language increases the chance these phrases get extracted from
+// passing references in casual emails ("Dad's funeral last week").
 const FORBIDDEN_AUTO_FACT_PATTERN =
-  /\b(disability|diagnosis|pregnant|pregnancy|religion|citizenship|bankrupt|bankruptcy|addict|addiction|depressed|anxious|cancer|divorce|lawsuit|legal trouble|debt|medical|health issue|ssn|social security)\b/i
+  /\b(disability|diagnosis|pregnant|pregnancy|religion|citizenship|bankrupt|bankruptcy|addict|addiction|depressed|anxious|cancer|divorce|lawsuit|legal trouble|debt|medical|health issue|ssn|social security|funeral|passed away|memorial service|miscarriage|rehab|terminal|hospice|IVF|chemo|surgery)\b/i
 
 function shouldDropProfileFact(fact: ContactProfileFactSuggestion): boolean {
   return (

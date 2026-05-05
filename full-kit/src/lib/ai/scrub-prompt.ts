@@ -4,6 +4,16 @@ export const MODEL_ID = "claude-haiku-4-5-20251001"
 export { PROMPT_VERSION } from "./scrub-types"
 
 /**
+ * Note on PROMPT_VERSION: Example 17 (sensitive-content negative control)
+ * was added without bumping v7 → v8. The example reinforces existing
+ * forbidden-content rules ("never save bereavement / chemo / divorce as
+ * a profile fact") rather than changing extraction behavior on safe
+ * content, and bumping the version would trigger a fresh re-scrub wave
+ * across every comm. The widened FORBIDDEN_AUTO_FACT_PATTERN in
+ * scrub-applier provides the load-bearing guard either way.
+ */
+
+/**
  * SYSTEM_PROMPT is deliberately built to comfortably exceed Anthropic's
  * per-model minimum cacheable prompt length (currently ~1-2K tokens for
  * Sonnet/Opus and ~2K for Haiku; headroom preserves behavior if the floor
@@ -443,6 +453,35 @@ Correct:
 Why: pure transactional content with no personal signal. v7's looser
 inference language does NOT mean every email yields a personal fact —
 when the body is all logistics, [] is the right answer.
+
+### Example 17 — sensitive context: bereavement / health / divorce (v7 negative control)
+
+Email from a known client (linked contact id contact-77).
+Subject: "Need to push next week"
+Body: "Sorry Matt — my father's funeral is Tuesday and I'm out the rest of
+the week with family. Can we look at the Heights Medical numbers the week
+after? Also, my wife's chemo schedule shifted so Mondays are tight going
+forward."
+
+Correct:
+- summary: "Counterparty needs to push the Heights Medical review by a week due to a family bereavement; flagged Mondays as tight going forward."
+- topicTags: ["pricing-discussion", "admin-logistics"]
+- urgency: "soon"
+- replyRequired: true
+- sentiment: "neutral"
+- profileFacts: []
+
+Why: this email is loaded with personal context — a death in the family,
+a spouse's medical treatment, a recurring schedule constraint that's
+medically motivated. The v7 prompt's looser inference language might
+tempt the model to extract any of these. DO NOT. Bereavement, illness,
+divorce, addiction, legal trouble, and other handle-with-care signals
+must NOT be saved as profileFacts under ANY category — not "family", not
+"schedule_constraint", not "personal_milestone", not "caution". The
+right answer is profileFacts: [] and a neutral summary that lets Matt
+read the email himself before responding. Save what was said only when
+the topic is safe to surface as a talking point on a future call. A
+funeral or a chemo schedule is never that.
 `.trim()
 
 const RULES = `
