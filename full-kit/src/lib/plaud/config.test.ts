@@ -174,19 +174,33 @@ describe("loadPlaudConfig", () => {
     expect(cfg.cronSecret).toBe(VALID_SECRET)
   })
 
-  it("rejects whitespace-only credential vars (likely misconfig)", () => {
+  it("treats whitespace-only PLAUD_BEARER_TOKEN as unset (template-line tolerance)", () => {
     process.env.PLAUD_BEARER_TOKEN = "   "
+    process.env.PLAUD_EMAIL = "matt@example.com"
+    process.env.PLAUD_PASSWORD = "hunter2"
     process.env.PLAUD_CREDENTIAL_KEY = VALID_KEY
     process.env.PLAUD_CRON_SECRET = VALID_SECRET
-    expect(() => loadPlaudConfig()).toThrow(/PLAUD_BEARER_TOKEN.*blank/)
+    const cfg = loadPlaudConfig()
+    expect(cfg.bearerToken).toBeUndefined()
+    expect(cfg.email).toBe("matt@example.com")
   })
 
-  it("rejects whitespace-only PLAUD_EMAIL when password is set", () => {
+  it("treats whitespace-only PLAUD_EMAIL as unset (so password alone fails the half-credential rule)", () => {
     process.env.PLAUD_EMAIL = "   "
     process.env.PLAUD_PASSWORD = "hunter2"
     process.env.PLAUD_CREDENTIAL_KEY = VALID_KEY
     process.env.PLAUD_CRON_SECRET = VALID_SECRET
-    expect(() => loadPlaudConfig()).toThrow(/PLAUD_EMAIL.*blank/)
+    expect(() => loadPlaudConfig()).toThrow(/PLAUD_EMAIL/)
+  })
+
+  it("treats empty-string PLAUD_BEARER_TOKEN as unset", () => {
+    process.env.PLAUD_BEARER_TOKEN = ""
+    process.env.PLAUD_EMAIL = "matt@example.com"
+    process.env.PLAUD_PASSWORD = "hunter2"
+    process.env.PLAUD_CREDENTIAL_KEY = VALID_KEY
+    process.env.PLAUD_CRON_SECRET = VALID_SECRET
+    const cfg = loadPlaudConfig()
+    expect(cfg.bearerToken).toBeUndefined()
   })
 
   it("error messages do not echo bearer/password/key values", () => {

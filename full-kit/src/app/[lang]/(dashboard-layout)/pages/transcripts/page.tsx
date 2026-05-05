@@ -35,11 +35,12 @@ export default async function TranscriptsPage({
   const { lang } = await params
   const sp = (await searchParams) ?? {}
   const statusParam = paramString(sp.status)
-  const status: Status = (
-    STATUSES.includes((statusParam as Status) ?? "needs_review")
-      ? (statusParam as Status)
+  const status: Status =
+    statusParam === "needs_review" ||
+    statusParam === "matched" ||
+    statusParam === "archived"
+      ? statusParam
       : "needs_review"
-  ) as Status
 
   const baseFilter = {
     channel: "call" as const,

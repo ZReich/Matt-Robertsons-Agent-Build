@@ -5,23 +5,15 @@ import type { PlaudRegion } from "./types"
 const HEX64 = /^[0-9a-fA-F]{64}$/
 
 /**
- * For an optional credential field, distinguish between three cases:
- *   - unset (undefined) → undefined (OK)
- *   - set to "" or whitespace-only → fail loudly (likely a misconfig)
- *   - set to a real value → trim and return
+ * For an optional credential field, treat unset / empty / whitespace-only
+ * all as "not provided." Template-style `.env.local` files ship with
+ * empty `KEY=` lines as placeholders; rejecting those would force the
+ * operator to delete or comment them out, which is friction we don't
+ * need.
  */
 const optionalCredential = z
   .string()
   .optional()
-  .superRefine((s, ctx) => {
-    if (s !== undefined && s.trim().length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          "is set but blank or whitespace-only — leave the env var unset or provide a real value",
-      })
-    }
-  })
   .transform((s) => (s ? s.trim() : undefined))
   .transform((s) => (s && s.length > 0 ? s : undefined))
 
