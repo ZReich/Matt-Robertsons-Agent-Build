@@ -341,6 +341,168 @@ export async function getRecordingDetail(opts: {
 }
 
 // ---------------------------------------------------------------------------
+// Transcription lifecycle (mirrors the Python toolkit's start → wait →
+// save_results pattern). Plaud doesn't auto-transcribe recordings —
+// is_trans=false stays false until a client kicks off analysis AND
+// PATCHes the result back. We do all three steps server-side so Matt
+// doesn't have to open the Plaud app.
+// ---------------------------------------------------------------------------
+
+const TRANSCRIPTION_LANGUAGE = "en"
+const TRANSCRIPTION_TYPE = "REASONING-NOTE"
+const TRANSCRIPTION_INFO = JSON.stringify({
+  language: TRANSCRIPTION_LANGUAGE,
+  diarization: 1,
+  llm: "auto",
+})
+
+export async function startTranscription(opts: {
+  token: string
+  region: PlaudRegion
+  recordingId: string
+}): Promise<void> {
+  await authedRequest(`/file/${encodeURIComponent(opts.recordingId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      extra_data: {
+        tranConfig: {
+          language: TRANSCRIPTION_LANGUAGE,
+          type_type: "system",
+          type: TRANSCRIPTION_TYPE,
+          diarization: 1,
+          llm: "auto",
+        },
+      },
+    }),
+    headers: { "Content-Type": "application/json" },
+    token: opts.token,
+    region: opts.region,
+  })
+}
+
+/**
+ * Poll the transcription status. Returns `complete: true` when Plaud has
+ * finished analysis; the caller still needs to call
+ * `saveTranscriptionResult` to persist it back onto the recording.
+ *
+ * Upstream uses `status === 1` to indicate "task complete" on this
+ * endpoint (note: different from login's `status === 0` success). The
+ * full result payload comes back as `rawData` for use with
+ * `saveTranscriptionResult`.
+ */
+export async function getTranscriptionStatus(opts: {
+  token: string
+  region: PlaudRegion
+  recordingId: string
+}): Promise<{
+  complete: boolean
+  message: string
+  rawData: Record<string, unknown>
+}> {
+  const data = (await authedRequest(
+    `/ai/transsumm/${encodeURIComponent(opts.recordingId)}`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        is_reload: 0,
+        summ_type: TRANSCRIPTION_TYPE,
+        summ_type_type: "system",
+        info: TRANSCRIPTION_INFO,
+        support_mul_summ: true,
+      }),
+      headers: { "Content-Type": "application/json" },
+      token: opts.token,
+      region: opts.region,
+    }
+  )) as Record<string, unknown> | null
+  const raw = data ?? {}
+  return {
+    complete: raw.status === 1,
+    message: typeof raw.msg === "string" ? raw.msg : "",
+    rawData: raw,
+  }
+}
+
+/**
+ * Persist a completed transcription result back onto the recording.
+ * After this PATCH, the recording's `is_trans` will be true and the
+ * standard `getRecordingDetail` call returns the populated turns.
+ *
+ * `analysisResult` is the `rawData` returned by `getTranscriptionStatus`
+ * once `complete` flipped true.
+ */
+export async function saveTranscriptionResult(opts: {
+  token: string
+  region: PlaudRegion
+  recordingId: string
+  analysisResult: Record<string, unknown>
+}): Promise<void> {
+  const trans_result = Array.isArray(opts.analysisResult.data_result)
+    ? opts.analysisResult.data_result
+    : []
+  const rawAi =
+    typeof opts.analysisResult.data_result_summ === "string"
+      ? opts.analysisResult.data_result_summ
+      : ""
+  // Python toolkit unwraps JSON-shaped ai_content into the markdown
+  // body before persisting; mirror that so the saved field is the
+  // human-readable text rather than a JSON string.
+  let aiContent: string = rawAi
+  let aiContentHeader: Record<string, unknown> = {}
+  if (rawAi.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(rawAi) as Record<string, unknown>
+      if (typeof parsed.markdown === "string") {
+        aiContent = parsed.markdown
+      } else if (
+        parsed.content &&
+        typeof parsed.content === "object" &&
+        typeof (parsed.content as Record<string, unknown>).markdown ===
+          "string"
+      ) {
+        aiContent = (parsed.content as { markdown: string }).markdown
+      } else if (typeof parsed.summary === "string") {
+        aiContent = parsed.summary
+      }
+      if (
+        parsed.header &&
+        typeof parsed.header === "object" &&
+        !Array.isArray(parsed.header)
+      ) {
+        aiContentHeader = parsed.header as Record<string, unknown>
+      }
+    } catch {
+      // leave aiContent as raw
+    }
+  }
+  const outline_result = Array.isArray(opts.analysisResult.outline_result)
+    ? opts.analysisResult.outline_result
+    : []
+  const task_id_info =
+    opts.analysisResult.task_id_info &&
+    typeof opts.analysisResult.task_id_info === "object"
+      ? opts.analysisResult.task_id_info
+      : {}
+
+  await authedRequest(`/file/${encodeURIComponent(opts.recordingId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      trans_result,
+      ai_content: aiContent,
+      outline_result,
+      support_mul_summ: true,
+      extra_data: {
+        task_id_info,
+        aiContentHeader,
+      },
+    }),
+    headers: { "Content-Type": "application/json" },
+    token: opts.token,
+    region: opts.region,
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Login (no auth header, separate path; intentionally NOT retried — bad
 // credentials and rate-limited login are both non-transient enough that a
 // retry would only delay user feedback. Called by the auth resolver which

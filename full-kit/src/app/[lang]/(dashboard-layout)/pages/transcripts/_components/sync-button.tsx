@@ -25,6 +25,8 @@ export function SyncButton() {
         added?: number
         skipped?: number | string
         errors?: number
+        queued?: number
+        pending?: number
         error?: string
       }
       if (res.status === 409) {
@@ -38,10 +40,13 @@ export function SyncButton() {
       const added = body.added ?? 0
       const skipped = typeof body.skipped === "number" ? body.skipped : 0
       const errors = body.errors ?? 0
-      setMessage(
-        `Sync complete — added ${added}, skipped ${skipped}` +
-          (errors ? `, errors ${errors}` : "")
-      )
+      const queued = body.queued ?? 0
+      const pending = body.pending ?? 0
+      const parts = [`added ${added}`, `skipped ${skipped}`]
+      if (queued) parts.push(`queued ${queued} for transcription`)
+      if (pending) parts.push(`${pending} still transcribing`)
+      if (errors) parts.push(`errors ${errors}`)
+      setMessage(`Sync complete — ${parts.join(", ")}`)
       startTransition(() => router.refresh())
     } catch (err) {
       setMessage(

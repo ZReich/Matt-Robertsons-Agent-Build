@@ -5,7 +5,13 @@ import { db } from "@/lib/prisma"
 
 import { cleanTranscript, extractSignals } from "./ai-passes"
 import { withTokenRefreshOn401 } from "./auth"
-import { getRecordingDetail, listRecordings } from "./client"
+import {
+  getRecordingDetail,
+  getTranscriptionStatus,
+  listRecordings,
+  saveTranscriptionResult,
+  startTranscription,
+} from "./client"
 import { loadPlaudConfig } from "./config"
 import {
   suggestContacts,
@@ -34,6 +40,10 @@ export interface SyncResult {
   added: number
   skipped: number | "already_running"
   errors: number
+  /** Recordings we just triggered Plaud transcription on this run. */
+  queued?: number
+  /** Recordings still waiting on Plaud transcription from a previous run. */
+  pending?: number
   durationMs: number
   manual?: boolean
 }
@@ -122,12 +132,13 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
   let added = 0
   let skipped = 0
   let errors = 0
-  // Collect successful startTimes and the earliest failed startTime so we
-  // can advance the watermark only past a contiguous prefix of successes.
-  // This avoids the "silently dropped failure" bug where a mid-page failure
-  // would otherwise let the watermark jump past it and the failed recording
-  // would never be retried.
-  let earliestFailureMs: number | null = null
+  let queued = 0
+  let pending = 0
+  // Collect successful startTimes and the earliest unprocessed startTime
+  // so we can advance the watermark only past a contiguous prefix of
+  // successes. This avoids silently dropping failures or recordings still
+  // waiting on Plaud transcription — they need to be re-pulled next sync.
+  let earliestUnprocessedMs: number | null = null
   const successStartMs: number[] = []
 
   for (let page = 0; page < MAX_PAGES; page++) {
@@ -161,14 +172,31 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
           tagToContactMap,
           region: cfg.region,
         })
-        if (status === "skipped") skipped++
-        else added++
-        successStartMs.push(recording.startTime.getTime())
+        if (status === "skipped") {
+          skipped++
+          successStartMs.push(recording.startTime.getTime())
+        } else if (status === "added") {
+          added++
+          successStartMs.push(recording.startTime.getTime())
+        } else if (status === "queued") {
+          queued++
+          // Hold watermark — we want to re-encounter this on the next sync.
+          const ms = recording.startTime.getTime()
+          if (earliestUnprocessedMs === null || ms < earliestUnprocessedMs) {
+            earliestUnprocessedMs = ms
+          }
+        } else if (status === "pending") {
+          pending++
+          const ms = recording.startTime.getTime()
+          if (earliestUnprocessedMs === null || ms < earliestUnprocessedMs) {
+            earliestUnprocessedMs = ms
+          }
+        }
       } catch (err) {
         errors++
         const failedMs = recording.startTime.getTime()
-        if (earliestFailureMs === null || failedMs < earliestFailureMs) {
-          earliestFailureMs = failedMs
+        if (earliestUnprocessedMs === null || failedMs < earliestUnprocessedMs) {
+          earliestUnprocessedMs = failedMs
         }
         // eslint-disable-next-line no-console
         console.error(
@@ -186,11 +214,12 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
   }
 
   // Compute the new watermark: highest success that is OLDER than the
-  // earliest failure. If no failures, it's just max(successes). If all
-  // successes are newer than the earliest failure, watermark stays at
-  // `since` (don't advance — next sync re-attempts the failed recording).
+  // earliest unprocessed (failed OR pending OR queued-this-run). If no
+  // unprocessed, it's just max(successes). If all successes are newer
+  // than the earliest unprocessed, watermark stays at `since` so the
+  // next sync re-encounters them.
   const eligibleSuccesses = successStartMs.filter(
-    (ms) => earliestFailureMs === null || ms < earliestFailureMs
+    (ms) => earliestUnprocessedMs === null || ms < earliestUnprocessedMs
   )
   const newWatermarkMs =
     eligibleSuccesses.length > 0 ? Math.max(...eligibleSuccesses) : sinceMs
@@ -207,6 +236,8 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
     added,
     skipped,
     errors,
+    queued,
+    pending,
     durationMs: Date.now() - t0,
     manual: opts.manual,
   }
@@ -220,9 +251,11 @@ interface ProcessRecordingInput {
   region: ReturnType<typeof loadPlaudConfig>["region"]
 }
 
+type ProcessStatus = "added" | "skipped" | "queued" | "pending"
+
 async function processRecording(
   opts: ProcessRecordingInput
-): Promise<"added" | "skipped"> {
+): Promise<ProcessStatus> {
   const existing = await db.externalSync.findUnique({
     where: {
       source_externalId: { source: "plaud", externalId: opts.recording.id },
@@ -230,6 +263,75 @@ async function processRecording(
   })
   if (existing && existing.status === "synced") return "skipped"
 
+  // Auto-transcribe path: when Plaud hasn't transcribed yet, kick off
+  // its analysis (or check progress on a previously-triggered one).
+  if (!opts.recording.isTranscribed) {
+    // No prior trigger: kick off Plaud's transcription and remember we did.
+    if (!existing) {
+      await withTokenRefreshOn401((token) =>
+        startTranscription({
+          token,
+          region: opts.region,
+          recordingId: opts.recording.id,
+        })
+      )
+      await db.externalSync.create({
+        data: {
+          source: "plaud",
+          externalId: opts.recording.id,
+          entityType: "communication",
+          rawData: {
+            triggeredAt: new Date().toISOString(),
+          } as Prisma.InputJsonValue,
+          status: "pending",
+        },
+      })
+      return "queued"
+    }
+    // Prior trigger exists: poll status. Plaud's `status === 1` on the
+    // transsumm endpoint = "complete" (different sentinel from /auth login).
+    let statusResult: Awaited<ReturnType<typeof getTranscriptionStatus>>
+    try {
+      statusResult = await withTokenRefreshOn401((token) =>
+        getTranscriptionStatus({
+          token,
+          region: opts.region,
+          recordingId: opts.recording.id,
+        })
+      )
+    } catch {
+      // transient — leave row pending, try again next sync
+      return "pending"
+    }
+    if (!statusResult.complete) return "pending"
+
+    // Persist the result back onto the recording so is_trans flips true,
+    // then fall through to the standard path which re-fetches detail.
+    await withTokenRefreshOn401((token) =>
+      saveTranscriptionResult({
+        token,
+        region: opts.region,
+        recordingId: opts.recording.id,
+        analysisResult: statusResult.rawData,
+      })
+    )
+    // Fall through with isTranscribed forced true so the standard path
+    // re-fetches the (now-populated) detail. Note: `existing` is the
+    // pending row and `processTranscribedRecording` will upsert it to
+    // status="synced".
+    return await processTranscribedRecording({
+      ...opts,
+      recording: { ...opts.recording, isTranscribed: true },
+    })
+  }
+
+  // Standard path — recording is already transcribed in Plaud.
+  return await processTranscribedRecording(opts)
+}
+
+async function processTranscribedRecording(
+  opts: ProcessRecordingInput
+): Promise<ProcessStatus> {
   // Network-heavy work BEFORE the transaction.
   const transcript = await withTokenRefreshOn401((token) =>
     getRecordingDetail({

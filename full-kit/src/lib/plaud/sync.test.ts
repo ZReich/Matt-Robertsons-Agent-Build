@@ -5,6 +5,9 @@ import type { PlaudRecording } from "./types"
 const {
   listRecordingsMock,
   getRecordingDetailMock,
+  startTranscriptionMock,
+  getTranscriptionStatusMock,
+  saveTranscriptionResultMock,
   cleanMock,
   extractMock,
   suggestContactsMock,
@@ -13,6 +16,9 @@ const {
 } = vi.hoisted(() => ({
   listRecordingsMock: vi.fn(),
   getRecordingDetailMock: vi.fn(),
+  startTranscriptionMock: vi.fn().mockResolvedValue(undefined),
+  getTranscriptionStatusMock: vi.fn(),
+  saveTranscriptionResultMock: vi.fn().mockResolvedValue(undefined),
   cleanMock: vi.fn(),
   extractMock: vi.fn(),
   suggestContactsMock: vi.fn().mockReturnValue([]),
@@ -21,6 +27,7 @@ const {
     externalSync: {
       findUnique: vi.fn(),
       upsert: vi.fn().mockResolvedValue({ id: "es-1" }),
+      create: vi.fn().mockResolvedValue({ id: "es-pending" }),
     },
     contact: {
       findMany: vi.fn().mockResolvedValue([]),
@@ -51,6 +58,9 @@ vi.mock("./client", async () => {
     ...actual,
     listRecordings: listRecordingsMock,
     getRecordingDetail: getRecordingDetailMock,
+    startTranscription: startTranscriptionMock,
+    getTranscriptionStatus: getTranscriptionStatusMock,
+    saveTranscriptionResult: saveTranscriptionResultMock,
   }
 })
 
@@ -340,6 +350,115 @@ describe("syncPlaud", () => {
     const create = dbMock.communication.create.mock.calls[0][0]
     expect(create.data.metadata).not.toHaveProperty("rawTurns")
     expect(create.data.metadata).toHaveProperty("cleanedTurns")
+  })
+
+  describe("auto-transcribe (un-transcribed recordings)", () => {
+    it("triggers Plaud transcription and creates a pending ExternalSync row when no prior trigger exists", async () => {
+      listRecordingsMock.mockResolvedValueOnce({
+        items: [mkRec({ id: "untranscribed", isTranscribed: false })],
+      })
+      listRecordingsMock.mockResolvedValueOnce({ items: [] })
+      dbMock.externalSync.findUnique.mockResolvedValue(null)
+
+      const result = await syncPlaud()
+      expect(result.queued).toBe(1)
+      expect(result.added).toBe(0)
+      expect(startTranscriptionMock).toHaveBeenCalledOnce()
+      expect(dbMock.externalSync.create).toHaveBeenCalledOnce()
+      const created = dbMock.externalSync.create.mock.calls[0][0]
+      expect(created.data.status).toBe("pending")
+      expect(dbMock.communication.create).not.toHaveBeenCalled()
+    })
+
+    it("queued recordings hold the watermark back so next sync re-encounters them", async () => {
+      listRecordingsMock.mockResolvedValueOnce({
+        items: [
+          mkRec({
+            id: "untranscribed-only",
+            isTranscribed: false,
+            startTime: new Date("2026-05-04T14:00:00Z"),
+          }),
+        ],
+      })
+      listRecordingsMock.mockResolvedValueOnce({ items: [] })
+      dbMock.externalSync.findUnique.mockResolvedValue(null)
+      await syncPlaud()
+      // Queued-only run should not advance the watermark.
+      expect(dbMock.systemState.upsert).not.toHaveBeenCalled()
+    })
+
+    it("polls status when ExternalSync is pending; returns 'pending' when not yet complete", async () => {
+      listRecordingsMock.mockResolvedValueOnce({
+        items: [mkRec({ id: "still-processing", isTranscribed: false })],
+      })
+      listRecordingsMock.mockResolvedValueOnce({ items: [] })
+      dbMock.externalSync.findUnique.mockResolvedValue({
+        id: "es-pending-1",
+        status: "pending",
+        rawData: { triggeredAt: "2026-05-04T13:00:00Z" },
+      })
+      getTranscriptionStatusMock.mockResolvedValueOnce({
+        complete: false,
+        message: "task processing",
+        rawData: {},
+      })
+
+      const result = await syncPlaud()
+      expect(result.pending).toBe(1)
+      expect(result.added).toBe(0)
+      expect(saveTranscriptionResultMock).not.toHaveBeenCalled()
+      expect(dbMock.communication.create).not.toHaveBeenCalled()
+    })
+
+    it("when polling finds 'complete', persists the result and processes via the standard path", async () => {
+      listRecordingsMock.mockResolvedValueOnce({
+        items: [mkRec({ id: "now-done", isTranscribed: false })],
+      })
+      listRecordingsMock.mockResolvedValueOnce({ items: [] })
+      dbMock.externalSync.findUnique.mockResolvedValue({
+        id: "es-pending-2",
+        status: "pending",
+        rawData: { triggeredAt: "2026-05-04T13:00:00Z" },
+      })
+      getTranscriptionStatusMock.mockResolvedValueOnce({
+        complete: true,
+        message: "task complete",
+        rawData: {
+          status: 1,
+          data_result: [
+            { speaker: "Speaker 1", content: "Hi", start_time: 0, end_time: 1000 },
+          ],
+          data_result_summ: '{"markdown":"summary"}',
+        },
+      })
+
+      const result = await syncPlaud()
+      expect(saveTranscriptionResultMock).toHaveBeenCalledOnce()
+      expect(getRecordingDetailMock).toHaveBeenCalledOnce()
+      expect(result.added).toBe(1)
+      expect(result.pending).toBe(0)
+      expect(dbMock.communication.create).toHaveBeenCalledOnce()
+    })
+
+    it("transient poll failure leaves the row pending without advancing watermark", async () => {
+      listRecordingsMock.mockResolvedValueOnce({
+        items: [mkRec({ id: "poll-fail", isTranscribed: false })],
+      })
+      listRecordingsMock.mockResolvedValueOnce({ items: [] })
+      dbMock.externalSync.findUnique.mockResolvedValue({
+        id: "es-pending-3",
+        status: "pending",
+        rawData: {},
+      })
+      getTranscriptionStatusMock.mockRejectedValueOnce(
+        new Error("network blip")
+      )
+
+      const result = await syncPlaud()
+      expect(result.pending).toBe(1)
+      expect(saveTranscriptionResultMock).not.toHaveBeenCalled()
+      expect(dbMock.systemState.upsert).not.toHaveBeenCalled()
+    })
   })
 
   it("manual=true is reflected in the result for telemetry", async () => {

@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { TranscriptDetail } from "./_components/transcript-detail"
 
 export const metadata: Metadata = {
@@ -127,8 +128,8 @@ export default async function TranscriptDetailPage({ params }: Props) {
           <CardHeader>
             <CardTitle className="text-sm">AI summary</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm whitespace-pre-wrap">
-            {aiSummary}
+          <CardContent>
+            <MarkdownRenderer content={aiSummary} size="compact" />
           </CardContent>
         </Card>
       ) : null}
