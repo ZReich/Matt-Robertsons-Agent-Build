@@ -313,7 +313,7 @@ async function processRecording(
           ...(cleaned.aiError ? { aiCleanError: cleaned.aiError } : {}),
           ...(signals.aiError ? { aiExtractError: signals.aiError } : {}),
           suggestions,
-        } satisfies Prisma.InputJsonValue,
+        } as unknown as Prisma.InputJsonValue,
       },
     })
   })

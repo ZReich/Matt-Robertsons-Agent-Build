@@ -577,8 +577,17 @@ and personal milestones too. Many emails will yield zero personal facts
 correct. The change in v7 is that emails with ONE casual personal
 signal should now produce ONE low-confidence fact instead of an empty
 array.
-- profileFacts must use an existing linked contact id from context and the
-  current sourceCommunicationId. If identity is unknown, emit no facts.
+- profileFacts MUST set fact.contactId to the SOURCE COMMUNICATION's
+  primary contactId (the contact the email is associated with — given to
+  you in the per-email context as comm.contactId). The Personal tab is
+  about THAT contact. DO NOT extract facts about other participants in
+  the thread (Matt the operator, third-party brokers, attorneys, etc.) —
+  even if those participants are explicitly named or quoted. If a useful
+  signal is about Matt's own behavior (e.g. "Matt replies fast"), skip
+  it; that's not a fact about the contact whose page this is.
+  Always use the current sourceCommunicationId. If identity is unknown
+  OR if the only candidate facts are about non-target participants, emit
+  no facts.
   Keep wording neutral and professional. wordingClass is independent of
   category and tells the apply-layer how to route the fact:
   - operational: day-to-day workflow signal (preferred meeting times,

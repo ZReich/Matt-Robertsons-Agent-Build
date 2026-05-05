@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/sync-and-scrub",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/integrations/plaud/sync",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
