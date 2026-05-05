@@ -72,6 +72,9 @@ export async function matchEntitiesForAction(
       "contactEmail",
       "inquirerEmail",
       "fromEmail",
+      "recipientEmail",
+      "senderEmail",
+      "toEmail",
     ])
     if (email) {
       const normalized = email.trim().toLowerCase()
@@ -98,6 +101,10 @@ export async function matchEntitiesForAction(
       "name",
       "inquirerName",
       "fromName",
+      "recipientDisplayName",
+      "recipientName",
+      "senderName",
+      "displayName",
     ])
     if (name) {
       const tokens = nameTokens(name)
