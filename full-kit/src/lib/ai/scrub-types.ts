@@ -1,4 +1,4 @@
-export const PROMPT_VERSION = "v6"
+export const PROMPT_VERSION = "v7"
 export const PROMPT_RELEASED_AT = "2026-05-04T00:00:00.000Z"
 
 export const TOPIC_TAGS = [
@@ -61,6 +61,12 @@ export const DEAL_STAGES = [
  * financial distress, protected-class) enforced in scrub-applier
  * `FORBIDDEN_AUTO_FACT_PATTERN`. The `caution` wordingClass route remains
  * the safety valve for anything ambiguous.
+ *
+ * v7 (2026-05-04) keeps the same taxonomy but loosens the extractor
+ * prompt so casual / inferred personal signals (subject-line inside
+ * jokes, sign-off names, vehicle references) produce low-confidence
+ * facts rather than empty arrays. Auto-save threshold (0.85 in
+ * scrub-applier) is unchanged, so inferred facts route to review.
  *
  * The DB column `contact_profile_facts.category` is `text`, so adding
  * categories does NOT require a Prisma migration — only the validator,

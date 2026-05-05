@@ -528,7 +528,7 @@ describe("applyScrubResult", () => {
     expect(db.contactProfileFact.upsert).not.toHaveBeenCalled()
   })
 
-  it("locks the profile fact category vocabulary to the v6 taxonomy", () => {
+  it("locks the profile fact category vocabulary to the v6/v7 taxonomy", () => {
     // Negative control: this test fails if any old name (constraint,
     // schedule, relationship, other) is reintroduced or if a new personal
     // category is added without consciously updating the display map in
