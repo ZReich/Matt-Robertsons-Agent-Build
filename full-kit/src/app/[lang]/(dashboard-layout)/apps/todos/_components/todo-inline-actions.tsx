@@ -69,10 +69,9 @@ const BUTTON_SETS: Record<string, ButtonSpec[]> = {
     { label: "Apply change", variant: "approve", hint: "Apply the meeting update" },
     { label: "Reject", variant: "reject", hint: "Leave the meeting as-is" },
   ],
-  "set-client-type": [
-    { label: "Confirm", variant: "approve", hint: "Apply the client-type change" },
-    { label: "Reject", variant: "reject", hint: "Leave the client type as-is" },
-  ],
+  // `set-client-type` is intentionally absent: sync-contact-role.ts emits
+  // those AgentActions with status="executed" directly, so they never land
+  // on a Todo card. Re-add when/if that flow gates on operator approval.
 }
 
 export function TodoInlineActions({

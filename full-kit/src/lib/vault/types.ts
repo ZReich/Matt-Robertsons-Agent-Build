@@ -206,7 +206,12 @@ export interface VaultNote<T extends VaultNoteMeta = VaultNoteMeta> {
 export type AgentActionTier = "auto" | "log-only" | "approve" | "blocked"
 
 /** Agent action status */
-export type AgentActionStatus = "pending" | "approved" | "rejected" | "executed"
+export type AgentActionStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "executed"
+  | "expired"
 
 /** Agent action types */
 export type AgentActionType =

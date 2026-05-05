@@ -1,4 +1,5 @@
 import type { AgentAction, Prisma } from "@prisma/client"
+import { Prisma as PrismaNS } from "@prisma/client"
 
 import { db } from "@/lib/prisma"
 import { matchEntitiesForAction } from "@/lib/todos/entity-matcher"
@@ -39,7 +40,15 @@ export interface AutoPromoteResult {
 }
 
 export interface AutoPromoteOptions {
+  /** Default 30 days. Applies to non-approval-todo action types. */
   freshnessWindowDays?: number
+  /**
+   * Default 90 days for `approval-todo` action types (auto-reply,
+   * update-meeting, deal changes, deletes). Slow-cooking deals can sit
+   * for 30+ days before the operator gets back to them — auditing showed
+   * 30d was silently expiring legitimate items.
+   */
+  freshnessForApprovalDays?: number
   dryRun?: boolean
   /** Cap on actions processed per sweep; default 500 to bound cron runtime. */
   limit?: number
@@ -48,6 +57,7 @@ export interface AutoPromoteOptions {
 }
 
 const DEFAULT_FRESHNESS_DAYS = 30
+const DEFAULT_FRESHNESS_FOR_APPROVAL_DAYS = 90
 const DEFAULT_LIMIT = 500
 
 /**
@@ -60,8 +70,10 @@ const DEFAULT_LIMIT = 500
  *   needed here.
  * - `summarize-thread`, `summarize-contact` — pure cache writes, never
  *   surface to the operator.
- * - `set-client-type` — auto-todo; the operator should see "Mark Acme
- *   as past_client" so they can confirm the lifecycle change.
+ * - `set-client-type` is intentionally absent: it is always emitted with
+ *   status="executed" by sync-contact-role.ts, so it never sits as
+ *   pending and never reaches this map. Re-add only if that emitter
+ *   changes to issue pending rows.
  * - `move-deal-stage`, `update-deal`, `create-deal` — high-impact pipeline
  *   changes. Surface as approval-todo with inline Apply / Reject.
  * - `update-meeting` — same pattern; calendar edits need confirmation.
@@ -79,8 +91,6 @@ export const ACTION_TYPE_TODO_BEHAVIOR: Record<
   // Pure cache actions — no operator surface required.
   "summarize-thread": "skip",
   "summarize-contact": "skip",
-  // Lifecycle nudges where the operator should glance + confirm.
-  "set-client-type": "auto-todo",
   // Pipeline changes the operator must approve.
   "move-deal-stage": "approval-todo",
   "update-deal": "approval-todo",
@@ -97,10 +107,15 @@ export async function autoPromoteAgentActionsToTodos(
   opts: AutoPromoteOptions = {}
 ): Promise<AutoPromoteResult> {
   const freshnessDays = opts.freshnessWindowDays ?? DEFAULT_FRESHNESS_DAYS
+  const freshnessForApprovalDays =
+    opts.freshnessForApprovalDays ?? DEFAULT_FRESHNESS_FOR_APPROVAL_DAYS
   const limit = opts.limit ?? DEFAULT_LIMIT
   const dryRun = opts.dryRun === true
   const now = opts.now ?? new Date()
   const cutoff = new Date(now.getTime() - freshnessDays * 24 * 60 * 60 * 1000)
+  const approvalCutoff = new Date(
+    now.getTime() - freshnessForApprovalDays * 24 * 60 * 60 * 1000
+  )
 
   const pending = await db.agentAction.findMany({
     where: { status: "pending" },
@@ -131,9 +146,18 @@ export async function autoPromoteAgentActionsToTodos(
 
   for (const action of pending) {
     try {
-      // Stale → expired. Process this BEFORE the policy lookup so a
-      // long-pending unsupported action still gets retired.
-      if (action.createdAt < cutoff) {
+      // Look up the policy first so we can pick the right freshness window
+      // before retiring the row. approval-todo types (auto-reply,
+      // update-meeting, deal changes, deletes) get a longer 90-day grace
+      // because slow-cooking deals routinely sit > 30 days.
+      const policy = ACTION_TYPE_TODO_BEHAVIOR[action.actionType] ?? null
+      const expirationCutoff =
+        policy === "approval-todo" ? approvalCutoff : cutoff
+
+      // Stale → expired. Process this BEFORE the policy null-check so a
+      // long-pending unsupported action still gets retired with the
+      // default 30d window.
+      if (action.createdAt < expirationCutoff) {
         if (!dryRun) {
           await db.agentAction.update({
             where: { id: action.id },
@@ -144,7 +168,6 @@ export async function autoPromoteAgentActionsToTodos(
         continue
       }
 
-      const policy = ACTION_TYPE_TODO_BEHAVIOR[action.actionType] ?? null
       if (policy === null) {
         console.warn(
           `[auto-promote] unknown actionType=${action.actionType} (action ${action.id}); skipping. Add it to ACTION_TYPE_TODO_BEHAVIOR.`
@@ -167,6 +190,17 @@ export async function autoPromoteAgentActionsToTodos(
       if (promoted) result.promoted++
       else result.skipped++
     } catch (err) {
+      // P2002 on Todo.agentActionId means a concurrent sweep (overlapping
+      // cron + manual trigger) raced past the findUnique guard and we
+      // both tried to insert the linking Todo. The other side won — treat
+      // as a soft skip rather than logging noise.
+      if (
+        err instanceof PrismaNS.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        result.skipped++
+        continue
+      }
       result.errors.push({
         agentActionId: action.id,
         error: err instanceof Error ? err.message : String(err),
@@ -242,6 +276,10 @@ export async function createTodoForApprovableAction(
     payload: (action.payload ?? {}) as Prisma.InputJsonValue,
     matchScore: match.matchScore,
     matchSignals: match.matchSignals,
+    // Property doesn't have a direct FK on Todo today; we surface it via
+    // metadata so the UI can render a property chip without a schema
+    // change. Future: lift propertyId onto the Todo model.
+    propertyId,
     policy,
   }
 
@@ -255,9 +293,6 @@ export async function createTodoForApprovableAction(
         priority: "medium",
         contactId,
         dealId,
-        // Property doesn't have a direct FK on Todo today; we surface it
-        // via metadata so the UI can render a property chip without a
-        // schema change. Future: lift propertyId onto the Todo model.
         communicationId: action.sourceCommunicationId,
         agentActionId: action.id,
         dedupeKey,
@@ -276,7 +311,6 @@ export async function createTodoForApprovableAction(
         data: { status: "approved", feedback: "auto-promoted-to-todo" },
       })
     }
-    void propertyId // referenced by metadata; suppress unused-var lint
   })
 
   return true
@@ -322,13 +356,6 @@ function buildTitle(action: PendingActionWithComm): string {
       return `Confirm new deal: ${summary ?? ""}`.slice(0, 250)
     case "update-meeting":
       return `Confirm meeting change: ${summary ?? ""}`.slice(0, 250)
-    case "set-client-type": {
-      const type = pickString(asRecord(action.payload), ["clientType"])
-      return `Confirm client type${type ? ` = ${type}` : ""}: ${summary ?? ""}`.slice(
-        0,
-        250
-      )
-    }
     default:
       return summary ?? `Review agent action: ${action.actionType}`
   }

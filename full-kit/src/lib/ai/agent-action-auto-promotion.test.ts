@@ -36,7 +36,11 @@ vi.mock("@/lib/prisma", () => ({
 
 const NOW = new Date("2026-05-04T12:00:00.000Z")
 const FRESH = new Date(NOW.getTime() - 5 * 24 * 60 * 60 * 1000)
-const STALE = new Date(NOW.getTime() - 31 * 24 * 60 * 60 * 1000)
+// 91 days — past the 90-day approval-todo freshness window. (The default
+// 30-day window applies only to non-approval-todo types; approval-todo
+// types like auto-reply now get 90 days because slow-cooking deals
+// routinely sit > 30 days before the operator gets back to them.)
+const STALE = new Date(NOW.getTime() - 91 * 24 * 60 * 60 * 1000)
 
 function makeAction(overrides: Record<string, unknown> = {}) {
   return {
@@ -172,7 +176,11 @@ describe("autoPromoteAgentActionsToTodos", () => {
     warn.mockRestore()
   })
 
-  it("auto-todo policy approves the AgentAction after creating the Todo", async () => {
+  it("set-client-type is not in the policy map and is treated as unknown (skipped)", async () => {
+    // sync-contact-role.ts emits set-client-type with status="executed"
+    // directly, so it never reaches this sweep. If it ever did, we want
+    // the unknown-actionType skip + console warning rather than an
+    // accidental side effect.
     const action = makeAction({
       actionType: "set-client-type",
       payload: { clientType: "past_client" },
@@ -180,14 +188,15 @@ describe("autoPromoteAgentActionsToTodos", () => {
     ;(db.agentAction.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
       action,
     ])
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
 
-    await autoPromoteAgentActionsToTodos({ now: NOW })
+    const result = await autoPromoteAgentActionsToTodos({ now: NOW })
 
-    expect(db.todo.create).toHaveBeenCalledTimes(1)
-    expect(db.agentAction.update).toHaveBeenCalledWith({
-      where: { id: action.id },
-      data: { status: "approved", feedback: "auto-promoted-to-todo" },
-    })
+    expect(result.skipped).toBe(1)
+    expect(result.promoted).toBe(0)
+    expect(db.todo.create).not.toHaveBeenCalled()
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
   })
 
   it("returns zero-promote in dryRun mode", async () => {
