@@ -106,6 +106,18 @@ export function CandidateActions({
         toast.success(`${ACTION_LABELS[action] ?? action} applied`)
         window.dispatchEvent(new Event("contact-candidates-changed"))
         router.refresh()
+      } catch (err) {
+        // Network blip / fetch reject / JSON parse error — without this
+        // catch the React error boundary can swallow the failure and the
+        // operator sees the spinner clear with no signal.
+        const message =
+          err instanceof Error
+            ? err.message
+            : typeof err === "string"
+              ? err
+              : "Network error"
+        setError(message)
+        toast.error("Network error")
       } finally {
         setPendingAction(null)
       }
