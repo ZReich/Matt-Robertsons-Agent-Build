@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation"
 import {
   Check,
   LinkIcon,
+  Loader2,
   Pause,
   SearchCheck,
   ThumbsDown,
   UserX,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -20,6 +22,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+
+// Human-readable labels for toast messages and screen-reader feedback. Kept
+// in sync with the action strings the API route accepts in its ACTIONS set.
+const ACTION_LABELS: Record<string, string> = {
+  approve_create_contact: "Approve Contact",
+  approve_link_contact: "Link Contact",
+  needs_more_evidence: "Needs Evidence",
+  snooze: "Snooze",
+  reject: "Reject",
+  not_a_contact: "Not a Contact",
+}
 
 type ContactChoice = {
   id: string
@@ -43,6 +56,11 @@ export function CandidateActions({
 }: CandidateActionsProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  // Track which specific action is in flight so the right button can show a
+  // spinner while the other buttons disable. Without this, users get no
+  // visible feedback during the 1-3s server roundtrip and assume the click
+  // did nothing — which is exactly the bug they reported.
+  const [pendingAction, setPendingAction] = useState<string | null>(null)
   // Only pre-select when there's an actual matching Contact. Otherwise leave
   // the dropdown empty so an arbitrary alphabetical-first contact isn't
   // mistaken for a system suggestion.
@@ -65,24 +83,32 @@ export function CandidateActions({
 
   function runAction(action: string, body: Record<string, unknown> = {}) {
     setError(null)
+    setPendingAction(action)
     startTransition(async () => {
-      const response = await fetch(
-        `/api/contact-promotion-candidates/${candidateId}/actions`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action, ...body }),
+      try {
+        const response = await fetch(
+          `/api/contact-promotion-candidates/${candidateId}/actions`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action, ...body }),
+          }
+        )
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as {
+            error?: string
+          } | null
+          const message = payload?.error ?? "Action failed"
+          setError(message)
+          toast.error(`${ACTION_LABELS[action] ?? action} failed: ${message}`)
+          return
         }
-      )
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as {
-          error?: string
-        } | null
-        setError(payload?.error ?? "Action failed")
-        return
+        toast.success(`${ACTION_LABELS[action] ?? action} applied`)
+        window.dispatchEvent(new Event("contact-candidates-changed"))
+        router.refresh()
+      } finally {
+        setPendingAction(null)
       }
-      window.dispatchEvent(new Event("contact-candidates-changed"))
-      router.refresh()
     })
   }
 
@@ -101,7 +127,11 @@ export function CandidateActions({
           disabled={isPending}
           onClick={() => runAction("approve_create_contact")}
         >
-          <Check className="me-2 size-4" />
+          {pendingAction === "approve_create_contact" ? (
+            <Loader2 className="me-2 size-4 animate-spin" />
+          ) : (
+            <Check className="me-2 size-4" />
+          )}
           Approve Contact
         </Button>
         <Button
@@ -110,7 +140,11 @@ export function CandidateActions({
           disabled={isPending}
           onClick={() => runAction("needs_more_evidence")}
         >
-          <SearchCheck className="me-2 size-4" />
+          {pendingAction === "needs_more_evidence" ? (
+            <Loader2 className="me-2 size-4 animate-spin" />
+          ) : (
+            <SearchCheck className="me-2 size-4" />
+          )}
           Needs Evidence
         </Button>
         <Button
@@ -123,7 +157,11 @@ export function CandidateActions({
             })
           }
         >
-          <Pause className="me-2 size-4" />
+          {pendingAction === "snooze" ? (
+            <Loader2 className="me-2 size-4 animate-spin" />
+          ) : (
+            <Pause className="me-2 size-4" />
+          )}
           Snooze
         </Button>
       </div>
@@ -160,7 +198,11 @@ export function CandidateActions({
               })
             }
           >
-            <LinkIcon className="me-2 size-4" />
+            {pendingAction === "approve_link_contact" ? (
+              <Loader2 className="me-2 size-4 animate-spin" />
+            ) : (
+              <LinkIcon className="me-2 size-4" />
+            )}
             Link Contact
           </Button>
         </div>
@@ -180,7 +222,11 @@ export function CandidateActions({
             disabled={isPending}
             onClick={() => runAction("reject", { reason })}
           >
-            <ThumbsDown className="me-2 size-4" />
+            {pendingAction === "reject" ? (
+              <Loader2 className="me-2 size-4 animate-spin" />
+            ) : (
+              <ThumbsDown className="me-2 size-4" />
+            )}
             Reject
           </Button>
           <Button
@@ -189,13 +235,24 @@ export function CandidateActions({
             disabled={isPending}
             onClick={() => runAction("not_a_contact", { reason })}
           >
-            <UserX className="me-2 size-4" />
+            {pendingAction === "not_a_contact" ? (
+              <Loader2 className="me-2 size-4 animate-spin" />
+            ) : (
+              <UserX className="me-2 size-4" />
+            )}
             Not a Contact
           </Button>
         </div>
       </div>
 
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/50 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive"
+        >
+          {error}
+        </p>
+      ) : null}
     </div>
   )
 }
