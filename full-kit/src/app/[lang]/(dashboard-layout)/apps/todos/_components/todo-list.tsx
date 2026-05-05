@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { format, isBefore, startOfDay } from "date-fns"
 import {
   Building,
@@ -90,13 +90,14 @@ function sortTodos(todos: TodoNote[]): TodoNote[] {
 function TodoItem({
   note,
   context: _context,
+  lang,
   onSelect,
 }: {
   note: TodoNote
   context?: TodoResolvedContext
+  lang: string
   onSelect: () => void
 }) {
-  const router = useRouter()
   const [done, setDone] = useState(note.meta.status === "done")
   const [loading, setLoading] = useState(false)
   const today = startOfDay(new Date())
@@ -210,21 +211,25 @@ function TodoItem({
             </span>
           )}
           {note.meta.property && (
-            <Badge
-              variant="outline"
-              className="text-xs py-0 inline-flex items-center gap-1 cursor-pointer hover:bg-accent"
-              onClick={(e) => {
-                // Stop propagation so the card-level onClick doesn't open
-                // the detail drawer when the operator means to navigate to
-                // the property page.
-                e.stopPropagation()
-                router.push(`/en/pages/properties/${note.meta.property!.id}`)
+            // Render as a real <Link> styled like a Badge: keyboard-focusable
+            // out of the box, gets right-click "open in new tab" + middle-
+            // click "open in new tab" for free, and screen readers announce
+            // it as a link to a property. stopPropagation prevents the
+            // card-level onClick from also firing when the chip is clicked.
+            <Link
+              href={`/${lang}/pages/properties/${note.meta.property.id}`}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                // Don't let Space/Enter on the chip bubble up to the card
+                // wrapper, which would also fire onSelect.
+                if (e.key === "Enter" || e.key === " ") e.stopPropagation()
               }}
               title={note.meta.property.address}
+              className="text-xs py-0 px-2 inline-flex items-center gap-1 rounded-md border bg-background hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <Building className="size-3" />
               {truncateAddress(note.meta.property.address)}
-            </Badge>
+            </Link>
           )}
           {dealName && (
             <Badge variant="outline" className="text-xs py-0">
@@ -350,6 +355,7 @@ export function TodoList({
             key={note.path}
             note={note}
             context={contexts[note.path]}
+            lang={lang}
             onSelect={() => handleSelectTodo(note)}
           />
         ))}

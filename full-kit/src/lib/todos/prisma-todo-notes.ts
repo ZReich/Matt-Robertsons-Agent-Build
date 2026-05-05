@@ -87,8 +87,11 @@ async function loadPropertyLookup(
   }
   if (propertyIds.size === 0) return new Map()
 
+  // archivedAt: null matches every other property query in the codebase;
+  // archived properties shouldn't surface as live chips on todo cards even
+  // when an older Todo's metadata still references them.
   const rows = await db.property.findMany({
-    where: { id: { in: Array.from(propertyIds) } },
+    where: { id: { in: Array.from(propertyIds) }, archivedAt: null },
     select: { id: true, address: true },
   })
   return new Map(rows.map((row) => [row.id, row]))
