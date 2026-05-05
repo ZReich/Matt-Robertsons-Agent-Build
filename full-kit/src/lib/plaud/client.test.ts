@@ -109,6 +109,37 @@ describe("listRecordings", () => {
     expect(result.items.map((r) => r.id)).toEqual(["rec-keep"])
   })
 
+  it("normalizes Plaud 0/1 string flags without truthy-string drift", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        data_file_list: [
+          {
+            id: "rec-untranscribed",
+            filename: "needs-analysis",
+            duration: 1000,
+            start_time: 1714435200000,
+            is_trans: "0",
+            is_summary: "false",
+            is_trash: "0",
+          },
+          {
+            id: "rec-trash-string",
+            filename: "trash",
+            duration: 1000,
+            start_time: 1714435200000,
+            is_trans: "1",
+            is_summary: "1",
+            is_trash: "1",
+          },
+        ],
+      })
+    )
+    const result = await listRecordings({ token: "t", region: "us" })
+    expect(result.items.map((r) => r.id)).toEqual(["rec-untranscribed"])
+    expect(result.items[0].isTranscribed).toBe(false)
+    expect(result.items[0].isSummarized).toBe(false)
+  })
+
   it("retries on 429 with exponential backoff", async () => {
     fetchMock
       .mockResolvedValueOnce(new Response("", { status: 429 }))
@@ -144,6 +175,18 @@ describe("listRecordings", () => {
     )
     expect(err).toBeInstanceOf(PlaudApiError)
     expect((err as PlaudApiError).status).toBe(401)
+  })
+
+  it("throws on non-success upstream status in a HTTP 200 API response", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ status: -1, msg: "token expired" })
+    )
+    const err = await listRecordings({ token: "t", region: "us" }).catch(
+      (e) => e
+    )
+    expect(err).toBeInstanceOf(PlaudApiError)
+    expect((err as PlaudApiError).status).toBe(-1)
+    expect((err as Error).message).toMatch(/token expired/)
   })
 
   it("retries against the redirected region on -302 and retains the redirect base for the rest of the call", async () => {

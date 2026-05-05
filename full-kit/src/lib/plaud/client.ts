@@ -31,6 +31,7 @@ const MAX_JWT_PAYLOAD_LEN = 4096
 const ALLOWED_REDIRECT_HOSTS: ReadonlyArray<string> = [
   "api.plaud.ai",
   "api-euc1.plaud.ai",
+  "api-apse1.plaud.ai",
 ]
 
 interface FetchOpts {
@@ -129,7 +130,12 @@ async function authedRequest(
           "region redirect target not in allowlist"
         )
       }
-      const newRegion: PlaudRegion = newHost === "api-euc1.plaud.ai" ? "eu" : "us"
+      const newRegion: PlaudRegion =
+        newHost === "api-euc1.plaud.ai"
+          ? "eu"
+          : newHost === "api-apse1.plaud.ai"
+            ? "ap"
+            : "us"
       const currentHost = PLAUD_BASE_URLS[region].replace(/^https:\/\//, "")
       if (newHost === currentHost) {
         throw new PlaudApiError(
@@ -148,6 +154,19 @@ async function authedRequest(
         )
       }
       continue
+    }
+
+    if (
+      data &&
+      typeof data.status === "number" &&
+      data.status !== 0 &&
+      data.status !== 1
+    ) {
+      throw new PlaudApiError(
+        data.status,
+        endpointPath,
+        data.msg ?? `upstream status=${data.status}`
+      )
     }
 
     return data
@@ -221,6 +240,15 @@ function asNumber(v: unknown, fallback = 0): number {
 function asStringArray(v: unknown): string[] {
   return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []
 }
+function asPlaudFlag(v: unknown): boolean {
+  if (v === true || v === 1) return true
+  if (v === false || v === 0 || v === null || v === undefined) return false
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase()
+    return s === "1" || s === "true"
+  }
+  return false
+}
 
 function toRecording(raw: RawRecording): PlaudRecording | null {
   const id = asString(raw.id, "")
@@ -232,8 +260,8 @@ function toRecording(raw: RawRecording): PlaudRecording | null {
     durationSeconds: Math.round(asNumber(raw.duration, 0) / 1000),
     startTime: new Date(asNumber(raw.start_time, 0)),
     endTime: raw.end_time ? new Date(asNumber(raw.end_time, 0)) : null,
-    isTranscribed: Boolean(raw.is_trans),
-    isSummarized: Boolean(raw.is_summary),
+    isTranscribed: asPlaudFlag(raw.is_trans),
+    isSummarized: asPlaudFlag(raw.is_summary),
     tagIds: asStringArray(raw.filetag_id_list),
     keywords: asStringArray(raw.keywords),
   }
@@ -267,7 +295,7 @@ export async function listRecordings(opts: {
   // Defense-in-depth: filter out trashed entries and items without an id.
   const items: PlaudRecording[] = []
   for (const raw of list) {
-    if (raw && typeof raw === "object" && raw.is_trash) continue
+    if (raw && typeof raw === "object" && asPlaudFlag(raw.is_trash)) continue
     const mapped = toRecording(raw)
     if (mapped) items.push(mapped)
   }

@@ -52,6 +52,14 @@ interface ContactSearchResult {
   email: string | null
 }
 
+interface DealSearchResult {
+  id: string
+  propertyAddress: string | null
+  stage: string | null
+  contactName: string | null
+  contactCompany: string | null
+}
+
 export function TranscriptDetail({
   commId,
   currentContactId,
@@ -68,6 +76,9 @@ export function TranscriptDetail({
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<ContactSearchResult[]>([])
   const [searchPending, setSearchPending] = useState(false)
+  const [dealQuery, setDealQuery] = useState("")
+  const [dealResults, setDealResults] = useState<DealSearchResult[]>([])
+  const [dealSearchPending, setDealSearchPending] = useState(false)
 
   async function attach(contactId: string): Promise<void> {
     setBusy(true)
@@ -114,6 +125,28 @@ export function TranscriptDetail({
     }
   }
 
+  async function skipDeal(): Promise<void> {
+    setBusy(true)
+    try {
+      const res = await fetch(
+        `/api/communications/${commId}/attach-deal`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ dealId: null }),
+        }
+      )
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        alert(`Deal review failed: ${body.error ?? res.statusText}`)
+        return
+      }
+      startTransition(() => router.refresh())
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function searchContacts(q: string): Promise<void> {
     setQuery(q)
     if (q.trim().length < 2) {
@@ -136,111 +169,109 @@ export function TranscriptDetail({
     }
   }
 
+  async function searchDeals(q: string): Promise<void> {
+    setDealQuery(q)
+    if (q.trim().length < 2) {
+      setDealResults([])
+      return
+    }
+    setDealSearchPending(true)
+    try {
+      const res = await fetch(`/api/deals?q=${encodeURIComponent(q)}&limit=10`)
+      if (res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          items?: DealSearchResult[]
+        }
+        setDealResults(Array.isArray(body.items) ? body.items.slice(0, 10) : [])
+      }
+    } finally {
+      setDealSearchPending(false)
+    }
+  }
+
   if (sensitive) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Attach to contact</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Suggestions disabled for this transcript. Use the search below
-            to attach a contact manually.
-          </p>
-          <ContactSearch
-            query={query}
-            results={results}
-            pending={searchPending}
+      <div className="grid gap-4">
+        {dealSuggestions.length > 0 || currentDealId ? (
+          <DealCard
+            lang={lang}
+            currentDealId={currentDealId}
+            currentDealLabel={currentDealLabel}
+            dealSuggestions={dealSuggestions}
             busy={busy}
-            onQuery={searchContacts}
-            onAttach={attach}
+            onAttachDeal={attachDeal}
+            dealQuery={dealQuery}
+            dealResults={dealResults}
+            dealSearchPending={dealSearchPending}
+            onDealQuery={searchDeals}
+            onSkipDeal={skipDeal}
           />
-        </CardContent>
-      </Card>
+        ) : (
+          <DealSearchCard
+            query={dealQuery}
+            results={dealResults}
+            pending={dealSearchPending}
+            busy={busy}
+            onQuery={searchDeals}
+            onAttach={attachDeal}
+            onSkip={skipDeal}
+          />
+        )}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Attach to contact</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Contact suggestions disabled for this transcript (possible
+              sensitive content). Use the search below to attach a contact
+              manually.
+            </p>
+            <ContactSearch
+              query={query}
+              results={results}
+              pending={searchPending}
+              busy={busy}
+              onQuery={searchContacts}
+              onAttach={attach}
+            />
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
+  const showDealCard =
+    dealSuggestions.length > 0 || Boolean(currentDealId)
+
   return (
     <div className="grid gap-4">
-      {dealSuggestions.length > 0 || currentDealId ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">
-              {currentDealId ? "Linked deal" : "Suggested deal"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            {currentDealId && currentDealLabel ? (
-              <div className="rounded-lg border p-3 flex items-center justify-between gap-3 bg-primary/5">
-                <div className="text-sm grid gap-0.5">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Briefcase className="size-4" />
-                    {currentDealLabel}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Transcript will show on this deal&apos;s timeline.
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  asChild
-                >
-                  <a href={`/${lang}/pages/deals/${currentDealId}`}>Open deal</a>
-                </Button>
-              </div>
-            ) : null}
-            {dealSuggestions.map((d) => {
-              const isCurrent = currentDealId === d.dealId
-              return (
-                <div
-                  key={d.dealId + d.source}
-                  className="rounded-lg border p-3 flex items-center justify-between gap-3"
-                >
-                  <div className="text-sm grid gap-0.5">
-                    <div className="flex items-center gap-2 font-medium">
-                      <Briefcase className="size-4" />
-                      {d.propertyAddress ?? "(deal — no address)"}
-                    </div>
-                    {d.dealContactName ? (
-                      <div className="text-xs text-muted-foreground">
-                        Primary contact: {d.dealContactName}
-                        {d.stage ? ` · stage: ${d.stage}` : ""}
-                      </div>
-                    ) : null}
-                    <div className="text-xs text-muted-foreground">
-                      {d.reason}
-                    </div>
-                    <div className="text-xs">
-                      <span className="rounded bg-muted px-1.5 py-0.5">
-                        {d.score} · {d.source.replace(/_/g, " ")}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant={isCurrent ? "outline" : "default"}
-                    disabled={busy || isCurrent}
-                    onClick={() => attachDeal(d.dealId)}
-                  >
-                    {busy ? (
-                      <Loader2 className="size-3 animate-spin" />
-                    ) : isCurrent ? (
-                      "Linked"
-                    ) : (
-                      <>
-                        <Briefcase className="me-1 size-3" />
-                        Link to deal
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-      ) : null}
-    <Card>
+      {showDealCard ? (
+        <DealCard
+          lang={lang}
+          currentDealId={currentDealId}
+          currentDealLabel={currentDealLabel}
+          dealSuggestions={dealSuggestions}
+          busy={busy}
+          onAttachDeal={attachDeal}
+          dealQuery={dealQuery}
+          dealResults={dealResults}
+          dealSearchPending={dealSearchPending}
+          onDealQuery={searchDeals}
+          onSkipDeal={skipDeal}
+        />
+      ) : (
+        <DealSearchCard
+          query={dealQuery}
+          results={dealResults}
+          pending={dealSearchPending}
+          busy={busy}
+          onQuery={searchDeals}
+          onAttach={attachDeal}
+          onSkip={skipDeal}
+        />
+      )}
+      <Card>
       <CardHeader>
         <CardTitle className="text-sm">
           {currentContactId
@@ -315,6 +346,225 @@ export function TranscriptDetail({
         />
       </CardContent>
     </Card>
+    </div>
+  )
+}
+
+function DealCard({
+  lang,
+  currentDealId,
+  currentDealLabel,
+  dealSuggestions,
+  busy,
+  onAttachDeal,
+  dealQuery,
+  dealResults,
+  dealSearchPending,
+  onDealQuery,
+  onSkipDeal,
+}: {
+  lang: string
+  currentDealId: string | null
+  currentDealLabel: string | null
+  dealSuggestions: DealSuggestion[]
+  busy: boolean
+  onAttachDeal: (dealId: string) => void
+  dealQuery: string
+  dealResults: DealSearchResult[]
+  dealSearchPending: boolean
+  onDealQuery: (q: string) => void
+  onSkipDeal: () => void
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm">
+          {currentDealId ? "Linked deal" : "Suggested deal"}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {currentDealId && currentDealLabel ? (
+          <div className="rounded-lg border bg-primary/5 p-3 flex items-center justify-between gap-3">
+            <div className="text-sm grid gap-0.5">
+              <div className="flex items-center gap-2 font-medium">
+                <Briefcase className="size-4" />
+                {currentDealLabel}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Transcript shows on this deal&apos;s timeline.
+              </div>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <a href={"/" + lang + "/pages/deals/" + currentDealId}>
+                Open deal
+              </a>
+            </Button>
+          </div>
+        ) : null}
+        {dealSuggestions.map((d) => (
+          <DealSuggestionRow
+            key={d.dealId + d.source}
+            suggestion={d}
+            isCurrent={currentDealId === d.dealId}
+            busy={busy}
+            onAttach={onAttachDeal}
+          />
+        ))}
+        <DealSearch
+          query={dealQuery}
+          results={dealResults}
+          pending={dealSearchPending}
+          busy={busy}
+          onQuery={onDealQuery}
+          onAttach={onAttachDeal}
+          onSkip={onSkipDeal}
+        />
+      </CardContent>
+    </Card>
+  )
+}
+
+function DealSuggestionRow({
+  suggestion: d,
+  isCurrent,
+  busy,
+  onAttach,
+}: {
+  suggestion: DealSuggestion
+  isCurrent: boolean
+  busy: boolean
+  onAttach: (dealId: string) => void
+}) {
+  const sourceLabel = d.source.split("_").join(" ")
+  return (
+    <div className="rounded-lg border p-3 flex items-center justify-between gap-3">
+      <div className="text-sm grid gap-0.5">
+        <div className="flex items-center gap-2 font-medium">
+          <Briefcase className="size-4" />
+          {d.propertyAddress ?? "(deal — no address)"}
+        </div>
+        {d.dealContactName ? (
+          <div className="text-xs text-muted-foreground">
+            Primary contact: {d.dealContactName}
+            {d.stage ? " · stage: " + d.stage : ""}
+          </div>
+        ) : null}
+        <div className="text-xs text-muted-foreground">{d.reason}</div>
+        <div className="text-xs">
+          <span className="rounded bg-muted px-1.5 py-0.5">
+            {d.score} · {sourceLabel}
+          </span>
+        </div>
+      </div>
+      <Button
+        size="sm"
+        variant={isCurrent ? "outline" : "default"}
+        disabled={busy || isCurrent}
+        onClick={() => onAttach(d.dealId)}
+      >
+        {busy ? (
+          <Loader2 className="size-3 animate-spin" />
+        ) : isCurrent ? (
+          "Linked"
+        ) : (
+          "Link to deal"
+        )}
+      </Button>
+    </div>
+  )
+}
+
+function DealSearchCard({
+  query,
+  results,
+  pending,
+  busy,
+  onQuery,
+  onAttach,
+  onSkip,
+}: {
+  query: string
+  results: DealSearchResult[]
+  pending: boolean
+  busy: boolean
+  onQuery: (q: string) => void
+  onAttach: (id: string) => void
+  onSkip: () => void
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm">Link deal</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <DealSearch
+          query={query}
+          results={results}
+          pending={pending}
+          busy={busy}
+          onQuery={onQuery}
+          onAttach={onAttach}
+          onSkip={onSkip}
+        />
+      </CardContent>
+    </Card>
+  )
+}
+
+function DealSearch({
+  query,
+  results,
+  pending,
+  busy,
+  onQuery,
+  onAttach,
+  onSkip,
+}: {
+  query: string
+  results: DealSearchResult[]
+  pending: boolean
+  busy: boolean
+  onQuery: (q: string) => void
+  onAttach: (id: string) => void
+  onSkip: () => void
+}) {
+  return (
+    <div className="grid gap-2">
+      <div className="flex gap-2">
+        <Input
+          placeholder="Search deals by property or contact"
+          value={query}
+          onChange={(e) => onQuery(e.target.value)}
+        />
+        <Button type="button" variant="outline" disabled={busy} onClick={onSkip}>
+          No deal
+        </Button>
+      </div>
+      {pending ? (
+        <p className="text-xs text-muted-foreground">Searching...</p>
+      ) : null}
+      {results.length > 0 ? (
+        <div className="grid gap-1">
+          {results.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              disabled={busy}
+              onClick={() => onAttach(r.id)}
+              className="text-left rounded border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50"
+            >
+              <div className="font-medium">
+                {r.propertyAddress ?? "(deal without address)"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {[r.contactName, r.contactCompany, r.stage]
+                  .filter(Boolean)
+                  .join(" - ") || "No contact"}
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

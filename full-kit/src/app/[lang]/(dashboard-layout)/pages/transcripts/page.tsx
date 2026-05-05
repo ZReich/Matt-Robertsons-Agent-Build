@@ -48,9 +48,21 @@ export default async function TranscriptsPage({
   }
   const statusFilter =
     status === "needs_review"
-      ? { contactId: null, archivedAt: null }
-      : status === "matched"
-        ? { contactId: { not: null }, archivedAt: null }
+      ? {
+          archivedAt: null,
+          OR: [
+            { contactId: null },
+            { metadata: { path: ["dealReviewStatus"], equals: "needed" } },
+          ],
+        }
+    : status === "matched"
+        ? {
+            contactId: { not: null },
+            archivedAt: null,
+            NOT: {
+              metadata: { path: ["dealReviewStatus"], equals: "needed" },
+            },
+          }
         : { archivedAt: { not: null } }
 
   const [rows, counts] = await Promise.all([
@@ -76,8 +88,11 @@ export default async function TranscriptsPage({
       db.communication.count({
         where: {
           ...baseFilter,
-          contactId: null,
           archivedAt: null,
+          OR: [
+            { contactId: null },
+            { metadata: { path: ["dealReviewStatus"], equals: "needed" } },
+          ],
         },
       }),
       db.communication.count({
@@ -85,6 +100,9 @@ export default async function TranscriptsPage({
           ...baseFilter,
           contactId: { not: null },
           archivedAt: null,
+          NOT: {
+            metadata: { path: ["dealReviewStatus"], equals: "needed" },
+          },
         },
       }),
       db.communication.count({

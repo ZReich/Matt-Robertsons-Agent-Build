@@ -42,6 +42,7 @@ export interface SafeTranscriptMetadata {
   attachedFromSuggestion:
     | { contactId: string; score: number; source: string }
     | undefined
+  dealReviewStatus: "needed" | "linked" | "skipped" | "none" | undefined
 }
 
 function asString(v: unknown): string | null {
@@ -149,6 +150,13 @@ export function projectSafeMetadata(
     attachedFromSuggestion:
       attachedFromSuggestion && attachedFromSuggestion.contactId
         ? attachedFromSuggestion
+        : undefined,
+    dealReviewStatus:
+      meta.dealReviewStatus === "needed" ||
+      meta.dealReviewStatus === "linked" ||
+      meta.dealReviewStatus === "skipped" ||
+      meta.dealReviewStatus === "none"
+        ? meta.dealReviewStatus
         : undefined,
   }
 }

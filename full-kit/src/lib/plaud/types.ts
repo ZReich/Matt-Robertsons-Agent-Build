@@ -7,11 +7,12 @@
  * see the upstream shape.
  */
 
-export type PlaudRegion = "us" | "eu"
+export type PlaudRegion = "us" | "eu" | "ap"
 
 export const PLAUD_BASE_URLS: Record<PlaudRegion, string> = {
   us: "https://api.plaud.ai",
   eu: "https://api-euc1.plaud.ai",
+  ap: "https://api-apse1.plaud.ai",
 }
 
 export interface PlaudRecordingTurn {

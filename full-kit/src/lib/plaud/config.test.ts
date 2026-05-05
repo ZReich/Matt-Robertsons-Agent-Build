@@ -142,13 +142,22 @@ describe("loadPlaudConfig", () => {
     expect(cfg.region).toBe("eu")
   })
 
-  it("rejects an unknown PLAUD_REGION with a specific message", () => {
+  it("accepts PLAUD_REGION=ap (Asia-Pacific)", () => {
     process.env.PLAUD_BEARER_TOKEN = "tok"
     process.env.PLAUD_CREDENTIAL_KEY = VALID_KEY
     process.env.PLAUD_CRON_SECRET = VALID_SECRET
     process.env.PLAUD_REGION = "ap"
+    const cfg = loadPlaudConfig()
+    expect(cfg.region).toBe("ap")
+  })
+
+  it("rejects an unknown PLAUD_REGION with a specific message", () => {
+    process.env.PLAUD_BEARER_TOKEN = "tok"
+    process.env.PLAUD_CREDENTIAL_KEY = VALID_KEY
+    process.env.PLAUD_CRON_SECRET = VALID_SECRET
+    process.env.PLAUD_REGION = "xx"
     expect(() => loadPlaudConfig()).toThrow(
-      /PLAUD_REGION.*must be 'us' or 'eu'/
+      /PLAUD_REGION.*must be 'us', 'eu', or 'ap'/
     )
   })
 

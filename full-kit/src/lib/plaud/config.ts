@@ -42,10 +42,10 @@ const schema = z
       .string()
       .optional()
       .superRefine((s, ctx) => {
-        if (s !== undefined && s !== "us" && s !== "eu") {
+        if (s !== undefined && s !== "us" && s !== "eu" && s !== "ap") {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "PLAUD_REGION must be 'us' or 'eu'",
+            message: "PLAUD_REGION must be 'us', 'eu', or 'ap'",
           })
         }
       })

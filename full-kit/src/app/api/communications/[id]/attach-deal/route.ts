@@ -94,6 +94,7 @@ export async function POST(
     ...meta,
     dealAttachedAt: new Date().toISOString(),
     dealAttachedBy: reviewer.label,
+    dealReviewStatus: dealId === null ? "skipped" : "linked",
   }
   if (matchedSuggestion) {
     newMeta.dealAttachedFromSuggestion = {

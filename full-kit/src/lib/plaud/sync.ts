@@ -38,6 +38,8 @@ const PAGE_LIMIT = 50
 // Hard cap on total pages per sync run, defensive against pagination
 // bugs that would loop forever.
 const MAX_PAGES = 200
+const MAX_METADATA_TURNS = 2000
+const MAX_METADATA_TURN_CHARS = 4000
 
 export interface SyncResult {
   added: number
@@ -123,9 +125,19 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
   const contacts: ContactRef[] = (
     await db.contact.findMany({
       where: { archivedAt: null },
-      select: { id: true, name: true },
+      select: { id: true, name: true, company: true, phone: true, tags: true },
     })
-  ).map((c) => ({ id: c.id, fullName: c.name ?? "", aliases: [] }))
+  ).map((c) => ({
+    id: c.id,
+    fullName: c.name ?? "",
+    aliases: [
+      c.company,
+      c.phone,
+      ...(Array.isArray(c.tags)
+        ? c.tags.filter((tag): tag is string => typeof tag === "string")
+        : []),
+    ].filter((alias): alias is string => Boolean(alias && alias.trim())),
+  }))
 
   const deals: DealRef[] = (
     await db.deal.findMany({
@@ -402,6 +414,8 @@ async function processTranscribedRecording(
   const dealSuggestions: DealMatchSuggestion[] = sens.tripped
     ? []
     : suggestDeals(matcherInput)
+  const dealReviewStatus =
+    dealSuggestions.length > 0 ? "needed" : "none"
 
   await db.$transaction(async (tx) => {
     const externalSync = await tx.externalSync.upsert({
@@ -439,7 +453,7 @@ async function processTranscribedRecording(
           plaudId: opts.recording.id,
           plaudFilename: opts.recording.filename,
           plaudTagIds: opts.recording.tagIds,
-          cleanedTurns: cleaned.cleanedTurns,
+          cleanedTurns: capMetadataTurns(cleaned.cleanedTurns),
           aiSummaryRaw: transcript.aiContentRaw,
           extractedSignals: aiSkipReason ? null : signals,
           ...(aiSkipReason ? { aiSkipReason } : {}),
@@ -447,6 +461,7 @@ async function processTranscribedRecording(
           ...(signals.aiError ? { aiExtractError: signals.aiError } : {}),
           suggestions,
           dealSuggestions,
+          dealReviewStatus,
         } as unknown as Prisma.InputJsonValue,
       },
     })
@@ -510,4 +525,16 @@ function serializeRaw(
     },
     transcript: { turns: transcript.turns, summaryList: transcript.summaryList },
   }
+}
+
+function capMetadataTurns(
+  turns: PlaudTranscript["turns"]
+): PlaudTranscript["turns"] {
+  return turns.slice(0, MAX_METADATA_TURNS).map((turn) => ({
+    ...turn,
+    content:
+      turn.content.length > MAX_METADATA_TURN_CHARS
+        ? `${turn.content.slice(0, MAX_METADATA_TURN_CHARS)}...`
+        : turn.content,
+  }))
 }

@@ -59,9 +59,21 @@ export async function GET(request: Request): Promise<Response> {
     channel: "call" as const,
     metadata: { path: ["source"], equals: "plaud" },
     ...(status === "needs_review"
-      ? { contactId: null, archivedAt: null }
+      ? {
+          archivedAt: null,
+          OR: [
+            { contactId: null },
+            { metadata: { path: ["dealReviewStatus"], equals: "needed" } },
+          ],
+        }
       : status === "matched"
-        ? { contactId: { not: null }, archivedAt: null }
+        ? {
+            contactId: { not: null },
+            archivedAt: null,
+            NOT: {
+              metadata: { path: ["dealReviewStatus"], equals: "needed" },
+            },
+          }
         : { archivedAt: { not: null } }),
     ...(q
       ? {
