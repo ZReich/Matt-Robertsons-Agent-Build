@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { autoPromoteAgentActionsToTodos } from "@/lib/ai/agent-action-auto-promotion"
 import { scrubEmailBatch } from "@/lib/ai/scrub"
 import { syncEmails } from "@/lib/msgraph"
 import { constantTimeCompare } from "@/lib/msgraph/constant-time-compare"
@@ -71,11 +72,24 @@ export async function POST(request: Request): Promise<Response> {
     scrubError = err instanceof Error ? err.message : String(err)
   }
 
+  // Step 3: promote any pending AgentAction rows into Todos so the
+  // operator never has to leave the Todos page to act on AI suggestions.
+  // Stale rows (>30d) get moved to `expired`. Errors per row are
+  // captured in the result and don't fail the cron.
+  let promoteResult: unknown = null
+  let promoteError: string | null = null
+  try {
+    promoteResult = await autoPromoteAgentActionsToTodos()
+  } catch (err) {
+    promoteError = err instanceof Error ? err.message : String(err)
+  }
+
   return NextResponse.json({
-    ok: !syncError && !scrubError,
+    ok: !syncError && !scrubError && !promoteError,
     durationMs: Date.now() - t0,
     sync: syncError ? { error: syncError } : syncResult,
     scrub: scrubError ? { error: scrubError } : scrubResult,
+    promote: promoteError ? { error: promoteError } : promoteResult,
   })
 }
 
