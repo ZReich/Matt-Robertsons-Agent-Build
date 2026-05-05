@@ -386,6 +386,44 @@ describe("backfillMailboxForContact", () => {
     })
   })
 
+  it("caps stale-prompt rescrub at 25 per click and surfaces remaining count", async () => {
+    // Audit fix (May 2026): a v6→v7 prompt bump on a 200-comm contact
+    // would silently fire 200 fresh DeepSeek calls per "Scan mailbox"
+    // click. Cap at 25 per click; surface the remaining count via
+    // staleRescrubsAvailable so the UI can prompt for the next batch.
+    const { db } = await import("@/lib/prisma")
+    const { fetchMessagesForContactWindow } = await import("./graph-query")
+    const { enqueueScrubForCommunication } = await import(
+      "@/lib/ai/scrub-queue"
+    )
+
+    ;(db.contact.findUnique as any).mockResolvedValueOnce({
+      id: "c1",
+      email: "a@b.com",
+    })
+    ;(db.contact.findMany as any).mockResolvedValueOnce([])
+    ;(db.deal.findMany as any).mockResolvedValueOnce([])
+    // 40 stale comms — should enqueue 25 and report 15 available.
+    const staleComms = Array.from({ length: 40 }, (_, i) => ({
+      id: `stale-${i}`,
+      metadata: {
+        classification: "signal",
+        scrub: { promptVersion: "v5" },
+      },
+    }))
+    ;(db.communication.findMany as any)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(staleComms)
+    ;(db.backfillRun.create as any).mockResolvedValueOnce({ id: "run-1" })
+    ;(fetchMessagesForContactWindow as any).mockResolvedValueOnce([])
+
+    const result = await backfillMailboxForContact("c1", { mode: "lifetime" })
+    expect(result.status).toBe("succeeded")
+    expect(result.staleRescrubsEnqueued).toBe(25)
+    expect(result.staleRescrubsAvailable).toBe(15)
+    expect(enqueueScrubForCommunication).toHaveBeenCalledTimes(25)
+  })
+
   it("returns successfully when finalize hits P2025 (BackfillRun row reaped)", async () => {
     // Bug 3 regression: the bulk endpoint's stuck-run reaper (or operator
     // cleanup) can delete the BackfillRun row mid-run. The finalize update

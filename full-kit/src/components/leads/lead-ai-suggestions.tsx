@@ -431,6 +431,15 @@ export function LeadAISuggestions({ state }: LeadAISuggestionsProps) {
                 : null}
             </p>
           ) : null}
+          {scanState.kind === "success" &&
+          scanState.result.staleRescrubsAvailable > 0 ? (
+            <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+              {scanState.result.staleRescrubsAvailable} more older message
+              {scanState.result.staleRescrubsAvailable === 1 ? "" : "s"} can be
+              re-extracted (capped at 25 per click to bound DeepSeek cost).
+              Click &ldquo;Scan mailbox&rdquo; again to process the next batch.
+            </p>
+          ) : null}
           {scanState.kind === "rate_limited" ? (
             <p className="mt-2 text-xs text-amber-600">
               Recently scanned — retry in{" "}

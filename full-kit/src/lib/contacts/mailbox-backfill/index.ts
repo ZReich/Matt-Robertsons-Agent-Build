@@ -62,9 +62,28 @@ export interface BackfillResult {
   deduped: number
   scrubQueued: number
   staleRescrubsEnqueued: number
+  /**
+   * Stale comms eligible for re-extraction that were NOT enqueued in this
+   * call because the per-click cap was hit. Surfaces to the UI so the
+   * operator can decide whether to click again to process the next batch.
+   * Audit fix (May 2026): a v6→v7 silent rescrub of every comm could fire
+   * 200+ DeepSeek calls per click on a long-history contact. The cap
+   * bounds runaway cost; the count gives operator visibility.
+   */
+  staleRescrubsAvailable: number
   multiClientConflicts: number
   durationMs: number
 }
+
+/**
+ * Maximum stale-prompt re-scrubs to enqueue per "Scan mailbox" click.
+ * On a contact with 200+ historical comms, a prompt-version bump would
+ * otherwise re-enqueue every signal/uncertain row in one click. With the
+ * cap, the UI surfaces the remaining count and the operator clicks again
+ * to process the next batch (each click is cheap to bound; total cost is
+ * the same but spread across explicit operator decisions).
+ */
+const STALE_RESCRUB_PER_CLICK_CAP = 25
 
 const POLICY_VERSION = "mailbox-backfill@1"
 
@@ -124,6 +143,7 @@ export async function backfillMailboxForContact(
       deduped: 0,
       scrubQueued: 0,
       staleRescrubsEnqueued: 0,
+      staleRescrubsAvailable: 0,
       multiClientConflicts: 0,
       durationMs: Date.now() - startedAt,
       ...extra,
@@ -351,6 +371,7 @@ export async function backfillMailboxForContact(
     // categories — v5-scrubbed messages would otherwise never surface those
     // facts). Skipped entirely on dryRun.
     let staleRescrubsEnqueued = 0
+    let staleRescrubsAvailable = 0
     if (!opts.dryRun) {
       // Exclude the rows we just inserted in this same run — they have no
       // scrub metadata yet (the queue entry was enqueued in-transaction by
@@ -395,6 +416,16 @@ export async function backfillMailboxForContact(
             : null
         if (!isPromptVersionStale(storedVersion, PROMPT_VERSION)) continue
 
+        // Per-click cap (audit fix May 2026): a v6→v7 prompt bump on a
+        // contact with 200 historical comms used to fire 200 fresh
+        // DeepSeek calls silently. Once we've enqueued the cap, count
+        // remaining stale rows so the UI can prompt the operator to
+        // process the next batch on demand.
+        if (staleRescrubsEnqueued >= STALE_RESCRUB_PER_CLICK_CAP) {
+          staleRescrubsAvailable += 1
+          continue
+        }
+
         // ScrubQueue.communicationId is unique — `enqueueScrubForCommunication`
         // would throw P2002 on an existing row. Delete the prior row first
         // (whether previously done, failed, or skipped_sensitive) so the
@@ -423,6 +454,7 @@ export async function backfillMailboxForContact(
       deduped,
       scrubQueued,
       staleRescrubsEnqueued,
+      staleRescrubsAvailable,
       multiClientConflicts,
     })
   } catch (err: any) {
