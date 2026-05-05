@@ -1,4 +1,5 @@
 import type {
+  DealMatchSuggestion,
   ExtractedSignals,
   MatchSource,
   MatchSuggestion,
@@ -11,11 +12,22 @@ export interface ContactRef {
   aliases: string[]
 }
 
+export interface DealRef {
+  id: string
+  contactId: string
+  contactName: string | null
+  propertyAddress: string | null
+  propertyAliases: string[]
+}
+
 export interface MatcherInput {
   recording: PlaudRecording
   cleanedText: string
   extractedSignals: ExtractedSignals
   contacts: ContactRef[]
+  /** Active deals to cross-reference against `mentionedProperties` and
+   * the counterparty name. Empty array disables deal suggestions. */
+  deals?: DealRef[]
   scheduledMeetings: Array<{ contactId: string; date: Date }>
   /**
    * Per-Plaud-tag → contact-id mapping (Matt configures via the UI).
@@ -156,6 +168,98 @@ function matchAgainstContacts(
 // name ("Sarah lease talk" → c-sarah) so use a looser threshold.
 const SYNOPSIS_THRESHOLD = 0.85
 const PARTIAL_THRESHOLD = 0.5
+
+/**
+ * Cross-reference deals against the extracted signals. Returns up to 3
+ * deduped suggestions ranked by source then score. Pure — no I/O. The
+ * caller is responsible for loading the active deals corpus.
+ */
+export function suggestDeals(input: MatcherInput): DealMatchSuggestion[] {
+  const deals = input.deals ?? []
+  if (deals.length === 0) return []
+
+  const all: DealMatchSuggestion[] = []
+
+  // 1. mentionedProperties → Deal.propertyAddress / propertyAliases
+  const mentionedProps = input.extractedSignals.mentionedProperties ?? []
+  for (const mention of mentionedProps) {
+    if (!mention) continue
+    let best: { deal: DealRef; score: number } | null = null
+    for (const d of deals) {
+      const candidates = [d.propertyAddress, ...d.propertyAliases].filter(
+        (s): s is string => Boolean(s)
+      )
+      for (const cand of candidates) {
+        const score = nameMatchScore(cand, mention)
+        if (score >= PARTIAL_THRESHOLD && (!best || score > best.score)) {
+          best = { deal: d, score }
+        }
+      }
+    }
+    if (best) {
+      all.push({
+        dealId: best.deal.id,
+        contactId: best.deal.contactId,
+        score: 70 + Math.round(best.score * 25),
+        reason: `transcript mentions "${mention}" — matches deal property "${best.deal.propertyAddress}"`,
+        source: "mentioned_property",
+      })
+    }
+  }
+
+  // 2. counterpartyName → deal's primary contact
+  const cp = input.extractedSignals.counterpartyName
+  if (cp) {
+    let best: { deal: DealRef; score: number } | null = null
+    for (const d of deals) {
+      if (!d.contactName) continue
+      const score = nameMatchScore(d.contactName, cp)
+      if (score >= SYNOPSIS_THRESHOLD && (!best || score > best.score)) {
+        best = { deal: d, score }
+      }
+    }
+    if (best) {
+      all.push({
+        dealId: best.deal.id,
+        contactId: best.deal.contactId,
+        score: 60 + Math.round(best.score * 20),
+        reason: `counterparty "${cp}" is the primary contact on this deal`,
+        source: "deal_contact_name",
+      })
+    }
+  }
+
+  // 3. Topic keyword → deal property address (looser — only emit if
+  // topic literally contains the address as a contiguous token sequence)
+  const topic = input.extractedSignals.topic
+  if (topic) {
+    for (const d of deals) {
+      if (!d.propertyAddress) continue
+      const score = nameMatchScore(d.propertyAddress, topic)
+      if (score >= 1.0) {
+        all.push({
+          dealId: d.id,
+          contactId: d.contactId,
+          score: 50,
+          reason: `topic mentions deal address "${d.propertyAddress}"`,
+          source: "topic_keyword",
+        })
+      }
+    }
+  }
+
+  // Dedupe by dealId, keep highest score per deal.
+  const byDeal = new Map<string, DealMatchSuggestion>()
+  for (const s of all) {
+    const existing = byDeal.get(s.dealId)
+    if (!existing || s.score > existing.score) {
+      byDeal.set(s.dealId, s)
+    }
+  }
+  return Array.from(byDeal.values())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+}
 
 export function suggestContacts(input: MatcherInput): MatchSuggestion[] {
   const all: MatchSuggestion[] = []

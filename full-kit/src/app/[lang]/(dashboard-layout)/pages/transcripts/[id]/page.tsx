@@ -55,6 +55,34 @@ export default async function TranscriptDetailPage({ params }: Props) {
     : []
   const sugMap = new Map(sugContacts.map((c) => [c.id, c]))
 
+  const dealSuggestions = meta.dealSuggestions
+  const dealIds = dealSuggestions.map((d) => d.dealId)
+  const sugDeals = dealIds.length
+    ? await db.deal.findMany({
+        where: { id: { in: dealIds } },
+        select: {
+          id: true,
+          propertyAddress: true,
+          stage: true,
+          contact: { select: { id: true, name: true } },
+        },
+      })
+    : []
+  const dealMap = new Map(sugDeals.map((d) => [d.id, d]))
+
+  // Look up the currently-attached deal (if any) so we can show its
+  // address/contact in the "currently attached" pill.
+  const currentDeal = row.dealId
+    ? await db.deal.findUnique({
+        where: { id: row.dealId },
+        select: {
+          id: true,
+          propertyAddress: true,
+          contact: { select: { id: true, name: true } },
+        },
+      })
+    : null
+
   const cleanedTurns = meta.cleanedTurns
   const extractedSignals = meta.extractedSignals
   const aiSummary = parseAiContent(meta.aiSummaryRaw ?? "")
@@ -102,12 +130,27 @@ export default async function TranscriptDetailPage({ params }: Props) {
       <TranscriptDetail
         commId={row.id}
         currentContactId={row.contactId}
+        currentDealId={row.dealId}
+        currentDealLabel={
+          currentDeal
+            ? `${currentDeal.propertyAddress ?? "(no address)"}${currentDeal.contact?.name ? ` — ${currentDeal.contact.name}` : ""}`
+            : null
+        }
         suggestions={suggestions.map((s) => ({
           ...s,
           contactName: sugMap.get(s.contactId)?.name ?? null,
           contactCompany: sugMap.get(s.contactId)?.company ?? null,
           contactEmail: sugMap.get(s.contactId)?.email ?? null,
         }))}
+        dealSuggestions={dealSuggestions.map((s) => {
+          const d = dealMap.get(s.dealId)
+          return {
+            ...s,
+            propertyAddress: d?.propertyAddress ?? null,
+            stage: d?.stage ?? null,
+            dealContactName: d?.contact?.name ?? null,
+          }
+        })}
         lang={lang}
         sensitive={meta.aiSkipReason === "sensitive_keywords"}
       />
@@ -144,7 +187,7 @@ export default async function TranscriptDetailPage({ params }: Props) {
               No transcript available.
             </p>
           ) : (
-            <div className="grid gap-2">
+            <div className="grid gap-2 max-h-[60vh] overflow-y-auto pr-2">
               {cleanedTurns.map((t, i) => (
                 <div key={i} className="text-sm">
                   <span className="font-medium text-muted-foreground">

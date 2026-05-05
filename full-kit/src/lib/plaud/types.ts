@@ -80,3 +80,25 @@ export interface MatchSuggestion {
   reason: string
   source: MatchSource
 }
+
+/**
+ * Deal-level suggestion. Scored on cross-references from extracted
+ * signals: mentionedProperties hit Deal.propertyAddress / propertyAliases,
+ * counterpartyName hits the deal's primary contact, and topic-level
+ * substring matches against the address. Surfaced as a separate panel
+ * in the UI so Matt can attach the transcript to the deal's timeline
+ * (Communication.dealId) — the underlying Communication can be linked
+ * to a contact AND a deal at the same time.
+ */
+export type DealMatchSource =
+  | "mentioned_property"
+  | "deal_contact_name"
+  | "topic_keyword"
+
+export interface DealMatchSuggestion {
+  dealId: string
+  contactId: string
+  score: number
+  reason: string
+  source: DealMatchSource
+}

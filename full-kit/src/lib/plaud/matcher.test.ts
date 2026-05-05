@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest"
 
 import type { PlaudRecording } from "./types"
 
-import { suggestContacts, type ContactRef } from "./matcher"
+import {
+  suggestContacts,
+  suggestDeals,
+  type ContactRef,
+  type DealRef,
+} from "./matcher"
 
 const baseRec: PlaudRecording = {
   id: "rec-1",
@@ -303,6 +308,81 @@ describe("suggestContacts", () => {
     })
     // All three Johns tie at 0.5 (one token of two matched). Suppress.
     expect(result.find((s) => s.source === "filename")).toBeUndefined()
+  })
+
+  it("suggests a deal when extractedSignals.mentionedProperties matches Deal.propertyAddress", () => {
+    const deals: DealRef[] = [
+      {
+        id: "d-1",
+        contactId: "c-bob",
+        contactName: "Bob Smith",
+        propertyAddress: "123 Main St, Billings",
+        propertyAliases: [],
+      },
+      {
+        id: "d-2",
+        contactId: "c-sarah",
+        contactName: "Sarah Jones",
+        propertyAddress: "456 Oak Ave",
+        propertyAliases: [],
+      },
+    ]
+    const result = suggestDeals({
+      recording: baseRec,
+      cleanedText: "",
+      extractedSignals: {
+        ...emptySignals,
+        mentionedProperties: ["123 Main St"],
+      },
+      contacts: [],
+      deals,
+      scheduledMeetings: [],
+      tagToContactMap: {},
+    })
+    expect(result[0]?.dealId).toBe("d-1")
+    expect(result[0]?.source).toBe("mentioned_property")
+    expect(result[0]?.contactId).toBe("c-bob")
+  })
+
+  it("suggests a deal when counterpartyName matches the deal's primary contact", () => {
+    const deals: DealRef[] = [
+      {
+        id: "d-bob",
+        contactId: "c-bob",
+        contactName: "Bob Smith",
+        propertyAddress: "999 Oak",
+        propertyAliases: [],
+      },
+    ]
+    const result = suggestDeals({
+      recording: baseRec,
+      cleanedText: "",
+      extractedSignals: {
+        ...emptySignals,
+        counterpartyName: "Bob Smith",
+      },
+      contacts: [],
+      deals,
+      scheduledMeetings: [],
+      tagToContactMap: {},
+    })
+    expect(result[0]?.dealId).toBe("d-bob")
+    expect(result[0]?.source).toBe("deal_contact_name")
+  })
+
+  it("returns empty array when no deals corpus", () => {
+    const result = suggestDeals({
+      recording: baseRec,
+      cleanedText: "",
+      extractedSignals: {
+        ...emptySignals,
+        mentionedProperties: ["123 Main"],
+      },
+      contacts: [],
+      scheduledMeetings: [],
+      tagToContactMap: {},
+    })
+    expect(result).toEqual([])
   })
 
   it("synopsis below 0.85 threshold falls through (no tail_synopsis suggestion)", () => {

@@ -15,10 +15,13 @@ import {
 import { loadPlaudConfig } from "./config"
 import {
   suggestContacts,
+  suggestDeals,
   type ContactRef,
+  type DealRef,
   type MatcherInput,
 } from "./matcher"
 import type {
+  DealMatchSuggestion,
   ExtractedSignals,
   MatchSuggestion,
   PlaudRecording,
@@ -124,6 +127,27 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
     })
   ).map((c) => ({ id: c.id, fullName: c.name ?? "", aliases: [] }))
 
+  const deals: DealRef[] = (
+    await db.deal.findMany({
+      where: { archivedAt: null, closedAt: null },
+      select: {
+        id: true,
+        contactId: true,
+        propertyAddress: true,
+        propertyAliases: true,
+        contact: { select: { name: true } },
+      },
+    })
+  ).map((d) => ({
+    id: d.id,
+    contactId: d.contactId,
+    contactName: d.contact?.name ?? null,
+    propertyAddress: d.propertyAddress,
+    propertyAliases: Array.isArray(d.propertyAliases)
+      ? d.propertyAliases.filter((s): s is string => typeof s === "string")
+      : [],
+  }))
+
   // Pull recent meetings (window: ±2h around any recording in this run).
   // We over-fetch the last 90d of meetings; the matcher does the time-window
   // filter per recording.
@@ -168,6 +192,7 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
         const status = await processRecording({
           recording,
           contacts,
+          deals,
           scheduledMeetings,
           tagToContactMap,
           region: cfg.region,
@@ -201,7 +226,7 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
         // eslint-disable-next-line no-console
         console.error(
           `[plaud-sync] recording ${recording.id} failed:`,
-          err instanceof Error ? err.name : "unknown"
+          err instanceof Error ? `${err.name}: ${err.message}` : "unknown"
         )
       }
     }
@@ -246,6 +271,7 @@ async function runSync(t0: number, opts: SyncOpts): Promise<SyncResult> {
 interface ProcessRecordingInput {
   recording: PlaudRecording
   contacts: ContactRef[]
+  deals: DealRef[]
   scheduledMeetings: MatcherInput["scheduledMeetings"]
   tagToContactMap: Record<string, string>
   region: ReturnType<typeof loadPlaudConfig>["region"]
@@ -361,16 +387,21 @@ async function processTranscribedRecording(
     signals = await extractSignals({ cleanedText: cleaned.cleanedText })
   }
 
+  const matcherInput: MatcherInput = {
+    recording: opts.recording,
+    cleanedText: cleaned.cleanedText,
+    extractedSignals: signals,
+    contacts: opts.contacts,
+    deals: opts.deals,
+    scheduledMeetings: opts.scheduledMeetings,
+    tagToContactMap: opts.tagToContactMap,
+  }
   const suggestions: MatchSuggestion[] = sens.tripped
     ? []
-    : suggestContacts({
-        recording: opts.recording,
-        cleanedText: cleaned.cleanedText,
-        extractedSignals: signals,
-        contacts: opts.contacts,
-        scheduledMeetings: opts.scheduledMeetings,
-        tagToContactMap: opts.tagToContactMap,
-      })
+    : suggestContacts(matcherInput)
+  const dealSuggestions: DealMatchSuggestion[] = sens.tripped
+    ? []
+    : suggestDeals(matcherInput)
 
   await db.$transaction(async (tx) => {
     const externalSync = await tx.externalSync.upsert({
@@ -415,6 +446,7 @@ async function processTranscribedRecording(
           ...(cleaned.aiError ? { aiCleanError: cleaned.aiError } : {}),
           ...(signals.aiError ? { aiExtractError: signals.aiError } : {}),
           suggestions,
+          dealSuggestions,
         } as unknown as Prisma.InputJsonValue,
       },
     })

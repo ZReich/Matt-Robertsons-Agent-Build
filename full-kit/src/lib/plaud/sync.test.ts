@@ -32,6 +32,9 @@ const {
     contact: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    deal: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     meeting: {
       findMany: vi.fn().mockResolvedValue([]),
     },
@@ -71,6 +74,7 @@ vi.mock("./ai-passes", () => ({
 
 vi.mock("./matcher", () => ({
   suggestContacts: suggestContactsMock,
+  suggestDeals: vi.fn().mockReturnValue([]),
 }))
 
 vi.mock("@/lib/ai/sensitive-filter", () => ({

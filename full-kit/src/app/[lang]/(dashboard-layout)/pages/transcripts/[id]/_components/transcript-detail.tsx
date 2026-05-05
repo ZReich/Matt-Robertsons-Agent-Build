@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, UserPlus } from "lucide-react"
+import { Briefcase, Loader2, UserPlus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,10 +23,24 @@ interface Suggestion {
   contactEmail: string | null
 }
 
+interface DealSuggestion {
+  dealId: string
+  contactId: string
+  score: number
+  source: string
+  reason: string
+  propertyAddress: string | null
+  stage: string | null
+  dealContactName: string | null
+}
+
 interface Props {
   commId: string
   currentContactId: string | null
+  currentDealId: string | null
+  currentDealLabel: string | null
   suggestions: Suggestion[]
+  dealSuggestions: DealSuggestion[]
   lang: string
   sensitive: boolean
 }
@@ -41,7 +55,10 @@ interface ContactSearchResult {
 export function TranscriptDetail({
   commId,
   currentContactId,
+  currentDealId,
+  currentDealLabel,
   suggestions,
+  dealSuggestions,
   lang,
   sensitive,
 }: Props) {
@@ -70,6 +87,28 @@ export function TranscriptDetail({
       }
       // Navigate to the contact's activity tab.
       router.push(`/${lang}/pages/contacts/${contactId}?tab=activity`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function attachDeal(dealId: string): Promise<void> {
+    setBusy(true)
+    try {
+      const res = await fetch(
+        `/api/communications/${commId}/attach-deal`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ dealId }),
+        }
+      )
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        alert(`Attach to deal failed: ${body.error ?? res.statusText}`)
+        return
+      }
+      startTransition(() => router.refresh())
     } finally {
       setBusy(false)
     }
@@ -122,6 +161,85 @@ export function TranscriptDetail({
   }
 
   return (
+    <div className="grid gap-4">
+      {dealSuggestions.length > 0 || currentDealId ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">
+              {currentDealId ? "Linked deal" : "Suggested deal"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            {currentDealId && currentDealLabel ? (
+              <div className="rounded-lg border p-3 flex items-center justify-between gap-3 bg-primary/5">
+                <div className="text-sm grid gap-0.5">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Briefcase className="size-4" />
+                    {currentDealLabel}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Transcript will show on this deal&apos;s timeline.
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  asChild
+                >
+                  <a href={`/${lang}/pages/deals/${currentDealId}`}>Open deal</a>
+                </Button>
+              </div>
+            ) : null}
+            {dealSuggestions.map((d) => {
+              const isCurrent = currentDealId === d.dealId
+              return (
+                <div
+                  key={d.dealId + d.source}
+                  className="rounded-lg border p-3 flex items-center justify-between gap-3"
+                >
+                  <div className="text-sm grid gap-0.5">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Briefcase className="size-4" />
+                      {d.propertyAddress ?? "(deal — no address)"}
+                    </div>
+                    {d.dealContactName ? (
+                      <div className="text-xs text-muted-foreground">
+                        Primary contact: {d.dealContactName}
+                        {d.stage ? ` · stage: ${d.stage}` : ""}
+                      </div>
+                    ) : null}
+                    <div className="text-xs text-muted-foreground">
+                      {d.reason}
+                    </div>
+                    <div className="text-xs">
+                      <span className="rounded bg-muted px-1.5 py-0.5">
+                        {d.score} · {d.source.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={isCurrent ? "outline" : "default"}
+                    disabled={busy || isCurrent}
+                    onClick={() => attachDeal(d.dealId)}
+                  >
+                    {busy ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : isCurrent ? (
+                      "Linked"
+                    ) : (
+                      <>
+                        <Briefcase className="me-1 size-3" />
+                        Link to deal
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+      ) : null}
     <Card>
       <CardHeader>
         <CardTitle className="text-sm">
@@ -197,6 +315,7 @@ export function TranscriptDetail({
         />
       </CardContent>
     </Card>
+    </div>
   )
 }
 

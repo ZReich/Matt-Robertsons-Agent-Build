@@ -30,6 +30,13 @@ export interface SafeTranscriptMetadata {
     source: string
     reason: string
   }>
+  dealSuggestions: Array<{
+    dealId: string
+    contactId: string
+    score: number
+    source: string
+    reason: string
+  }>
   attachedAt: string | undefined
   attachedBy: string | undefined
   attachedFromSuggestion:
@@ -91,6 +98,19 @@ export function projectSafeMetadata(
     }))
     .filter((s) => s.contactId.length > 0)
 
+  const dealSuggestionsRaw = Array.isArray(meta.dealSuggestions)
+    ? (meta.dealSuggestions as Array<Record<string, unknown>>)
+    : []
+  const dealSuggestions = dealSuggestionsRaw
+    .map((s) => ({
+      dealId: typeof s.dealId === "string" ? s.dealId : "",
+      contactId: typeof s.contactId === "string" ? s.contactId : "",
+      score: typeof s.score === "number" ? s.score : 0,
+      source: typeof s.source === "string" ? s.source : "",
+      reason: typeof s.reason === "string" ? s.reason : "",
+    }))
+    .filter((s) => s.dealId.length > 0)
+
   const afsRaw = meta.attachedFromSuggestion
   const attachedFromSuggestion =
     afsRaw && typeof afsRaw === "object" && !Array.isArray(afsRaw)
@@ -123,6 +143,7 @@ export function projectSafeMetadata(
         ? "sensitive_keywords"
         : undefined,
     suggestions,
+    dealSuggestions,
     attachedAt: asString(meta.attachedAt) ?? undefined,
     attachedBy: asString(meta.attachedBy) ?? undefined,
     attachedFromSuggestion:
