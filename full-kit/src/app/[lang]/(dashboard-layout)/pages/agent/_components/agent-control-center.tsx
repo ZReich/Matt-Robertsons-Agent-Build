@@ -16,7 +16,7 @@ export interface AgentActionView {
   id: string
   actionType: string
   tier: string
-  status: "pending" | "approved" | "rejected" | "executed" | "snoozed"
+  status: "pending" | "approved" | "rejected" | "executed" | "expired" | "snoozed"
   summary: string
   targetEntity: string | null
   feedback: string | null

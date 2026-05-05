@@ -211,6 +211,12 @@ enum AgentActionStatus {
   approved
   rejected
   executed
+  /// Pending action that sat in the queue past the freshness window
+  /// (default 30 days) without being acted on. The auto-promotion sweep
+  /// transitions stale `pending` rows here so the queue self-prunes
+  /// without losing the audit trail. Distinct from `rejected` (which
+  /// implies a deliberate operator dismissal).
+  expired
 }
 
 enum MemoryType {
@@ -1046,6 +1052,14 @@ model Todo {
   updatedAt DateTime @updatedAt
 
   dedupeKey String? @map("dedupe_key")
+
+  /// Free-form JSON used by approval-todo cards to remember which inline
+  /// action buttons to render. Shape (set by the auto-promotion sweep):
+  ///   { actionType: string, agentActionId: string, payload: any,
+  ///     matchScore?: number, matchSignals?: string[] }
+  /// Hand-created todos leave this null. The Todos UI checks for
+  /// `metadata.actionType` to decide whether to show inline approve/reject.
+  metadata Json? @default("{}")
 
   @@index([status])
   @@index([priority])
